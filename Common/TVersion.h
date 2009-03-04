@@ -22,7 +22,7 @@
 
 #define VERSION_MAJOR_NUM          0
 #define VERSION_MINOR_NUM          5
-#define VERSION_REV_BIG            27
+#define VERSION_REV_BIG            28
 #define VERSION_REV_SMALL          0
 
 // For various unfortunate preprocessor reasons, we need a duplicate copy
@@ -34,7 +34,7 @@
 
 // This string may optionally contain something like "-pre1" or "-rc2".
 // This will be appended to the regular version number.
-#define VERSION_EXTRA              ""
+#define VERSION_EXTRA              "-gibbon1"
 
 #define SHORT_NAME          "Halyard"
 #define VERSION_STRING \

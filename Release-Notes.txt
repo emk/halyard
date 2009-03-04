@@ -1,3 +1,57 @@
+0.5.28-gibbon1 - 4 March 2009
+
+This release contains some buildscript improvements by Brian, and a
+substantial amount of work towards an "Electric Gibbon" stress-testing
+tool that allows 'rake halyard:jump_each' to click on buttons.
+
+Porting notes:
+
+  * Please do not use (gensym) to generate names for anonymous elements.
+    Instead, please pass ':name #f' and let Halyard generate a name.  Pay
+    careful attention to new-FOO functions that wrap (%FOO% .new ...),
+    which tend to be the major offenders.
+
+Brian Campbell (10):
+      tools: Add announce-build.sh tool for emailing build announcements
+      tools: Add announce-build-freshmeat.rb for pinging freshmeat
+      tools: Add irc announce bot, for announcing a build on IRC
+      fix-prologues.pl: Put correct comment in .rake and Rakefiles
+      tools: Add GPL headers to announce scripts
+      tools: Fix permissions on announce scripts
+      tools: Move #! lines back to beginning of files
+      announce-build-freshmeat.rb: Don't print responses unless -v or --dry-run
+      Buildscript: Add tool for staging and releasing updates on server
+      eg: Comment fixes following code review
+
+Eric Kidd (27):
+      halyard.el: Indent backwards-compatibility APIs properly
+      eg: Initial files for Electric Gibbon test tool
+      eg: Implement a primitive TEST-ACTION form
+      eg: Allow test actions to be created manually
+      eg: Recurse over child elements when listing test actions
+      eg: Look for elements on groups, too
+      eg: Document public APIs
+      eg: Add a test-action for %clickable-zone%
+      eg: Remove unused eq-with-gensym? hack
+      eg: Centralizing (gensym) calls for anonymous elements
+      eg: Make anonymous element names semi-stable
+      eg: Add %test-action% .key method
+      eg: Issue a warning about gensym'd node names
+      eg: Add extremely primitive test planner
+      eg: Test %test-planner% with an actual set of actions
+      eg: Add support for resuming a test where we left off
+      eg: Remember what card a %test-planner% is associated with
+      eg: Document %test-planner%
+      eg: Add %test-planner% .done?
+      eg: Don't generate test actions for disabled elements
+      eg: Integrate Electric Gibbon into halyard:jump_each
+      eg: Improve halyard:jump_each output
+      eg: Drain deferred thunk queue after each action
+      eg: Remove delays during jump_each
+      eg: Add :skip-when-testing-card? flag to %element%
+      eg: Don't open browser when running jump_each on halyard/test
+      eg: Code review: Rename :skip-when-testing-card? -> :skip-test-actions?
+
 0.5.28 - 25 Feb 2009
 
 The only engine change in this release is to remove a few messages
