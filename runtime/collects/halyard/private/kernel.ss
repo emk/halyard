@@ -538,7 +538,8 @@
   ;;
   ;;  Callbacks are slightly special, however--see the code for details.
   
-  (provide run-deferred defer executing-deferred-safe-time-callbacks?)
+  (provide run-deferred defer executing-deferred-safe-time-callbacks?
+           %kernel-check-deferred)
 
   ;; The most important global state variables.
   (define *%kernel-running-callback?* #f)

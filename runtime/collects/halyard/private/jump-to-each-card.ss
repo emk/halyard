@@ -120,8 +120,9 @@
     ;; to become unavailable, in which case we'll have to jump back to this
     ;; card and try again.
     (while (*test-planner* .run-next-test-action)
-      ;; TODO - Run deferred thunks here.
-      (void))
+      ;; KLUDGE - Clear our deferred thunk queue after each action.  Yes,
+      ;; this is an excessive amount of knowledge of kernel.ss.
+      (%kernel-check-deferred))
 
     ;; There's nothing more we can do here, so we pass the buck to a
     ;; higher level of our test driver.
