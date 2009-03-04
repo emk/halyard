@@ -24,6 +24,7 @@
   (require (lib "kernel.ss" "halyard/private"))
   (require (lib "api.ss" "halyard/private"))
   (require (lib "metadata-attr.ss" "halyard"))
+  (require (lib "electric-gibbon.ss" "halyard"))
   
   (provide jump-to-each-card)
 
@@ -50,6 +51,10 @@
   (define (all-cards)
     (all-cards-in (static-root-node)))
 
+  ;; We create a test planner for each card, and let it decide how to
+  ;; handle any card-specific testing.
+  (define *test-planner* #f)
+
   ;; We still need to jump to the cards in this list.
   (define *cards-left-to-jump-to* #f)
 
@@ -57,16 +62,32 @@
   ;; try to intercept it?
   (define *should-honor-next-jump?* #f)
 
+  ;; Really perform a jump.  This bypasses our jump interception code.
+  (define (jump-for-testing card)
+    (set! *should-honor-next-jump?* #t)
+    ;; TODO - Temporary print card names until we have code to intercept
+    ;; error messages.
+    (command-line-error (cat "Card: " card))
+    (jump card))
+
   ;; Jump to the next card in our test sequence.
   (define (continue-jumping-to-each-card)
-    (if (null? *cards-left-to-jump-to*)
-      (exit-script)
-      (begin
-        (set! *should-honor-next-jump?* #t)
-        ;; TODO - Temporary print card names until we have code to
-        ;; intercept error messages.
-        (command-line-error (cat "Card: " (car *cards-left-to-jump-to*)))
-        (jump (pop! *cards-left-to-jump-to*)))))
+    ;; If we have a test planner, and it has finished running, get rid of
+    ;; it before we do anything else.
+    (when (and *test-planner* (*test-planner* .done?))
+      (set! *test-planner* #f))
+    ;; Figure out what to do next.
+    (cond
+     ;; If we still have an active test planner, jump back to the associated
+     ;; card and let it go again.
+     [*test-planner*
+      (jump-for-testing (*test-planner* .card))]
+     ;; If there are no more cards to jump to, quit.
+     [(null? *cards-left-to-jump-to*)
+      (exit-script)]
+     ;; Jump to the next card that we need to test.
+     [else
+      (jump-for-testing (pop! *cards-left-to-jump-to*))]))
 
   ;; Decide whether we should intercept the current jump and replace it
   ;; with a jump to the next card we need to test.
@@ -83,12 +104,35 @@
      [else
       (continue-jumping-to-each-card)]))
 
+  ;; This function is called when we reach the end of a card body.  If we
+  ;; don't already have a test planner for this card, it creates one.  It
+  ;; then tries to run as many test actions as possible before it has to
+  ;; jump to the card again.
+  (define (continue-running-test-actions)
+    ;; If we don't have a test planner for this card yet, create one.
+    (unless *test-planner*
+      (set! *test-planner* (%test-planner% .new)))
+
+    ;; Run test actions for as long as we can.  This may trigger a JUMP at
+    ;; any point.  If a JUMP occurs, then we should eventually make it back
+    ;; here when CONTINUE-JUMPING-TO-EACH-CARD notices that our test
+    ;; planner isn't done yet.  Also, some actions may cause other actions
+    ;; to become unavailable, in which case we'll have to jump back to this
+    ;; card and try again.
+    (while (*test-planner* .run-next-test-action)
+      ;; TODO - Run deferred thunks here.
+      (void))
+
+    ;; There's nothing more we can do here, so we pass the buck to a
+    ;; higher level of our test driver.
+    (continue-jumping-to-each-card))
+
   ;;; Jump to each card in the program, and then quit.
   (define (jump-to-each-card)
     ;; When we reach the end of a card body, we want to move on to the next
     ;; card automatically.
     (hook-add-function! *card-body-finished-hook* 'jump-to-each-card
-                        continue-jumping-to-each-card)
+                        continue-running-test-actions)
 
     ;; When a card jumps to another card, we want to intercept that and
     ;; instead jump to the next card in our list.

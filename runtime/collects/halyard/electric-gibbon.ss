@@ -20,7 +20,9 @@
 ;;
 ;; @END_LICENSE
 
-(module electric-gibbon (lib "halyard.ss" "halyard")
+(module electric-gibbon (lib "mizzen.ss" "mizzen")
+  (require (lib "api.ss" "halyard/private"))
+  (require (lib "elements.ss" "halyard/private"))
 
 
   ;;=======================================================================
@@ -156,11 +158,18 @@
       (define action (.next-test-action))
       (if action
         (begin
+          ;; TODO - We need a better way to log progress.  There's a
+          ;; related call to COMMAND-LINE-ERROR in jump-to-each-card.ss
+          ;; that also needs to be changed.
+          (command-line-error (cat "  " (action .key)))
           (action .run)
           #t)
         #f))
 
-    ;;; Have we performed all of our test actions?
+    ;;; Have we performed all the test actions we wanted to perform?  The
+    ;;; answer is based on our test plan, not on what actions are currently
+    ;;; available, because some actions may have become unavailable at the
+    ;;; current time as the result of other actions being run.
     (def (done?)
       (not (ormap identity
                   (hash-table-map (.%available) (fn (k v) v)))))
