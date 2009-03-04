@@ -172,9 +172,21 @@
   ;;=======================================================================
 
   (with-instance %basic-button%
+    ;; TODO - We don't generate any test actions if mouse clicks aren't
+    ;; allowed.  We can find a better way to do this.
+    (def (test-actions)
+      (if (and (.wants-cursor?) (.enabled?))
+        (super)
+        '()))
     (test-action click (.click)))
 
   (with-instance %clickable-zone%
+    ;; TODO - We don't generate any test actions if mouse clicks aren't
+    ;; allowed.  We can find a better way to do this.
+    (def (test-actions)
+      (if (.wants-cursor?)
+        (super)
+        '()))
     (test-action click (.click)))
 
   )
