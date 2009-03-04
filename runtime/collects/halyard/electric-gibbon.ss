@@ -114,14 +114,40 @@
   (provide %test-planner%)
 
   (define-class %test-planner% ()
-    (attr %actions ((current-card) .all-test-actions) :writable? #t)
+    (attr %available (make-hash-table))
+    
+    (def (initialize &rest keys)
+      (super)
+      ;; For now, we only perform the test actions whose keys appear when
+      ;; we are initially constructed.  This helps prevent infinite loops.
+      ;; Eventually, we'll want to go deeper into a card.
+      (define available (.%available))
+      (foreach [action ((current-card) .all-test-actions)]
+        (hash-table-put! available (action .key) #t)))
+
+    ;;; Return the first available test action that we haven't already
+    ;;; peformed, or #f if there's nothing left to do.
+    (def (next-test-action)
+      (define available (.%available))
+      (let recurse [[candidates ((current-card) .all-test-actions)]]
+        (cond
+         [(null? candidates) #f]
+         [(hash-table-get available ((car candidates) .key) #f)
+          (let [[action (car candidates)]]
+            (hash-table-put! available (action .key) #f)
+            action)]
+         [else
+          (recurse (cdr candidates))])))
+
+    ;;; Run the next available test action, if one is available.  Return
+    ;;; true iff an action was run.
     (def (run-next-test-action)
-      (let [[actions (.%actions)]]
-        (if (null? actions)
-          #f
-          (begin
-            ((car actions) .run)
-            (set! (.%actions) (cdr actions))))))
+      (define action (.next-test-action))
+      (if action
+        (begin
+          (action .run)
+          #t)
+        #f))
     )
 
 

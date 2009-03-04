@@ -143,6 +143,18 @@
       (while (p .run-next-test-action)
         (void))
       (assert (s .done?)))
+    (test "A test planner should be able to restart where it left off"
+      (define s1 (%test-action-set% .new :name 's))
+      (define p (%test-planner% .new))
+      (p .run-next-test-action)
+      (p .run-next-test-action)
+      (assert (not (s1 .done?)))
+      (define saved-mask (s1 .action-mask))
+      (delete-element s1)
+      (define s2 (%test-action-set% .new :name 's :action-mask saved-mask))
+      (while (p .run-next-test-action)
+        (void))
+      (assert (s2 .done?)))
     )
 
   (card /tests/electric-gibbon
