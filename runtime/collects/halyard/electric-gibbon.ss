@@ -147,7 +147,7 @@
 
     ;;; Return the first available test action that we haven't already
     ;;; peformed, or #f if there's nothing left to do.  Note that this
-    ;;; marks the action it returns as performed.
+    ;;; marks the action it returns as unavailable.
     (def (next-test-action)
       (define available (.%available))
       (let recurse [[candidates ((current-card) .all-test-actions)]]
@@ -166,7 +166,7 @@
       (define action (.next-test-action))
       (if action
         (begin
-          ;; TODO - Temporary print action names until we have code to
+          ;; TODO - Temporarily print action names until we have code to
           ;; intercept error messages.  See also jump-to-each-card, which
           ;; has a similar use of COMMAND-LINE-MESSAGE.
           (command-line-message (cat "  " (symbol->string (action .key))))
