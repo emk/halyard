@@ -136,7 +136,8 @@
         (hash-table-put! available (action .key) #t)))
 
     ;;; Return the first available test action that we haven't already
-    ;;; peformed, or #f if there's nothing left to do.
+    ;;; peformed, or #f if there's nothing left to do.  Note that this
+    ;;; marks the action it returns as performed.
     (def (next-test-action)
       (define available (.%available))
       (let recurse [[candidates ((current-card) .all-test-actions)]]
@@ -158,6 +159,11 @@
           (action .run)
           #t)
         #f))
+
+    ;;; Have we performed all of our test actions?
+    (def (done?)
+      (not (ormap identity
+                  (hash-table-map (.%available) (fn (k v) v)))))
     )
 
 

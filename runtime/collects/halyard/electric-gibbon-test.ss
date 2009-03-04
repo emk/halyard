@@ -151,10 +151,12 @@
       (assert (not (s1 .done?)))
       (define saved-mask (s1 .action-mask))
       (delete-element s1)
+      (assert (not (p .done?)))
       (define s2 (%test-action-set% .new :name 's :action-mask saved-mask))
       (while (p .run-next-test-action)
         (void))
-      (assert (s2 .done?)))
+      (assert (s2 .done?))
+      (assert (p .done?)))
     (test "A test planner should remember what card it was created on."
       (define p (%test-planner% .new))
       (assert-equals ((current-card) .static-node) (p .card)))
