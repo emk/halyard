@@ -108,6 +108,24 @@
 
 
   ;;=======================================================================
+  ;;  Test planner
+  ;;=======================================================================
+
+  (provide %test-planner%)
+
+  (define-class %test-planner% ()
+    (attr %actions ((current-card) .all-test-actions) :writable? #t)
+    (def (run-next-test-action)
+      (let [[actions (.%actions)]]
+        (if (null? actions)
+          #f
+          (begin
+            ((car actions) .run)
+            (set! (.%actions) (cdr actions))))))
+    )
+
+
+  ;;=======================================================================
   ;;  Standard test actions
   ;;=======================================================================
 

@@ -123,9 +123,21 @@
         (%custom-element% .new :name (gensym) :bounds (rect 0 0 10 10))))
     )
 
+  (define-class %test-planner-test% (%element-test-case%)
+    (test "A test planner should run all test actions for current card."
+      (define b (%test-button% .new))
+      (define p (%test-planner% .new))
+      (while (p .run-next-test-action)
+        (void))
+      (assert (b .clicked?))
+      (assert (b .frobbed?))
+      (assert (b .munged?))
+      (assert (b .child.clicked?))))
+
   (card /tests/electric-gibbon
       (%element-test-suite%
        :tests (list %electric-gibbon-test%
-                    %stable-element-name-test%)))
+                    %stable-element-name-test%
+                    %test-planner-test%)))
   
   )
