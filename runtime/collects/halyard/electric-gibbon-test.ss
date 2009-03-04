@@ -143,7 +143,7 @@
       (while (p .run-next-test-action)
         (void))
       (assert (s .done?)))
-    (test "A test planner should be able to restart where it left off"
+    (test "A test planner should be able to restart where it left off."
       (define s1 (%test-action-set% .new :name 's))
       (define p (%test-planner% .new))
       (p .run-next-test-action)
@@ -155,6 +155,9 @@
       (while (p .run-next-test-action)
         (void))
       (assert (s2 .done?)))
+    (test "A test planner should remember what card it was created on."
+      (define p (%test-planner% .new))
+      (assert-equals ((current-card) .static-node) (p .card)))
     )
 
   (card /tests/electric-gibbon

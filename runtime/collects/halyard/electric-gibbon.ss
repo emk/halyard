@@ -114,8 +114,10 @@
   (provide %test-planner%)
 
   (define-class %test-planner% ()
+    ;;; Remember what card we're associated with.
+    (attr card ((current-card) .static-node))
+
     (attr %available (make-hash-table))
-    
     (def (initialize &rest keys)
       (super)
       ;; For now, we only perform the test actions whose keys appear when
