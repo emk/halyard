@@ -123,16 +123,27 @@
         (%custom-element% .new :name (gensym) :bounds (rect 0 0 10 10))))
     )
 
+  (define-class %test-action-set% (%custom-element%)
+    (value bounds (rect 0 0 100 20))
+    (attr action-mask 0 :writable? #t)
+    (def (set-bit! n)
+      (define new-mask (arithmetic-shift 1 n))
+      (assert-equals 0 (bitwise-and (.action-mask) new-mask))
+      (set! (.action-mask) (bitwise-ior (.action-mask) new-mask)))
+    (test-action bit0 (.set-bit! 0))
+    (test-action bit1 (.set-bit! 1))
+    (test-action bit2 (.set-bit! 2))
+    (def (done?)
+      (= (.action-mask) #b111)))
+
   (define-class %test-planner-test% (%element-test-case%)
     (test "A test planner should run all test actions for current card."
-      (define b (%test-button% .new))
+      (define s (%test-action-set% .new))
       (define p (%test-planner% .new))
       (while (p .run-next-test-action)
         (void))
-      (assert (b .clicked?))
-      (assert (b .frobbed?))
-      (assert (b .munged?))
-      (assert (b .child.clicked?))))
+      (assert (s .done?)))
+    )
 
   (card /tests/electric-gibbon
       (%element-test-suite%
