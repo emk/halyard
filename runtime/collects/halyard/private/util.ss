@@ -38,7 +38,7 @@
   (require #%engine-primitives)
 
   (provide app-log debug-log report-error warning
-           fatal-error set-status-text! command-line-error)
+           fatal-error set-status-text! command-line-error command-line-message)
 
   ;;; Write a message to Halyard.log.  This log is always present on a user's
   ;;; system, and is never deleted, so use this function sparingly.
@@ -82,6 +82,11 @@
   ;;; in modes where report-error actually quits the program.
   (define (command-line-error msg)
     (%call-prim 'CommandLineError msg))
+
+  ;;; This function prints out a message to the command line when running
+  ;;; in COMMAND_LINE mode.
+  (define (command-line-message msg)
+    (command-line-error msg))
 
 
   ;;=======================================================================

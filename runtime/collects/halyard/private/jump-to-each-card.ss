@@ -67,7 +67,7 @@
     (set! *should-honor-next-jump?* #t)
     ;; TODO - Temporary print card names until we have code to intercept
     ;; error messages.
-    (command-line-error (cat "Card: " card))
+    (command-line-message (cat "Card: " (card .full-name)))
     (jump card))
 
   ;; Jump to the next card in our test sequence.

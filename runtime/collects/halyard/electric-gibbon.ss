@@ -158,10 +158,10 @@
       (define action (.next-test-action))
       (if action
         (begin
-          ;; TODO - We need a better way to log progress.  There's a
-          ;; related call to COMMAND-LINE-ERROR in jump-to-each-card.ss
-          ;; that also needs to be changed.
-          (command-line-error (cat "  " (action .key)))
+          ;; TODO - Temporary print action names until we have code to
+          ;; intercept error messages.  See also jump-to-each-card, which
+          ;; has a similar use of COMMAND-LINE-MESSAGE.
+          (command-line-message (cat "  " (symbol->string (action .key))))
           (action .run)
           #t)
         #f))
