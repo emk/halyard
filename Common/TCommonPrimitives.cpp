@@ -316,6 +316,16 @@ DEFINE_PRIMITIVE(ExitScriptNonGui) {
 
 
 //-------------------------------------------------------------------------
+// (IsInCommandLineMode)
+//-------------------------------------------------------------------------
+// Is the engine running in command-line mode?
+
+DEFINE_PRIMITIVE(IsInCommandLineMode) {
+    ::SetPrimitiveResult(TInterpreterManager::IsInCommandLineMode());
+}
+
+
+//-------------------------------------------------------------------------
 // (IsLazyLoadingEnabled)
 //-------------------------------------------------------------------------
 // Is lazy loading turned on in the engine?
@@ -463,6 +473,7 @@ void Halyard::RegisterCommonPrimitives()
 	REGISTER_PRIMITIVE(VariableInitialized);
 	REGISTER_PRIMITIVE(DefStyle);
     REGISTER_PRIMITIVE(ExitScriptNonGui);
+    REGISTER_PRIMITIVE(IsInCommandLineMode);
     REGISTER_PRIMITIVE(IsLazyLoadingEnabled);
     REGISTER_PRIMITIVE(LoadScriptFailed);
     REGISTER_PRIMITIVE(MaybeSetIsLazyLoadingEnabled);

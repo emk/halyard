@@ -21,6 +21,8 @@
 ;; @END_LICENSE
 
 (module animate (lib "halyard.ss" "halyard")
+  (require (only (lib "kernel.ss" "halyard/private") adjust-delay))
+
 
   ;;=======================================================================
   ;;  Utility routines
@@ -276,7 +278,7 @@
   ;;; Run ANIMS over the course of MILLISECONDS.
   (define (animate milliseconds &rest anims)
     (define start-time (current-milliseconds))
-    (define end-time (+ start-time milliseconds))
+    (define end-time (+ start-time (adjust-delay milliseconds)))
     (define draw-func ((apply simultaneously anims)))
     (draw-func 0.0)
     (let loop []

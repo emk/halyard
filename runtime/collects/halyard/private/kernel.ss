@@ -84,7 +84,7 @@
   
   (provide call-prim have-prim? runtime-directory value->boolean idle
            blocking-idle exit-script custom-jump-handler-installed?
-           call-with-jump-handler refresh)
+           call-with-jump-handler refresh adjust-delay)
 
   ;; C++ can't handle very large or small integers.  Here are the
   ;; typical limits on any modern platform.
@@ -240,6 +240,13 @@
     (call-hook-functions *before-draw-hook*)
     (if (have-prim? 'Refresh)
         (call-prim 'Refresh transition ms)))
+
+  ;; If Halyard is running in command-line mode, clamp all delays to a
+  ;; maximum of 10 milliseconds.
+  (define (adjust-delay milliseconds)
+    (if (call-prim 'IsInCommandLineMode)
+      (min milliseconds 10)
+      milliseconds))
 
 
   ;;=======================================================================

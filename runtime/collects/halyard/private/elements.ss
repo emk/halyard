@@ -1494,7 +1494,7 @@
   ;;; Delay for the specified number of milliseconds.  Calls IDLE, so
   ;;; events will be processed and the screen will be repainted.
   (define (sleep-milliseconds milliseconds)
-    (define end-time (+ milliseconds (current-milliseconds)))
+    (define end-time (+ (adjust-delay milliseconds) (current-milliseconds)))
     (let repeat-delay []
       (idle)
       (when (> end-time (current-milliseconds))

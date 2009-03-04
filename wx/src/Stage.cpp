@@ -1104,8 +1104,10 @@ void Stage::EndWait()
 
 void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
 {
-	// If we're supposed to run a transiton, do so now.
-	if (inTransition != "none" && inMilliseconds > 0)
+    // If we're supposed to run a transiton, do so now.  We skip all
+    // transitions in command-line mode to make automated testing faster.
+    if (inTransition != "none" && inMilliseconds > 0 &&
+        !TInterpreterManager::IsInCommandLineMode())
 	{
 		// Attempt to get a copy of whatever is on the screen.
 		wxClientDC client_dc(this);
