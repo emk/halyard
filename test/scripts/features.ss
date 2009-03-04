@@ -219,7 +219,7 @@
   
   (card /features/launch-browser (%standard-test-card% :title "Launch Browser")
     (text-button open-button ((below (.title-elem) 20) "Open Default Browser"
-                              :skip-when-testing-card? #t)
+                              :skip-test-actions? #t)
       (def (click)
         (set! (@result .text)
               (if (open-in-browser "http://iml.dartmouth.edu")

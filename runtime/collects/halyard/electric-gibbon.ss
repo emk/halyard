@@ -102,9 +102,9 @@
     )
 
   (with-instance %element%
-    (attr skip-when-testing-card? #f)
+    (attr skip-test-actions? #f)
     (def (all-test-actions)
-      (if (.skip-when-testing-card?)
+      (if (.skip-test-actions?)
         '()
         (super)))
     )

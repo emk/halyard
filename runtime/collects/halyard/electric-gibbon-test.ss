@@ -145,7 +145,7 @@
     ;; test these above as part of our action list, but none of those test
     ;; cases actually attempt to run everything.
     (elem do-not-click-1 (%do-not-click-button% :enabled? #f))
-    (elem do-not-click-2 (%do-not-click-button% :skip-when-testing-card? #t))
+    (elem do-not-click-2 (%do-not-click-button% :skip-test-actions? #t))
     )
 
   (define-class %test-planner-test% (%element-test-case%)

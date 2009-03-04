@@ -190,7 +190,7 @@
     (value title "XiphQT Ogg Theora video (experimental, codec required)")
 
     (text-button get-codec ((below @title-elem 10) "Get Codec"
-                            :skip-when-testing-card? #t)
+                            :skip-test-actions? #t)
       (def (click)
         (open-in-browser "http://www.xiph.org/quicktime/")))
 
