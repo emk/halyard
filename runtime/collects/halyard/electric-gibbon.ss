@@ -101,6 +101,14 @@
              (map (fn (e) (e .all-test-actions)) (.elements))))
     )
 
+  (with-instance %element%
+    (attr skip-when-testing-card? #f)
+    (def (all-test-actions)
+      (if (.skip-when-testing-card?)
+        '()
+        (super)))
+    )
+
   (with-instance %group-member%
     (def (all-test-actions)
       (if (.parent)

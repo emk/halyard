@@ -123,6 +123,11 @@
         (%custom-element% .new :name (gensym) :bounds (rect 0 0 10 10))))
     )
 
+  (define-class %do-not-click-button% (%basic-button%)
+    (value bounds (rect 0 0 10 10))
+    (def (click) (error (cat "Accidentally clicked " self)))
+    (def (draw) (void)))
+
   (define-class %test-action-set% (%custom-element%)
     (value bounds (rect 0 0 100 20))
     (attr action-mask 0 :writable? #t)
@@ -134,7 +139,14 @@
     (test-action bit1 (.set-bit! 1))
     (test-action bit2 (.set-bit! 2))
     (def (done?)
-      (= (.action-mask) #b111)))
+      (= (.action-mask) #b111))
+
+    ;; These items should be excluded from our test plan.  Yes, we could
+    ;; test these above as part of our action list, but none of those test
+    ;; cases actually attempt to run everything.
+    (elem do-not-click-1 (%do-not-click-button% :enabled? #f))
+    (elem do-not-click-2 (%do-not-click-button% :skip-when-testing-card? #t))
+    )
 
   (define-class %test-planner-test% (%element-test-case%)
     (test "A test planner should run all test actions for current card."
