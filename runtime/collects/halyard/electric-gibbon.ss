@@ -113,6 +113,14 @@
 
   (provide %test-planner%)
 
+  ;;; This is a fairly primitive class which attempts to keep track of
+  ;;; what actions still need to be peformed on the current card.  Right
+  ;;; now, it knows two tricks: It can survive the deletion and recreation
+  ;;; of elements, and it should never run an action that has become
+  ;;; unavailable.
+  ;;;
+  ;;; Note that the API of this class is unstable, and may change as the
+  ;;; %test-planner% gets smarter.
   (define-class %test-planner% ()
     ;;; Remember what card we're associated with.
     (attr card ((current-card) .static-node))
