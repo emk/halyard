@@ -951,9 +951,13 @@
                     " without a parent node")))
       (unless (.name)
         (set! (.name) (.parent.generate-anonymous-element-name (.class))))
-      (unless (symbol? (.name))
-        (error (cat (.class) " .new: name must be a symbol; given " (.name))))
-      (check-node-name (.name))
+      (define name (.name))
+      (unless (symbol? name)
+        (error (cat (.class) " .new: name must be a symbol; given " name)))
+      (check-node-name name)
+      (when (regexp-match "^g[0-9]+$" (symbol->string name))
+        (warning (cat "The node " (.full-name) " appears to have a gensym'd "
+                      "name which may break the Electric Gibbon test tool.")))
       ((.parent) .%add-running-element! self))
 
     (with-instance (.class)

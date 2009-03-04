@@ -117,6 +117,10 @@
       (define name-1 (.create-nested-element.name))
       (define name-2 (.create-nested-element.name))
       (assert-equals name-1 name-2))
+
+    (test "Creating element names with (gensym) should give a warning."
+      (assert-warns
+        (%custom-element% .new :name (gensym) :bounds (rect 0 0 10 10))))
     )
 
   (card /tests/electric-gibbon
