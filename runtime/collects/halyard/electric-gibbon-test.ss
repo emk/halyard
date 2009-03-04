@@ -102,6 +102,10 @@
       ;; actually mess with our parent group.  So just make sure that
       ;; it doesn't crash, and that it sees our regular child elements.
       (find-action (current-card) 'child-click))
+    (test "A test action should have a unique key."
+      (assert-equals (symcat (.b.full-name) " " 'click)
+                     ((find-action (.b) 'click) .key)))
+
     )
 
   (define-class %stable-element-name-test% (%element-test-case%)

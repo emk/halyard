@@ -41,6 +41,12 @@
     (attr name :type <symbol>)
     (attr method)
 
+    ;;; Return a unique identifier (we hope) for this test action.  This
+    ;;; should be stable across multiple jumps to the same card within
+    ;;; a given run of the program.
+    (def (key)
+      (symcat (.node.full-name) " " (.name)))
+
     ;;; Run the test action.
     (def (run)
       (instance-exec (.node) (.method))))
