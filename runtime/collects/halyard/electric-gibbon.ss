@@ -118,20 +118,74 @@
 
 
   ;;=======================================================================
-  ;;  Test planner
+  ;;  Abstract test planner interface
   ;;=======================================================================
 
   (provide %test-planner%)
 
-  ;;; This is a fairly primitive class which attempts to keep track of
-  ;;; what actions still need to be peformed on the current card.  Right
-  ;;; now, it knows two tricks: It can survive the deletion and recreation
-  ;;; of elements, and it should never run an action that has become
-  ;;; unavailable.
+  ;;; A %test-planner% knows how to an individual card.  Currently, to
+  ;;; use a %test-planner%, you must jump to the card, wait for the
+  ;;; card body to finish, and then create a subclass of %test-planner%.
+  ;;; It may be periodically necessary to jump back to the current card
+  ;;; as the %test-planner% runs.  See jump-to-each-card.ss for an
+  ;;; example.
   ;;;
   ;;; Note that the API of this class is unstable, and may change as the
-  ;;; %test-planner% gets smarter.
+  ;;; new %test-planner% subclasses are written, and as old ones get
+  ;;; more intelligent.
   (define-class %test-planner% ()
+    ;;; Run the next available test action, if one is available at the
+    ;;; current point in time.  Note that this function may jump off the
+    ;;; card at any point, or may temporarily return #f because the card
+    ;;; has reached a dead-end with no more available actions, and must
+    ;;; be restarted to continue.
+    (def (run-next-test-action)
+      (error "Must override .run-next-test-action"))
+
+    ;;; Is this test planner completely done with the current card (and
+    ;;; not merely done with the actions it can perform right now)?  Note
+    ;;; that if .run-next-test-action returns #f, and .done? returns #f,
+    ;;; it will generally be necessary to restart the current card and
+    ;;; resume calling run-next-test-action.
+    (def (done?)
+      (error "Must override .done?"))
+    )
+
+
+  ;;=======================================================================
+  ;;  Null test planner
+  ;;=======================================================================
+
+  (provide %null-test-planner%)
+
+  ;;; A %null-test-planner% makes no attempt to run test actions.  It is
+  ;;; intended to reproduce old-style 'rake halyard:jump_each' beahvior,
+  ;;; and give applications a migration path to more advanced
+  ;;; %test-planner% objects without immediately breaking
+  ;;; halyard:jump_each.
+  (define-class %null-test-planner% (%test-planner%)
+    (def (run-next-test-action)
+      #f)
+    (def (done?)
+      #t))
+
+
+  ;;=======================================================================
+  ;;  Shallow test planner
+  ;;=======================================================================
+
+  (provide %shallow-test-planner%)
+
+  ;;; A %shallow-test-planner% attempts to run all test actions that
+  ;;; appeared on a card when the %shallow-test-planner% was created.  It
+  ;;; can't reach actions which only become available as the result of
+  ;;; choosing other actions, and it may get stuck if the available
+  ;;; actions on card aren't there the second time a card is visited.
+  ;;;
+  ;;; Right now, this class knows two tricks: It can survive the deletion
+  ;;; and recreation of elements, and it should never run an action that
+  ;;; has become unavailable.
+  (define-class %shallow-test-planner% (%test-planner%)
     ;;; Remember what card we're associated with.
     (attr card ((current-card) .static-node))
 
@@ -148,7 +202,7 @@
     ;;; Return the first available test action that we haven't already
     ;;; peformed, or #f if there's nothing left to do.  Note that this
     ;;; marks the action it returns as unavailable.
-    (def (next-test-action)
+    (def (%next-test-action)
       (define available (.%available))
       (let recurse [[candidates ((current-card) .all-test-actions)]]
         (cond
@@ -163,7 +217,7 @@
     ;;; Run the next available test action, if one is available.  Return
     ;;; true iff an action was run.
     (def (run-next-test-action)
-      (define action (.next-test-action))
+      (define action (.%next-test-action))
       (if action
         (begin
           ;; TODO - Temporarily print action names until we have code to

@@ -148,16 +148,16 @@
     (elem do-not-click-2 (%do-not-click-button% :skip-test-actions? #t))
     )
 
-  (define-class %test-planner-test% (%element-test-case%)
+  (define-class %shallow-test-planner-test% (%element-test-case%)
     (test "A test planner should run all test actions for current card."
       (define s (%test-action-set% .new))
-      (define p (%test-planner% .new))
+      (define p (%shallow-test-planner% .new))
       (while (p .run-next-test-action)
         (void))
       (assert (s .done?)))
     (test "A test planner should be able to restart where it left off."
       (define s1 (%test-action-set% .new :name 's))
-      (define p (%test-planner% .new))
+      (define p (%shallow-test-planner% .new))
       (p .run-next-test-action)
       (p .run-next-test-action)
       (assert (not (s1 .done?)))
@@ -170,7 +170,7 @@
       (assert (s2 .done?))
       (assert (p .done?)))
     (test "A test planner should remember what card it was created on."
-      (define p (%test-planner% .new))
+      (define p (%shallow-test-planner% .new))
       (assert-equals ((current-card) .static-node) (p .card)))
     )
 
@@ -178,6 +178,6 @@
       (%element-test-suite%
        :tests (list %electric-gibbon-test%
                     %stable-element-name-test%
-                    %test-planner-test%)))
+                    %shallow-test-planner-test%)))
   
   )

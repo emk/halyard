@@ -111,7 +111,7 @@
   (define (continue-running-test-actions)
     ;; If we don't have a test planner for this card yet, create one.
     (unless *test-planner*
-      (set! *test-planner* (%test-planner% .new)))
+      (set! *test-planner* (%shallow-test-planner% .new)))
 
     ;; Run test actions for as long as we can.  This may trigger a JUMP at
     ;; any point.  If a JUMP occurs, then we should eventually make it back
