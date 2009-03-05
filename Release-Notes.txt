@@ -1,3 +1,18 @@
+0.5.28-gibbon2 - 5 March 2009
+
+This release changes the interface for invoking jump_each:
+
+  rake halyard:jump_each [START=/card/name]       # Jump to each card.
+  rake halyard:jump_each:test [START=/card/name]  # Jump to each and test.
+
+This allows existing programs to keep calling an old-fashioned 'jump_each'.
+
+Eric Kidd (4):
+      eg: Split %test-planner% into %(null|shallow)-test-planner%
+      eg: Only run test actions when halyard:jump_each:test called
+      eg: Add START parameter to halyard:jump_each tasks
+      eg: Code review: Add missing word to comment
+
 0.5.28-gibbon1 - 4 March 2009
 
 This release contains some buildscript improvements by Brian, and a
