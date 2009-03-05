@@ -123,12 +123,11 @@
 
   (provide %test-planner%)
 
-  ;;; A %test-planner% knows how to an individual card.  Currently, to
-  ;;; use a %test-planner%, you must jump to the card, wait for the
-  ;;; card body to finish, and then create a subclass of %test-planner%.
-  ;;; It may be periodically necessary to jump back to the current card
-  ;;; as the %test-planner% runs.  See jump-to-each-card.ss for an
-  ;;; example.
+  ;;; A %test-planner% knows how to test an individual card.  Currently, to
+  ;;; use a %test-planner%, you must jump to the card, wait for the card
+  ;;; body to finish, and then create a subclass of %test-planner%.  It may
+  ;;; be periodically necessary to jump back to the current card as the
+  ;;; %test-planner% runs.  See jump-to-each-card.ss for an example.
   ;;;
   ;;; Note that the API of this class is unstable, and may change as the
   ;;; new %test-planner% subclasses are written, and as old ones get
