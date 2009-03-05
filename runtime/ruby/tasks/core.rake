@@ -21,18 +21,6 @@ namespace :halyard do
     halyard_command "(command-line-test-driver)"
   end
 
-  desc 'Jump to each card in the script'
-  task :jump_each do
-    halyard_command "(jump-to-each-card)"
-  end
-
-  namespace :jump_each do
-    desc 'Jump to each card in the script and test it'
-    task :test do
-      halyard_command "(jump-to-each-card :planner 'test)"
-    end
-  end
-
   desc 'Update support files to the lastest versions'
   task :update_tools do
     # Build a list of files in our template directory.

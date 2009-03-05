@@ -51,6 +51,15 @@
   (define (all-cards)
     (all-cards-in (static-root-node)))
 
+  ;; If CARD-OR-FALSE is a card, discard cards from the front of CARDS
+  ;; until we find it.
+  (define (begin-with card-or-false cards)
+    (if (or (not card-or-false)
+            (null? cards)
+            (eq? card-or-false (car cards)))
+      cards
+      (begin-with card-or-false (cdr cards))))
+
   ;; What %test-planner% class will we be using?
   (define *test-planner-class* #f)
 
@@ -61,8 +70,7 @@
           (case type
             [[null] %null-test-planner%]
             [[test] %shallow-test-planner%]
-            [else (error (cat "Unknown test planner type: " type))]))
-    (command-line-message (cat "Type: " type " Planner: " *test-planner-class*)))
+            [else (error (cat "Unknown test planner type: " type))])))
 
   ;; We create a test planner for each card, and let it decide how to
   ;; handle any card-specific testing.
@@ -142,7 +150,7 @@
     (continue-jumping-to-each-card))
 
   ;;; Jump to each card in the program, and then quit.
-  (define (jump-to-each-card &key (planner 'null))
+  (define (jump-to-each-card &key start (planner 'null))
     ;; Choose an appropriate test planner.
     (choose-test-planner planner)
 
@@ -158,7 +166,7 @@
         (maybe-intercept-jump)))
 
     ;; We want to visit the cards in backwards order to help flush out bugs.
-    (set! *cards-left-to-jump-to* (reverse (all-cards)))
+    (set! *cards-left-to-jump-to* (begin-with start (reverse (all-cards))))
     (continue-jumping-to-each-card))
 
   )
