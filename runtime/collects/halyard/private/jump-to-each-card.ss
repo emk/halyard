@@ -51,6 +51,19 @@
   (define (all-cards)
     (all-cards-in (static-root-node)))
 
+  ;; What %test-planner% class will we be using?
+  (define *test-planner-class* #f)
+
+  ;; Given a symbol specify the type of test to run, set up our
+  ;; *test-planner-class*.
+  (define (choose-test-planner type)
+    (set! *test-planner-class*
+          (case type
+            [[null] %null-test-planner%]
+            [[test] %shallow-test-planner%]
+            [else (error (cat "Unknown test planner type: " type))]))
+    (command-line-message (cat "Type: " type " Planner: " *test-planner-class*)))
+
   ;; We create a test planner for each card, and let it decide how to
   ;; handle any card-specific testing.
   (define *test-planner* #f)
@@ -111,7 +124,7 @@
   (define (continue-running-test-actions)
     ;; If we don't have a test planner for this card yet, create one.
     (unless *test-planner*
-      (set! *test-planner* (%shallow-test-planner% .new)))
+      (set! *test-planner* (*test-planner-class* .new)))
 
     ;; Run test actions for as long as we can.  This may trigger a JUMP at
     ;; any point.  If a JUMP occurs, then we should eventually make it back
@@ -129,7 +142,10 @@
     (continue-jumping-to-each-card))
 
   ;;; Jump to each card in the program, and then quit.
-  (define (jump-to-each-card)
+  (define (jump-to-each-card &key (planner 'null))
+    ;; Choose an appropriate test planner.
+    (choose-test-planner planner)
+
     ;; When we reach the end of a card body, we want to move on to the next
     ;; card automatically.
     (hook-add-function! *card-body-finished-hook* 'jump-to-each-card
