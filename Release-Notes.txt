@@ -1,3 +1,11 @@
+0.5.28-gibbon3 - 10 March 2009
+
+We're currently running Electric Gibbon heavily against in-house projects.
+Here's a small bug fix to make it stop clicking on invisible buttons.
+
+Eric Kidd (1):
+      eg: Don't click on elements with :shown? #f
+
 0.5.28-gibbon2 - 5 March 2009
 
 This release changes the interface for invoking jump_each:
