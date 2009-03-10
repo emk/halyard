@@ -245,7 +245,7 @@
     ;; TODO - We don't generate any test actions if mouse clicks aren't
     ;; allowed.  We can find a better way to do this.
     (def (test-actions)
-      (if (and (.wants-cursor?) (.enabled?))
+      (if (and (.shown?) (.wants-cursor?) (.enabled?))
         (super)
         '()))
     (test-action click (.click)))
@@ -254,7 +254,7 @@
     ;; TODO - We don't generate any test actions if mouse clicks aren't
     ;; allowed.  We can find a better way to do this.
     (def (test-actions)
-      (if (.wants-cursor?)
+      (if (and (.shown?) (.wants-cursor?))
         (super)
         '()))
     (test-action click (.click)))

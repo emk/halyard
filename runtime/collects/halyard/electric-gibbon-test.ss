@@ -146,6 +146,7 @@
     ;; cases actually attempt to run everything.
     (elem do-not-click-1 (%do-not-click-button% :enabled? #f))
     (elem do-not-click-2 (%do-not-click-button% :skip-test-actions? #t))
+    (elem do-not-click-3 (%do-not-click-button% :shown? #f))
     )
 
   (define-class %shallow-test-planner-test% (%element-test-case%)
