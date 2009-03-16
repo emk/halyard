@@ -132,6 +132,8 @@
   (define-class %test-action-set% (%custom-element%)
     (value bounds (rect 0 0 100 20))
     (attr action-mask 0 :writable? #t)
+    (def (supports-user-interaction?)
+      #t)
     (def (set-bit! n)
       (define new-mask (arithmetic-shift 1 n))
       (assert-equals 0 (bitwise-and (.action-mask) new-mask))

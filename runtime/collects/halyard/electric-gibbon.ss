@@ -124,7 +124,8 @@
 
   (with-instance %custom-element%
     (def (supports-user-interaction?)
-      (and (super) (.wants-cursor?)))
+      ;; .wants-cursor? can also be 'auto, so be careful.
+      (and (super) (eq? (.wants-cursor?) #t)))
     )
 
   (with-instance %basic-button%
@@ -265,10 +266,20 @@
   ;;  Standard test actions
   ;;=======================================================================
 
-  (with-instance %basic-button%
-    (test-action click (.click)))
+  (define (element-center elem)
+    (local->card elem (shape-center (elem .shape))))
 
-  (with-instance %clickable-zone%
-    (test-action click (.click)))
+  (with-instance %custom-element%
+    (test-action hover
+      (.mouse-enter (%mouse-event% .new :position (element-center self)))
+      (.mouse-leave (%mouse-event% .new :position (point 0 0))))
+
+    (test-action click
+      (define center (element-center self))
+      (.mouse-enter (%mouse-event% .new :position center))
+      (.mouse-down (%mouse-event% .new :position center))
+      (.mouse-up (%mouse-event% .new :position center))
+      (.mouse-leave (%mouse-event% .new :position (point 0 0))))
+    )
 
   )
