@@ -28,6 +28,7 @@
            "private/util-test.ss"
            "private/nodes-test.ss"
            "private/paths-test.ss"
+           "private/events-test.ss"
            "updater-test.ss"
            "state-db-test.ss"
            "data-file-test.ss"
