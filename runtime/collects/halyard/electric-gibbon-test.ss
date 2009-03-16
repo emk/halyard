@@ -54,6 +54,7 @@
     ;; We should be able to recursively walk our child element test
     ;; actions.
     (elem child (%custom-element% :bounds (rect 0 0 10 10))
+      (value wants-cursor? #t)
       (attr clicked? #f :writable? #t)
       (def (child-click)
         (set! (.clicked?) #t))

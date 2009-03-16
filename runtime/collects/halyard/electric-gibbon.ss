@@ -102,11 +102,35 @@
     )
 
   (with-instance %element%
+    ;;; Does this element allow any kind of interaction with the user?  If
+    ;;; not, we won't generate any test actions.
+    (def (supports-user-interaction?)
+      (.shown?))
+
+    (def (test-actions)
+      (if (.supports-user-interaction?)
+        (super)
+        '()))
+     
+    ;;; Set this attribute to recursively skip all test actions for this
+    ;;; element and its children.
     (attr skip-test-actions? #f)
+
     (def (all-test-actions)
       (if (.skip-test-actions?)
         '()
         (super)))
+    )
+
+  (with-instance %custom-element%
+    (def (supports-user-interaction?)
+      (and (super) (.wants-cursor?)))
+    )
+
+  (with-instance %basic-button%
+    (def (supports-user-interaction?)
+      ;; No point in test buttons until we can actually enable them.
+      (and (super) (.enabled?)))
     )
 
   (with-instance %group-member%
@@ -242,21 +266,9 @@
   ;;=======================================================================
 
   (with-instance %basic-button%
-    ;; TODO - We don't generate any test actions if mouse clicks aren't
-    ;; allowed.  We can find a better way to do this.
-    (def (test-actions)
-      (if (and (.shown?) (.wants-cursor?) (.enabled?))
-        (super)
-        '()))
     (test-action click (.click)))
 
   (with-instance %clickable-zone%
-    ;; TODO - We don't generate any test actions if mouse clicks aren't
-    ;; allowed.  We can find a better way to do this.
-    (def (test-actions)
-      (if (and (.shown?) (.wants-cursor?))
-        (super)
-        '()))
     (test-action click (.click)))
 
   )
