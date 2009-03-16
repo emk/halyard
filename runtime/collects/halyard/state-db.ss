@@ -22,6 +22,7 @@
 
 (module state-db (lib "halyard.ss" "halyard")
   (require (lib "kernel.ss" "halyard/private"))
+  (require (lib "events.ss" "halyard/private"))
 
 
   ;;;======================================================================

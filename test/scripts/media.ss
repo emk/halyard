@@ -36,7 +36,7 @@
     ;; all regular events), so we can intercept them at the card level and
     ;; redirect them to a location of our choice.
     (def (media-caption event)
-      (set! ((.caption) .text) (event-caption event))))
+      (set! ((.caption) .text) (event .caption))))
 
   ;;; A card which displays a single movie.
   (define-class %movie-card% (%captioned-card%)
@@ -79,7 +79,7 @@
                        $caption-style ""))
     
     (def (media-caption event)
-      (set! ((.caption) .text) (event-caption event)))
+      (set! ((.caption) .text) (event .caption)))
     )
 
   (group /media)
@@ -246,7 +246,7 @@
       ((.stream) .set-channel-volume! (.channel) (box-count->volume n)))
 
     (def (mouse-down event)
-      (define p (event-position event))
+      (define p (event .position))
       (for [n 0 (< n box-count) (+ n 1)]
         (when (point-in-shape? p (offset-by-point (box-rect n) (.at)))
           (.do-set-volume n))))
@@ -273,7 +273,7 @@
          :text ""))
     
     (def (media-caption event)
-      (set! (.caption.text) (event-caption event)))
+      (set! (.caption.text) (event .caption)))
     )
 
   (group /media/audiostream)
@@ -370,7 +370,7 @@
                  50.0 "ludlum/lud-mod14c-50_0mRph.ogg")))
     
     (def (idle)
-      ;;(define loc (event-position event))
+      ;;(define loc (event .position))
       (define loc (mouse-position))
       ;; Manually cancelling out the sqrt with the (* dist dist)
       (define dist-squared (+ (* (point-x loc) (point-x loc))

@@ -26,82 +26,65 @@
   (require (lib "util.ss" "mizzen"))
   (require (lib "util.ss" "halyard/private"))
 
-  ;; Functions intended solely for use by kernel.ss.
-  (provide dispatch-event-to-current-group-member)
+  ;; Functions intended solely for use by kernel.ss and other internal
+  ;; parts of Halyard.
+  (provide dispatch-event-to-current-group-member
+           make-node-event-dispatcher)
 
-  ;; TODO - Port event classes from Swindle to ruby-object.ss.
-  (provide <event> event? event-stale?
-           mark-event-as-not-handled!
-           <vetoable-event> veto-event! event-vetoed?
-           <update-ui-event> update-ui-event? event-command
-           <char-event> char-event? event-character event-modifiers
-           event-modifiers-and-character
-           <mouse-event> mouse-event? event-position event-double-click?
-           <url-event> url-event? event-url
-           <text-event> text-event? event-text
-           <browser-navigate-event> browser-navigate-event?
-           <progress-changed-event> event-progress-done? event-progress-value
-           make-node-event-dispatcher ; semi-private
-           <media-event> <media-finished-event>
-           <media-caption-event> event-caption
-           )
+  (provide %event% %update-ui-event% %char-event%
+           %mouse-event% %url-event% %text-event% %browser-navigate-event%
+           %progress-changed-event% %media-caption-event%)
 
-  (defclass <event> ()
-    (handled? :accessor event-handled? :initvalue #t)
-    (stale?   :accessor event-stale?   :initvalue #f))
+  (define-class %event% ()
+    ;; Do not write to either of these fields directly.
+    (attr handled? #t :type <boolean> :writable? #t)
+    (attr stale? #f :writable? #t) ; The type of this attribute is weird.
 
-  (defclass <vetoable-event> (<event>)
-    (vetoed? :accessor event-vetoed? :initvalue #f))
+    (def (vetoed?)
+      #f)
+    (def (mark-as-not-handled!)
+      (set! (.handled?) #f))
+    )
 
-  (defclass <update-ui-event> (<event>)
-    (command :accessor event-command))
+  (define (add-event-veto-mixin! klass)
+    (with-instance klass
+      (def (vetoed?)
+        (if (has-slot? 'vetoed?)
+          (slot 'vetoed?)
+          #f))
+      (def (veto!)
+        (set! (slot 'vetoed?) #t))))
 
-  (defclass <char-event> (<event>)
-    (character :accessor event-character)
-    (modifiers :accessor event-modifiers))
+  (define-class %update-ui-event% (%event%)
+    (attr command :type <symbol>))
 
-  (defclass <mouse-event> (<event>)
-    (position :accessor event-position)
-    (double-click? :accessor event-double-click? :initvalue #f))
+  (define-class %char-event% (%event%)
+    (attr character :type <char>)
+    (attr modifiers '() :type <list>)
+    (def (modifiers-and-character)
+      (append (.modifiers) (list (.character)))))
 
-  (defclass <edit-box-event> (<event>))
+  (define-class %mouse-event% (%event%)
+    (attr position :type <point>)
+    (attr double-click? #f :type <boolean>))
 
-  (defclass <url-event> (<event>)
-    (url :accessor event-url))
+  (define-class %url-event% (%event%)
+    (attr url :type <string>))
 
-  (defclass <text-event> (<event>)
-    (text :accessor event-text))
+  (define-class %text-event% (%event%)
+    (attr text :type <string>))
 
-  (defclass <browser-navigate-event> (<url-event> <vetoable-event>))
+  (define-class %browser-navigate-event% (%url-event%)
+    (add-event-veto-mixin! self))
 
-  (defclass <progress-changed-event> (<event>)
-    (done? :accessor event-progress-done?)
-    ;; value is 0.0 to 1.0, inclusive.
-    (value :accessor event-progress-value))
+  (define-class %progress-changed-event% (%event%)
+    ;;; Value is 0.0 to 1.0, inclusive.
+    (attr value :type <number>)
+    (attr done? (= (.value) 1.0) :type <boolean>))
 
-  (defclass <media-event> (<event>))
-  (defclass <media-finished-event> (<media-event>))
-  (defclass <media-caption-event> (<media-event>)
-    (caption :accessor event-caption))
+  (define-class %media-caption-event% (%event%)
+    (attr caption :type <string>))
 
-  (defclass <cursor-event> (<event>))
-
-  (define (veto-event! event)
-    (set! (event-vetoed? event) #t))
-
-  ;; A local helper.
-  (defgeneric (was-vetoed? (event <event>)))
-  (defmethod (was-vetoed? (event <event>))
-    #f)
-  (defmethod (was-vetoed? (event <vetoable-event>))
-    (event-vetoed? event))
-
-  (define (mark-event-as-not-handled! event)
-    (set! (event-handled? event) #f))
-  
-  (define (event-modifiers-and-character event)
-    (append (event-modifiers event) (list (event-character event))))
-  
   ;; TODO - should this be moved into nodes.ss and made public?
   (define (for-each-active-node func)
     ;; Walk up our hierarchy of groups and sequences.
@@ -186,7 +169,7 @@
         (foreach [name names]
           (.always-propagate name
             :if-not-handled (method (event)
-                              (mark-event-as-not-handled! event)))))
+                              (event .mark-as-not-handled!)))))
         
       )
 
@@ -233,53 +216,53 @@
       (define event
         (case name
           [[update-ui]
-           (make <update-ui-event> :command (car args))]
+           (%update-ui-event% .new :command (car args))]
           [[char]
-           (make <char-event>
+           (%char-event% .new
              :character (string-ref (car args) 0)
              :modifiers (cadr args)
              :stale? (caddr args))]
           [[mouse-down]
-           (make <mouse-event>
+           (%mouse-event% .new
              :position (point (car args) (cadr args))
              :double-click? (caddr args)
              :stale? (cadddr args))]
           [[mouse-up mouse-enter mouse-leave mouse-moved]
-           (make <mouse-event>
+           (%mouse-event% .new
              :position (point (car args) (cadr args))
              :stale? (cadr args))]
           [[text-changed text-enter]
-           (make <edit-box-event>)]
+           (%event% .new)]
           [[browser-navigate]
-           (make <browser-navigate-event> :url (car args))]
+           (%browser-navigate-event% .new :url (car args))]
           [[browser-page-changed]
-           (make <url-event> :url (car args))]
+           (%url-event% .new :url (car args))]
           [[browser-title-changed]
-           (make <text-event> :text (car args))]
+           (%text-event% .new :text (car args))]
           [[status-text-changed]
-           (make <text-event> :text (car args))]
+           (%text-event% .new :text (car args))]
           [[progress-changed]
-           (make <progress-changed-event>
+           (%progress-changed-event% .new
              :done? (car args)
              :value (cadr args))]
           [[media-finished]
-           (make <media-finished-event>)]
+           (%event% .new)]
           [[media-local-error media-network-error
                               media-network-timeout playback-timer]
-           (make <media-event>)]
+           (%event% .new)]
           [[media-caption]
-           (make <media-caption-event> :caption (car args))]
+           (%media-caption-event% .new :caption (car args))]
           [[cursor-moved]
-           (make <mouse-event>
+           (%mouse-event% .new
              :position (point (car args) (cadr args))
              :stale? (cadr args))]
           [[cursor-shown cursor-hidden]
-           (make <cursor-event>)]
+           (%event% .new)]
           [else
            (report-error (cat "Unsupported event type: " name))]))
       (send self name event)
-      (set! (*engine* .event-vetoed?) (was-vetoed? event))
-      (set! (*engine* .event-handled?) (event-handled? event)))
+      (set! (*engine* .event-vetoed?) (event .vetoed?))
+      (set! (*engine* .event-handled?) (event .handled?)))
     )
 
   (define (node-or-elements-have-expensive-handlers? node)

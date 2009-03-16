@@ -82,7 +82,9 @@
   (provide (all-from (lib "util.ss" "halyard/private")))
 
   (require (lib "events.ss" "halyard/private"))
-  (provide (all-from (lib "events.ss" "halyard/private")))
+  (provide (all-from-except (lib "events.ss" "halyard/private")
+                            dispatch-event-to-current-group-member
+                            make-node-event-dispatcher))
 
   (require (lib "shapes.ss" "halyard/private"))
   (provide (all-from (lib "shapes.ss" "halyard/private")))

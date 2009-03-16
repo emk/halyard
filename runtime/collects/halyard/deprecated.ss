@@ -39,4 +39,55 @@
   (define (debug-caution msg)
     (%call-prim 'Log 'Debug msg 'warning))
 
+  ;; Backwards compatibility wrappers for old Swindle-based event classes.
+  (provide <event> event? event-stale?
+           mark-event-as-not-handled!
+           veto-event! event-vetoed?
+           <update-ui-event> update-ui-event? event-command
+           <char-event> char-event? event-character event-modifiers
+           event-modifiers-and-character
+           <mouse-event> mouse-event? event-position event-double-click?
+           <url-event> url-event? event-url
+           <text-event> text-event? event-text
+           <browser-navigate-event> browser-navigate-event?
+           <progress-changed-event> event-progress-done? event-progress-value
+           <media-event> <media-finished-event>
+           <media-caption-event> event-caption)
+
+  (define <event> %event%)
+  (define (event? e) (e .instance-of? %event%))
+  (define (event-stale? e) (e .stale?))
+  (define (mark-event-as-not-handled! e) (e .mark-as-not-handled!))
+  (define (veto-event! e) (e .veto!))
+  (define (event-vetoed? e) (e .vetoed?))
+  (define <update-ui-event> %update-ui-event%)
+  (define (update-ui-event? e) (e .instance-of? %update-ui-event%))
+  (define (event-command e) (e .command))
+  (define <char-event> %char-event%)
+  (define (char-event? e) (e .instance-of? %char-event%))
+  (define (event-character e) (e .character))
+  (define (event-modifiers e) (e .modifiers))
+  (define (event-modifiers-and-character e) (e .modifiers-and-character))
+  (define <mouse-event> %mouse-event%)
+  (define (mouse-event? e) (e .instance-of? %mouse-event%))
+  (define (event-position e) (e .position))
+  (define (event-double-click? e) (e .double-click?))
+  (define <url-event> %url-event%)
+  (define (url-event? e) (e .instance-of? %url-event%))
+  (define (event-url e) (e .url))
+  (define <text-event> %text-event%)
+  (define (text-event? e) (e .instance-of? %text-event%))
+  (define (event-text e) (e .text))
+  (define <browser-navigate-event> %browser-navigate-event%)
+  (define (browser-navigate-event? e)
+    (e .instance-of? %browser-navigate-event%))
+  (define <progress-changed-event> %progress-changed-event%)
+  (define (event-progress-done? e) (e .done?))
+  (define (event-progress-value e) (e .value))
+  (define <media-event> %event%)
+  (define <media-finished-event> %event%)
+  (define <media-caption-event> %media-caption-event%)
+  (define (event-caption e) (e .caption))
+
+
   )

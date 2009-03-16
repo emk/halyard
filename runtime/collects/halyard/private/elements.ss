@@ -29,6 +29,7 @@
 (module elements (lib "mizzen.ss" "mizzen")
   (require (lib "kernel.ss" "halyard/private"))
   (require (lib "api.ss" "halyard/private"))
+  (require (lib "events.ss" "halyard/private"))
 
   (require (lib "after-updating.ss" "halyard/private"))
   (provide (all-from (lib "after-updating.ss" "halyard/private")))
@@ -737,7 +738,7 @@
     ;;; automatically by the engine whenever it is safe to do so.
     (def (cursor-moved event)
       (set! (.at)
-            (point-difference (event-position event) (.hotspot))))
+            (point-difference (event .position) (.hotspot))))
 
     ;;; Called when the cursor is shown on the screen.
     (def (cursor-shown event)
@@ -957,7 +958,7 @@
       ;; We don't update the UI until very late in the processing, giving
       ;; everybody's SETUP a chance to complete.
       (define (update-command command)
-        (.update-ui (make <update-ui-event> :command command)))
+        (.update-ui (%update-ui-event% .new :command command)))
       (update-command 'back)
       (update-command 'forward)
       (update-command 'reload)
@@ -1006,7 +1007,7 @@
         (set! (slot 'text) value)))
     
     (def (char event)
-      (define pressed (event-modifiers-and-character event))
+      (define pressed (event .modifiers-and-character))
       (cond
         [(and (equal? '(#\tab) pressed)
               (.maybe-navigate-controls #t))
@@ -1020,7 +1021,7 @@
          (super)]
         [else
          ;; Let wxWidgets decide what to do with this character event.        
-         (mark-event-as-not-handled! event)]))
+         (event .mark-as-not-handled!)]))
     
     ;;; Do we want to propagate this character event to the card, sequence,
     ;;; etc., for further processing (say, a Control-I command that jumps to

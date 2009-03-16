@@ -47,8 +47,7 @@
   (with-instance %root-node%
     (def (char event)
       (cond
-       [(equal? (event-modifiers-and-character event) 
-                '(alt #\i))
+       [(equal? (event .modifiers-and-character) '(alt #\i))
         (jump /index)]
        [else (super)])))
   

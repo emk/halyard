@@ -51,8 +51,8 @@
   
   (card /quake2/demo1/bullets ()
     (def (char event)
-      (if (and (equal? (event-character event) #\Return)
-               (null? (event-modifiers event)))
+      (if (and (equal? (event .character) #\Return)
+               (null? (event .modifiers)))
         (jump @run)
         (super)))
     

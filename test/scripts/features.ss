@@ -162,28 +162,27 @@
                           (color #x0 #x0 #x80)))))
     
     (def (browser-navigate event)
-      (if (equal? (event-url event) "http://www.nowhere.org/")
+      (if (equal? (event .url) "http://www.nowhere.org/")
         (begin
-          (report-error (cat "Access to " (event-url event)
+          (report-error (cat "Access to " (event .url)
                              " is restricted.  Sorry!"))
-          (veto-event! event))
+          (event .veto!))
         (super)))
     
     (def (browser-page-changed event)
-      (.draw-url (event-url event)))
+      (.draw-url (event .url)))
     
     (def (browser-title-changed event)
-      (.draw-title (event-text event)))
+      (.draw-title (event .text)))
     
     (def (status-text-changed event)
-      (.draw-status-text (event-text event)))
+      (.draw-status-text (event .text)))
     
     (def (progress-changed event)
-      (.draw-progress-bar (event-progress-done? event)
-                          (event-progress-value event)))
+      (.draw-progress-bar (event .done?) (event .value)))
     
     (def (update-ui event)
-      (define command (event-command event))
+      (define command (event .command))
       (case command
         [[back forward reload stop]
          (set! ((@* (symbol->string command)) .enabled?)
@@ -512,7 +511,7 @@
       
     (def (mouse-moved event)
       (define offset (graphic-center-offset "mask/mask.png"))
-      (define at (offset-by-point (event-position event) offset))
+      (define at (offset-by-point (event .position) offset))
       (set! ((.light) .at) at)
       (refresh))
     )
@@ -529,7 +528,7 @@
     
     (def (mouse-moved event)
       (define offset (graphic-center-offset "mask/eraser.png"))
-      (define at (offset-by-point (event-position event) offset))
+      (define at (offset-by-point (event .position) offset))
       (with-dc self
         (mask at "mask/eraser.png"))))
 
@@ -749,8 +748,8 @@
     (elem zone (%state-db-zone%))
 
     (def (char event)
-      (let ((c (event-character event))
-            (mods (event-modifiers event)))
+      (let ((c (event .character))
+            (mods (event .modifiers)))
         (cond
          [(and (char-numeric? c) (equal? mods '(alt)))
           ;; set height?
@@ -848,7 +847,7 @@
     (define $index-key #\space)
 
     (def (char event)
-      (let [[c (event-character event)]]
+      (let [[c (event .character)]]
         (cond [(equals? c $index-key)
                (set! (state-db '/animated-overlay/index) (.get-index))]
               [(equals? c $up-key)

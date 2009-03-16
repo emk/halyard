@@ -68,7 +68,7 @@
         new-point))
 
     (def (mouse-down event)
-      (define p (event-position event))
+      (define p (event .position))
       (define bounds (offset-by-point (.shape) (.at)))
       (define at (point (rect-left bounds) 
                         (rect-top bounds)))
@@ -78,7 +78,7 @@
       (.drag-started event))
     (def (mouse-moved event)
       (when (mouse-grabbed-by? self)
-        (set! (.at) (.%apply-drag-offset (event-position event)))))
+        (set! (.at) (.%apply-drag-offset (event .position)))))
     (def (mouse-up event)
       (when (mouse-grabbed-by? self)
         (ungrab-mouse self)
@@ -128,7 +128,7 @@
 
     (def (drag-finished event)
       (super)
-      (define p (event-position event))
+      (define p (event .position))
       (let recurse [[targets *drag-targets*]]
         (cond
          [(null? targets)
