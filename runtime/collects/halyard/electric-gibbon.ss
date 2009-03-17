@@ -158,13 +158,30 @@
   ;;; new %test-planner% subclasses are written, and as old ones get
   ;;; more intelligent.
   (define-class %test-planner% ()
+    ;;; Return the test action to run next, or #f if no test actions
+    ;;; are available at the current point in time.  Note that this
+    ;;; function has "iterator" semantics--once an action is returned,
+    ;;; it should be performed by the caller, and it should not be
+    ;;; returned again by next-test-action.
+    (def (next-test-action)
+      (error "Must override .next-test-action"))
+
     ;;; Run the next available test action, if one is available at the
     ;;; current point in time.  Note that this function may jump off the
     ;;; card at any point, or may temporarily return #f because the card
     ;;; has reached a dead-end with no more available actions, and must
     ;;; be restarted to continue.
     (def (run-next-test-action)
-      (error "Must override .run-next-test-action"))
+      (define action (.next-test-action))
+      (if action
+        (begin
+          ;; TODO - Temporarily print action names until we have code to
+          ;; intercept error messages.  See also jump-to-each-card, which
+          ;; has a similar use of COMMAND-LINE-MESSAGE.
+          (command-line-message (cat "  " (symbol->string (action .key))))
+          (action .run)
+          #t)
+        #f))
 
     ;;; Is this test planner completely done with the current card (and
     ;;; not merely done with the actions it can perform right now)?  Note
@@ -188,7 +205,7 @@
   ;;; %test-planner% objects without immediately breaking
   ;;; halyard:jump_each.
   (define-class %null-test-planner% (%test-planner%)
-    (def (run-next-test-action)
+    (def (next-test-action)
       #f)
     (def (done?)
       #t))
@@ -226,7 +243,7 @@
     ;;; Return the first available test action that we haven't already
     ;;; peformed, or #f if there's nothing left to do.  Note that this
     ;;; marks the action it returns as unavailable.
-    (def (%next-test-action)
+    (def (next-test-action)
       (define available (.%available))
       (let recurse [[candidates ((current-card) .all-test-actions)]]
         (cond
@@ -237,20 +254,6 @@
             action)]
          [else
           (recurse (cdr candidates))])))
-
-    ;;; Run the next available test action, if one is available.  Return
-    ;;; true iff an action was run.
-    (def (run-next-test-action)
-      (define action (.%next-test-action))
-      (if action
-        (begin
-          ;; TODO - Temporarily print action names until we have code to
-          ;; intercept error messages.  See also jump-to-each-card, which
-          ;; has a similar use of COMMAND-LINE-MESSAGE.
-          (command-line-message (cat "  " (symbol->string (action .key))))
-          (action .run)
-          #t)
-        #f))
 
     ;;; Have we performed all the test actions we wanted to perform?  The
     ;;; answer is based on our test plan, not on what actions are currently
