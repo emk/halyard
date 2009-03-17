@@ -25,7 +25,7 @@
   (require (lib "events.ss" "halyard/private"))
 
   (define-class %events-test% (%test-case%)
-    (test "%event> should have handled? and stale? flags"
+    (test "%event% should have handled? and stale? flags"
       (define e (%update-ui-event% .new :command 'foo))
       (e .mark-as-not-handled!) ; No way to test result.
       (assert-equals #f (e .stale?))

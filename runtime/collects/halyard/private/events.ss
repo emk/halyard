@@ -36,14 +36,23 @@
            %progress-changed-event% %media-caption-event%)
 
   (define-class %event% ()
-    ;; Do not write to either of these fields directly.
-    (attr handled? #t :type <boolean> :writable? #t)
-    (attr stale? #f :writable? #t) ; The type of this attribute is weird.
+    (attr %handled? #t :type <boolean> :writable? #t)
 
+    ;;; Whenever we finish processing an event, we mark any other queued
+    ;;; events (of certain types) as stale.  This allows callers to
+    ;;; optionally ignore events that may have been obsoleted by previous
+    ;;; events.  This is supposedly a boolean, but it may actually contain
+    ;;; some odd true values.
+    (attr stale? #f)
+
+    ;;; A few types of events can be vetoed, preventing the action
+    ;;; described by the event from actually occurring.
     (def (vetoed?)
       #f)
+
+    ;; It's not clear whether or not this should actually be public.
     (def (mark-as-not-handled!)
-      (set! (.handled?) #f))
+      (set! (.%handled?) #f))
     )
 
   (define (add-event-veto-mixin! klass)
@@ -52,6 +61,7 @@
         (if (has-slot? 'vetoed?)
           (slot 'vetoed?)
           #f))
+      ;;; Veto this event.
       (def (veto!)
         (set! (slot 'vetoed?) #t))))
 
@@ -61,6 +71,8 @@
   (define-class %char-event% (%event%)
     (attr character :type <char>)
     (attr modifiers '() :type <list>)
+    ;;; This is an easier-to-use version of .modifiers and .characters that
+    ;;; returns a single list.
     (def (modifiers-and-character)
       (append (.modifiers) (list (.character)))))
 
@@ -262,7 +274,7 @@
            (report-error (cat "Unsupported event type: " name))]))
       (send self name event)
       (set! (*engine* .event-vetoed?) (event .vetoed?))
-      (set! (*engine* .event-handled?) (event .handled?)))
+      (set! (*engine* .event-handled?) (event .%handled?)))
     )
 
   (define (node-or-elements-have-expensive-handlers? node)

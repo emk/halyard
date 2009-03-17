@@ -236,7 +236,7 @@
 
     ;; Change our default :wants-cursor? value from #f to the magic 'auto,
     ;; which is used in conjunction with some .define-method magic in
-    ;; nodes.ss to set .wants-cursor? to #t whenever a mouse handler is
+    ;; events.ss to set .wants-cursor? to #t whenever a mouse handler is
     ;; defined by one of our subclasses.
     (default wants-cursor? 'auto)
 
