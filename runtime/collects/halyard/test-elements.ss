@@ -60,6 +60,7 @@
     (value style $halyard-unit-style)
     (value text ((.test) .title))
     (value clickable-where-transparent? #t)
+    (value skip-test-actions? #t)
 
     (def (mouse-down event)
       (.propagate 'switch-test (.test-case) (.test))))
@@ -108,7 +109,8 @@
     (text show-interface-button
         ((point 100 140) $halyard-unit-style 
          "Show element interaction interface"
-         :clickable-where-transparent? #t)
+         :clickable-where-transparent? #t
+         :skip-test-actions? #t)
       (def (mouse-down event)
         ((.parent) .show-element-interaction-interface)))
 

@@ -69,7 +69,7 @@
     (set! *test-planner-class*
           (case type
             [[null] %null-test-planner%]
-            [[test] %shallow-test-planner%]
+            [[test] %deep-test-planner%]
             [else (error (cat "Unknown test planner type: " type))])))
 
   ;; We create a test planner for each card, and let it decide how to
@@ -130,8 +130,10 @@
   ;; then tries to run as many test actions as possible before it has to
   ;; jump to the card again.
   (define (continue-running-test-actions)
-    ;; If we don't have a test planner for this card yet, create one.
-    (unless *test-planner*
+    ;; If we already have a test planner for this card, restart it.  If we
+    ;; don't, create one.
+    (if *test-planner*
+      (*test-planner* .notify-card-restarted)
       (set! *test-planner* (*test-planner-class* .new)))
 
     ;; Run test actions for as long as we can.  This may trigger a JUMP at

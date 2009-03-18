@@ -23,6 +23,7 @@
 (module electric-gibbon (lib "mizzen.ss" "mizzen")
   (require (lib "api.ss" "halyard/private"))
   (require (lib "elements.ss" "halyard/private"))
+  (require (only (lib "1.ss" "srfi") find))
 
 
   ;;=======================================================================
@@ -158,6 +159,25 @@
   ;;; new %test-planner% subclasses are written, and as old ones get
   ;;; more intelligent.
   (define-class %test-planner% ()
+    ;;; The card which we're in charge of testing.
+    (attr card ((current-card) .static-node))
+
+    (def (initialize &rest keys)
+      (super)
+      (.notify-card-restarted))
+
+    ;;; What actions have been performed so far on the current visit to
+    ;;; this card?  Reset by .at-end-of-card-body.
+    (def (actions-taken)
+      (reverse (slot 'actions-taken)))
+
+    ;;; When running a %test-planner%, it may be necessary to periodically
+    ;;; restart the card.  When this becomes necessary, you must call
+    ;;; .notify-card-restarted after reach the end of the main card body,
+    ;;; and before running any test actions.
+    (def (notify-card-restarted)
+      (set! (slot 'actions-taken) '()))
+
     ;;; Return the test action to run next, or #f if no test actions
     ;;; are available at the current point in time.  Note that this
     ;;; function has "iterator" semantics--once an action is returned,
@@ -175,6 +195,8 @@
       (define action (.next-test-action))
       (if action
         (begin
+          (set! (slot 'actions-taken)
+                (cons (action .key) (slot 'actions-taken)))
           ;; TODO - Temporarily print action names until we have code to
           ;; intercept error messages.  See also jump-to-each-card, which
           ;; has a similar use of COMMAND-LINE-MESSAGE.
@@ -212,56 +234,109 @@
 
 
   ;;=======================================================================
-  ;;  Shallow test planner
+  ;;  Deep test planner
   ;;=======================================================================
 
-  (provide %shallow-test-planner%)
+  (provide %deep-test-planner%)
 
-  ;;; A %shallow-test-planner% attempts to run all test actions that
-  ;;; appeared on a card when the %shallow-test-planner% was created.  It
-  ;;; can't reach actions which only become available as the result of
-  ;;; choosing other actions, and it may get stuck if the available
-  ;;; actions on card aren't there the second time a card is visited.
-  ;;;
-  ;;; Right now, this class knows two tricks: It can survive the deletion
-  ;;; and recreation of elements, and it should never run an action that
-  ;;; has become unavailable.
-  (define-class %shallow-test-planner% (%test-planner%)
-    ;;; Remember what card we're associated with.
-    (attr card ((current-card) .static-node))
+  ;;; A %deep-test-planner% attempts to run all test actions that are
+  ;;; available at the end of a card body.  It keeps track of actions that
+  ;;; are only available after other actions are run, and it attempts to
+  ;;; find its way back to them.  It also tries to detect and report the
+  ;;; more obvious sorts of infinite loops, though it may still get stuck
+  ;;; in them.
+  (define-class %deep-test-planner% (%test-planner%)
+    ;; This table maps %test-action% .key values to either:
+    ;;  - #f if the action has been performed, and is no longer available
+    ;;  - A (possibly empty) list of actions which had already been
+    ;;    performed when this action first became visible.  This is used
+    ;;    to find test actions which we miss the first time through, and
+    ;;    have to go back for later.
+    (attr %uncompleted (make-hash-table))
 
-    (attr %available (make-hash-table))
     (def (initialize &rest keys)
       (super)
-      ;; For now, we only perform the test actions whose keys appear when
-      ;; we are initially constructed.  This helps prevent infinite loops.
-      ;; Eventually, we'll want to go deeper into a card.
-      (define available (.%available))
-      (foreach [action ((current-card) .all-test-actions)]
-        (hash-table-put! available (action .key) #t)))
+      ;; Build our table immediately so that we can call .done? before
+      ;; calling .next-test-action.
+      (.%update-uncompleted-actions ((current-card) .all-test-actions)))
+
+    ;; Given a list of actions, add any newly-visible actions to our
+    ;; .%uncompleted table.
+    (def (%update-uncompleted-actions actions)
+      (define uncompleted (.%uncompleted))
+      (define actions-taken (.actions-taken))
+      (foreach [action actions]
+        (define key (action .key))
+        (unless (hash-table-has-key? uncompleted key)
+          (unless (null? actions-taken)
+            (command-line-message (cat "    New: " key)))
+          (hash-table-put! uncompleted key actions-taken))))
+
+    ;; Given a list of actions that are currently available, filter out any
+    ;; that we've already completed.
+    (def (%available-actions)
+      (define actions ((current-card) .all-test-actions))
+      (define uncompleted (.%uncompleted))
+      (.%update-uncompleted-actions actions)
+      (filter (fn (action) (hash-table-get uncompleted (action .key) #f))
+              actions))
+
+    ;; Whenever we see an action for the first time, we record the current
+    ;; value of (.actions-taken), just in case we need to find our way back
+    ;; to that point in the card.  This function attempts to find a state
+    ;; that we previously missed, and replay whatever test actions allowed
+    ;; us to see it last time.
+    (def (%try-to-return-to-a-state-with-test-actions)
+      ;; Take our list of uncompleted test actions, and generate a list of
+      ;; non-'() states that still have a uncompleted test action.
+      (define states-with-test-actions
+        (filter (fn (v) (and v (not (null? v))))
+                (hash-table-map (.%uncompleted) (fn (k v) v))))
+      ;; If we've found some states to try, pick one and run test actions
+      ;; until we return to it.
+      (unless (null? states-with-test-actions)
+        ;; This choice is pretty arbitrary.  Can we do better?
+        (let [[goal-state (car states-with-test-actions)]]
+          ;; Using the saved action keys, replay our previous series of
+          ;; actions as best we can.
+          (let loop [[keys goal-state]]
+            (unless (null? keys)
+              (let* [[key (car keys)]
+                     [actions ((current-card) .all-test-actions)]
+                     [action (find (fn (action) (eq? key (action .key)))
+                                   actions)]]
+                (if action
+                  (begin
+                    (command-line-message (cat "  Rerun: " key))
+                    (action .run)
+                    (loop (cdr keys)))
+                  (warning (cat "Action " key
+                                " has mysteriously disappeared")))))))))
 
     ;;; Return the first available test action that we haven't already
-    ;;; peformed, or #f if there's nothing left to do.  Note that this
-    ;;; marks the action it returns as unavailable.
+    ;;; completed, or #f if there's nothing left to do.  Note that this
+    ;;; marks the action it returns as completed.
     (def (next-test-action)
-      (define available (.%available))
-      (let recurse [[candidates ((current-card) .all-test-actions)]]
-        (cond
-         [(null? candidates) #f]
-         [(hash-table-get available ((car candidates) .key) #f)
-          (let [[action (car candidates)]]
-            (hash-table-put! available (action .key) #f)
-            action)]
-         [else
-          (recurse (cdr candidates))])))
+      (define candidates (.%available-actions))
+      (when (and (null? candidates) (null? (.actions-taken)))
+        (.%try-to-return-to-a-state-with-test-actions)
+        (set! candidates (.%available-actions))
+        (unless (or (.done?) (not (null? candidates)))
+          (warning (cat "Can't find a way to perform a previously seen test "
+                        "action"))))
+      (if (null? candidates)
+        #f
+        (let [[action (car candidates)]]
+          (hash-table-put! (.%uncompleted) (action .key) #f)
+          action)))
 
     ;;; Have we performed all the test actions we wanted to perform?  The
     ;;; answer is based on our test plan, not on what actions are currently
-    ;;; available, because some actions may have become unavailable at the
+    ;;; uncompleted, because some actions may have become unavailable at the
     ;;; current time as the result of other actions being run.
     (def (done?)
       (not (ormap identity
-                  (hash-table-map (.%available) (fn (k v) v)))))
+                  (hash-table-map (.%uncompleted) (fn (k v) v)))))
     )
 
 

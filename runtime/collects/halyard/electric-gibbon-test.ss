@@ -152,16 +152,16 @@
     (elem do-not-click-3 (%do-not-click-button% :shown? #f))
     )
 
-  (define-class %shallow-test-planner-test% (%element-test-case%)
+  (define-class %deep-test-planner-basic-test% (%element-test-case%)
     (test "A test planner should run all test actions for current card."
       (define s (%test-action-set% .new))
-      (define p (%shallow-test-planner% .new))
+      (define p (%deep-test-planner% .new))
       (while (p .run-next-test-action)
         (void))
       (assert (s .done?)))
     (test "A test planner should be able to restart where it left off."
       (define s1 (%test-action-set% .new :name 's))
-      (define p (%shallow-test-planner% .new))
+      (define p (%deep-test-planner% .new))
       (p .run-next-test-action)
       (p .run-next-test-action)
       (assert (not (s1 .done?)))
@@ -169,19 +169,97 @@
       (delete-element s1)
       (assert (not (p .done?)))
       (define s2 (%test-action-set% .new :name 's :action-mask saved-mask))
+      (p .notify-card-restarted)
       (while (p .run-next-test-action)
         (void))
       (assert (s2 .done?))
       (assert (p .done?)))
     (test "A test planner should remember what card it was created on."
-      (define p (%shallow-test-planner% .new))
+      (define p (%deep-test-planner% .new))
       (assert-equals ((current-card) .static-node) (p .card)))
     )
+
+  (define-class %depedant-button% (%basic-button%)
+    (attr clicked? #f :type <boolean> :writable? #t)
+    (attr y)
+    (value at (point 0 (.y)))
+    (value shape (shape 100 20))
+    (def (draw) (void))
+    (def (click)
+      (set! (.enabled?) #f)
+      (set! (.clicked?) #t)))
+
+  ;; Button 1 enables button 2, which enables buttons 3a and 3b.  But 3a
+  ;; and 3b disable each other, so it's impossible to test all the
+  ;; buttons in one pass.
+  (define-class %depedant-buttons% (%custom-element%)
+    (value bounds (rect 0 0 100 100))
+
+    (elem button-1 (%depedant-button% :y 0)
+      (def (click)
+        (super)
+        (set! (.parent.button-2.enabled?) #t)))
+
+    (elem button-2 (%depedant-button% :y 20 :enabled? #f)
+      (def (click)
+        (super)
+        (set! (.parent.button-3a.enabled?) #t)
+        (set! (.parent.button-3b.enabled?) #t)))
+
+    (elem button-3a (%depedant-button% :y 40 :enabled? #f)
+      (def (click)
+        (super)
+        (set! (.parent.button-3b.enabled?) #f)))
+
+    (elem button-3b (%depedant-button% :y 60 :enabled? #f)
+      (def (click)
+        (super)
+        (set! (.parent.button-3a.enabled?) #f)))
+    )
+
+  ;; Exclusive logical or.
+  (define (xor a b)
+    (and (or a b)
+         (not (and a b))))
+    
+  (define-class %deep-test-planner-deep-test% (%element-test-case%)
+    (test "%deep-test-planner% should find actions hidden by other actions"
+      ;; First pass.
+      (define e (%depedant-buttons% .new :name 'buttons))
+      (define p (%deep-test-planner% .new))
+      (while (p .run-next-test-action)
+        (void))
+      (assert (e .button-1.clicked?))
+      (assert (e .button-2.clicked?))
+      (define button-3a-clicked-1st-time? (e .button-3a.clicked?))
+      (define button-3b-clicked-1st-time? (e .button-3b.clicked?))
+      (assert (xor button-3a-clicked-1st-time? button-3b-clicked-1st-time?))
+      (assert (not (p .done?)))
+
+      ;; Second pass.  We may need to do this several times if we choose
+      ;; a poor test plan.
+      (define button-3a-clicked-2nd-time? #f)
+      (define button-3b-clicked-2nd-time? #f)
+      (while (not (p .done?))
+        (delete-element e)
+        (set! e (%depedant-buttons% .new :name 'buttons))
+        (p .notify-card-restarted)
+        (while (p .run-next-test-action)
+          (void))
+        (set! button-3a-clicked-2nd-time?
+              (or button-3a-clicked-2nd-time? (e .button-3a.clicked?)))
+        (set! button-3b-clicked-2nd-time?
+              (or button-3b-clicked-2nd-time? (e .button-3b.clicked?))))
+      (assert (xor button-3a-clicked-2nd-time? button-3b-clicked-2nd-time?))
+      (assert (xor button-3a-clicked-1st-time? button-3a-clicked-2nd-time?))
+      (assert (xor button-3b-clicked-1st-time? button-3b-clicked-2nd-time?))
+      ))
 
   (card /tests/electric-gibbon
       (%element-test-suite%
        :tests (list %electric-gibbon-test%
                     %stable-element-name-test%
-                    %shallow-test-planner-test%)))
+                    %deep-test-planner-basic-test%
+                    %deep-test-planner-deep-test%)))
   
   )
