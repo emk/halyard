@@ -23,7 +23,7 @@
 (module electric-gibbon (lib "mizzen.ss" "mizzen")
   (require (lib "api.ss" "halyard/private"))
   (require (lib "elements.ss" "halyard/private"))
-  (require (only (lib "1.ss" "srfi") find))
+  (require (only (lib "search.ss" "srfi/1") find))
 
 
   ;;=======================================================================
