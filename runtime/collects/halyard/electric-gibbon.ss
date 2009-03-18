@@ -242,16 +242,17 @@
   ;;; A %deep-test-planner% attempts to run all test actions that are
   ;;; available at the end of a card body.  It keeps track of actions that
   ;;; are only available after other actions are run, and it attempts to
-  ;;; find its way back to them.  It also tries to detect and report the
-  ;;; more obvious sorts of infinite loops, though it may still get stuck
-  ;;; in them.
+  ;;; find its way back to them.  Worth noting: We haven't spent much time
+  ;;; thinking about possible infinite loops in this code, aside from one
+  ;;; case that it mentioned in the comments below.  We'll worry about
+  ;;; infinite loops when we encounter one in the wild.
   (define-class %deep-test-planner% (%test-planner%)
     ;; This table maps %test-action% .key values to either:
-    ;;  - #f if the action has been performed, and is no longer available
     ;;  - A (possibly empty) list of actions which had already been
     ;;    performed when this action first became visible.  This is used
     ;;    to find test actions which we miss the first time through, and
     ;;    have to go back for later.
+    ;;  - #f if the action has been performed, and is no longer available.
     (attr %uncompleted (make-hash-table))
 
     (def (initialize &rest keys)
@@ -259,6 +260,46 @@
       ;; Build our table immediately so that we can call .done? before
       ;; calling .next-test-action.
       (.%update-uncompleted-actions ((current-card) .all-test-actions)))
+
+    ;;; Have we performed all the test actions we wanted to perform?  The
+    ;;; answer is based on our test plan, not on what actions are currently
+    ;;; uncompleted, because some actions may have become unavailable at the
+    ;;; current time as the result of other actions being run.
+    (def (done?)
+      (not (ormap identity (hash-table-map (.%uncompleted) (fn (k v) v)))))
+
+    ;;; Return the first available test action that we haven't already
+    ;;; completed, or #f if there's nothing left to do.
+    (def (next-test-action)
+      (define candidates (.%available-actions))
+
+      ;; If we have no available actions, and we're at the start of the
+      ;; card, it may be possible for us to retrace some earlier set of
+      ;; actions to reveal hidden actions that we missed in an earlier pass.
+      (when (and (null? candidates) (null? (.actions-taken)))
+        (.%try-to-return-to-a-state-with-test-actions)
+        (set! candidates (.%available-actions))
+        (when (and (null? candidates) (not (.done?)))
+          ;; Avoid an infinite loop.
+          (fatal-error (cat "Can't find a way to perform a previously seen "
+                            "test action"))))
+
+      ;; If don't have a candidate, return #f.  If we do have a candidate,
+      ;; mark it as completed and return it.
+      (if (null? candidates)
+        #f
+        (let [[action (car candidates)]]
+          (hash-table-put! (.%uncompleted) (action .key) #f)
+          action)))
+
+    ;; Given a list of actions that are currently available, filter out any
+    ;; that we've already completed.
+    (def (%available-actions)
+      (define actions ((current-card) .all-test-actions))
+      (define uncompleted (.%uncompleted))
+      (.%update-uncompleted-actions actions)
+      (filter (fn (action) (hash-table-get uncompleted (action .key) #f))
+              actions))
 
     ;; Given a list of actions, add any newly-visible actions to our
     ;; .%uncompleted table.
@@ -272,20 +313,12 @@
             (command-line-message (cat "    New: " key)))
           (hash-table-put! uncompleted key actions-taken))))
 
-    ;; Given a list of actions that are currently available, filter out any
-    ;; that we've already completed.
-    (def (%available-actions)
-      (define actions ((current-card) .all-test-actions))
-      (define uncompleted (.%uncompleted))
-      (.%update-uncompleted-actions actions)
-      (filter (fn (action) (hash-table-get uncompleted (action .key) #f))
-              actions))
-
     ;; Whenever we see an action for the first time, we record the current
     ;; value of (.actions-taken), just in case we need to find our way back
     ;; to that point in the card.  This function attempts to find a state
     ;; that we previously missed, and replay whatever test actions allowed
-    ;; us to see it last time.
+    ;; us to see it last time.  Note that this is a bit of an odd
+    ;; code-path, and it won't be triggered at all for many simple cards.
     (def (%try-to-return-to-a-state-with-test-actions)
       ;; Take our list of uncompleted test actions, and generate a list of
       ;; non-'() states that still have a uncompleted test action.
@@ -313,30 +346,6 @@
                   (warning (cat "Action " key
                                 " has mysteriously disappeared")))))))))
 
-    ;;; Return the first available test action that we haven't already
-    ;;; completed, or #f if there's nothing left to do.  Note that this
-    ;;; marks the action it returns as completed.
-    (def (next-test-action)
-      (define candidates (.%available-actions))
-      (when (and (null? candidates) (null? (.actions-taken)))
-        (.%try-to-return-to-a-state-with-test-actions)
-        (set! candidates (.%available-actions))
-        (unless (or (.done?) (not (null? candidates)))
-          (warning (cat "Can't find a way to perform a previously seen test "
-                        "action"))))
-      (if (null? candidates)
-        #f
-        (let [[action (car candidates)]]
-          (hash-table-put! (.%uncompleted) (action .key) #f)
-          action)))
-
-    ;;; Have we performed all the test actions we wanted to perform?  The
-    ;;; answer is based on our test plan, not on what actions are currently
-    ;;; uncompleted, because some actions may have become unavailable at the
-    ;;; current time as the result of other actions being run.
-    (def (done?)
-      (not (ormap identity
-                  (hash-table-map (.%uncompleted) (fn (k v) v)))))
     )
 
 

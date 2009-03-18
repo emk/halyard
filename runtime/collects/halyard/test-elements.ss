@@ -60,6 +60,12 @@
     (value style $halyard-unit-style)
     (value text ((.test) .title))
     (value clickable-where-transparent? #t)
+    ;; A lot of the code in this file behaves very badly when we're running
+    ;; the unit tests for Electric Gibbon, which sees these buttons during
+    ;; the test cases, and tries to "click" on them.  But since this file is
+    ;; a kludge, we're not currently interested in finding out why these
+    ;; buttons are broken in the middle of test cases.  So just skip them
+    ;; when running Electric Gibbon.
     (value skip-test-actions? #t)
 
     (def (mouse-down event)
@@ -110,6 +116,8 @@
         ((point 100 140) $halyard-unit-style 
          "Show element interaction interface"
          :clickable-where-transparent? #t
+         ;; See the comment on the other use of :skip-test-actions? in
+         ;; this file.
          :skip-test-actions? #t)
       (def (mouse-down event)
         ((.parent) .show-element-interaction-interface)))
