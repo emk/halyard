@@ -348,12 +348,17 @@
     (local->card elem (shape-center (elem .shape))))
 
   (with-instance %custom-element%
-    (test-action hover
-      (.mouse-enter (%mouse-event% .new :position (element-center self)))
-      (.mouse-leave (%mouse-event% .new :position (point 0 0))))
-
     (test-action click
       (define center (element-center self))
+      ;; Do a quick mouse-enter/mouse-leave pair before actually clicking
+      ;; on the element, just to make sure we actually test mouse-leave for
+      ;; elements which perform a non-local exit.  This used to be a
+      ;; separate test action, but that typically caused us to return
+      ;; several more times to given state when running
+      ;; %deep-test-planner%.
+      (.mouse-enter (%mouse-event% .new :position center))
+      (.mouse-leave (%mouse-event% .new :position (point 0 0)))
+      ;; Simulate a mouse click.
       (.mouse-enter (%mouse-event% .new :position center))
       (.mouse-down (%mouse-event% .new :position center))
       (.mouse-up (%mouse-event% .new :position center))
