@@ -34,7 +34,7 @@
 
 // This string may optionally contain something like "-pre1" or "-rc2".
 // This will be appended to the regular version number.
-#define VERSION_EXTRA              "-gibbon3"
+#define VERSION_EXTRA              "-gibbon4"
 
 #define SHORT_NAME          "Halyard"
 #define VERSION_STRING \

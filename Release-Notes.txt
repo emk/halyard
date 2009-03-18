@@ -1,3 +1,23 @@
+0.5.28-gibbon4 - 18 March 2009
+
+Electric Gibbon can now update its test plan to include actions that
+only become available once other actions have been performed.  This
+required porting our event API from Swindle to Mizzen (although we do
+have a reasonably good backwards compatibility layer).
+
+Eric Kidd (11):
+      eg: Add unit tests for Swindle-based events API
+      eg: Reimplement events using Mizzen instead of Swindle
+      eg: Only generate test-actions if .supports-user-interaction? is true
+      eg: Generate real events, not just .click
+      eg: Move run-next-test-action to %test-planner%
+      eg: Code review: Add documentation for events.ss
+      eg: Run test actions hidden behind other test actions
+      eg: Don't include any more of srfi/1 than necessary
+      eg: Merge test action HOVER into CLICK
+      eg: Print "Repeating" when returning to a card
+      eg: Code review: Reorder %deep-test-planner% and add comments
+
 0.5.28-gibbon3 - 10 March 2009
 
 We're currently running Electric Gibbon heavily against in-house projects.
