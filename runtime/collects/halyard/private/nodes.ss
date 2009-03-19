@@ -957,8 +957,8 @@
       (check-node-name name)
       (when (regexp-match "^g[0-9]+$" (symbol->string name))
         (warn 'halyard
-              (cat "The node " (.full-name) " appears to have a gensym'd "
-                   "name which may break the Electric Gibbon test tool.")))
+              "The node " (.full-name) " appears to have a gensym'd "
+              "name which may break the Electric Gibbon test tool."))
       ((.parent) .%add-running-element! self))
 
     (with-instance (.class)
@@ -1219,7 +1219,7 @@
       (trunk-node-inst .notify-reached-trunk)
 
       ;; Actually run the card.
-      (debug 'halyard (cat "Begin card: <" (new-card-class .full-name) ">"))
+      (debug 'halyard "Begin card: <" (new-card-class .full-name) ">")
       (with-exceptions-blocked (report-exception)
         (enter-node-recursively new-card-class trunk-node-inst))))
 
