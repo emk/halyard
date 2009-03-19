@@ -233,8 +233,8 @@ void HalyardApp::PrepareForCrash() {
 
 void HalyardApp::ErrorDialog(const wxString &inTitle, const wxString &inMessage)
 {
-    // TODO: Several of the callers of this function should be
-    // calling TLogger with category "halyard.environment" instead.
+    // TODO: Several of the callers of this function should probably
+    // be talking to the logging framework instead.
     wxMessageDialog dlg(NULL, inMessage, inTitle, wxOK|wxICON_ERROR);
     dlg.ShowModal();
 }

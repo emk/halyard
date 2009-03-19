@@ -53,39 +53,32 @@ static TLog gDebugLog;
 void TLogger::vLog(Level inLevel, const std::string &inCategory,
                    const char *inFormat, va_list inArgs)
 {
-    if (inCategory == "halyard.environment" && inLevel >= kError) {
-        // Environment errors need to be handled specially, because they
-        // should never be sent to the crash reporter.
-        // TODO - Handle subcategories of Halyard.Environment correctly.
-        gHalyardLog.EnvironmentError(inFormat, inArgs);
-    } else {
-        switch (inLevel) {
-            case kTrace:
-            case kDebug:
-                gDebugLog.Log(inFormat, inArgs);
-                break;
+    switch (inLevel) {
+        case kTrace:
+        case kDebug:
+            gDebugLog.Log(inFormat, inArgs);
+            break;
 
-            case kInfo:
-                gDebugLog.Log(inFormat, inArgs);
-                gHalyardLog.Log(inFormat, inArgs);
-                break;
+        case kInfo:
+            gDebugLog.Log(inFormat, inArgs);
+            gHalyardLog.Log(inFormat, inArgs);
+            break;
 
-            case kWarn:
-                gDebugLog.Log(inFormat, inArgs);
-                gHalyardLog.Warning(inFormat, inArgs);
-                break;
+        case kWarn:
+            gDebugLog.Log(inFormat, inArgs);
+            gHalyardLog.Warning(inFormat, inArgs);
+            break;
 
-            case kError:
-                gDebugLog.Log(inFormat, inArgs);
-                gHalyardLog.Error(inFormat, inArgs);
-                break;
+        case kError:
+            gDebugLog.Log(inFormat, inArgs);
+            gHalyardLog.Error(inFormat, inArgs);
+            break;
 
-            case kFatal:
-            default:
-                gDebugLog.Log(inFormat, inArgs);
-                gHalyardLog.FatalError(inFormat, inArgs);
-                break;
-        }
+        case kFatal:
+        default:
+            gDebugLog.Log(inFormat, inArgs);
+            gHalyardLog.FatalError(inFormat, inArgs);
+            break;
     }
 }
 
@@ -274,15 +267,6 @@ void TLog::FatalError(const char *Format, va_list inArgs)
 	AlertBuffer(LEVEL_ERROR);
     LogBuffer(FATAL_HEADER);
     ExitWithError(APPLICATION_CRASH);
-}
-
-void TLog::EnvironmentError(const char *Format, va_list inArgs)
-{
-    // Format and display our message, and exit without submitting
-    // a crash report.
-    FORMAT_MSG(Format, inArgs);
-    AlertBuffer(LEVEL_ERROR);
-    exit(1);
 }
 
 void TLog::ExitWithError(CrashType inType) {

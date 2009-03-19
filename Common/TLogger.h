@@ -180,15 +180,6 @@ public:
         __attribute__((noreturn));
 
 	//////////
-	/// Log an error complaining about the runtime environment.  This is
-    /// like "FatalError", except that it doesn't try to report the crash,
-    /// since it's (presumably) not our problem.
-	///
-	/// \param Format  a printf format string (e.g. "Count is %d.", count)
-	///
-	void	EnvironmentError(const char *Format, va_list inArgs);
-	
-	//////////
 	/// Put a time stamp in the log.
 	///
 	void	TimeStamp(void);
