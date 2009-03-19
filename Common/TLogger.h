@@ -35,6 +35,7 @@ BEGIN_NAMESPACE_HALYARD
 /// where messages wind up.
 class TLogger : boost::noncopyable {
 public:
+    // These log levels correspond to the log levels used by log4j.
     enum Level {
         kTrace, //< Primitive calls and other low-level trace messages
         kDebug, //< Script-level debugging information
@@ -42,6 +43,14 @@ public:
         kWarn,  //< Warnings for developers
         kError, //< Serious errors (fatal when not in developer mode)
         kFatal  //< Fatal errors
+    };
+
+    // These alert types generally correspond to different icons in the
+    // upper-left corner of a dialog box.
+    enum AlertType {
+        ALERT_INFO,    //< An informational dialog
+        ALERT_WARNING, //< A warning dialog
+        ALERT_ERROR    //< An error dialog
     };
 
     TLogger() {}
@@ -75,6 +84,87 @@ public:
     /// Call Log with a level of kFatal.  Will never return.
     void Fatal(const std::string &inCategory, const char *inFormat, ...)
         __attribute__((noreturn));
+
+public:
+    /// A function which (very carefully) displays an alert dialog and
+    /// waits until the user clicks OK.
+    typedef void (*AlertDisplayFunction)(AlertType, const char *);
+
+    /// A function that should be called shortly before crashing the
+    /// engine, in a last-ditch effort to restore the user's screen to
+    /// reasonable settings.
+    typedef void (*ExitPrepFunction)();
+
+	//////////
+	/// Open up all the log files which will be required by our program.
+	///
+	/// \param inOpenDebugLog  Should we open up the debugging log as well?
+	///
+	static void OpenStandardLogs(bool inOpenDebugLog = false);
+
+    //////////
+    /// Open up any logs which weren't opened by OpenStandardLogs, and
+    /// write the contents of m_RecentEntries to disk.
+    ///
+    static void OpenRemainingLogsForCrash();
+
+    //////////
+    /// Notfy TLog whether standard error is available.
+    ///
+    static void SetIsStandardErrorAvailable(bool inIsAvailable);
+
+    //////////
+    /// Get an output stream that we can use for displaying errors.  This
+    /// will point to either std:cerr, or to a file if std::cerr is not
+    /// available.
+    ///
+    static std::ostream *GetErrorOutput();
+
+    //////////
+    /// Display an alert in a plaform-specific fashion.
+    ///
+    static void DisplayAlert(AlertType inType, const char *inMessage);
+
+    //////////
+    /// Register a function to display an alert.  Note that this function
+    /// MUST NOT call ASSERT, FatalError, or other logging functions!
+    ///
+    static void RegisterAlertDisplayFunction(AlertDisplayFunction inFunc);
+
+    //////////
+    /// We may need to restore some system state before our application
+    /// exits.  Call this function to do anything necessary.
+    ///
+    static void PrepareToExit();
+    
+    //////////
+    /// Install a function to be called before exiting with an error.
+    ///
+    static void RegisterExitPrepFunction(ExitPrepFunction inFunc);
+
+private:
+	//////////
+	/// Either NULL, or a function which can be used to display an alert.
+	///
+	static AlertDisplayFunction s_AlertDisplayFunction;
+
+	//////////
+	/// Either NULL, or a function which should be called before exiting.
+	///
+	static ExitPrepFunction s_ExitPrepFunction;
+
+    //////////
+    /// Can we use std::cerr for printing messages?  This is false for
+    /// Win32 and Mac GUI applications, which aren't hooked up to a usable
+    /// console.
+    ///
+    static bool s_IsStandardErrorAvailable;
+
+    //////////
+    /// A pointer to the "console" that we'll use for printing errors to
+    /// the console.
+    ///
+    static std::ostream *s_ErrorOutput;    
 };
 
 /// Our centralized logging interface.
@@ -92,22 +182,6 @@ extern TLogger gLog;
 class TLog
 {
 public:
-    /// The severity of an alert dialog.
-    enum LogLevel {
-        LEVEL_LOG,
-        LEVEL_WARNING,
-        LEVEL_ERROR
-    };
-
-    /// A function which (very carefully) displays an alert dialog and
-    /// waits until the user clicks OK.
-    typedef void (*AlertDisplayFunction)(LogLevel, const char *);
-
-    /// A function that should be called shortly before crashing the
-    /// engine, in a last-ditch effort to restore the user's screen to
-    /// reasonable settings.
-    typedef void (*ExitPrepFunction)();
-
 	//////////
 	/// Constructor.
 	///
@@ -138,6 +212,11 @@ public:
 	///
 	void	Init(const FileSystem::Path &inLogFile, bool OpenFile = true,
 				 bool Append = false);
+
+    //////////
+    /// Is this log open?
+    ///
+    bool IsOpen() const { return m_LogOpen; }
 
 	//////////
 	/// Log a general message.
@@ -209,29 +288,6 @@ private:
 	///
 	bool		m_Append;
 	
-	//////////
-	/// Either NULL, or a function which can be used to display an alert.
-	///
-	static AlertDisplayFunction s_AlertDisplayFunction;
-
-	//////////
-	/// Either NULL, or a function which should be called before exiting.
-	///
-	static ExitPrepFunction s_ExitPrepFunction;
-
-    //////////
-    /// Can we use std::cerr for printing messages?  This is false for
-    /// Win32 and Mac GUI applications, which aren't hooked up to a usable
-    /// console.
-    ///
-    static bool s_IsStandardErrorAvailable;
-
-    //////////
-    /// A pointer to the "console" that we'll use for printing errors to
-    /// the console.
-    ///
-    static std::ostream *s_ErrorOutput;
-
     //////////
     /// Add a string to our m_RecentEntries list.
     ///
@@ -247,9 +303,9 @@ private:
 	//////////
 	/// Display an alert message box with the contents of m_LogBuffer.
 	///
-	/// \param inError  Is it an error message?
+	/// \param inType  What type of dialog should we display?
 	///
-	void		AlertBuffer(LogLevel inLogLevel = LEVEL_LOG);
+	void		AlertBuffer(TLogger::AlertType inType);
 
     //////////
     /// Exit the engine abruptly with a fatal error.  In COMMAND_LINE mode,
@@ -262,54 +318,6 @@ private:
     /// Crash the engine with a fatal error.
     ///
     void        CrashNow(CrashType inType) __attribute__((noreturn));
-
-public:
-	//////////
-	/// Open up all the log files which will be required by our program.
-	///
-	/// \param inOpenDebugLog  Should we open up the debugging log as well?
-	///
-	static void OpenStandardLogs(bool inOpenDebugLog = false);
-
-    //////////
-    /// Open up any logs which weren't opened by OpenStandardLogs, and
-    /// write the contents of m_RecentEntries to disk.
-    ///
-    static void OpenRemainingLogsForCrash();
-
-    //////////
-    /// Notfy TLog whether standard error is available.
-    ///
-    static void SetIsStandardErrorAvailable(bool inIsAvailable);
-
-    //////////
-    /// Get an output stream that we can use for displaying errors.  This
-    /// will point to either std:cerr, or to a file if std::cerr is not
-    /// available.
-    ///
-    static std::ostream *GetErrorOutput();
-
-    //////////
-    /// Display an alert in a plaform-specific fashion.
-    ///
-    static void DisplayAlert(LogLevel inLevel, const char *inMessage);
-
-    //////////
-    /// Register a function to display an alert.  Note that this function
-    /// MUST NOT call ASSERT, FatalError, or other logging functions!
-    ///
-    static void RegisterAlertDisplayFunction(AlertDisplayFunction inFunc);
-
-    //////////
-    /// We may need to restore some system state before our application
-    /// exits.  Call this function to do anything necessary.
-    ///
-    static void PrepareToExit();
-    
-    //////////
-    /// Install a function to be called before exiting with an error.
-    ///
-    static void RegisterExitPrepFunction(ExitPrepFunction inFunc);
 };
 
 END_NAMESPACE_HALYARD

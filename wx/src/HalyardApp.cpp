@@ -305,21 +305,21 @@ void HalyardApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
 //
 // WARNING - This function _must not_ call Assert, Error, FatalError, etc.,
 // or else it will cause an infinite loop.
-static void SafeAlert(TLog::LogLevel level, const char *message) {
+static void SafeAlert(TLogger::AlertType inType, const char *message) {
 	uint32 alertType = MB_TASKMODAL | MB_OK;
     const char *caption = NULL;
-	switch (level) {
-		case TLog::LEVEL_LOG:
+	switch (inType) {
+		case TLogger::ALERT_INFO:
 			alertType |= MB_ICONINFORMATION;
             caption = "Note";
 			break;
 
-		case TLog::LEVEL_WARNING:
+		case TLogger::ALERT_WARNING:
 			alertType |= MB_ICONINFORMATION;
             caption = "Warning";
 			break;
 
-		case TLog::LEVEL_ERROR:
+		case TLogger::ALERT_ERROR:
 			alertType |= MB_ICONSTOP;
             caption = "Error";
 			break;
@@ -335,20 +335,20 @@ static void SafeAlert(TLog::LogLevel level, const char *message) {
 // XXX - This function really needs to try to turn off the wxWidgets event
 // loop, but I can't currently find the code for doing that.  So
 // "SafeAlert" probably isn't as safe as we'd really like.
-static void SafeAlert(TLog::LogLevel inLevel, const char *inMessage) {\
+static void SafeAlert(TLogger::AlertType inType, const char *inMessage) {\
     long style = wxOK;
     wxString caption(wxT("Halyard"));
-    switch (inLevel) {
-        case TLog::LEVEL_LOG:
+    switch (inType) {
+        case TLogger::ALERT_INFO:
             style |= wxICON_INFORMATION;
             break;
 
-        case TLog::LEVEL_WARNING:
+        case TLogger::ALERT_WARNING:
             style |= wxICON_INFORMATION;
             caption += wxT(" Warning");
             break;
 
-        case TLog::LEVEL_ERROR:
+        case TLogger::ALERT_ERROR:
             style |= wxICON_ERROR;
             caption += wxT(" Error");
             break;
@@ -434,7 +434,7 @@ bool HalyardApp::OnInit() {
     } while (candidate_directory.MaybeGetParentDirectory(candidate_directory));
 
     // Use a GUI alert dialog.
-    TLog::RegisterAlertDisplayFunction(SafeAlert);
+    TLogger::RegisterAlertDisplayFunction(SafeAlert);
 
     // Get the Halyard runtime going.
 #if CONFIG_HAVE_FANCYCRASHREPORT
@@ -443,13 +443,13 @@ bool HalyardApp::OnInit() {
     ::InitializeCommonCode(new CrashReporter());
 #endif // CONFIG_HAVE_FANCYCRASHREPORT
 #if !CONFIG_HAVE_CONSOLE_OUTPUT
-    TLog::SetIsStandardErrorAvailable(false);
+    TLogger::SetIsStandardErrorAvailable(false);
 #endif
     mLogsAreInitialized = true;
 
     // Make sure we restore the taskbar, etc., before exiting with
     // an error message.
-    TLog::RegisterExitPrepFunction(&PrepareForCrash);
+    TLogger::RegisterExitPrepFunction(&PrepareForCrash);
 
     ::RegisterWxPrimitives();
 #if CONFIG_HAVE_QUAKE2

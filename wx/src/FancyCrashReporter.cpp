@@ -293,7 +293,7 @@ bool FancyDebugReport::OnServerReply(const wxArrayString& reply) {
 
     if (TInterpreterManager::IsInCommandLineMode()) {
         // Display the server's response on the console.
-        std::ostream *err(TLog::GetErrorOutput());
+        std::ostream *err(TLogger::GetErrorOutput());
         *err << "Title:       " << title << std::endl
              << "Description: " << description << std::endl
              << "Link:        " << link << std::endl;
@@ -393,7 +393,7 @@ void FancyCrashReporter::ReportCrashInCrashRepoter(const char *inReason) {
     buffer[sizeof(buffer)-1] = '\0';
 
     // Display the error *very carefully* and abort.
-	TLog::DisplayAlert(TLog::LEVEL_ERROR, buffer);
+	TLogger::DisplayAlert(TLogger::ALERT_ERROR, buffer);
     ::abort();
 }
 
@@ -413,7 +413,7 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     // TLogger, we've probably done this already.  But if we were called
     // because of a segfault or other OS-level problem that doesn't go
     // through TLogger, we presumably haven't done this yet.
-    TLog::PrepareToExit();
+    TLogger::PrepareToExit();
 
     // Generate our debug report, and check to make sure we created a temporary
     // directory.
@@ -434,7 +434,7 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     // an internal history of recent writes to unopened logs.)  We need to
     // do this before checking mFileInfo, below, because it may add new
     // files to our report.
-    TLog::OpenRemainingLogsForCrash();
+    TLogger::OpenRemainingLogsForCrash();
 
     // Add any useful files to the report.
     FileInfoVector::iterator i = mFileInfo.begin();
@@ -457,7 +457,7 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     // submit this bug report.
     wxDebugReportPreviewStd preview;
     if (TInterpreterManager::IsInCommandLineMode()) {
-	    std::ostream *err(TLog::GetErrorOutput());
+	    std::ostream *err(TLogger::GetErrorOutput());
         *err << "Processing debug report." << std::endl;
 		if (report.Process()) {
 			*err << "Uploaded debug report to server." << std::endl;

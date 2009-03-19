@@ -46,6 +46,21 @@ static TLog gDebugLog;
 
 
 //=========================================================================
+//  Assertion support
+//=========================================================================
+
+// This routine is declared in TCommon.h.
+void HalyardCheckAssertion(int inTest, const char *inDescription,
+                           const char *inFile, int inLine)
+{
+	if (!inTest)
+		// Log a fatal error and bail.
+		gLog.Fatal("halyard", "ASSERTION FAILURE: %s:%d: %s",
+                   inFile, inLine, inDescription);
+}
+
+
+//=========================================================================
 //  TLogger
 //=========================================================================
 //  This is our new, unified logging interface.
@@ -121,17 +136,109 @@ void TLogger::Fatal(const std::string &inCategory, const char *inFormat, ...) {
 }
 
 
+//=========================================================================
+//  TLogger static interface
+//=========================================================================
+//  This is inherited from our old TLogger class, and we may want to tweak
+//  it a bit.
+
+TLogger::AlertDisplayFunction TLogger::s_AlertDisplayFunction = NULL;
+TLogger::ExitPrepFunction TLogger::s_ExitPrepFunction = NULL;
+bool TLogger::s_IsStandardErrorAvailable = true;
+std::ostream *TLogger::s_ErrorOutput = NULL;
+
+void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
+{
+	// Initialize the global log file.
+	gHalyardLog.Init(SHORT_NAME, true, true);
+
+    // Initialize the debug log if we've been asked to.
+	if (inShouldOpenDebugLog)
+		gDebugLog.Init("Debug");
+
+    // Print our version string to our logs.
+	gLog.Info("%s", VERSION_STRING);
+}
+
+void TLogger::OpenRemainingLogsForCrash()
+{
+    if (!gDebugLog.IsOpen())
+        gDebugLog.Init("DebugRecent");
+}
+
+void TLogger::SetIsStandardErrorAvailable(bool inIsAvailable) {
+    s_IsStandardErrorAvailable = inIsAvailable;
+}
+
+std::ostream *TLogger::GetErrorOutput() {
+    ASSERT(!TInterpreterManager::IsInRuntimeMode());
+    if (s_IsStandardErrorAvailable) {
+        // We have a perfectly good std::cerr, so let's use it.
+        return &std::cerr;
+    } else if (!TInterpreterManager::HaveInstance() ||
+               !TInterpreterManager::GetInstance()->ScriptHasBegun()) {
+        // We don't have a good std::cerr, but we can't call
+        // GetScriptTempDirectory yet, so there's nothing useful we can
+        // actually do.
+        return &std::cerr;
+    } else {
+        // We should be able to write our output to a file now.
+        if (!s_ErrorOutput) {
+            // Allocate a std::ofstream for our output.
+            FileSystem::Path dir(FileSystem::GetScriptTempDirectory());
+            FileSystem::Path file(dir.AddComponent("output.txt"));
+            s_ErrorOutput =
+                new std::ofstream(file.ToNativePathString().c_str(),
+                                  std::ios_base::out | std::ios_base::trunc);
+        }
+        return s_ErrorOutput;
+    }
+}
+
+/// Display an alert on the console.  THIS ROUTINE MAY NOT USE 'ASSERT' OR
+/// 'FatalError', BECAUSE IS CALLED BY THE ERROR-LOGGING CODE!
+static void ConsoleAlert(TLogger::AlertType inType, const char *inMessage)
+{
+	std::ostream *out(TLogger::GetErrorOutput());
+	*out << std::endl;
+    switch (inType) {
+		case TLogger::ALERT_INFO:    *out << "INFO: ";    break;
+        case TLogger::ALERT_WARNING: *out << "WARNING: "; break;
+        case TLogger::ALERT_ERROR:   *out << "ERROR: ";   break;
+    }
+	*out << inMessage << std::endl << std::flush;
+}
+
+void TLogger::DisplayAlert(AlertType inType, const char *inMessage)
+{
+	if (s_AlertDisplayFunction)
+		(*s_AlertDisplayFunction)(inType, inMessage);
+    else
+        ConsoleAlert(inType, inMessage);
+}
+
+void TLogger::RegisterAlertDisplayFunction(AlertDisplayFunction inFunc)
+{
+	s_AlertDisplayFunction = inFunc;
+}
+
+void TLogger::PrepareToExit()
+{
+	if (s_ExitPrepFunction)
+		(*s_ExitPrepFunction)();	
+}
+
+void TLogger::RegisterExitPrepFunction(ExitPrepFunction inFunc)
+{
+	s_ExitPrepFunction = inFunc;
+}
+
 
 //=========================================================================
 //  TLog
 //=========================================================================
 //  This is our older logging class, modified to be called from our newer,
 //  unified TLogger interface.
-
-TLog::AlertDisplayFunction TLog::s_AlertDisplayFunction = NULL;
-TLog::ExitPrepFunction TLog::s_ExitPrepFunction = NULL;
-bool TLog::s_IsStandardErrorAvailable = true;
-std::ostream *TLog::s_ErrorOutput = NULL;
 
 #define FATAL_HEADER	"Fatal Error: "
 #define ERROR_HEADER	"Error: "
@@ -227,7 +334,7 @@ void TLog::Log(const char *Format, va_list inArgs)
 void TLog::Error(const char *Format, va_list inArgs)
 {
 	FORMAT_MSG(Format, inArgs);
-	AlertBuffer(LEVEL_ERROR);
+	AlertBuffer(TLogger::ALERT_ERROR);
 	LogBuffer(ERROR_HEADER);
     if (!TInterpreterManager::IsInAuthoringMode())
         ExitWithError(SCRIPT_CRASH);
@@ -243,7 +350,7 @@ void TLog::Warning(const char *Format, va_list inArgs)
         !TInterpreter::GetInstance()->MaybeHandleWarning(m_LogBuffer))
     {
         if (!TInterpreterManager::IsInRuntimeMode())
-            AlertBuffer(LEVEL_WARNING);
+            AlertBuffer(TLogger::ALERT_WARNING);
         LogBuffer(WARNING_HEADER);
     }
 }
@@ -256,14 +363,14 @@ void TLog::FatalError(const char *Format, va_list inArgs)
 	// relies on a lot of subsystems which might
 	// somehow fail.
 	FORMAT_MSG(Format, inArgs);
-	AlertBuffer(LEVEL_ERROR);
+	AlertBuffer(TLogger::ALERT_ERROR);
     LogBuffer(FATAL_HEADER);
     ExitWithError(APPLICATION_CRASH);
 }
 
 void TLog::ExitWithError(CrashType inType) {
     if (TInterpreterManager::IsInCommandLineMode()) {
-        PrepareToExit();
+        TLogger::PrepareToExit();
         exit(1);
     } else {
         CrashNow(inType);
@@ -271,7 +378,7 @@ void TLog::ExitWithError(CrashType inType) {
 }
 
 void TLog::CrashNow(CrashType inType) {
-    PrepareToExit();
+    TLogger::PrepareToExit();
     CrashReporter::GetInstance()->CrashNow(m_LogBuffer, inType);
     // We shouldn't get here, but just in case.
 	abort();
@@ -304,29 +411,15 @@ void TLog::LogBuffer(const char *Header)
         AddToRecentEntries(msg);
 }
 
-/// Display an alert on the console.  THIS ROUTINE MAY NOT USE 'ASSERT' OR
-/// 'FatalError', BECAUSE IS CALLED BY THE ERROR-LOGGING CODE!
-static void ConsoleAlert(TLog::LogLevel inLevel, const char *inMessage)
-{
-	std::ostream *out(TLog::GetErrorOutput());
-	*out << std::endl;
-    switch (inLevel) {
-		case TLog::LEVEL_LOG:     *out << "LOG: ";     break;
-        case TLog::LEVEL_WARNING: *out << "WARNING: "; break;
-        case TLog::LEVEL_ERROR:   *out << "ERROR: ";   break;
-    }
-	*out << inMessage << std::endl << std::flush;
-}
-
-void TLog::AlertBuffer(LogLevel inLogLevel /* = LEVEL_LOG */)
+void TLog::AlertBuffer(TLogger::AlertType inType)
 {
     if (TInterpreterManager::IsInCommandLineMode())
         // If we're in command-line mode, always display on the console.
-        ConsoleAlert(inLogLevel, m_LogBuffer);
+        ConsoleAlert(inType, m_LogBuffer);
     else
         // Check to see if we have a GUI alert dialog, and use it if we
         // can.  If not, fall back to ConsoleAlert.
-        DisplayAlert(inLogLevel, m_LogBuffer);
+        TLogger::DisplayAlert(inType, m_LogBuffer);
 }
 
 //
@@ -340,86 +433,4 @@ void TLog::TimeStamp(void)
 	time(&timeNow);
 	timeStrPtr = ctime(&timeNow);
 	m_Log << timeStrPtr << std::endl;
-}
-
-void TLog::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
-{
-	// Initialize the global log file.
-	gHalyardLog.Init(SHORT_NAME, true, true);
-
-    // Initialize the debug log if we've been asked to.
-	if (inShouldOpenDebugLog)
-		gDebugLog.Init("Debug");
-
-    // Print our version string to our logs.
-	gLog.Info("%s", VERSION_STRING);
-}
-
-void TLog::OpenRemainingLogsForCrash()
-{
-    if (!gDebugLog.m_LogOpen)
-        gDebugLog.Init("DebugRecent");
-}
-
-void TLog::SetIsStandardErrorAvailable(bool inIsAvailable) {
-    s_IsStandardErrorAvailable = inIsAvailable;
-}
-
-std::ostream *TLog::GetErrorOutput() {
-    ASSERT(!TInterpreterManager::IsInRuntimeMode());
-    if (s_IsStandardErrorAvailable) {
-        // We have a perfectly good std::cerr, so let's use it.
-        return &std::cerr;
-    } else if (!TInterpreterManager::HaveInstance() ||
-               !TInterpreterManager::GetInstance()->ScriptHasBegun()) {
-        // We don't have a good std::cerr, but we can't call
-        // GetScriptTempDirectory yet, so there's nothing useful we can
-        // actually do.
-        return &std::cerr;
-    } else {
-        // We should be able to write our output to a file now.
-        if (!s_ErrorOutput) {
-            // Allocate a std::ofstream for our output.
-            FileSystem::Path dir(FileSystem::GetScriptTempDirectory());
-            FileSystem::Path file(dir.AddComponent("output.txt"));
-            s_ErrorOutput =
-                new std::ofstream(file.ToNativePathString().c_str(),
-                                  std::ios_base::out | std::ios_base::trunc);
-        }
-        return s_ErrorOutput;
-    }
-}
-
-void TLog::DisplayAlert(LogLevel inLevel, const char *inMessage)
-{
-	if (s_AlertDisplayFunction)
-		(*s_AlertDisplayFunction)(inLevel, inMessage);
-    else
-        ConsoleAlert(inLevel, inMessage);
-}
-
-void TLog::RegisterAlertDisplayFunction(AlertDisplayFunction inFunc)
-{
-	s_AlertDisplayFunction = inFunc;
-}
-
-void TLog::PrepareToExit()
-{
-	if (s_ExitPrepFunction)
-		(*s_ExitPrepFunction)();	
-}
-
-void TLog::RegisterExitPrepFunction(ExitPrepFunction inFunc)
-{
-	s_ExitPrepFunction = inFunc;
-}
-
-// This routine is declared in TCommon.h.
-void HalyardCheckAssertion(int inTest, const char *inDescription,
-                           const char *inFile, int inLine)
-{
-	if (!inTest)
-		// Log a fatal error and bail.
-		gLog.Fatal("halyard", "ASSERTION FAILURE: %s:%d: %s",
-                   inFile, inLine, inDescription);
 }

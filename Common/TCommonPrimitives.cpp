@@ -209,7 +209,7 @@ DEFINE_PRIMITIVE(CommandLineError) {
 
     gLog.Info("halyard", "%s", err_msg.c_str());
     if (TInterpreterManager::IsInCommandLineMode()) {
-        std::ostream *out(TLog::GetErrorOutput());
+        std::ostream *out(TLogger::GetErrorOutput());
         *out << err_msg << std::endl << std::flush;
     }
 }
