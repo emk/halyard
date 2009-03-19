@@ -1,3 +1,13 @@
+0.5.28-gibbon5 - 18 March 2009
+
+The previous implementation of %deep-test-planner% had a number of issues
+which were missed in 0.5.28-gibbon4, mostly because the code was such a
+snarl.  In this version, rerunning actions to return to a previously known
+state should work much more consistently.
+
+Eric Kidd (1):
+      eg: Refactor %test-planner% for clarity and fix bugs
+
 0.5.28-gibbon4 - 18 March 2009
 
 Electric Gibbon can now update its test plan to include actions that
