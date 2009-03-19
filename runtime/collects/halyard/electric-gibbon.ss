@@ -285,8 +285,8 @@
         (set! candidates (.%available-actions))
         (when (and (null? candidates) (not (.done?)))
           ;; Avoid an infinite loop.
-          (fatal-error (cat "Can't find a way to perform a previously seen "
-                            "test action"))))
+          (fatal 'halyard.gibbon
+                 "Can't find a way to perform a previously seen test action")))
 
       ;; Perform as many actions as possible.
       (while (not (null? candidates))
@@ -345,8 +345,8 @@
                   (begin
                     (.run-action action :rerun? #t)
                     (loop (cdr keys)))
-                  (warning (cat "Action " key
-                                " has mysteriously disappeared")))))))))
+                  (warn 'halyard.gibbon "Action " key
+                        " has mysteriously disappeared"))))))))
 
     )
 

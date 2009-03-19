@@ -138,7 +138,7 @@ ScriptEditorDB::~ScriptEditorDB() {
     try {
         mDB->close();
     } catch (std::exception &e) {
-        gLog.Error("%s",
+        gLog.Error("halyard", "%s",
                    (std::string("Error closing database: ")+e.what()).c_str());
     }
 }

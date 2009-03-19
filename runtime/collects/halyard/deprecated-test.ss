@@ -27,13 +27,18 @@
   ;; We can't test these directly, but we can make sure they exist and
   ;; are exported properly.
   (define identifiers
-    (list non-fatal-error))
+    (list app-log
+          non-fatal-error))
 
-  (define-class %caution-test% (%test-case%)
+  (define-class %logging-test% (%test-case%)
+    (test "debug-log should not crash"
+      (debug-log "Testing DEBUG-LOG"))
+    (test "warning should issue a warning"
+      (assert-warns (warning "Testing WARNING")))
     (test "debug-caution should issue a warning"
-      (assert-warns (debug-caution "Foo")))
+      (assert-warns (debug-caution "Testing DEBUG-CAUTION")))
     (test "caution should issue a warning"
-      (assert-warns (caution "Bar"))))
+      (assert-warns (caution "Testing CAUTION"))))
 
   (define-class %events-test% (%test-case%)
     (test "<event> should have handled? and stale? flags"
@@ -91,7 +96,7 @@
 
   (card /tests/deprecated
       (%test-suite%
-       :tests (list %caution-test%
+       :tests (list %logging-test%
                     %events-test%)))
   
   )

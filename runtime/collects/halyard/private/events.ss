@@ -224,7 +224,8 @@
        cursor-shown cursor-hidden))
 
     (def (dispatch-event-to-node name args)
-      (debug-log (cat (.full-name) ": " name " event: " args))
+      (trace (symcat 'halyard.event. name)
+             (.full-name) ": " name " event: " args)
       (define event
         (case name
           [[update-ui]
@@ -271,7 +272,7 @@
           [[cursor-shown cursor-hidden]
            (%event% .new)]
           [else
-           (report-error (cat "Unsupported event type: " name))]))
+           (logger 'error 'halyard.event "Unsupported event type: " name)]))
       (send self name event)
       (set! (*engine* .event-vetoed?) (event .vetoed?))
       (set! (*engine* .event-handled?) (event .%handled?)))

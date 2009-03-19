@@ -84,11 +84,11 @@
   ;; Throw an error that displays a message in a dialog box and then takes
   ;; down the engine without submitting a crash report.
   (define (environment-error message)
-    (%call-prim 'Log 'halyard message 'environmenterror))
+    (%call-prim 'Log 'fatal "halyard.environment" message))
 
   ;; Write a line to the debug log.
   (define (debug-log msg)
-    (%call-prim 'Log 'Debug msg 'log))
+    (%call-prim 'Log 'debug "halyard.loader" msg))
 
   ;;===== Splash screen management =====
 

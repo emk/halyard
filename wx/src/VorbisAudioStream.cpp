@@ -139,8 +139,8 @@ VorbisAudioStream::VorbisAudioStream(const char *inFileName,
 }
 
 void VorbisAudioStream::LogFinalStreamInfo() {
-	gDebugLog.Log("Stopped Vorbis stream, %d samples underrun",
-				  mUnderrunCount);
+	gLog.Debug("halyard", "Stopped Vorbis stream, %d samples underrun",
+               mUnderrunCount);
 }
 
 void VorbisAudioStream::InitializeFile()

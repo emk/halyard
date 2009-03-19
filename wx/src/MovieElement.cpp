@@ -48,7 +48,7 @@ MovieElement::MovieElement(Stage *inStage, const wxString &inName,
         // because many movie errors occur after playback has started, so
         // it's more consistent to handle this one that way.
         std::string location(inLocation.mb_str());
-        gLog.Log("Movie error: %s for %s", e.what(), location.c_str());
+        gLog.Info("halyard", "Movie error: %s for %s", e.what(), location.c_str());
     }
 	InitializeWidgetWindow(mMovieWindow);
 }

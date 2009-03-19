@@ -23,12 +23,18 @@
 (module util-test (lib "halyard.ss" "halyard")
   (require (lib "halyard-unit.ss" "halyard"))
 
-  (define-class %warning-test% (%test-case%)
-    (test "warning should issue a warning"
-      (assert-warns (warning "Foo"))))
+  (define-class %logging-test% (%test-case%)
+    (test "trace should not crash"
+      (trace 'halyard.log-test "Testing TRACE function"))
+    (test "debug should not crash"
+      (debug 'halyard.log-test "Testing DEBUG function"))
+    (test "logger 'warn should issue a warning"
+      (assert-warns (logger 'warn 'halyard.log-test "Testing LOGGER 'warn")))
+    (test "warn should issue a warning"
+      (assert-warns (warn 'halyard.log-test "Testing WARN function"))))
 
   (card /tests/util
       (%test-suite%
-       :tests (list %warning-test%)))
+       :tests (list %logging-test%)))
 
   )

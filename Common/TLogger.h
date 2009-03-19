@@ -23,11 +23,62 @@
 #if !defined (_TLogger_h_)
 #define _TLogger_h_
 
+#include <cstdarg>
 #include <fstream>
 
 #include "FileSystem.h"
 
 BEGIN_NAMESPACE_HALYARD
+
+/// This class provides a unified public interface to our logging
+/// subsystem.  This way, callers only need to know their log level, not
+/// where messages wind up.
+class TLogger : boost::noncopyable {
+public:
+    enum Level {
+        kTrace, //< Primitive calls and other low-level trace messages
+        kDebug, //< Script-level debugging information
+        kInfo,  //< Information about the system (use sparingly)
+        kWarn,  //< Warnings for developers
+        kError, //< Serious errors (fatal when not in developer mode)
+        kFatal  //< Fatal errors
+    };
+
+    TLogger() {}
+    virtual ~TLogger() {}
+
+    /// Log a message, and possibly quit the engine or report a crash
+    /// if the log level is high enough.
+    ///
+    /// \param inLevel The severity of this message.
+    /// \param inCategory The category of this error (generally the portion
+    ///   of the code which caused the problem).  The category "Halyard" and
+    ///   any categories beginning with "Halyard." are reserved for the engine.
+    /// \param inFormat A printf-style format string.
+    void Log(Level inLevel, const std::string &inCategory,
+             const char *inFormat, ...);
+
+    /// A version of Log which can be called from another varargs function.
+    void vLog(Level inLevel, const std::string &inCategory,
+              const char *inFormat, va_list inArgs);
+
+    /// Call Log with a level of kTrace.
+    void Trace(const std::string &inCategory, const char *inFormat, ...);
+    /// Call Log with a level of kDebug.
+    void Debug(const std::string &inCategory, const char *inFormat, ...);
+    /// Call Log with a level of kInfo.
+    void Info(const std::string &inCategory, const char *inFormat, ...);
+    /// Call Log with a level of kWarn.
+    void Warn(const std::string &inCategory, const char *inFormat, ...);
+    /// Call Log with a level of kError.  May not return.
+    void Error(const std::string &inCategory, const char *inFormat, ...);
+    /// Call Log with a level of kFatal.  Will never return.
+    void Fatal(const std::string &inCategory, const char *inFormat, ...)
+        __attribute__((noreturn));
+};
+
+/// Our centralized logging interface.
+extern TLogger gLog;
 
 #define LOG_NONE		0x00000000
 #define LOG_ALL			0xFFFFFFFF
@@ -41,7 +92,7 @@ BEGIN_NAMESPACE_HALYARD
 /// \author Sean Sharp
 /// \author ...and others
 ///
-class TLogger
+class TLog
 {
 public:
     /// The severity of an alert dialog.
@@ -63,12 +114,12 @@ public:
 	//////////
 	/// Constructor.
 	///
-	TLogger();
+	TLog();
 	
 	//////////
 	/// Constructor.
 	///
-	~TLogger();
+	~TLog();
 
 	//////////
 	/// Initialize the log file.  Assumes path is current directory.
@@ -97,35 +148,36 @@ public:
 	/// \param Mask  a mask to check against the log mask before logging
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	Log(int32 Mask, const char *Format, ...);
+	void	Log(int32 Mask, const char *Format, va_list inArgs);
 	
 	//////////
 	/// Log a general message.
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	Log(const char *Format, ...);	
+	void	Log(const char *Format, va_list inArgs);	
 	
 	//////////
 	/// Log an error message.  Prepends ERROR_HEADER.
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	Error(const char *Format, ...);
+	void	Error(const char *Format, va_list inArgs);
 	
 	//////////
 	/// Log a warning message.  Prepends WARNING_HEADER.
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	Warning(const char *Format, ...);
+	void	Warning(const char *Format, va_list inArgs);
 	
 	//////////
 	/// Log a fatal error message.  Prepends FATAL_HEADER and calls Shutdown().
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	FatalError(const char *Format, ...) __attribute__((noreturn));
+	void	FatalError(const char *Format, va_list inArgs)
+        __attribute__((noreturn));
 
 	//////////
 	/// Log an error complaining about the runtime environment.  This is
@@ -134,7 +186,7 @@ public:
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	EnvironmentError(const char *Format, ...);
+	void	EnvironmentError(const char *Format, va_list inArgs);
 	
 	//////////
 	/// Put a time stamp in the log.
@@ -282,7 +334,7 @@ public:
     static void OpenRemainingLogsForCrash();
 
     //////////
-    /// Notfy TLogger whether standard error is available.
+    /// Notfy TLog whether standard error is available.
     ///
     static void SetIsStandardErrorAvailable(bool inIsAvailable);
 
@@ -315,18 +367,6 @@ public:
     ///
     static void RegisterExitPrepFunction(ExitPrepFunction inFunc);
 };
-
-//////////
-/// This log is used to log ordinary, relatively important events.  This
-/// file typically exists on a normal user's system.
-///
-extern TLogger gLog;
-
-//////////
-/// This log is used to log low-level debugging events.  This file typically
-/// exists on a developer's system.
-///
-extern TLogger gDebugLog;
 
 END_NAMESPACE_HALYARD
 

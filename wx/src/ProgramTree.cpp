@@ -132,7 +132,7 @@ void NodeItemData::UpdateIsLoaded(bool inNewValue) {
             mIsLoaded = true;
             UpdateChildrenState();
         } else {
-            gLog.FatalError("Trying to change a loaded node into an "
+            gLog.Fatal("halyard", "Trying to change a loaded node into an "
                             "unloaded node");
         }
     }
@@ -540,7 +540,7 @@ void ProgramTree::AnalyzeNodeName(const std::string &inName,
     } else if (slashpos == std::string::npos || slashpos == inName.size() - 1) {
 		// Either we have no slash, or we have a slash at the end of the
         // name.  Either way, we don't like it.
-		gLog.FatalError("Illegal card name: \"%s\"", inName.c_str());
+		gLog.Fatal("halyard", "Illegal card name: \"%s\"", inName.c_str());
     } else {
         outIsRootNode = false;
         outParentName = std::string(inName, 0, slashpos);
@@ -551,7 +551,7 @@ void ProgramTree::AnalyzeNodeName(const std::string &inName,
         // "//foo".
         ASSERT(outParentName.size() > 0);
         if (outParentName[outParentName.size()-1] == '/')
-            gLog.FatalError("Illegal card name: \"%s\"", inName.c_str());
+            gLog.Fatal("halyard", "Illegal card name: \"%s\"", inName.c_str());
     }
 }
 

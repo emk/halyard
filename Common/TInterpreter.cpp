@@ -191,12 +191,12 @@ void TInterpreterManager::Run()
 		}
 		catch (std::exception &e)
 		{
-			gLog.Error("%s.", e.what());
+			gLog.Error("halyard", "%s.", e.what());
 			mShouldConsiderExiting = true;
 		}
 		catch (...)
 		{
-			gLog.FatalError("Unexpected internal error.");
+			gLog.Fatal("halyard", "Unexpected internal error.");
 		}
 
 		// Handle any errors.

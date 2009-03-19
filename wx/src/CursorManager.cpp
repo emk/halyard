@@ -81,7 +81,7 @@ Cursor *CursorManager::FindCursor(const std::string inName)
 		return found->second;
 	else
 	{
-		gLog.Error("Cursor not registered: %s", inName.c_str());
+		gLog.Error("halyard", "Cursor not registered: %s", inName.c_str());
         return FindCursor("hand");
 	}
 }
@@ -93,7 +93,7 @@ void CursorManager::RegisterCursor(const std::string &inName,
 	CursorMap::iterator found = mCursors.find(inName);
 	if (found != mCursors.end())
 	{
-		gDebugLog.Log("Redefining cursor: %s", inName.c_str());
+		gLog.Debug("halyard", "Redefining cursor: %s", inName.c_str());
 		mCursors.erase(found);
 	}
 	
@@ -120,7 +120,7 @@ void CursorManager::RegisterImageCursor(const std::string &inName,
 	{
 		// Display an error message, and register a plausible substitute
 		// cursor instead of the one we can't find.
-		gLog.Error("Cannot open cursor file '%s'", inPath.c_str());
+		gLog.Error("halyard", "Cannot open cursor file '%s'", inPath.c_str());
 		RegisterCursor(inName, wxCursor(wxCURSOR_HAND));
 		return;
 	}
@@ -150,11 +150,11 @@ void CursorManager::UnregisterElementCursor(const std::string &inName,
 	CursorMap::iterator found = mCursors.find(inName);
 	if (found != mCursors.end()) {
         if (found->second != static_cast<Cursor*>(inCursor))
-            gLog.FatalError("Trying to delete cursor <%s>, but it's not "
+            gLog.Fatal("halyard", "Trying to delete cursor <%s>, but it's not "
                             "the cursor we expected", inName.c_str());
         RegisterCursor(inName, wxCursor(wxCURSOR_HAND));
     } else {
-        gLog.FatalError("Trying to delete cursor <%s>, but it's not actually "
+        gLog.Fatal("halyard", "Trying to delete cursor <%s>, but it's not actually "
                         "registered", inName.c_str());
     }
 }

@@ -255,7 +255,7 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
             wxAlphaPixelData data(mPixmap);
             FillBoxOpt(data, bounds, inColor);
         } else {
-            gLog.Error("Can't draw diagonal lines on transparent overlay");
+            gLog.Error("halyard", "Can't draw diagonal lines on transparent overlay");
         }
     } else {
         if (is_straight) {
@@ -269,7 +269,7 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
             dc.SetPen(pen);
             dc.DrawLine(inFrom.x, inFrom.y, inTo.x, inTo.y);
         } else {
-            gLog.Error("Can't draw diagonal transparent lines");
+            gLog.Error("halyard", "Can't draw diagonal transparent lines");
         }
     }
 
@@ -439,6 +439,6 @@ void DrawingArea::CompositeInto(wxDC &inDC, const wxRect &inClipRect) {
 		wxPoint src_loc(clip.x - mBounds.x, clip.y - mBounds.y);
 		if (!inDC.Blit(clip.x, clip.y, clip.width, clip.height,
 					   &dc, src_loc.x, src_loc.y))
-			gLog.Error("Cannot composite offscreen layers.");
+			gLog.Error("halyard", "Cannot composite offscreen layers.");
 	}
 }

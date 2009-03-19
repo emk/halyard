@@ -155,50 +155,43 @@ DEFINE_PRIMITIVE(Idle)
 
 
 //-------------------------------------------------------------------------
-// (Log file:STRING msg:STRING [level:STRING = "log"])
+// (Log level:SYMBOL category:STRING msg:STRING)
 //-------------------------------------------------------------------------
-// Logs the second argument to the file specified by the first.
-// Available logs: debug, halyard.  Available log levels:
-// fatalerror, error, warning, log.
+// Log msg using the specified category and level.  Categories are period-
+// seperated names, such as "mylib.q-and-a", and will normally specify
+// what module and submodule is logging the message.  If you don't have
+// any category for a message, use "".  Available log levels are
+// trace, debug, info, warn, error, fatal.  Please use 'info' very
+// sparingly--it will tend to be logged to a permenant, central log for
+// all Halyard applications.  Use 'debug' for normal debugging messages.
 
 DEFINE_PRIMITIVE(Log)
 {
 	// Logging this primitive call would be redundant and ugly.
 	::SkipPrimitiveLogging();
 
-	std::string log_name, msg, level;
-	level = "log";
-	inArgs >> SymbolName(log_name) >> msg;
-	if (inArgs.HasMoreArguments())
-		inArgs >> SymbolName(level);
-	log_name = ::MakeStringLowercase(log_name);
-	level = ::MakeStringLowercase(level);
-
-	// Figure out which log file to use.
-	TLogger *log = &gLog;
-	if (log_name == "halyard")
-		log = &gLog;
-	else if (log_name == "debug")
-		log = &gDebugLog;
-	else
-		gLog.Warning("No such log file: %s", log_name.c_str());
+	std::string level_str, category, msg;
+	inArgs >> SymbolName(level_str) >> category >> msg;
+	level_str = ::MakeStringLowercase(level_str);
 
 	// Report the problem using the appropriate log level.
-	if (level == "log")
-		log->Log("%s", msg.c_str());
-	else if (level == "warning")
-		log->Warning("%s", msg.c_str());
-	else if (level == "error")
-		log->Error("%s", msg.c_str());
-	else if (level == "fatalerror")
-		log->FatalError("%s", msg.c_str());
-	else if (level == "environmenterror")
-		log->EnvironmentError("%s", msg.c_str());
-	else
-	{
-		gLog.Error("Unknown logging level: %s", level.c_str());
-		gLog.FatalError("%s", msg.c_str());
-	}
+    TLogger::Level level = TLogger::kFatal;
+	if (level_str == "trace")
+        level = TLogger::kTrace;
+	else if (level_str == "debug")
+        level = TLogger::kDebug;
+	else if (level_str == "info")
+        level = TLogger::kInfo;
+	else if (level_str == "warn")
+        level = TLogger::kWarn;
+	else if (level_str == "error")
+        level = TLogger::kError;
+	else if (level_str == "fatal")
+        level = TLogger::kFatal;
+    else
+        gLog.Warn("halyard", "Unknown logging level: %s", level_str.c_str());
+
+    gLog.Log(level, category, "%s", msg.c_str());
 }
 
 
@@ -214,9 +207,9 @@ DEFINE_PRIMITIVE(CommandLineError) {
     std::string err_msg;
     inArgs >> err_msg;
 
-    gLog.Log("%s", err_msg.c_str());
+    gLog.Info("halyard", "%s", err_msg.c_str());
     if (TInterpreterManager::IsInCommandLineMode()) {
-        std::ostream *out(TLogger::GetErrorOutput());
+        std::ostream *out(TLog::GetErrorOutput());
         *out << err_msg << std::endl << std::flush;
     }
 }

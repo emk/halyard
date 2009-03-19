@@ -152,7 +152,7 @@
   ;; TODO - replace most calls to this function with calls to ERROR.
   (define (error-with-extra-dialog msg)
     ;; TODO - More elaborate error support.
-    (report-error msg)
+    (logger 'error 'halyard msg)
     (error msg))
   
   ;;; Try to exit the currently-running script.  If the script exits, this
@@ -189,12 +189,11 @@
           ;; We should probably clean it up, too.
           *%kernel-jump-card*)
       ;; TODO - Eventually, we may want to make this an error.  See F#10544.
-      (warning (cat "Jump to " card " overriding jump to "
-                    *%kernel-jump-card*
-                    (if (eq? *%kernel-state* 'JUMPING) "" " in callback")))]
+      (warn 'halyard "Jump to " card " overriding jump to " *%kernel-jump-card*
+            (if (eq? *%kernel-state* 'JUMPING) "" " in callback"))]
      [(eq? *%kernel-state* 'INTERPRETER-KILLED)
-      (fatal-error (cat "Cannot jump to " card
-                        " after interpreter has been shut down"))]))
+      (fatal 'halyard "Cannot jump to " card
+             " after interpreter has been shut down")]))
 
   (define (set-jump-state! card)
     (check-whether-jump-allowed card)
@@ -647,9 +646,9 @@
               (all-but-last *%kernel-deferred-thunk-queue*))
         
         (fluid-let [[*%kernel-running-deferred-thunks?* #t]]
-          (debug-log "Running deferred thunk.")
+          (debug 'halyard.deferred "Running deferred thunk.")
           ((deferred-action-thunk item))
-          (debug-log "Finished running deferred thunk.")))))
+          (debug 'halyard.deferred "Finished running deferred thunk.")))))
 
   (define (%kernel-cancel-deferred-thunks-for parent)
     ;; Only keep those thunks which aren't associated with PARENT.
@@ -689,7 +688,8 @@
     ;; be disasterous).  Furthermore, we must trap all errors, because
     ;; our C++-based callers don't want to deal with Scheme exceptions.
     (if (eq? *%kernel-state* 'INTERPRETER-KILLED)
-        (app-log "Skipping callback because interpreter is being shut down")
+        (info 'halyard
+              "Skipping callback because interpreter is being shut down")
         (let [[saved-kernel-state *%kernel-state*]]
           (set! *%kernel-state* 'NORMAL)
           (label exit-callback
@@ -733,7 +733,7 @@
       [[INTERPRETER-KILLED]
        (*%kernel-exit-interpreter-func* #f)]
       [else
-       (fatal-error "Unknown interpreter state")]))
+       (fatal 'halyard "Unknown interpreter state")]))
 
 
   ;;=======================================================================
@@ -756,10 +756,10 @@
 
   (define (check-whether-safe-to-load-code node-name)
     (unless (eq? *%kernel-state* 'NORMAL)
-      (fatal-error (cat "Cannot load " node-name " right now, probably "
-                        "because some code in kernel.ss needs to be "
-                        "wrapped with with-code-loading-allowed "
-                        "(try a C++ debugger to find it)"))))
+      (fatal 'halyard "Cannot load " node-name " right now, probably "
+             "because some code in kernel.ss needs to be "
+             "wrapped with with-code-loading-allowed "
+             "(try a C++ debugger to find it)")))
 
   (define (call-with-code-loading-allowed thunk error-handler error-value)
     (let [[result #f]]
@@ -787,7 +787,7 @@
     ;; only work if we're inside %main-kernel-loop, and not during the
     ;; initial script load.
     (assert (function? *%kernel-exit-interpreter-func*))
-    (report-error msg)
+    (logger 'error 'halyard msg)
     (call-prim 'LoadScriptFailed))
 
 
@@ -874,7 +874,7 @@
        (lambda ()
          (*extract-definitions-fn* path))
        (lambda (msg)
-         (debug-log (cat "ScriptEditorDB: " msg))))))
+         (debug 'halyard "ScriptEditorDB: " msg)))))
   
 
   ;;=======================================================================

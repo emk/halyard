@@ -34,10 +34,109 @@
 
 using namespace Halyard;
 
-TLogger::AlertDisplayFunction TLogger::s_AlertDisplayFunction = NULL;
-TLogger::ExitPrepFunction TLogger::s_ExitPrepFunction = NULL;
-bool TLogger::s_IsStandardErrorAvailable = true;
-std::ostream *TLogger::s_ErrorOutput = NULL;
+TLogger Halyard::gLog;
+
+// This log is used to log ordinary, relatively important events.  This
+// file typically exists on a normal user's system.
+static TLog gHalyardLog;
+
+// This log is used to log low-level debugging events.  This file typically
+// exists on a developer's system.
+static TLog gDebugLog;
+
+
+//=========================================================================
+//  TLogger
+//=========================================================================
+//  This is our new, unified logging interface.
+
+void TLogger::vLog(Level inLevel, const std::string &inCategory,
+                   const char *inFormat, va_list inArgs)
+{
+    if (inCategory == "halyard.environment" && inLevel >= kError) {
+        // Environment errors need to be handled specially, because they
+        // should never be sent to the crash reporter.
+        // TODO - Handle subcategories of Halyard.Environment correctly.
+        gHalyardLog.EnvironmentError(inFormat, inArgs);
+    } else {
+        switch (inLevel) {
+            case kTrace:
+            case kDebug:
+                gDebugLog.Log(inFormat, inArgs);
+                break;
+
+            case kInfo:
+                gDebugLog.Log(inFormat, inArgs);
+                gHalyardLog.Log(inFormat, inArgs);
+                break;
+
+            case kWarn:
+                gDebugLog.Log(inFormat, inArgs);
+                gHalyardLog.Warning(inFormat, inArgs);
+                break;
+
+            case kError:
+                gDebugLog.Log(inFormat, inArgs);
+                gHalyardLog.Error(inFormat, inArgs);
+                break;
+
+            case kFatal:
+            default:
+                gDebugLog.Log(inFormat, inArgs);
+                gHalyardLog.FatalError(inFormat, inArgs);
+                break;
+        }
+    }
+}
+
+#define VLOG_WITH_LEVEL(LEVEL) \
+    va_list args; \
+    va_start(args, inFormat); \
+    vLog((LEVEL), inCategory, inFormat, args);  \
+    va_end(args);
+
+void TLogger::Log(Level inLevel, const std::string &inCategory,
+                  const char *inFormat, ...)
+{
+    VLOG_WITH_LEVEL(inLevel);
+}
+
+void TLogger::Trace(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kTrace);
+}
+
+void TLogger::Debug(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kDebug);
+}
+
+void TLogger::Info(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kInfo);
+}
+
+void TLogger::Warn(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kWarn);
+}
+
+void TLogger::Error(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kError);
+}
+
+void TLogger::Fatal(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kFatal);
+}
+
+
+
+//=========================================================================
+//  TLog
+//=========================================================================
+//  This is our older logging class, modified to be called from our newer,
+//  unified TLogger interface.
+
+TLog::AlertDisplayFunction TLog::s_AlertDisplayFunction = NULL;
+TLog::ExitPrepFunction TLog::s_ExitPrepFunction = NULL;
+bool TLog::s_IsStandardErrorAvailable = true;
+std::ostream *TLog::s_ErrorOutput = NULL;
 
 #define FATAL_HEADER	"Fatal Error: "
 #define ERROR_HEADER	"Error: "
@@ -49,18 +148,11 @@ std::ostream *TLogger::s_ErrorOutput = NULL;
 #	define vsnprintf _vsnprintf
 #endif
 
-#define FORMAT_MSG(Format)	\
-	va_list	argPtr;			\
-	va_start(argPtr, (Format));		\
-	vsnprintf(m_LogBuffer, LOG_BUFFER_SIZE, (Format), argPtr);	\
+#define FORMAT_MSG(FORMAT,ARGS) \
+	vsnprintf(m_LogBuffer, LOG_BUFFER_SIZE, (FORMAT), (ARGS)); \
 	m_LogBuffer[LOG_BUFFER_SIZE-1] = 0; \
-	va_end(argPtr)
 
-// Standard logs.
-TLogger Halyard::gLog;
-TLogger Halyard::gDebugLog;
-
-TLogger::TLogger()
+TLog::TLog()
 { 
 	m_LogOpen = false; 
 	m_OpenFailed = false;
@@ -68,7 +160,7 @@ TLogger::TLogger()
 	m_LogMask = LOG_ALL;
 }
 
-TLogger::~TLogger()
+TLog::~TLog()
 {
 	if (m_LogOpen)
 		m_Log.close();
@@ -77,7 +169,7 @@ TLogger::~TLogger()
 //
 //	Init - Initialize the log file. 
 //
-void TLogger::Init(const FileSystem::Path &inLogFile, 
+void TLog::Init(const FileSystem::Path &inLogFile, 
 				   bool OpenFile /* = true */, bool Append /* = false */)
 {
 	ASSERT(!m_LogOpen);
@@ -125,40 +217,40 @@ void TLogger::Init(const FileSystem::Path &inLogFile,
 //
 //	Init - Initialize the log file. Use the current directory.
 //
-void TLogger::Init(const char *Name, bool OpenFile /* = true */,
+void TLog::Init(const char *Name, bool OpenFile /* = true */,
 				   bool Append /* = false */)
 {	
 	Init(FileSystem::GetAppDataDirectory().AddComponent(Name),
          OpenFile, Append);
 }
 
-void TLogger::Log(int32 Mask, const char *Format, ...)
+void TLog::Log(int32 Mask, const char *Format, va_list inArgs)
 {
 	if (!ShouldLog(Mask))
 		return;
 
-	FORMAT_MSG(Format);
+	FORMAT_MSG(Format, inArgs);
 	LogBuffer(NULL);	
 }
 
-void TLogger::Log(const char *Format, ...)
+void TLog::Log(const char *Format, va_list inArgs)
 {
-	FORMAT_MSG(Format);
+	FORMAT_MSG(Format, inArgs);
 	LogBuffer(NULL);
 }
 
-void TLogger::Error(const char *Format, ...)
+void TLog::Error(const char *Format, va_list inArgs)
 {
-	FORMAT_MSG(Format);
+	FORMAT_MSG(Format, inArgs);
 	AlertBuffer(LEVEL_ERROR);
 	LogBuffer(ERROR_HEADER);
     if (!TInterpreterManager::IsInAuthoringMode())
         ExitWithError(SCRIPT_CRASH);
 }
 
-void TLogger::Warning(const char *Format, ...)
+void TLog::Warning(const char *Format, va_list inArgs)
 {
-	FORMAT_MSG(Format);
+	FORMAT_MSG(Format, inArgs);
     // Give TInterpreter a crack at this first (this allows the unit tests,
     // for example, to override the behavior of WARNING).  If TInterpreter
     // doesn't want to handle it, treat it normally.
@@ -171,29 +263,29 @@ void TLogger::Warning(const char *Format, ...)
     }
 }
 
-void TLogger::FatalError(const char *Format, ...)
+void TLog::FatalError(const char *Format, va_list inArgs)
 {
 	// We call AlertBuffer before LogBuffer, because
 	// the AlertBuffer code is required NOT to
 	// call back into FatalError, whereas LogBuffer
 	// relies on a lot of subsystems which might
 	// somehow fail.
-	FORMAT_MSG(Format);
+	FORMAT_MSG(Format, inArgs);
 	AlertBuffer(LEVEL_ERROR);
     LogBuffer(FATAL_HEADER);
     ExitWithError(APPLICATION_CRASH);
 }
 
-void TLogger::EnvironmentError(const char *Format, ...)
+void TLog::EnvironmentError(const char *Format, va_list inArgs)
 {
     // Format and display our message, and exit without submitting
     // a crash report.
-    FORMAT_MSG(Format);
+    FORMAT_MSG(Format, inArgs);
     AlertBuffer(LEVEL_ERROR);
     exit(1);
 }
 
-void TLogger::ExitWithError(CrashType inType) {
+void TLog::ExitWithError(CrashType inType) {
     if (TInterpreterManager::IsInCommandLineMode()) {
         PrepareToExit();
         exit(1);
@@ -202,14 +294,14 @@ void TLogger::ExitWithError(CrashType inType) {
     }
 }
 
-void TLogger::CrashNow(CrashType inType) {
+void TLog::CrashNow(CrashType inType) {
     PrepareToExit();
     CrashReporter::GetInstance()->CrashNow(m_LogBuffer, inType);
     // We shouldn't get here, but just in case.
 	abort();
 }
 
-void TLogger::AddToRecentEntries(const std::string &str)
+void TLog::AddToRecentEntries(const std::string &str)
 {
     if (m_RecentEntries.size() == MAX_RECENT_ENTRIES)
         m_RecentEntries.pop_front();
@@ -220,7 +312,7 @@ void TLogger::AddToRecentEntries(const std::string &str)
 //
 //	LogBuffer - 
 //
-void TLogger::LogBuffer(const char *Header)
+void TLog::LogBuffer(const char *Header)
 {
     // Build our complete log message.
     std::string msg;
@@ -238,19 +330,19 @@ void TLogger::LogBuffer(const char *Header)
 
 /// Display an alert on the console.  THIS ROUTINE MAY NOT USE 'ASSERT' OR
 /// 'FatalError', BECAUSE IS CALLED BY THE ERROR-LOGGING CODE!
-static void ConsoleAlert(TLogger::LogLevel inLevel, const char *inMessage)
+static void ConsoleAlert(TLog::LogLevel inLevel, const char *inMessage)
 {
-	std::ostream *out(TLogger::GetErrorOutput());
+	std::ostream *out(TLog::GetErrorOutput());
 	*out << std::endl;
     switch (inLevel) {
-		case TLogger::LEVEL_LOG:     *out << "LOG: ";     break;
-        case TLogger::LEVEL_WARNING: *out << "WARNING: "; break;
-        case TLogger::LEVEL_ERROR:   *out << "ERROR: ";   break;
+		case TLog::LEVEL_LOG:     *out << "LOG: ";     break;
+        case TLog::LEVEL_WARNING: *out << "WARNING: "; break;
+        case TLog::LEVEL_ERROR:   *out << "ERROR: ";   break;
     }
 	*out << inMessage << std::endl << std::flush;
 }
 
-void TLogger::AlertBuffer(LogLevel inLogLevel /* = LEVEL_LOG */)
+void TLog::AlertBuffer(LogLevel inLogLevel /* = LEVEL_LOG */)
 {
     if (TInterpreterManager::IsInCommandLineMode())
         // If we're in command-line mode, always display on the console.
@@ -264,7 +356,7 @@ void TLogger::AlertBuffer(LogLevel inLogLevel /* = LEVEL_LOG */)
 //
 //	TimeStamp - Put a time stamp in the log
 //
-void TLogger::TimeStamp(void)
+void TLog::TimeStamp(void)
 {
 	time_t	timeNow;
 	char	*timeStrPtr;
@@ -274,31 +366,30 @@ void TLogger::TimeStamp(void)
 	m_Log << timeStrPtr << std::endl;
 }
 
-void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
+void TLog::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
 {
 	// Initialize the global log file.
-	gLog.Init(SHORT_NAME, true, true);
-	gLog.Log("%s", VERSION_STRING);
+	gHalyardLog.Init(SHORT_NAME, true, true);
 
+    // Initialize the debug log if we've been asked to.
 	if (inShouldOpenDebugLog)
-	{
-		// Initialize the debug log.
 		gDebugLog.Init("Debug");
-		gDebugLog.Log("%s", VERSION_STRING);
-	}	
+
+    // Print our version string to our logs.
+	gLog.Info("%s", VERSION_STRING);
 }
 
-void TLogger::OpenRemainingLogsForCrash()
+void TLog::OpenRemainingLogsForCrash()
 {
     if (!gDebugLog.m_LogOpen)
         gDebugLog.Init("DebugRecent");
 }
 
-void TLogger::SetIsStandardErrorAvailable(bool inIsAvailable) {
+void TLog::SetIsStandardErrorAvailable(bool inIsAvailable) {
     s_IsStandardErrorAvailable = inIsAvailable;
 }
 
-std::ostream *TLogger::GetErrorOutput() {
+std::ostream *TLog::GetErrorOutput() {
     ASSERT(!TInterpreterManager::IsInRuntimeMode());
     if (s_IsStandardErrorAvailable) {
         // We have a perfectly good std::cerr, so let's use it.
@@ -323,7 +414,7 @@ std::ostream *TLogger::GetErrorOutput() {
     }
 }
 
-void TLogger::DisplayAlert(LogLevel inLevel, const char *inMessage)
+void TLog::DisplayAlert(LogLevel inLevel, const char *inMessage)
 {
 	if (s_AlertDisplayFunction)
 		(*s_AlertDisplayFunction)(inLevel, inMessage);
@@ -331,18 +422,18 @@ void TLogger::DisplayAlert(LogLevel inLevel, const char *inMessage)
         ConsoleAlert(inLevel, inMessage);
 }
 
-void TLogger::RegisterAlertDisplayFunction(AlertDisplayFunction inFunc)
+void TLog::RegisterAlertDisplayFunction(AlertDisplayFunction inFunc)
 {
 	s_AlertDisplayFunction = inFunc;
 }
 
-void TLogger::PrepareToExit()
+void TLog::PrepareToExit()
 {
 	if (s_ExitPrepFunction)
 		(*s_ExitPrepFunction)();	
 }
 
-void TLogger::RegisterExitPrepFunction(ExitPrepFunction inFunc)
+void TLog::RegisterExitPrepFunction(ExitPrepFunction inFunc)
 {
 	s_ExitPrepFunction = inFunc;
 }
@@ -352,10 +443,7 @@ void HalyardCheckAssertion(int inTest, const char *inDescription,
                            const char *inFile, int inLine)
 {
 	if (!inTest)
-	{
 		// Log a fatal error and bail.
-		gLog.FatalError("ASSERTION FAILURE: %s:%d: %s",
-						inFile, inLine, inDescription);
-		abort();
-	}
+		gLog.Fatal("halyard", "ASSERTION FAILURE: %s:%d: %s",
+                   inFile, inLine, inDescription);
 }

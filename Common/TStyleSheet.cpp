@@ -140,7 +140,7 @@ TStyleSheet::TStyleSheet(TArgumentList &inArgs)
 	else if (flags == "bi")
 		mFaceStyle = Typography::kBoldItalicFaceStyle;
 	else
-		gLog.Error("Invalid face style '%s'", flags.c_str());
+		gLog.Error("halyard", "Invalid face style '%s'", flags.c_str());
 
     // Parse our justification value.
 	justification = MakeStringLowercase(justification);
@@ -349,7 +349,7 @@ void TStyleSheetManager::AddStyleSheet(TArgumentList &inArgs)
 	// Check for an exiting stylesheet with the same name.
 	if (Find(name))
 	{
-		gLog.Error("Can't redefine style sheet <%s>.", name.c_str());
+		gLog.Error("halyard", "Can't redefine style sheet <%s>.", name.c_str());
 		return;
 	}
 
@@ -377,7 +377,7 @@ TRect TStyleSheetManager::Draw(const std::string &inStyleSheet,
 	TStyleSheet *style_sheet = Find(inStyleSheet);
 	if (!style_sheet)
 	{
-		gLog.Error("Tried to draw text using non-existant style "
+		gLog.Error("halyard", "Tried to draw text using non-existant style "
 				   "sheet <%s>", inStyleSheet.c_str());
 		return TRect(0, 0, 0, 0);
 	}
@@ -388,7 +388,7 @@ int TStyleSheetManager::GetLineHeight(const char *inStyleSheet)
 {
 	TStyleSheet *style_sheet = Find(inStyleSheet);
 	if (!style_sheet)
-		gLog.FatalError("Tried to measure height of non-existant style "
+		gLog.Fatal("halyard", "Tried to measure height of non-existant style "
 						"sheet <%s>", inStyleSheet);
 	return style_sheet->GetLineHeight();
 }

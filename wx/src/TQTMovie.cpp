@@ -214,7 +214,7 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     // Record the time we started loading data.  We'll use this in various
     // calculations which need to estimate the load speed.
     mMovieOpenTime = ::time(NULL);
-    //gDebugLog.Log("Starting %s at %d.", inMoviePath.c_str(), mMovieOpenTime);
+    //gLog.Debug("halyard", "Starting %s at %d.", inMoviePath.c_str(), mMovieOpenTime);
 
 	// We pass these flags to all the various NewMovieFrom... functions.
 	// newMovieAsyncOK tells QuickTime to immediately return an
@@ -941,7 +941,7 @@ DEFINE_PRIMITIVE(QTComponentVersion)
 	inArgs >> type_str >> subtype_str;
 	if (type_str.length() != 4 || subtype_str.length() != 4)
 	{
-		gLog.Warning("QTComponent type and subtype must be four characters.");
+		gLog.Warn("halyard", "QTComponent type and subtype must be four characters.");
 		goto done;
 	}
 	
@@ -955,7 +955,7 @@ DEFINE_PRIMITIVE(QTComponentVersion)
 	ci = ::OpenDefaultComponent(type, subtype);
 	if (!ci)
 	{
-		gLog.Log("Can't open component %s/%s",
+		gLog.Info("halyard", "Can't open component %s/%s",
 				 type_str.c_str(), subtype_str.c_str());
 		goto done;
 	}
@@ -964,7 +964,7 @@ DEFINE_PRIMITIVE(QTComponentVersion)
 	version = ::GetComponentVersion(ci);
 	if (::GetComponentInstanceError(ci) != noErr)
 	{
-		gLog.Log("Can't get component version for %s/%s",
+		gLog.Info("halyard", "Can't get component version for %s/%s",
 				 type_str.c_str(), subtype_str.c_str());
 		version = 0;
 	}
@@ -972,7 +972,7 @@ DEFINE_PRIMITIVE(QTComponentVersion)
 	// Close the component.
 	err = ::CloseComponent(ci);
 	if (err != noErr)
-		gLog.Log("Can't close component %s/%s",
+		gLog.Info("halyard", "Can't close component %s/%s",
 				 type_str.c_str(), subtype_str.c_str());
 
 done:

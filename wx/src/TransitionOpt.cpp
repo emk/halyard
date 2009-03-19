@@ -143,8 +143,9 @@ void Transition::RunTransition(int inMilliseconds,
 	double step = 1.0 / (frames + 1);
 	double panic_ms = Max(2000, 4 * inMilliseconds);
 
-	gDebugLog.Log("Transition: %d ms, est. %f ms/frame, est. %f frames",
-				  inMilliseconds, est_ms_per_frame, frames);
+	gLog.Trace("halyard.transition",
+               "Transition: %d ms, est. %f ms/frame, est. %f frames",
+               inMilliseconds, est_ms_per_frame, frames);
 
 	if (frames >= 1.0 && step > 0.0)
 	{
@@ -169,7 +170,8 @@ void Transition::RunTransition(int inMilliseconds,
 			// Just to be safe!
 			if (watch.Time() > panic_ms)
 			{
-				gDebugLog.Log("Transition: way too long, aborting");
+				gLog.Debug("halyard.transition",
+                           "Transition: way too long, aborting");
 				break;
 			}
 		}
@@ -540,7 +542,8 @@ void TransitionManager::RegisterTransition(const std::string &inName,
         mTransitions.insert(TransitionMap::value_type(inName, inTransition));
     else
     {
-        gLog.Warning("Duplicate transition: %s", inName.c_str());
+        gLog.Warn("halyard.transition", "Duplicate transition: %s",
+                  inName.c_str());
         delete inTransition;
     }    
 }
@@ -551,7 +554,8 @@ void TransitionManager::RunTransition(const std::string &inName,
 {
     TransitionMap::iterator found = mTransitions.find(inName);
     if (found == mTransitions.end())
-        gLog.Warning("Unknown transition: %s", inName.c_str());
+        gLog.Warn("halyard.transition", "Unknown transition: %s",
+                  inName.c_str());
     else
         found->second->RunTransition(inMilliseconds, inResources);
 }

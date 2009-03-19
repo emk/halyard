@@ -92,8 +92,8 @@
                     (with-handlers 
                       [[exn:fail? 
                         (lambda (ex) 
-                          (debug-log (cat "maybe-read-data-from-file: "
-                                          (exn-message ex)))
+                          (debug 'halyard "maybe-read-data-from-file: "
+                                 (exn-message ex))
                           (read-pair))]]
                       (let ((next-line (read-line file-port)))
                         (if (not (eof-object? next-line))

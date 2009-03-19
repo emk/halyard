@@ -29,15 +29,31 @@
   ;; 'CALL-PRIM' INSTEAD.
   (require #%engine-primitives)
   
-  (provide non-fatal-error caution debug-caution)
+  (provide app-log debug-log debug-caution warning non-fatal-error caution)
 
+  ;;; Write a message to Halyard.log.  This log is always present on a user's
+  ;;; system, and is never deleted, so use this function sparingly.
+  (define (app-log msg)
+    (info #f msg))
+  
+  ;;; Write a message to Debug.log, which is only present on developer
+  ;;; systems (though the last hundred lines are always available in a
+  ;;; crash report).  This is a very high-volume log, so feel free to be
+  ;;; verbose.
+  (define (debug-log msg)
+    (debug #f msg))
+  
+  ;;; Print a warning message to Debug.log.  High-volume output is OK.
+  (define (debug-caution msg)
+    (warn #f msg))
+
+  ;;; Warn the multimedia author about a possible problem.
+  (define (warning msg)
+    (warn #f msg))
+  
   ;; Renamed functions.
   (define non-fatal-error report-error)
   (define caution warning)
-
-  ;;; Print a warning message to Debug.log.  High-volume output is OK.
-  (define (debug-caution msg)
-    (%call-prim 'Log 'Debug msg 'warning))
 
   ;; Backwards compatibility wrappers for old Swindle-based event classes.
   (provide <event> event? event-stale?

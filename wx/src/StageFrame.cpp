@@ -381,7 +381,7 @@ void StageFrame::FindBestFullScreenVideoMode()
     // is wxNOT_FOUND.
     int current = wxDisplay::GetFromWindow(this);
     if (current == wxNOT_FOUND) {
-        gLog.Warning("Can't find display for stage window, assuming primary");
+        gLog.Warn("halyard", "Can't find display for stage window, assuming primary");
         current = 0;
     }
 
@@ -399,7 +399,7 @@ void StageFrame::FindBestFullScreenVideoMode()
     // in the future, so we'll just log it for now.
     wxRect current_geom(display.GetGeometry());
     float aspect = 1.0*current_geom.GetWidth()/current_geom.GetHeight();
-    gDebugLog.Log("Current screen aspect ratio: %.2f", aspect);
+    gLog.Debug("halyard", "Current screen aspect ratio: %.2f", aspect);
 
     // Check for old-style multihead support, where two monitors appear as
     // one double-wide monitor with an 8:3 aspect ratio.  We always want to
@@ -409,7 +409,8 @@ void StageFrame::FindBestFullScreenVideoMode()
     // really are funny-shaped.  And we don't try to be clever about
     // multiple joined 3:4 monitors or other oddities; it's too much work.
     if ((aspect > (8.0/3.0)*0.95) && wxDisplay::GetCount() == 1)
-        gDebugLog.Log("Looks like two monitors combined into one display");
+        gLog.Debug("halyard",
+                   "Looks like two monitors combined into one display");
 
 	// Search for the most promising mode.
 	wxArrayVideoModes modes = display.GetModes();
@@ -418,7 +419,7 @@ void StageFrame::FindBestFullScreenVideoMode()
 	for (size_t i = 0; i < modes.GetCount(); i++)
 	{
 		wxVideoMode &mode = modes[i];
-		gDebugLog.Log("Found mode: %dx%d, %d bit, %d Hz (aspect %.2f)",
+		gLog.Debug("halyard", "Found mode: %dx%d, %d bit, %d Hz (aspect %.2f)",
 					  mode.w, mode.h, mode.bpp, mode.refresh,
                       1.0*mode.w/mode.h);
 
@@ -447,9 +448,9 @@ void StageFrame::FindBestFullScreenVideoMode()
 
 	// Log the video mode we chose.
 	if (mFullScreenVideoMode == wxDefaultVideoMode)
-		gLog.Log("Screen resizing not available.");
+		gLog.Info("halyard", "Screen resizing not available.");
 	else
-		gLog.Log("Best full screen mode: %dx%d, %d bit",
+		gLog.Info("halyard", "Best full screen mode: %dx%d, %d bit",
 				 mFullScreenVideoMode.w, mFullScreenVideoMode.h,
 				 mFullScreenVideoMode.bpp);
 }
@@ -674,7 +675,7 @@ void StageFrame::CheckForUpdateLockFile() {
         // FatalError to our users (and just submit crash reports).  But
         // if we ever make such a change, we still need to display this
         // error message.
-        gLog.FatalError("The installed copy of the program appears to\n"
+        gLog.Fatal("halyard", "The installed copy of the program appears to\n"
                         "have been incompletely updated.  You may need to\n"
                         "uninstall it, and then reinstall it from scratch.");
 }
@@ -716,7 +717,7 @@ void StageFrame::ObjectChanged()
         wxConvLocal);
     if (!::wxDirExists(script_data_dir) && !::wxMkdir(script_data_dir)) {
         std::string err((wxT("Can't create ") + script_data_dir).mb_str());
-        gLog.FatalError(err.c_str());
+        gLog.Fatal("halyard", err.c_str());
     }
 
     // Update our application name.

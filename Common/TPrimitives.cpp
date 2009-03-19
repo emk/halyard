@@ -297,7 +297,7 @@ void TPrimitiveManager::RegisterPrimitive(const std::string &inName,
 		mPrimitiveMap.find(inName);
     if (existing != mPrimitiveMap.end())
     {
-		gDebugLog.Log("Replacing primitive <%s>", inName.c_str());
+		gLog.Debug("halyard", "Replacing primitive <%s>", inName.c_str());
 		mPrimitiveMap.erase(existing);
     }
     
@@ -322,6 +322,9 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 {
     ASSERT(inName != "");
     
+    // Build the log category name for this primitive.
+    std::string log_category("halyard.prim." + inName);
+
     // Find the primitive.
     std::map<std::string,PrimitiveFunc>::iterator found =
 		mPrimitiveMap.find(inName);
@@ -345,12 +348,12 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 	if (gVariableManager.IsNull(HALYARD_SKIP_LOGGING_VAR))
 	{
 		if (gVariableManager.IsNull("_result")) {
-			gDebugLog.Log(">>> %s", call_info.c_str());
+			gLog.Trace(log_category, ">>> %s", call_info.c_str());
 		} else {
 			std::ostringstream out;
 			out << gVariableManager.Get("_result");
-			gDebugLog.Log(">>> %s -> %s",
-						  call_info.c_str(), out.str().c_str());
+			gLog.Trace(log_category, ">>> %s -> %s",
+                       call_info.c_str(), out.str().c_str());
 		}
 	}
 

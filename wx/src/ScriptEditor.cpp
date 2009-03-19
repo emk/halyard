@@ -1671,7 +1671,7 @@ bool ScriptDoc::SaveDocument(bool force) {
         if (force) {
             /// \todo Not quite sure what to do here.  Generate a temporary
             /// file name?  Do something else?
-            gLog.Log("Forced to discard unsaved, untitled document.");
+            gLog.Info("halyard", "Forced to discard unsaved, untitled document.");
             return true;
         } else {
             FileSystem::Path path(FileSystem::GetScriptsDirectory());

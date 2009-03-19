@@ -16,7 +16,7 @@
   (define *error-message* "")
   
   (define (updater-handler exn)
-    (app-log (cat exn)) 
+    (info 'updater "Updater error: " exn)
     (set! *error-message* (if (exn? exn)
                               (exn-message exn)
                               (cat exn)))

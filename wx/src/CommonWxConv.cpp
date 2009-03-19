@@ -65,7 +65,7 @@ wxSize GetSize(const TRect &inRect)
 wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor)
 {
     if (!inColor.IsCompletelyOpaque())
-        gDebugLog.Warning("Removing alpha channel from color");
+        gLog.Warn("halyard", "Removing alpha channel from color");
     return wxColour(inColor.red, inColor.green, inColor.blue);
 }
 

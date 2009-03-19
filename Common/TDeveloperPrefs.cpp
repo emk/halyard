@@ -63,7 +63,7 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 	}
 	if (!could_open)
 	{
-		gDebugLog.Log("Could not open user preferences file \"%s\", using defaults.", filename.c_str());
+		gLog.Debug("halyard", "Could not open user preferences file \"%s\", using defaults.", filename.c_str());
 		gVariableManager.Set("_debug", "0");
 		UseDefaultPrefs();
 		return;	
@@ -149,7 +149,7 @@ void TDeveloperPrefs::ParsePrefs(const FileSystem::Path &inPrefsFile)
 
 	if (errFlag)
 	{
-		gLog.Error("%s", errString);
+		gLog.Error("halyard", "%s", errString);
 		UseDefaultPrefs();
 		return;
 	}

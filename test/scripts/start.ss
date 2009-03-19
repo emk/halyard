@@ -62,7 +62,7 @@
   ;; anything.  The JUMP function changes the current card.
   (card /start (%card%)
     (run
-      (debug-log "Hello, world!  IT'S ALIIIIVE!")
+      (debug #f "Hello, world!  IT'S ALIIIIVE!")
       (jump /index)))
   
   (define-class %menu-item% (%box%)

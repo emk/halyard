@@ -105,7 +105,7 @@
   
   (require (lib "trace.ss" "halyard/private"))
   (provide with-tracing)
-  (set-trace-output-printer! debug-log)
+  (set-trace-output-printer! (fn (str) (trace 'halyard.trace str)))
 
   (require (rename (lib "match.ss") match-let match-let))
   (provide match-let)

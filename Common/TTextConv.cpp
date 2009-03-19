@@ -223,7 +223,7 @@ utf16_string Halyard::utf16_from_utf8(const utf8_string &utf8) {
                     THROW("UCS-4 characters not supported");
                     
                 default:
-                    gLog.FatalError("Error in UTF-8 decoder tables");
+                    gLog.Fatal("halyard", "Error in UTF-8 decoder tables");
             }
 		    
             // Advance to the end of the sequence.

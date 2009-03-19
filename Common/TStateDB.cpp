@@ -169,7 +169,7 @@ void TStateDB::Clear() {
     DatumMap::iterator iter(mDB.begin());
     while (iter != mDB.end()) {
         if (iter->second.HasListeners()) {
-            gLog.Warning("Cannot clear state-db key %s because it still has "
+            gLog.Warn("halyard", "Cannot clear state-db key %s because it still has "
                          "listeners", iter->first.c_str());
             ++iter;
         } else {

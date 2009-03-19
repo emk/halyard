@@ -71,10 +71,10 @@ GeigerAudioStream::~GeigerAudioStream()
 }
 
 void GeigerAudioStream::LogFinalStreamInfo() {
-	gDebugLog.Log("Played %d geiger counts in %.1f seconds, %d samples "
-				  "clipped",
-				  mChirpsPlayed, mFrameEndTime / SAMPLES_PER_SECOND,
-				  mClipCount);
+	gLog.Trace("halyard", "Played %d geiger counts in %.1f seconds, %d samples "
+               "clipped",
+               mChirpsPlayed, mFrameEndTime / SAMPLES_PER_SECOND,
+               mClipCount);
 }
 
 void GeigerAudioStream::ZeroBuffer(float *outBuffer, unsigned long inFrames)

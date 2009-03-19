@@ -40,7 +40,7 @@ void Halyard::InitializeCommonCode(CrashReporter *inReporter)
 
     // Open up our logfiles.
     bool want_log = (gDeveloperPrefs.GetPref(DEBUG_LOG) == DEBUG_LOG_ON);
-    TLogger::OpenStandardLogs(want_log);
+    TLog::OpenStandardLogs(want_log);
     
     // Register our portable interpreter primitives.
     RegisterCommonPrimitives();

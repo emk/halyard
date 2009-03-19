@@ -111,14 +111,13 @@
     ;; the trampoline with references to the actual node.  Anybody else who
     ;; has a copy of the trampoline can continue to use it as a proxy.
     (def (%snap-trampoline caller args)
-      (debug-log (cat "Loading " (.full-name)
-                      " from disk because " (.%superclass-of-real-node)
-                      " trampoline can't handle ." caller
-                      " with arguments " args))
+      (debug 'halyard.lazy-loader "Loading " (.full-name) " from disk because "
+             (.%superclass-of-real-node) " trampoline can't handle ." caller
+             " with arguments " args)
       (unless (eq? (.%snap-state) 'ready)
-        (fatal-error (cat "Tried to snap trampoline " (.full-name)
-                          " while in state " (.%snap-state)
-                          " because of ." caller " with arguments " args)))
+        (fatal 'halyard.lazy-loader "Tried to snap trampoline " (.full-name)
+               " while in state " (.%snap-state) " because of ." caller
+               " with arguments " args))
       (set! (.%snap-state) 'snapping)
       (unregister-trampoline! self)
       (load-external-node (.full-name))

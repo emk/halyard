@@ -650,7 +650,7 @@ Model::Model(const ModelFormat &inCurrentFormat,
         
         // We're going to migrate the file.  Note that version
         // migration *doesn't* set the dirty bit!
-        gLog.Log("Migrating from file version %d to %d",
+        gLog.Info("halyard", "Migrating from file version %d to %d",
                  file_format.GetVersion(), mFormat.GetVersion());
     }
     

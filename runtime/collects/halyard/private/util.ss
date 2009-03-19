@@ -37,34 +37,78 @@
   ;; 'CALL-PRIM' INSTEAD.
   (require #%engine-primitives)
 
-  (provide app-log debug-log report-error warning
-           fatal-error set-status-text! command-line-error command-line-message)
+  (provide logger trace debug info warn log-error fatal
+           ;; TODO - These functions will be deprecated as soon as we
+           ;; we fix with-errors-blocked.
+           report-error fatal-error
+           ;; TODO - These should probably be moved into the logging
+           ;; framework as soon as we have better control over how things
+           ;; get printed.
+           set-status-text! command-line-error command-line-message)
 
-  ;;; Write a message to Halyard.log.  This log is always present on a user's
-  ;;; system, and is never deleted, so use this function sparingly.
-  (define (app-log msg)
-    (%call-prim 'Log 'halyard msg 'log))
-  
-  ;;; Write a message to Debug.log, which is only present on developer
-  ;;; systems (though the last hundred lines are always available in a
-  ;;; crash report).  This is a very high-volume log, so feel free to be
-  ;;; verbose.
-  (define (debug-log msg)
-    (%call-prim 'Log 'Debug msg 'log))
-  
-  ;;; Warn the multimedia author about a possible problem.
-  (define (warning msg)
-    (%call-prim 'Log 'halyard msg 'warning))
-  
+  ;;; Log the string MSG.  Legal LEVEL values include the symbols: trace,
+  ;;; debug, info, warn, error, fatal.  Legal categories are #f (for no
+  ;;; category) or symbols of the form: mylib, mylib.q-and-a, and so on.
+  ;;;
+  ;;; Some notes on specific log levels:
+  ;;;   info: This is stored semi-permanently in a central log file, so
+  ;;;     please use it sparingly.
+  ;;;   warn: This will be visible to Halyard scripters, but not to end-users
+  ;;;     when Halyard is in runtime mode.
+  ;;;   error: When in runtime mode, this is treated the same as fatal,
+  ;;;     because end-users aren't expected to know how to recover from
+  ;;;     script errors.
+  ;;;
+  ;;; The values in MORE-MSG will be formatted using CAT.
+  ;;;
+  ;;; Performance: Ideally, logging should be fairly fast.  But LOGGER is
+  ;;; always at least as expensive as a primitive call, and it will also
+  ;;; incur the overhead of calling CAT if MORE-MSG is not null.
+  (define (logger level category msg . more-msg)
+    (%call-prim 'Log level
+                (if category (symbol->string category) "")
+                (if (null? more-msg)
+                  msg
+                  ;; CAT is slow, so don't call it unless we have to.
+                  (apply cat msg more-msg))))
+
+  ;;; Call LOGGER with level 'trace.
+  (define (trace category msg . more-msg)
+    (apply logger 'trace category msg more-msg))
+
+  ;;; Call LOGGER with level 'debug.
+  (define (debug category msg . more-msg)
+    (apply logger 'debug category msg more-msg))
+
+  ;;; Call LOGGER with level 'info.
+  (define (info category msg . more-msg)
+    (apply logger 'info category msg more-msg))
+
+  ;;; Call LOGGER with level 'warn.
+  (define (warn category msg . more-msg)
+    (apply logger 'warn category msg more-msg))
+
+  ;;; Call LOGGER with level 'error.
+  (define (log-error category msg . more-msg)
+    (apply logger 'warn category msg more-msg))
+
+  ;;; Call LOGGER with level 'fatal.
+  (define (fatal category msg . more-msg)
+    (apply logger 'warn category msg more-msg))
+
   ;;; Show a non-fatal error dialog in developer mode, or quit the engine
   ;;; and send a crash report in runtime mode.
+  ;;;
+  ;;; TODO - This will be deprecated soon.
   (define (report-error msg)
-    (%call-prim 'Log 'halyard msg 'error))
+    (log-error #f msg))
   
   ;;; Show a fatal error and quit the engine, regardless of mode.  Sends
   ;;; a crash report.
+  ;;;
+  ;;; TODO - This will be deprecated soon.
   (define (fatal-error msg)
-    (%call-prim 'Log 'halyard msg 'fatalerror))
+    (fatal #f msg))
 
   ;;; Show some text in the GUI's status bar.  Not visible in full screen
   ;;; mode!

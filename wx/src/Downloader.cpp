@@ -55,9 +55,9 @@ int ProgressCallback(void *data, double dltotal, double dlnow,
 	try {
 		TInterpreterManager::GetInstance()->DoIdle(false);
 	} catch (std::exception &e) {
-		gLog.FatalError("Unexpected internal error: %s", e.what()); 
+		gLog.Fatal("halyard", "Unexpected internal error: %s", e.what()); 
 	} catch (...) {
-		gLog.FatalError("Unexpected, unknown internal error.");
+		gLog.Fatal("halyard", "Unexpected, unknown internal error.");
 	}
 	return 0;
 }
@@ -66,7 +66,7 @@ int ProgressCallback(void *data, double dltotal, double dlnow,
 {                                 \
     CURLcode error_code = (EXPR); \
     if (error_code != CURLE_OK) { \
-	    gDebugLog.Log("cURL error (%d): %s", error_code, error_buffer); \
+	    gLog.Debug("halyard", "cURL error (%d): %s", error_code, error_buffer); \
         return false;             \
     }                             \
 }

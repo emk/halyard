@@ -180,7 +180,7 @@ AudioStream::AudioStream(Format inFormat, float inVolume)
 									   &AudioCallback,
 									   this);     // user data for callback
     if (err != paNoError)
-		gLog.FatalError("Cannot open audio output stream: %s (%d)",
+		gLog.Fatal("halyard", "Cannot open audio output stream: %s (%d)",
                         Pa_GetErrorText(err), err);
 }
 
@@ -293,7 +293,7 @@ bool AudioStream::IsPortAudioStreamRunning() const {
     wxCriticalSectionLocker lock3(sPortAudioCriticalSection);
     PaError err = Pa_StreamActive(mStream);
     if (err < 0) {
-        gLog.Warning("Error checking status of audio stream: %s (%d)",
+        gLog.Warn("halyard", "Error checking status of audio stream: %s (%d)",
                      Pa_GetErrorText(err), err);
         return false;
     } else {
@@ -417,7 +417,7 @@ void AudioStream::StartInternal(bool isInBackground) {
         // thread, which isn't allowed to call the logger (yet).
         // TODO - Make logger thread safe.
         if (!isInBackground)
-            gLog.Error("Cannot start audio output stream: %s (%d)",
+            gLog.Error("halyard", "Cannot start audio output stream: %s (%d)",
                        Pa_GetErrorText(err), err);
     } else {
         mIsRunning = true;
@@ -495,7 +495,7 @@ void AudioStream::InitializeStreams() {
         wxCriticalSectionLocker lock(sPortAudioCriticalSection);
         PaError err = Pa_Initialize();
         if( err != paNoError )
-            gLog.FatalError("Cannot initialize audio library: %s (%d)",
+            gLog.Fatal("halyard", "Cannot initialize audio library: %s (%d)",
                             Pa_GetErrorText(err), err);
     }
 

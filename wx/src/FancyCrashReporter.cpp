@@ -75,7 +75,7 @@ static wxString FindCurlExecutable() {
             wxString result(i->ToNativePathString().c_str());
             // This debug log message is sometimes obscuring the actual
             // crash message, so remove it for now.
-            // gDebugLog.Log("Found curl at %s", result.mb_str());
+            // gLog.Debug("halyard", "Found curl at %s", result.mb_str());
             return result;
         }
     }
@@ -85,7 +85,7 @@ static wxString FindCurlExecutable() {
     // issue a warning.
     // Removing the warning for now, in case it causes problems like the
     // above debug log message.
-    // gLog.Warning("Unable to find curl.exe for uploading debug reports,\n"
+    // gLog.Warn("halyard", "Unable to find curl.exe for uploading debug reports,\n"
     //              "looking in system PATH.");
     return CURL_NAME;
 }
@@ -293,7 +293,7 @@ bool FancyDebugReport::OnServerReply(const wxArrayString& reply) {
 
     if (TInterpreterManager::IsInCommandLineMode()) {
         // Display the server's response on the console.
-        std::ostream *err(TLogger::GetErrorOutput());
+        std::ostream *err(TLog::GetErrorOutput());
         *err << "Title:       " << title << std::endl
              << "Description: " << description << std::endl
              << "Link:        " << link << std::endl;
@@ -393,7 +393,7 @@ void FancyCrashReporter::ReportCrashInCrashRepoter(const char *inReason) {
     buffer[sizeof(buffer)-1] = '\0';
 
     // Display the error *very carefully* and abort.
-	TLogger::DisplayAlert(TLogger::LEVEL_ERROR, buffer);
+	TLog::DisplayAlert(TLog::LEVEL_ERROR, buffer);
     ::abort();
 }
 
@@ -413,13 +413,13 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     // TLogger, we've probably done this already.  But if we were called
     // because of a segfault or other OS-level problem that doesn't go
     // through TLogger, we presumably haven't done this yet.
-    TLogger::PrepareToExit();
+    TLog::PrepareToExit();
 
     // Generate our debug report, and check to make sure we created a temporary
     // directory.
     FancyDebugReport report(this, GetReportUrl(inType), inReason);
     if (!report.IsOk()) {
-        gLog.Log("Unable to create debug report for crash (crash message: %s)",
+        gLog.Info("halyard", "Unable to create debug report for crash (crash message: %s)",
                  (inReason != NULL ? inReason : "none"));
         wxMessageDialog dlg(NULL, "The application was unable to create a "
                             "debug report.\nPlease report this manually if you "
@@ -434,7 +434,7 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     // an internal history of recent writes to unopened logs.)  We need to
     // do this before checking mFileInfo, below, because it may add new
     // files to our report.
-    TLogger::OpenRemainingLogsForCrash();
+    TLog::OpenRemainingLogsForCrash();
 
     // Add any useful files to the report.
     FileInfoVector::iterator i = mFileInfo.begin();
@@ -457,7 +457,7 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     // submit this bug report.
     wxDebugReportPreviewStd preview;
     if (TInterpreterManager::IsInCommandLineMode()) {
-	    std::ostream *err(TLogger::GetErrorOutput());
+	    std::ostream *err(TLog::GetErrorOutput());
         *err << "Processing debug report." << std::endl;
 		if (report.Process()) {
 			*err << "Uploaded debug report to server." << std::endl;

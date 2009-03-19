@@ -56,6 +56,6 @@ void DrawingContextStack::PushDrawingContext(ElementPtr inElement) {
 void DrawingContextStack::PopDrawingContext(ElementPtr inElement) {
     ASSERT(!IsEmpty());
     if (inElement != mDrawingContextStack.back())
-        gLog.FatalError("Mismatched drawing context push/pop");
+        gLog.Fatal("halyard", "Mismatched drawing context push/pop");
     mDrawingContextStack.pop_back();
 }

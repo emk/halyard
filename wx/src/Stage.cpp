@@ -612,7 +612,7 @@ void Stage::InterpreterWakeUp()
 	// TODO - Keep track of who we're sleeping for.
     ASSERT(TInterpreter::HaveInstance());
     TInterpreter::GetInstance()->WakeUp();
-    gDebugLog.Log("wait: Finished waking up");
+    gLog.Debug("halyard.wait", "wait: Finished waking up");
 }
 
 void Stage::InterpreterWakeUpIfNecessary() {
@@ -1068,22 +1068,24 @@ bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
     std::string name(inElementName.mb_str());
 	if (i == mElements.end())
 	{
-		gDebugLog.Warning("wait: Element %s does not exist", name.c_str());
+		gLog.Warn("halyard.wait", "wait: Element %s does not exist",
+                  name.c_str());
 		return false;
 	}
 	MediaElementPtr media = MediaElementPtr(*i, dynamic_cast_tag());
 	if (!media)
 	{
-		gDebugLog.Warning("wait: Element %s is not a media element",
-                          name.c_str());
+		gLog.Warn("halyard.wait", "wait: Element %s is not a media element",
+                  name.c_str());
 		return false;		
 	}
 
 	// Return immediately (if we're already past the wait point) or
 	// go to sleep for a while.
 	if (media->HasReachedFrame(inUntilFrame))
-		gDebugLog.Log("wait: Media element %s has already past frame %d",
-					  name.c_str(), inUntilFrame);
+		gLog.Trace("halyard.wait",
+                   "wait: Media element %s has already past frame %d",
+                   name.c_str(), inUntilFrame);
 	else
 	{
 		mWaitElement = media;
@@ -1095,7 +1097,7 @@ bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 
 void Stage::EndWait()
 {
-	gDebugLog.Log("wait: Waking up.");
+	gLog.Trace("halyard.wait", "wait: Waking up.");
 	ASSERT(mWaitElement.get());
 	mWaitElement = MediaElementPtr();
 	mWaitFrame = 0;
@@ -1203,7 +1205,7 @@ void Stage::DestroyElement(ElementPtr inElement)
 
 	// Make sure this element isn't on our drawing context stack.
 	if (mDrawingContextStack->ContainsElement(inElement))
-		gLog.FatalError("Tried to delete an element with an active drawing "
+		gLog.Fatal("halyard", "Tried to delete an element with an active drawing "
 						"context");
 
 	// Clean up any dangling references to this object.
@@ -1282,7 +1284,7 @@ void Stage::EndMediaElements()
 		MediaElementPtr elem = MediaElementPtr(*i, dynamic_cast_tag());
 		if (elem && !elem->IsLooping()) {
             std::string name((*i)->GetName().mb_str());
-			gDebugLog.Log("Manually ending media: %s", name.c_str());
+			gLog.Debug("halyard", "Manually ending media: %s", name.c_str());
 			elem->EndPlayback();
 		}
 	}
@@ -1296,7 +1298,7 @@ void Stage::MouseGrab(ElementPtr inElement)
 	{
         std::string name(inElement->GetName().mb_str());
         std::string grabbed_name(mGrabbedElement->GetName().mb_str());
-		gLog.Error("Grabbing %s while %s is already grabbed",
+		gLog.Error("halyard", "Grabbing %s while %s is already grabbed",
 				   name.c_str(), grabbed_name.c_str());
 		MouseUngrab(mGrabbedElement);
 	}
@@ -1310,14 +1312,14 @@ void Stage::MouseUngrab(ElementPtr inElement)
 	if (!mGrabbedElement)
 	{
         std::string name(inElement->GetName().mb_str());
-		gLog.Error("Ungrabbing %s when it isn't grabbed", name.c_str());
+		gLog.Error("halyard", "Ungrabbing %s when it isn't grabbed", name.c_str());
 		return;
 	}
 	if (inElement != mGrabbedElement)
 	{
         std::string name(inElement->GetName().mb_str());
         std::string grabbed_name(mGrabbedElement->GetName().mb_str());
-		gLog.Error("Ungrabbing %s when %s is grabbed", name.c_str(),
+		gLog.Error("halyard", "Ungrabbing %s when %s is grabbed", name.c_str(),
                    grabbed_name.c_str());
 	}
 

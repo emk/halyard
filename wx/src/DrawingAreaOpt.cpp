@@ -91,7 +91,7 @@ void DrawPixMapOpt(PixelData &inDstData,
 		
 	// Figure out where in memory to begin drawing the first row.
 	if ( !inDstData )
-		gLog.FatalError("Error: Can't access raw pixels for bitmap");
+		gLog.Fatal("halyard", "Error: Can't access raw pixels for bitmap");
 	typename PixelData::Iterator dst_row_start(inDstData);
 	dst_row_start.Offset(inDstData, inPoint.x + begin.x, inPoint.y + begin.y);
 	
@@ -142,7 +142,7 @@ void FillBoxOpt(PixelData &inDstData,
 
 	// Get iterator for directly accessing memory.
 	if ( !inDstData )
-		gLog.FatalError("Error: Can't access raw pixels for bitmap");
+		gLog.Fatal("halyard", "Error: Can't access raw pixels for bitmap");
 	typename PixelData::Iterator row_start(inDstData);
 	row_start.Offset(inDstData, inBounds.x, inBounds.y);
 	
@@ -169,7 +169,7 @@ void ClearOpt(wxAlphaPixelData &inDstData,
 	end.y = inDstData.GetHeight();
 
 	if ( !inDstData )
-		gLog.FatalError("Error: Can't access raw pixels for bitmap");
+		gLog.Fatal("halyard", "Error: Can't access raw pixels for bitmap");
 	wxAlphaPixelData::Iterator row_start(inDstData);
 	
 	// Draw it

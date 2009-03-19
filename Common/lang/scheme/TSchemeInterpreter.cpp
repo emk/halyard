@@ -128,7 +128,7 @@ TSchemeInterpreterManager::GetRuntimeDirectory(int inArgc,
     return scheme_make_utf8_string(str.c_str());
 
     END_EXCEPTION_TRAPPER(TException::ReportFatalException)
-    gLog.FatalError("Should never reach end of GetRuntimeDirectory");
+    gLog.Fatal("halyard", "Should never reach end of GetRuntimeDirectory");
 }
 
 Scheme_Object *
@@ -175,7 +175,7 @@ void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
 	// Make sure the file exists.
 	std::string name = inFile.ToNativePathString();
 	if (!inFile.DoesExist())
-		gLog.FatalError("Cannot open required support file <%s>.",
+		gLog.Fatal("halyard", "Cannot open required support file <%s>.",
 						name.c_str());
 
 	// Load the file.
@@ -211,7 +211,7 @@ void TSchemeInterpreterManager::MakeInterpreter()
     // this condition fails, the engine will become almost unusable
     // for development purposes.
     if (gTSchemePointerCount != 1)
-        gLog.FatalError("Leaking TSchemePtr objects: found %d extra",
+        gLog.Fatal("halyard", "Leaking TSchemePtr objects: found %d extra",
                         gTSchemePointerCount - 1);
 
     // Create a new TSchemeInterpreter.  Once this is created, it can be
@@ -563,7 +563,7 @@ Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
     ASSERT(bucket != NULL);
     func = static_cast<Scheme_Object*>(bucket->val);
     if (!func)
-        gLog.FatalError("Can't find %s", inFuncName);
+        gLog.Fatal("halyard", "Can't find %s", inFuncName);
     return CallSchemeExHelper(func, inArgc, inArgv);
 }
 
@@ -601,7 +601,7 @@ Scheme_Object *TSchemeInterpreter::CallSchemeExHelper(Scheme_Object *inFunc,
 		// is forbidden.  So we want to die with a fatal error.  (Note
 		// that we can't get the error message from C; this exception
 		// should have been caught and handled by Scheme.)
-		gLog.FatalError("Scheme kernel threw unexpected exception");
+		gLog.Fatal("halyard", "Scheme kernel threw unexpected exception");
 	} else {
 		// Call the function.  
         result = scheme_apply(inFunc, inArgc, inArgv);
@@ -774,7 +774,7 @@ std::string TSchemeInterpreter::CurCardName(void)
 
 	name_obj = CallSchemeSimple("%kernel-current-card-name");
 	if (!SCHEME_CHAR_STRINGP(name_obj))
-		gLog.FatalError("Current card name must be string");
+		gLog.Fatal("halyard", "Current card name must be string");
     name_byte_str = scheme_char_string_to_byte_string(name_obj);
     name = SCHEME_BYTE_STR_VAL(name_byte_str);
 	return std::string(name);
@@ -813,11 +813,11 @@ bool TSchemeInterpreter::Eval(const std::string &inExpression,
 	o = CallScheme("%kernel-eval", args.size(), args.get());
 
 	if (!SCHEME_PAIRP(o))
-		gLog.FatalError("Unexpected result from %kernel-eval");
+		gLog.Fatal("halyard", "Unexpected result from %kernel-eval");
     car = SCHEME_CAR(o);
     cdr = SCHEME_CDR(o);
     if (!SCHEME_BOOLP(car) || !SCHEME_CHAR_STRINGP(cdr))
-		gLog.FatalError("Unexpected result from %kernel-eval");
+		gLog.Fatal("halyard", "Unexpected result from %kernel-eval");
 
 	byte_str = scheme_char_string_to_byte_string(cdr);
 	outResultText = std::string(SCHEME_BYTE_STR_VAL(byte_str));
@@ -872,18 +872,18 @@ IdentifierList TSchemeInterpreter::GetBuiltInIdentifiers() {
         if (!SCHEME_PAIRP(raw_id)
             || !SCHEME_PAIRP((cdr = SCHEME_CDR(raw_id)))
             || !SCHEME_NULLP(SCHEME_CDR(cdr)))
-            gLog.FatalError("Malformed result from %kernel-get-identifiers");
+            gLog.Fatal("halyard", "Malformed result from %kernel-get-identifiers");
         raw_name = SCHEME_CAR(raw_id);
         raw_type = SCHEME_CAR(cdr);
         if (!SCHEME_SYMBOLP(raw_name) || !SCHEME_SYMBOLP(raw_type))
-            gLog.FatalError("Malformed result from %kernel-get-identifiers");
+            gLog.Fatal("halyard", "Malformed result from %kernel-get-identifiers");
 		std::string type_str(SCHEME_SYM_VAL(raw_type));
 		TScriptIdentifier::Type type = IdentifierType(type_str);
         ids.push_back(TScriptIdentifier(SCHEME_SYM_VAL(raw_name), type));
         raw_ids = SCHEME_CDR(raw_ids);
     }
     if (!SCHEME_NULLP(raw_ids))
-        gLog.FatalError("Malformed result from %kernel-get-identifiers");
+        gLog.Fatal("halyard", "Malformed result from %kernel-get-identifiers");
     return ids;
 }
 

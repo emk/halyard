@@ -30,7 +30,7 @@ AppLog::AppLog()
     : mShouldSilentlyLogNonFatalErrors(false)
 
 {
-	gDebugLog.Log("WX INITIALIZING: Sending wx log messages to Halyard logs.");
+	gLog.Debug("halyard", "WX INITIALIZING: Sending wx log messages to Halyard logs.");
 }
 
 void AppLog::SilentlyLogNonFatalErrors()
@@ -92,35 +92,29 @@ void AppLog::DoLog(wxLogLevel inLevel, const wxChar *inMsg,
 		switch (inLevel) 
 		{ 
 			case wxLOG_FatalError:
-				gDebugLog.FatalError("WX %s: %s [%s]", label, message.c_str(),
-                                     timestamp.c_str());
-				gLog.FatalError("WX %s: %s [%s]", label, message.c_str(),
+				gLog.Fatal("halyard", "WX %s: %s [%s]", label, message.c_str(),
                                 timestamp.c_str());
 				break;
 
 		    case wxLOG_Error:
                 if (mShouldSilentlyLogNonFatalErrors) {
-                    gDebugLog.Log("WX %s: %s [%s]", label, message.c_str(),
+                    gLog.Debug("halyard", "WX %s: %s [%s]", label, message.c_str(),
                                   timestamp.c_str());
-                    gLog.Log("WX %s: %s [%s]", label, message.c_str(),
+                    gLog.Info("halyard", "WX %s: %s [%s]", label, message.c_str(),
                              timestamp.c_str());
                 } else {
-                    gDebugLog.Error("WX %s: %s [%s]", label, message.c_str(),
-                                    timestamp.c_str());
-                    gLog.Error("WX %s: %s [%s]", label, message.c_str(),
+                    gLog.Error("halyard", "WX %s: %s [%s]", label, message.c_str(),
                                timestamp.c_str());
                 }
 				break;
 
 		    case wxLOG_Warning:
-				gDebugLog.Warning("WX %s: %s [%s]", label, message.c_str(),
-                                  timestamp.c_str());
-				gLog.Warning("WX %s: %s [%s]", label, message.c_str(),
+				gLog.Warn("halyard", "WX %s: %s [%s]", label, message.c_str(),
                              timestamp.c_str());
 				break;
 				
 		    default:
-				gDebugLog.Log("WX %s: %s [%s]", label, message.c_str(),
+				gLog.Debug("halyard", "WX %s: %s [%s]", label, message.c_str(),
                               timestamp.c_str());
 				break;
 		}

@@ -91,7 +91,7 @@ void ImageCache::RequireFreeSpace(size_t inSpaceNeeded)
 			candidate = BetterToPurge(candidate, i);
 
 		// Purge it.
-		gDebugLog.Log("Purging image: %s", candidate->first.c_str());
+		gLog.Trace("halyard", "Purging image: %s", candidate->first.c_str());
 		mCurrentBytes -= ImageSize(candidate->second.bitmap);
 		mCache.erase(candidate);
 	}

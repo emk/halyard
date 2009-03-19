@@ -78,7 +78,7 @@ Error::Error(const char *inErrorFile, int inErrorLine, int inErrorCode)
 // about it.
 static void ResetErrno() {
     if (errno != 0) 
-        Halyard::gDebugLog.Log("Unexpected errno = %d (ERANGE)", errno);
+        Halyard::gLog.Debug("halyard", "Unexpected errno = %d (ERANGE)", errno);
 	errno = 0;
 }
 
@@ -538,7 +538,7 @@ void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir)
 		if (!inPath.DoesExist() || !inPath.IsDirectory())
 		{
 			Halyard::
-			gLog.FatalError("Halyard was unable to open the directory \"%s\".  "
+			gLog.Fatal("halyard", "Halyard was unable to open the directory \"%s\".  "
 							"Please make sure Halyard is running in the "
 							"correct directory, and that all source files are "
 							"available.",
@@ -550,7 +550,7 @@ void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir)
 		if (!inPath.DoesExist() || !inPath.IsRegularFile())
 		{
 			Halyard::
-			gLog.FatalError("Halyard was unable to open the file \"%s\".  "
+			gLog.Fatal("halyard", "Halyard was unable to open the file \"%s\".  "
 							"Please make sure Halyard is running in the "
 							"correct directory, and that all source files are "
 							"available.", 

@@ -42,7 +42,7 @@ const char* TException::what () const throw ()
 }
 
 void TException::ReportException(std::exception &e) {
-	gLog.Error("Error: %s", e.what());
+	gLog.Error("halyard", "Error: %s", e.what());
 }
 
 void TException::ReportException() {
@@ -50,9 +50,9 @@ void TException::ReportException() {
 }
 
 void TException::ReportFatalException(std::exception &e) {
-	gLog.FatalError("Error: %s", e.what());
+	gLog.Fatal("halyard", "Error: %s", e.what());
 }
 
 void TException::ReportFatalException() {
-	gLog.FatalError("An unexpected internal error occurred, quitting now.");
+	gLog.Fatal("halyard", "An unexpected internal error occurred, quitting now.");
 }

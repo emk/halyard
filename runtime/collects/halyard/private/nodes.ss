@@ -956,8 +956,9 @@
         (error (cat (.class) " .new: name must be a symbol; given " name)))
       (check-node-name name)
       (when (regexp-match "^g[0-9]+$" (symbol->string name))
-        (warning (cat "The node " (.full-name) " appears to have a gensym'd "
-                      "name which may break the Electric Gibbon test tool.")))
+        (warn 'halyard
+              (cat "The node " (.full-name) " appears to have a gensym'd "
+                   "name which may break the Electric Gibbon test tool.")))
       ((.parent) .%add-running-element! self))
 
     (with-instance (.class)
@@ -1218,7 +1219,7 @@
       (trunk-node-inst .notify-reached-trunk)
 
       ;; Actually run the card.
-      (debug-log (cat "Begin card: <" (new-card-class .full-name) ">"))
+      (debug 'halyard (cat "Begin card: <" (new-card-class .full-name) ">"))
       (with-errors-blocked (report-error)
         (enter-node-recursively new-card-class trunk-node-inst))))
 
@@ -1240,7 +1241,7 @@
             (set! exited-safely? #t)))
         (lambda ()
           (unless exited-safely?
-            (fatal-error (cat "Cannot JUMP in (on exit () ...) handler for "
-                              (node .full-name)))))))
+            (fatal 'halyard "Cannot JUMP in (on exit () ...) handler for "
+                   (node .full-name))))))
 
   )
