@@ -156,24 +156,8 @@
     (test "A test planner should run all test actions for current card."
       (define s (%test-action-set% .new))
       (define p (%deep-test-planner% .new))
-      (while (p .run-next-test-action)
-        (void))
+      (p .run-test-actions)
       (assert (s .done?)))
-    (test "A test planner should be able to restart where it left off."
-      (define s1 (%test-action-set% .new :name 's))
-      (define p (%deep-test-planner% .new))
-      (p .run-next-test-action)
-      (p .run-next-test-action)
-      (assert (not (s1 .done?)))
-      (define saved-mask (s1 .action-mask))
-      (delete-element s1)
-      (assert (not (p .done?)))
-      (define s2 (%test-action-set% .new :name 's :action-mask saved-mask))
-      (p .notify-card-restarted)
-      (while (p .run-next-test-action)
-        (void))
-      (assert (s2 .done?))
-      (assert (p .done?)))
     (test "A test planner should remember what card it was created on."
       (define p (%deep-test-planner% .new))
       (assert-equals ((current-card) .static-node) (p .card)))
@@ -186,6 +170,7 @@
     (value shape (shape 100 20))
     (def (draw) (void))
     (def (click)
+      (assert (not (.clicked?)))
       (set! (.enabled?) #f)
       (set! (.clicked?) #t)))
 
@@ -227,8 +212,7 @@
       ;; First pass.
       (define e (%depedant-buttons% .new :name 'buttons))
       (define p (%deep-test-planner% .new))
-      (while (p .run-next-test-action)
-        (void))
+      (p .run-test-actions)
       (assert (e .button-1.clicked?))
       (assert (e .button-2.clicked?))
       (define button-3a-clicked-1st-time? (e .button-3a.clicked?))
@@ -244,8 +228,7 @@
         (delete-element e)
         (set! e (%depedant-buttons% .new :name 'buttons))
         (p .notify-card-restarted)
-        (while (p .run-next-test-action)
-          (void))
+        (p .run-test-actions)
         (set! button-3a-clicked-2nd-time?
               (or button-3a-clicked-2nd-time? (e .button-3a.clicked?)))
         (set! button-3b-clicked-2nd-time?

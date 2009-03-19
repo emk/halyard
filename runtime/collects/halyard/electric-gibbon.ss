@@ -159,6 +159,11 @@
   ;;; new %test-planner% subclasses are written, and as old ones get
   ;;; more intelligent.
   (define-class %test-planner% ()
+    ;;; What should we do after running each action?  This attr will
+    ;;; generally be used to run any deferred callbacks that were created
+    ;;; by running the previous action.
+    (attr after-each-action void :type <function>)
+
     ;;; The card which we're in charge of testing.
     (attr card ((current-card) .static-node))
 
@@ -178,40 +183,37 @@
     (def (notify-card-restarted)
       (set! (slot 'actions-taken) '()))
 
-    ;;; Return the test action to run next, or #f if no test actions
-    ;;; are available at the current point in time.  Note that this
-    ;;; function has "iterator" semantics--once an action is returned,
-    ;;; it should be performed by the caller, and it should not be
-    ;;; returned again by next-test-action.
-    (def (next-test-action)
-      (error "Must override .next-test-action"))
-
-    ;;; Run the next available test action, if one is available at the
-    ;;; current point in time.  Note that this function may jump off the
-    ;;; card at any point, or may temporarily return #f because the card
-    ;;; has reached a dead-end with no more available actions, and must
-    ;;; be restarted to continue.
-    (def (run-next-test-action)
-      (define action (.next-test-action))
-      (if action
-        (begin
-          (set! (slot 'actions-taken)
-                (cons (action .key) (slot 'actions-taken)))
-          ;; TODO - Temporarily print action names until we have code to
-          ;; intercept error messages.  See also jump-to-each-card, which
-          ;; has a similar use of COMMAND-LINE-MESSAGE.
-          (command-line-message (cat "  " (symbol->string (action .key))))
-          (action .run)
-          #t)
-        #f))
-
-    ;;; Is this test planner completely done with the current card (and
-    ;;; not merely done with the actions it can perform right now)?  Note
-    ;;; that if .run-next-test-action returns #f, and .done? returns #f,
-    ;;; it will generally be necessary to restart the current card and
-    ;;; resume calling run-next-test-action.
+    ;;; Is this test planner completely done with the current card?
     (def (done?)
       (error "Must override .done?"))
+
+    ;;; Run as many test actions as possible at the current time.  Once
+    ;;; this function returns, call .done?.  If .done? returns #f, it will
+    ;;; be necessary to jump back to .card and call .notify-card-restarted
+    ;;; and .run-test-actions.
+    (def (run-test-actions)
+      (error "Must override .run-test-actions"))
+
+
+    ;;---------------------------------------------------------------------
+    ;;  For use by subclasses
+
+    ;;; Run ACTION, and log it appropriately.  This function should only be
+    ;;; called by subclasses of %test-planner%, and it should be used
+    ;;; instead of %action% .run.  If ACTION has already been tested once,
+    ;;; but must be run again for some reason, pass :rerun? #t.  This will
+    ;;; result in a slightly different log message.
+    (def (run-action action &key rerun?)
+      (set! (slot 'actions-taken)
+            (cons (action .key) (slot 'actions-taken)))
+      ;; TODO - Temporarily print action names until we have code to
+      ;; intercept error messages.  See also jump-to-each-card, which
+      ;; has a similar use of COMMAND-LINE-MESSAGE.
+      (command-line-message
+       (cat "  " (if rerun? "Rerun: " "") (symbol->string (action .key))))
+      (action .run)
+      ((.after-each-action)))
+
     )
 
 
@@ -227,8 +229,8 @@
   ;;; %test-planner% objects without immediately breaking
   ;;; halyard:jump_each.
   (define-class %null-test-planner% (%test-planner%)
-    (def (next-test-action)
-      #f)
+    (def (run-test-actions)
+      (void))
     (def (done?)
       #t))
 
@@ -242,10 +244,12 @@
   ;;; A %deep-test-planner% attempts to run all test actions that are
   ;;; available at the end of a card body.  It keeps track of actions that
   ;;; are only available after other actions are run, and it attempts to
-  ;;; find its way back to them.  Worth noting: We haven't spent much time
-  ;;; thinking about possible infinite loops in this code, aside from one
-  ;;; case that it mentioned in the comments below.  We'll worry about
-  ;;; infinite loops when we encounter one in the wild.
+  ;;; find its way back to them.
+  ;;;
+  ;;; Worth noting: We haven't spent much time thinking about possible
+  ;;; infinite loops in this code, aside from one case that it mentioned in
+  ;;; the comments below.  We'll worry about infinite loops when we
+  ;;; encounter one in the wild.
   (define-class %deep-test-planner% (%test-planner%)
     ;; This table maps %test-action% .key values to either:
     ;;  - A (possibly empty) list of actions which had already been
@@ -268,15 +272,15 @@
     (def (done?)
       (not (ormap identity (hash-table-map (.%uncompleted) (fn (k v) v)))))
 
-    ;;; Return the first available test action that we haven't already
-    ;;; completed, or #f if there's nothing left to do.
-    (def (next-test-action)
-      (define candidates (.%available-actions))
+    ;;; Run as many test actions as possible.
+    (def (run-test-actions)
+      (assert (null? (.actions-taken)))
 
-      ;; If we have no available actions, and we're at the start of the
-      ;; card, it may be possible for us to retrace some earlier set of
-      ;; actions to reveal hidden actions that we missed in an earlier pass.
-      (when (and (null? candidates) (null? (.actions-taken)))
+      ;; If we have no available actions right now, check to see if we some
+      ;; uncompleted actions "deeper" into the card.  If we do, we can try
+      ;; to return to a state where some of those actions become available.
+      (define candidates (.%available-actions))
+      (when (null? candidates)
         (.%try-to-return-to-a-state-with-test-actions)
         (set! candidates (.%available-actions))
         (when (and (null? candidates) (not (.done?)))
@@ -284,13 +288,12 @@
           (fatal-error (cat "Can't find a way to perform a previously seen "
                             "test action"))))
 
-      ;; If don't have a candidate, return #f.  If we do have a candidate,
-      ;; mark it as completed and return it.
-      (if (null? candidates)
-        #f
+      ;; Perform as many actions as possible.
+      (while (not (null? candidates))
         (let [[action (car candidates)]]
           (hash-table-put! (.%uncompleted) (action .key) #f)
-          action)))
+          (.run-action action))
+        (set! candidates (.%available-actions))))
 
     ;; Given a list of actions that are currently available, filter out any
     ;; that we've already completed.
@@ -340,8 +343,7 @@
                                    actions)]]
                 (if action
                   (begin
-                    (command-line-message (cat "  Rerun: " key))
-                    (action .run)
+                    (.run-action action :rerun? #t)
                     (loop (cdr keys)))
                   (warning (cat "Action " key
                                 " has mysteriously disappeared")))))))))

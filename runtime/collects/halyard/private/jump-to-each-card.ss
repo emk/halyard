@@ -138,7 +138,12 @@
     ;; don't, create one.
     (if *test-planner*
       (*test-planner* .notify-card-restarted)
-      (set! *test-planner* (*test-planner-class* .new)))
+      (set! *test-planner*
+            (*test-planner-class* .new
+              ;; KLUDGE - Clear our deferred thunk queue after each action.
+              ;; Yes, this is an excessive amount of knowledge of
+              ;; kernel.ss.
+              :after-each-action (fn () (%kernel-check-deferred)))))
 
     ;; Run test actions for as long as we can.  This may trigger a JUMP at
     ;; any point.  If a JUMP occurs, then we should eventually make it back
@@ -146,10 +151,7 @@
     ;; planner isn't done yet.  Also, some actions may cause other actions
     ;; to become unavailable, in which case we'll have to jump back to this
     ;; card and try again.
-    (while (*test-planner* .run-next-test-action)
-      ;; KLUDGE - Clear our deferred thunk queue after each action.  Yes,
-      ;; this is an excessive amount of knowledge of kernel.ss.
-      (%kernel-check-deferred))
+    (*test-planner* .run-test-actions)
 
     ;; There's nothing more we can do here, so we pass the buck to a
     ;; higher level of our test driver.
