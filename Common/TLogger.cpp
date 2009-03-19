@@ -150,7 +150,6 @@ TLog::TLog()
 	m_LogOpen = false; 
 	m_OpenFailed = false;
 	m_Append = false;
-	m_LogMask = LOG_ALL;
 }
 
 TLog::~TLog()
@@ -215,15 +214,6 @@ void TLog::Init(const char *Name, bool OpenFile /* = true */,
 {	
 	Init(FileSystem::GetAppDataDirectory().AddComponent(Name),
          OpenFile, Append);
-}
-
-void TLog::Log(int32 Mask, const char *Format, va_list inArgs)
-{
-	if (!ShouldLog(Mask))
-		return;
-
-	FORMAT_MSG(Format, inArgs);
-	LogBuffer(NULL);	
 }
 
 void TLog::Log(const char *Format, va_list inArgs)

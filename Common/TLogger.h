@@ -80,9 +80,6 @@ public:
 /// Our centralized logging interface.
 extern TLogger gLog;
 
-#define LOG_NONE		0x00000000
-#define LOG_ALL			0xFFFFFFFF
-
 #define LOG_BUFFER_SIZE	10240
 
 //////////
@@ -142,14 +139,6 @@ public:
 	void	Init(const FileSystem::Path &inLogFile, bool OpenFile = true,
 				 bool Append = false);
 
-    //////////
-	/// Log a general message.
-	///
-	/// \param Mask  a mask to check against the log mask before logging
-	/// \param Format  a printf format string (e.g. "Count is %d.", count)
-	///
-	void	Log(int32 Mask, const char *Format, va_list inArgs);
-	
 	//////////
 	/// Log a general message.
 	///
@@ -183,23 +172,6 @@ public:
 	/// Put a time stamp in the log.
 	///
 	void	TimeStamp(void);
-
-	//////////
-	/// Turn all logging off.
-	///
-	inline void LogNothing(void) { m_LogMask = LOG_NONE; }
-	
-	//////////
-	/// Logical "or" the log mask with the given mask.
-	///
-	/// \param Mask  the mask
-	///
-	inline void AddLogMask(int32 Mask) { m_LogMask |= Mask; }
-	
-	//////////
-	/// Turn all loggin on.
-	///
-	inline void LogEverything(void) { m_LogMask = LOG_ALL; }
 
 private:
 	//////////
@@ -237,11 +209,6 @@ private:
 	///
 	bool		m_Append;
 	
-	//////////
-	/// Logger mask
-	///
-	uint32		m_LogMask;
-
 	//////////
 	/// Either NULL, or a function which can be used to display an alert.
 	///
@@ -295,20 +262,6 @@ private:
     /// Crash the engine with a fatal error.
     ///
     void        CrashNow(CrashType inType) __attribute__((noreturn));
-
-	//////////
-	/// Should a log message with a given mask be logged?
-	///
-	/// \param Mask  a mask to check against
-	/// \return  true if the message should be logged, false otherwise
-	///
-	inline bool	ShouldLog(int32 Mask) 
-	{ 
-		if (m_LogOpen)
-			if ((m_LogMask & Mask) != 0)
-				return (true);
-		return (false);
-	}
 
 public:
 	//////////
