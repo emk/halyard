@@ -77,9 +77,9 @@ void EventDispatcher::EnableExpensiveEvents(bool inEnable)
 	if (inEnable == sEnableExpensiveEvents)
 		return;
 	if (inEnable)
-		gLog.Trace("halyard.events", "Turning expensive events on.");
+		gLog.Debug("halyard.events", "Turning expensive events on.");
 	else
-		gLog.Trace("halyard.events", "Turning expensive events off.");
+		gLog.Debug("halyard.events", "Turning expensive events off.");
 	sEnableExpensiveEvents = inEnable;
 }
 
