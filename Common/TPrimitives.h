@@ -360,7 +360,7 @@ extern TPrimitiveManager gPrimitiveManager;
 ///   {
 ///       std::string message;
 ///       inArgs >> message;
-///       gLog.Debug("%s", message.c_str());
+///       gLog.Debug("halyard.foo", "%s", message.c_str());
 ///   }
 ///
 #define DEFINE_PRIMITIVE(NAME) \
