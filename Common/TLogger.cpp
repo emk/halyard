@@ -116,6 +116,8 @@ void TLogger::Error(const std::string &inCategory, const char *inFormat, ...) {
 
 void TLogger::Fatal(const std::string &inCategory, const char *inFormat, ...) {
     VLOG_WITH_LEVEL(kFatal);
+    // We need to let GCC know that this function never actually returns.
+    abort();
 }
 
 
