@@ -590,7 +590,7 @@ void Stage::UpdateClockKeysInStateDB() {
 	// XXX - Do something more accurate than GetLo with the milliseconds.
     gStateDB.Set("/system/clock/seconds", ::wxGetLocalTime());
     gStateDB.Set("/system/clock/milliseconds",
-				 ::wxGetLocalTimeMillis().GetLo());
+				 (uint32) ::wxGetLocalTimeMillis().GetLo());
 }
 
 /// Put our interpreter to sleep.  It's our caller's responsibility to make
