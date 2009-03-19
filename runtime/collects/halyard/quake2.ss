@@ -104,8 +104,9 @@
 
   (define (quake2-register-command name func)
     (define (func-wrapper . args)
-      (with-errors-blocked (quake2-print-line)
-                           (apply func args)))
+      (with-exceptions-blocked [(fn (exn)
+                                  (quake2-print-line (exn-message exn)))]
+        (apply func args)))
     (call-prim 'Quake2RegisterCommand name func-wrapper))
 
 

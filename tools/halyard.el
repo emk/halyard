@@ -124,9 +124,8 @@ Halyard is a language for card-based interactive multimedia programming."
                "with-timeout-override"
                "require" "set!" "and" "or" "module" "on" "send" "prop"
                "state-db-fn" "state-db-fn/rt" "match-let" "with-syntax"
-               "define-goal" "define-goal*"
-               "with-errors-blocked" "test" "test-elements"
-               "begin-for-syntax" "def"
+               "define-goal" "define-goal*" "with-exceptions-blocked"
+               "test" "test-elements" "begin-for-syntax" "def"
                "with-instance" "with-handlers" "parameterize"
                "animate" "interpolate" "after" "method" "with-handlers"
                "method" "on" "advise" "attr" "value" "default"
@@ -227,7 +226,7 @@ Halyard is a language for card-based interactive multimedia programming."
 (put 'with-syntax 'scheme-indent-function 1)
 (put 'define-goal 'scheme-indent-function 3)
 (put 'define-goal* 'scheme-indent-function 4)
-(put 'with-errors-blocked 'scheme-indent-function 1)
+(put 'with-exceptions-blocked 'scheme-indent-function 1)
 (put 'define-goal-condition 'scheme-indent-function 1)
 (put 'define-goal-condition 'scheme-indent-function 2)
 (put 'test 'scheme-indent-function 1)
@@ -272,7 +271,10 @@ Halyard is a language for card-based interactive multimedia programming."
 (put 'teardown-test 'scheme-indent-function 0)
 (put 'test-action 'scheme-indent-function 1)
 
-;; For use with the backwards-compatibility library.
+;; For use with halyard/deprecated.ss.
+(put 'with-errors-blocked 'scheme-indent-function 1)
+
+;; For use with the "backwards-compatibility" library.
 (put 'card^ 'scheme-indent-function 2)
 (put 'group^ 'scheme-indent-function 2)
 (put 'define-template 'scheme-indent-function 3)

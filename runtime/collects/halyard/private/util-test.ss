@@ -33,8 +33,21 @@
     (test "warn should issue a warning"
       (assert-warns (warn 'halyard.log-test "Testing WARN function"))))
 
+  (define-class %with-exceptions-blocked-test% (%test-case%)
+    (test "with-exceptions-blocked should block exceptions"
+      (define caught-exn #f)
+      (define (handler exn)
+        (set! caught-exn exn))
+      (with-exceptions-blocked (handler)
+        (void))
+      (assert-equals #f caught-exn)
+      (with-exceptions-blocked (handler)
+        (error "foo"))
+      (assert-equals "foo" (exn-message caught-exn))))
+
   (card /tests/util
       (%test-suite%
-       :tests (list %logging-test%)))
+       :tests (list %logging-test%
+                    %with-exceptions-blocked-test%)))
 
   )

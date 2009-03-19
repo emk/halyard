@@ -28,7 +28,9 @@
   ;; are exported properly.
   (define identifiers
     (list app-log
-          non-fatal-error))
+          non-fatal-error
+          report-error
+          fatal-error))
 
   (define-class %logging-test% (%test-case%)
     (test "debug-log should not crash"
@@ -94,9 +96,22 @@
       (assert-equals "foo" (event-caption e)))
     )
 
+  (define-class %with-errors-blocked-test% (%test-case%)
+    (test "with-errors-blocked should block exceptions"
+      (define caught-msg #f)
+      (define (handler msg)
+        (set! caught-msg msg))
+      (with-errors-blocked (handler)
+        (void))
+      (assert-equals #f caught-msg)
+      (with-errors-blocked (handler)
+        (error "foo"))
+      (assert-equals "foo" caught-msg)))
+
   (card /tests/deprecated
       (%test-suite%
        :tests (list %logging-test%
-                    %events-test%)))
+                    %events-test%
+                    %with-errors-blocked-test%)))
   
   )

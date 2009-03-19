@@ -342,7 +342,7 @@
         (let ((jump-card #f))
           (let loop []
             (label exit-to-top
-              (with-errors-blocked (report-error)
+              (with-exceptions-blocked (report-exception)
                 (fluid-let ((*%kernel-exit-to-top-func* exit-to-top))
                   (run-initial-commands-the-first-time-through)
                   (cond
@@ -384,7 +384,7 @@
   ;;  TInterpreter.h.
 
   (define (notify-exit-script)
-    (with-errors-blocked (report-error)
+    (with-exceptions-blocked (report-exception)
       (define current-node-or-false (*engine* .current-group-member))
       (call-hook-functions *dangerous-exit-script-hook*
                            current-node-or-false)))
@@ -411,12 +411,12 @@
     (not *%kernel-running-callback?*))
 
   (define (%kernel-pause)
-    (with-errors-blocked (report-error)
+    (with-exceptions-blocked (report-exception)
       (%kernel-die-if-callback '%kernel-pause)
       (%kernel-set-state 'PAUSED)))
 
   (define (%kernel-wake-up)
-    (with-errors-blocked (report-error)
+    (with-exceptions-blocked (report-exception)
       (%kernel-die-if-callback '%kernel-wake-up)
       (when (%kernel-paused?)
         (%kernel-clear-state))))
@@ -428,11 +428,11 @@
     (%kernel-set-state 'CARD-KILLED))
 
   (define (%kernel-jump-to-card-by-name card-name)
-    (with-errors-blocked (report-error)
+    (with-exceptions-blocked (report-exception)
       (set-jump-state! (find-card card-name))))
 
   (define (%kernel-load-group group-name)
-    (with-code-loading-allowed [report-error #f]
+    (with-code-loading-allowed [report-exception #f]
       ((find-static-node group-name) .ensure-loaded! 'c++)))
 
   (define (%kernel-current-card-name)
@@ -441,7 +441,7 @@
         ""))
 
   (define (%kernel-valid-card? card-name)
-    (with-code-loading-allowed [report-error #f]
+    (with-code-loading-allowed [report-exception #f]
       (card-exists? card-name)))
 
   (define (%kernel-eval expression)
@@ -460,9 +460,9 @@
           (lambda r (set! result (apply format-result-values r)))))
 
        ;; Our error handler.
-       (lambda (error-msg)
+       (lambda (exn)
          (set! ok? #f)
-         (set! result error-msg)))
+         (set! result (exn-message exn))))
       
       ;; Return the result.
       (cons ok? result)))
@@ -471,7 +471,7 @@
     (if (current-warning-handler)
       ;; The current-warning-handler is not supposed to raise any errors,
       ;; because we're already in the error-handling machinery.
-      (with-errors-blocked [report-error]
+      (with-exceptions-blocked [report-exception]
         ((current-warning-handler) msg)
         #t)
       ;; We don't have a current-warning-handler, so let somebody else
@@ -485,7 +485,7 @@
   ;;; We will probably want to add support for querying specific modules
   ;;; (MODULE->NAMESPACE will help).
   (define (%kernel-get-built-in-identifiers)
-    (with-errors-blocked (fatal-error)
+    (with-exceptions-blocked (report-fatal-exception)
       (define (sym->type sym)
         (with-handlers [[exn:fail:contract:variable? 
                          (lambda (exn) 'variable)] ;; unbound var
@@ -513,7 +513,7 @@
   
   (define (%kernel-run-callback function args)
     (%kernel-run-as-callback (lambda () (apply function args))
-                             report-error))
+                             report-exception))
 
   ;; We need to export this from the kernel so CallScheme can find it.
   (define %kernel-reverse! reverse!)
@@ -678,7 +678,7 @@
        (set! *%kernel-state* 'NORMAL)])
     (set! *%kernel-jump-card* #f))
   
-  (define (%kernel-run-as-callback thunk error-handler)
+  (define (%kernel-run-as-callback thunk exception-handler)
     ;; This function is in charge of running callbacks from C++ into
     ;; Scheme.  These include simple callbacks and anything evaled from
     ;; C++.  When we're in a callback, we need to install special values
@@ -694,7 +694,7 @@
           (set! *%kernel-state* 'NORMAL)
           (label exit-callback
             ;; TODO - Can we have better error handling?
-            (with-errors-blocked (error-handler)
+            (with-exceptions-blocked (exception-handler)
               (fluid-let [[*%kernel-exit-to-top-func* exit-callback]
                           [*%kernel-exit-interpreter-func* exit-callback]
                           [*%kernel-running-callback?* #t]]
@@ -761,21 +761,21 @@
              "wrapped with with-code-loading-allowed "
              "(try a C++ debugger to find it)")))
 
-  (define (call-with-code-loading-allowed thunk error-handler error-value)
+  (define (call-with-code-loading-allowed thunk exception-handler error-value)
     (let [[result #f]]
       (%kernel-run-as-callback
        (lambda ()
          (set! result (thunk)))
-       (lambda (msg)
-         (error-handler msg)
+       (lambda (exn)
+         (exception-handler exn)
          (set! result error-value)))
       result))
 
   (define-syntax with-code-loading-allowed
     (syntax-rules ()
-      [(_ (error-handler error-value) body ...)
+      [(_ (exception-handler error-value) body ...)
        (call-with-code-loading-allowed (lambda () body ...)
-                                       error-handler error-value)]))
+                                       exception-handler error-value)]))
 
   ;;; Report an error while occurred while loading a script.  This function
   ;;; will not return.  Note that this function may only be called once we
@@ -863,7 +863,7 @@
     (set! *extract-definitions-fn* f))
   
   (define (%kernel-extract-definitions file-path)
-    (with-errors-blocked (fatal-error)
+    (with-exceptions-blocked (report-fatal-exception)
       (define path (build-path file-path))
       (%assert *extract-definitions-fn*)
       ;; We want to ignore errors here (unless we're debugging tags.ss),
@@ -873,8 +873,8 @@
       (%kernel-run-as-callback
        (lambda ()
          (*extract-definitions-fn* path))
-       (lambda (msg)
-         (debug 'halyard "ScriptEditorDB: " msg)))))
+       (lambda (exn)
+         (debug 'halyard "ScriptEditorDB: " (exn-message exn))))))
   
 
   ;;=======================================================================

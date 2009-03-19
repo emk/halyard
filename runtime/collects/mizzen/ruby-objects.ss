@@ -456,9 +456,9 @@
   (define (check-for-initialization obj method-name)
     (unless (app~ obj .initialized?)
       (let [[msg (cat "Called " method-name " on uninitialized object")]]
-        ;; If we're in an inifinitely-recursive error loop, NON-FATAL-ERROR
+        ;; If we're in an inifinitely-recursive error loop, LOG-ERROR
         ;; will at least make sure we see an error dialog.
-        ;; (report-error msg)
+        ;; (log-error msg)
         (error msg))))
  
   ;;; Check that method-name is not defined by klass.

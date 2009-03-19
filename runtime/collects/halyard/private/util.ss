@@ -38,9 +38,6 @@
   (require #%engine-primitives)
 
   (provide logger trace debug info warn log-error fatal
-           ;; TODO - These functions will be deprecated as soon as we
-           ;; we fix with-errors-blocked.
-           report-error fatal-error
            ;; TODO - These should probably be moved into the logging
            ;; framework as soon as we have better control over how things
            ;; get printed.
@@ -96,20 +93,6 @@
   (define (fatal category msg . more-msg)
     (apply logger 'warn category msg more-msg))
 
-  ;;; Show a non-fatal error dialog in developer mode, or quit the engine
-  ;;; and send a crash report in runtime mode.
-  ;;;
-  ;;; TODO - This will be deprecated soon.
-  (define (report-error msg)
-    (log-error #f msg))
-  
-  ;;; Show a fatal error and quit the engine, regardless of mode.  Sends
-  ;;; a crash report.
-  ;;;
-  ;;; TODO - This will be deprecated soon.
-  (define (fatal-error msg)
-    (fatal #f msg))
-
   ;;; Show some text in the GUI's status bar.  Not visible in full screen
   ;;; mode!
   (define (set-status-text! msg)
@@ -119,11 +102,11 @@
   ;;; console (or the closest equivalent on a given platform).  This is
   ;;; mostly for use by the test driver.
   ;;;
-  ;;; Note that report-error will also show an error on the command-line
+  ;;; Note that log-error will also show an error on the command-line
   ;;; when running in COMMAND_LINE mode.  But there are two important
   ;;; differences: (1) this function doesn't ever show a dialog, and (2)
   ;;; this function simply prints the error and returns immediately, even
-  ;;; in modes where report-error actually quits the program.
+  ;;; in modes where log-error actually quits the program.
   (define (command-line-error msg)
     (%call-prim 'CommandLineError msg))
 
@@ -137,36 +120,59 @@
   ;;  Stack trace error handler
   ;;=======================================================================
 
-  (provide with-errors-blocked)
+  (provide report-exception report-fatal-exception with-exceptions-blocked)
 
-  ;;; Call THUNK, and if an error occurs, pass it to REPORT-FUNC.
-  (define (call-with-errors-blocked report-func thunk)
-    (let* ((result (with-handlers ([void (lambda (exn) (cons #f exn))])
-                     (cons #t (thunk))))
-           (good? (car result))
-           (exn-or-value (cdr result)))
+  ;;; Return a string containing a backtrace for EXN, or #f if no backtrace
+  ;;; can be generated.
+  (define (exn-backtrace-string exn)
+    (let [[backtrace
+           ;; Print the backtrace to a string, but don't throw
+           ;; an exception if there are any errors in the printing
+           ;; process.
+           (with-handlers [[void (lambda (_) #f)]]
+             (define strport (open-output-string))
+             (print-error-trace strport exn)
+             (get-output-string strport))]]
+      (if (and backtrace (> (string-length backtrace) 0))
+        backtrace
+        #f)))
+
+  (define (make-log-exception-fn level)
+    (lambda (exn)
+      (define msg (exn-message exn))
+      (define backtrace (exn-backtrace-string exn))
+      (define full-msg
+        (if backtrace
+          (cat msg "\n\nBacktrace:\n\n" backtrace)
+          msg))
+      (logger level #f full-msg)))
+
+  ;;; Log an exception.  May not return, depending on exception handling
+  ;;; policy.
+  (define report-exception (make-log-exception-fn 'error))
+
+  ;;; Log an exception and exit.  Does not return.
+  (define report-fatal-exception (make-log-exception-fn 'fatal))
+
+  ;; Call THUNK, and if an exception occurs, pass it to REPORT-FUNC
+  ;; along with an optional backtrace.
+  (define (call-with-exceptions-blocked report-fn thunk)
+    (let* [[result (with-handlers ([void (lambda (exn) (cons #f exn))])
+                     (cons #t (thunk)))]
+           [good? (car result)]
+           [exn-or-value (cdr result)]]
       (if good?
-          exn-or-value
-          (let [[backtrace
-                 ;; Print the backtrace to a string, but don't throw
-                 ;; an exception if there are any errors in the printing
-                 ;; process.
-                 (with-handlers [[void (lambda (exn) #f)]]
-                   (define strport (open-output-string))
-                   (print-error-trace strport exn-or-value)
-                   (get-output-string strport))]]
-            (if (and backtrace (> (string-length backtrace) 0))
-              (report-func (cat (exn-message exn-or-value)
-                                "\n\nBacktrace:\n\n" backtrace))
-              (report-func (exn-message exn-or-value)))
-            #f))))
-
-  ;;; If an error occurs in BODY, pass it to REPORT-FUNC.
-  (define-syntax with-errors-blocked
+        exn-or-value
+        (begin
+          (report-fn exn-or-value)
+          #f))))
+    
+  ;;; If an exception occurs in BODY, pass it to REPORT-FUNC.
+  (define-syntax with-exceptions-blocked
     (syntax-rules ()
-      [(with-errors-blocked (report-func) body ...)
-       (call-with-errors-blocked report-func
-                                 (lambda () (begin/var body ...)))]))
-  (define-syntax-indent with-errors-blocked 1)
+      [(_ (report-func) body ...)
+       (call-with-exceptions-blocked report-func
+                                     (lambda () (begin/var body ...)))]))
+  (define-syntax-indent with-exceptions-blocked 1)
 
   )

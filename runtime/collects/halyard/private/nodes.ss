@@ -1220,7 +1220,7 @@
 
       ;; Actually run the card.
       (debug 'halyard (cat "Begin card: <" (new-card-class .full-name) ">"))
-      (with-errors-blocked (report-error)
+      (with-exceptions-blocked (report-exception)
         (enter-node-recursively new-card-class trunk-node-inst))))
 
   (define *running-on-exit-handler-for-node* #f)
@@ -1236,7 +1236,7 @@
         (lambda ()
           (fluid-let [[*running-on-exit-handler-for-node* node]]
             (%assert *running-on-exit-handler-for-node*)
-            (with-errors-blocked (report-error)
+            (with-exceptions-blocked (report-exception)
               (node .call-method-with-mandatory-super 'exit))
             (set! exited-safely? #t)))
         (lambda ()

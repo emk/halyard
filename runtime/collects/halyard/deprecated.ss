@@ -29,7 +29,8 @@
   ;; 'CALL-PRIM' INSTEAD.
   (require #%engine-primitives)
   
-  (provide app-log debug-log debug-caution warning non-fatal-error caution)
+  (provide app-log debug-log debug-caution warning report-error fatal-error
+           non-fatal-error caution)
 
   ;;; Write a message to Halyard.log.  This log is always present on a user's
   ;;; system, and is never deleted, so use this function sparingly.
@@ -51,6 +52,16 @@
   (define (warning msg)
     (warn #f msg))
   
+  ;;; Show a non-fatal error dialog in developer mode, or quit the engine
+  ;;; and send a crash report in runtime mode.
+  (define (report-error msg)
+    (log-error #f msg))
+  
+  ;;; Show a fatal error and quit the engine, regardless of mode.  Sends
+  ;;; a crash report.
+  (define (fatal-error msg)
+    (fatal #f msg))
+
   ;; Renamed functions.
   (define non-fatal-error report-error)
   (define caution warning)
@@ -105,5 +116,18 @@
   (define <media-caption-event> %media-caption-event%)
   (define (event-caption e) (e .caption))
 
+  (provide with-errors-blocked)
+
+  ;;; If an error occurs in BODY, convert it to a string, and pass it to
+  ;;; REPORT-FUNC.
+  (define-syntax with-errors-blocked
+    (syntax-rules ()
+      [(_ (report-func) body ...)
+       (with-exceptions-blocked [(fn (exn)
+                                   ;; Ignore backtraces--this is deprecated,
+                                   ;; so let's not try to get too fancy.
+                                   (report-func (exn-message exn)))]
+         body ...)]))
+  (define-syntax-indent with-errors-blocked 1)
 
   )
