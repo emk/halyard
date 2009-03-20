@@ -44,6 +44,10 @@ static TLog gHalyardLog;
 // exists on a developer's system.
 static TLog gDebugLog;
 
+// This log is used to log even lower-level trace events.  This file
+// typically exists on a developer's system.
+static TLog gTraceLog;
+
 
 //=========================================================================
 //  Assertion support
@@ -130,7 +134,9 @@ void TLogger::vLog(Level inLevel, const std::string &inCategory,
     MaybeDisplayAlert(inLevel, inCategory, message);
 
     // Actually write the message to the appropriate log files.
-    gDebugLog.Log(inLevel, inCategory, message);
+    gTraceLog.Log(inLevel, inCategory, message);
+    if (inLevel >= kDebug)
+        gDebugLog.Log(inLevel, inCategory, message);
     if (inLevel >= kWarn)
         gHalyardLog.Log(inLevel, inCategory, message);
 
@@ -270,8 +276,10 @@ void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
 	gHalyardLog.Init(SHORT_NAME, true, true);
 
     // Initialize the debug log if we've been asked to.
-	if (inShouldOpenDebugLog)
+	if (inShouldOpenDebugLog) {
 		gDebugLog.Init("Debug");
+        gTraceLog.Init("Trace");
+    }
 
     // Print our version string to our logs.
 	gLog.Info("halyard", "%s", VERSION_STRING);
@@ -281,6 +289,8 @@ void TLogger::OpenRemainingLogsForCrash()
 {
     if (!gDebugLog.IsOpen())
         gDebugLog.Init("DebugRecent");
+    if (!gTraceLog.IsOpen())
+        gTraceLog.Init("TraceRecent");
 }
 
 void TLogger::SetIsStandardErrorAvailable(bool inIsAvailable) {
