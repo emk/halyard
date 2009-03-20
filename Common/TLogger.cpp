@@ -129,33 +129,10 @@ void TLogger::vLog(Level inLevel, const std::string &inCategory,
     // well-behaved.
     MaybeDisplayAlert(inLevel, inCategory, message);
 
-    switch (inLevel) {
-        case kTrace:
-        case kDebug:
-            gDebugLog.Log(message);
-            break;
-
-        case kInfo:
-            gDebugLog.Log(message);
-            gHalyardLog.Log(message);
-            break;
-
-        case kWarn:
-            gDebugLog.Log(message);
-            gHalyardLog.Warning(message);
-            break;
-
-        case kError:
-            gDebugLog.Log(message);
-            gHalyardLog.Error(message);
-            break;
-
-        case kFatal:
-        default:
-            gDebugLog.Log(message);
-            gHalyardLog.FatalError(message);
-            break;
-    }
+    // Actually write the message to the appropriate log files.
+    gDebugLog.Log(inLevel, inCategory, message);
+    if (inLevel >= kWarn)
+        gHalyardLog.Log(inLevel, inCategory, message);
 
     // Decide whether or not we should exit the program.
     MaybeExitWithError(inLevel, inCategory, message);
@@ -297,7 +274,7 @@ void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
 		gDebugLog.Init("Debug");
 
     // Print our version string to our logs.
-	gLog.Info("%s", VERSION_STRING);
+	gLog.Info("halyard", "%s", VERSION_STRING);
 }
 
 void TLogger::OpenRemainingLogsForCrash()

@@ -76,34 +76,11 @@ public:
     bool IsOpen() const { return m_LogOpen; }
 
 	//////////
-	/// Log a general message.
+	/// Write a message to the log file.
 	///
-	/// \param Format  a printf format string (e.g. "Count is %d.", count)
-	///
-	void	Log(const std::string &inMessage);
+	void	Log(TLogger::Level inLevel, const std::string inCategory,
+                const std::string &inMessage);
 	
-	//////////
-	/// Log a warning message.  Prepends WARNING_HEADER.
-	///
-	/// \param Format  a printf format string (e.g. "Count is %d.", count)
-	///
-	void	Warning(const std::string &inMessage);
-	
-	//////////
-	/// Log an error message.  Prepends ERROR_HEADER.
-	///
-	/// \param Format  a printf format string (e.g. "Count is %d.", count)
-	///
-	void	Error(const std::string &inMessage);
-	
-	//////////
-	/// Log a fatal error message.  Prepends FATAL_HEADER and calls Shutdown().
-	///
-	/// \param Format  a printf format string (e.g. "Count is %d.", count)
-	///
-	void	FatalError(const std::string &inMessage)
-        __attribute__((noreturn));
-
 	//////////
 	/// Put a time stamp in the log.
 	///
@@ -144,13 +121,6 @@ private:
     /// Add a string to our m_RecentEntries list.
     ///
     void        AddToRecentEntries(const std::string &str);
-
-	//////////
-	/// Write the contents of inMessage to the log file.
-	///
-	/// \param Header  a header to precede the log buffer contents
-	///
-	void		LogMessage(const char *Header, const std::string &inMessage);
 };
 
 END_NAMESPACE_HALYARD

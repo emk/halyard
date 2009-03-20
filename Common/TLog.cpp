@@ -38,10 +38,6 @@ using namespace Halyard;
 //  This is our older logging class, modified to be called from our newer,
 //  unified TLogger interface.
 
-#define FATAL_HEADER	"Fatal Error: "
-#define ERROR_HEADER	"Error: "
-#define WARNING_HEADER	"Warning: "
-
 #define MAX_RECENT_ENTRIES (100)
 
 TLog::TLog()
@@ -115,20 +111,21 @@ void TLog::Init(const char *Name, bool OpenFile /* = true */,
          OpenFile, Append);
 }
 
-void TLog::Log(const std::string &inMessage) {
-	LogMessage(NULL, inMessage);
-}
+void TLog::Log(TLogger::Level inLevel, const std::string inCategory,
+               const std::string &inMessage)
+{
+    // Build our complete log entry
+    std::string entry(TLogger::StringFromLevel(inLevel));
+    entry += " <" + inCategory + ">";
+    entry += "   " + inMessage;
 
-void TLog::Warning(const std::string &inMessage) {
-    LogMessage(WARNING_HEADER, inMessage);
-}
-
-void TLog::Error(const std::string &inMessage) {
-	LogMessage(ERROR_HEADER, inMessage);
-}
-
-void TLog::FatalError(const std::string &inMessage) {
-    LogMessage(FATAL_HEADER, inMessage);
+	if (m_LogOpen) {
+        // If our log file is open, write our message to it.
+        m_Log << entry << std::endl << std::flush;
+    } else {
+        // Otherwise, record our log message in m_RecentEntries.
+        AddToRecentEntries(entry);
+    }
 }
 
 void TLog::AddToRecentEntries(const std::string &str) {
@@ -137,24 +134,6 @@ void TLog::AddToRecentEntries(const std::string &str) {
     m_RecentEntries.push_back(str);
 }
 
-
-//
-//	LogMessage - 
-//
-void TLog::LogMessage(const char *Header, const std::string &inMessage) {
-    // Build our complete log message.
-    std::string msg;
-    if (Header != NULL)
-        msg = Header;
-    msg += inMessage;
-
-	if (m_LogOpen)
-        // If our log file is open, write our message to it.
-        m_Log << msg << std::endl << std::flush;
-    else
-        // Otherwise, record our log message in m_RecentEntries.
-        AddToRecentEntries(msg);
-}
 
 //
 //	TimeStamp - Put a time stamp in the log
