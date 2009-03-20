@@ -33,6 +33,7 @@
 #include "CommonHeaders.h"
 #include <fstream>
 #include "TInterpreter.h"
+#include "FileSystem.h"
 #include "TPrimitives.h"
 #include "ScriptEditorDB.h"
 #include <sqlite3_plus.h>

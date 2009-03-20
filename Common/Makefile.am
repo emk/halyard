@@ -42,6 +42,7 @@ libhalyard_a_SOURCES = \
 	TException.cpp TException.h \
 	TInterpreter.cpp TInterpreter.h \
 	TLogger.cpp TLogger.h \
+	TLog.cpp TLog.h \
 	TPlatform.h \
 	TPoint.cpp TPoint.h \
 	TPolygon.cpp TPolygon.h \

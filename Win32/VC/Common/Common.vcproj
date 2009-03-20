@@ -282,6 +282,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\Common\TLog.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\Common\TLogger.cpp"
 				>
 			</File>
@@ -436,6 +440,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\TInterpreter.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TLog.h"
 				>
 			</File>
 			<File

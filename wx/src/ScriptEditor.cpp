@@ -26,6 +26,7 @@
 #include <wx/config.h>
 #include <wx/laywin.h>
 #include "TTemplateUtils.h"
+#include "FileSystem.h"
 #include "ScriptEditorDB.h"
 #include "AppGlobals.h"
 #include "ScriptEditor.h"
