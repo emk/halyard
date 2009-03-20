@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "TInterpreter.h"
 #include "CrashReporter.h"
 #include "TLog.h"
 
@@ -126,29 +125,10 @@ void TLog::Warning(const std::string &inMessage) {
 
 void TLog::Error(const std::string &inMessage) {
 	LogMessage(ERROR_HEADER, inMessage);
-    if (!TInterpreterManager::IsInAuthoringMode())
-        ExitWithError(SCRIPT_CRASH, inMessage);
 }
 
 void TLog::FatalError(const std::string &inMessage) {
     LogMessage(FATAL_HEADER, inMessage);
-    ExitWithError(APPLICATION_CRASH, inMessage);
-}
-
-void TLog::ExitWithError(CrashType inType, const std::string &inMessage) {
-    if (TInterpreterManager::IsInCommandLineMode()) {
-        TLogger::PrepareToExit();
-        exit(1);
-    } else {
-        CrashNow(inType, inMessage);
-    }
-}
-
-void TLog::CrashNow(CrashType inType, const std::string &inMessage) {
-    TLogger::PrepareToExit();
-    CrashReporter::GetInstance()->CrashNow(inMessage.c_str(), inType);
-    // We shouldn't get here, but just in case.
-	abort();
 }
 
 void TLog::AddToRecentEntries(const std::string &str) {

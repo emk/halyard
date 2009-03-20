@@ -151,21 +151,6 @@ private:
 	/// \param Header  a header to precede the log buffer contents
 	///
 	void		LogMessage(const char *Header, const std::string &inMessage);
-	
-    //////////
-    /// Exit the engine abruptly with a fatal error.  In COMMAND_LINE mode,
-    /// this will exit the engine and return a non-zero result to the
-    /// shell.  In other modes, it will try to invoke the CrashReporter.
-    ///
-    void        ExitWithError(CrashType inType,
-                              const std::string &inMessage)
-        __attribute__((noreturn));
-
-    //////////
-    /// Crash the engine with a fatal error.
-    ///
-    void        CrashNow(CrashType inType, const std::string &inMessage)
-        __attribute__((noreturn));
 };
 
 END_NAMESPACE_HALYARD

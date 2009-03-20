@@ -66,10 +66,17 @@ private:
                                  const std::string &inCategory,
                                  const std::string &inMessage);
 
-    // If this log message should have a alert dialog, display it.
+    /// If appropriate, show an alert dialog.
     void MaybeDisplayAlert(Level inLevel, const std::string &inCategory,
                            const std::string &inMessage);
 
+    /// If appropriate, exit the program with an error.
+    void MaybeExitWithError(Level inLevel, const std::string &inCategory,
+                            const std::string &inMessage);
+
+    // Exit the program with an error.
+    void ExitWithError(CrashType inType, const std::string &inMessage)
+        __attribute__((noreturn));
 
 public:
     TLogger() : mIsInMaybeHandleLogMessage(false) {}

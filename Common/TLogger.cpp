@@ -25,6 +25,7 @@
 #include "TVersion.h"
 #include "TInterpreter.h"
 #include "FileSystem.h"
+#include "CrashReporter.h"
 #include "TLog.h"
 
 #ifdef HAVE__VSNPRINTF
@@ -155,6 +156,9 @@ void TLogger::vLog(Level inLevel, const std::string &inCategory,
             gHalyardLog.FatalError(message);
             break;
     }
+
+    // Decide whether or not we should exit the program.
+    MaybeExitWithError(inLevel, inCategory, message);
 }
 
 bool TLogger::MaybeDelegateLogMessage(Level inLevel,
@@ -165,7 +169,7 @@ bool TLogger::MaybeDelegateLogMessage(Level inLevel,
     // visible to the user, so there's no need for our interpreter to
     // be able to handle them in a special way. Similarly, fatal errors
     // are always fatal, and there's no point in letting our
-    // interpreter to anything unusual with them.
+    // interpreter do anything unusual with them.
     if (inLevel < kWarn || inLevel == kFatal)
         return false;
 
@@ -212,6 +216,28 @@ void TLogger::MaybeDisplayAlert(Level inLevel, const std::string &inCategory,
 
         default:
             break;
+    }
+}
+
+void TLogger::MaybeExitWithError(Level inLevel, const std::string &inCategory,
+                                 const std::string &inMessage)
+{
+    // I'm not sure if this SCRIPT_CRASH / APPLICATION_CRASH distinction
+    // actually makes much sense, but it's what the old TLogger code did.
+    if (inLevel == kError && !TInterpreterManager::IsInAuthoringMode())
+        ExitWithError(SCRIPT_CRASH, inMessage);
+    else if (inLevel == kFatal)
+        ExitWithError(APPLICATION_CRASH, inMessage);
+}
+
+void TLogger::ExitWithError(CrashType inType, const std::string &inMessage) {
+    TLogger::PrepareToExit();
+    if (TInterpreterManager::IsInCommandLineMode()) {
+        exit(1);
+    } else {
+        CrashReporter::GetInstance()->CrashNow(inMessage.c_str(), inType);
+        // We shouldn't get here, but just in case.
+        abort();
     }
 }
 
