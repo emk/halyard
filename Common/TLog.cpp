@@ -128,16 +128,9 @@ void TLog::Error(const std::string &inMessage) {
 }
 
 void TLog::Warning(const std::string &inMessage) {
-    // Give TInterpreter a crack at this first (this allows the unit tests,
-    // for example, to override the behavior of WARNING).  If TInterpreter
-    // doesn't want to handle it, treat it normally.
-    if (!TInterpreter::HaveInstance() ||
-        !TInterpreter::GetInstance()->MaybeHandleWarning(inMessage))
-    {
-        if (!TInterpreterManager::IsInRuntimeMode())
-            AlertMessage(TLogger::ALERT_WARNING, inMessage);
-        LogMessage(WARNING_HEADER, inMessage);
-    }
+    if (!TInterpreterManager::IsInRuntimeMode())
+        AlertMessage(TLogger::ALERT_WARNING, inMessage);
+    LogMessage(WARNING_HEADER, inMessage);
 }
 
 void TLog::FatalError(const std::string &inMessage) {

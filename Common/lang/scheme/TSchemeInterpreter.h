@@ -193,7 +193,9 @@ public:
 	virtual bool IsValidCard(const char *inCardName);
 	virtual bool Eval(const std::string &inExpression,
 					  std::string &outResultText);
-	virtual bool MaybeHandleWarning(const std::string &inMessage);
+	virtual bool MaybeHandleLogMessage(const std::string &inLevel,
+                                       const std::string &inCategory,
+                                       const std::string &inMessage);
     virtual IdentifierList GetBuiltInIdentifiers();
     virtual TScriptIdentifier::Type IdentifierType(const std::string &type_str);
 };

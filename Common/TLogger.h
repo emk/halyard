@@ -56,7 +56,18 @@ public:
     /// Convert a log level to a string.
     static std::string StringFromLevel(Level inLevel);
 
-    TLogger() {}
+private:
+    /// Used to prevent re-entrant calls to MaybeHandleLogMessage.
+    bool mIsInMaybeHandleLogMessage;
+
+    /// We call this function to see whether anybody wants to handle the
+    /// log message for us.
+    bool TLogger::MaybeDelegateLogMessage(Level inLevel,
+                                          const std::string &inCategory,
+                                          const std::string &inMessage);
+
+public:
+    TLogger() : mIsInMaybeHandleLogMessage(false) {}
     virtual ~TLogger() {}
 
     /// Log a message, and possibly quit the engine or report a crash

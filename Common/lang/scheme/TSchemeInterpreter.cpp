@@ -824,22 +824,27 @@ bool TSchemeInterpreter::Eval(const std::string &inExpression,
 	return SCHEME_FALSEP(car) ? false : true;
 }
 
-bool TSchemeInterpreter::MaybeHandleWarning(const std::string &inMessage) {
+bool TSchemeInterpreter::MaybeHandleLogMessage(const std::string &inLevel,
+                                               const std::string &inCategory,
+                                               const std::string &inMessage)
+{
     // We don't have a reasonable Scheme environment yet, so let somebody
     // else care about it.
     if (!mScriptIsLoaded)
         return false;
 
     Scheme_Object *b = NULL;
-    TSchemeArgs<1> args;
+    TSchemeArgs<3> args;
 
     TSchemeReg<1,1> reg;
     reg.local(b);
     reg.args(args);
     reg.done();
 
-	args[0] = scheme_make_utf8_string(inMessage.c_str());
-	b = CallScheme("%kernel-maybe-handle-warning", args.size(), args.get());
+    args[0] = scheme_intern_symbol(inLevel.c_str());
+    args[1] = scheme_make_utf8_string(inCategory.c_str());
+	args[2] = scheme_make_utf8_string(inMessage.c_str());
+	b = CallScheme("%kernel-maybe-handle-log-message", args.size(), args.get());
 	return SCHEME_FALSEP(b) ? false : true;    
 }
 

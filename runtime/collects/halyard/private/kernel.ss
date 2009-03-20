@@ -467,8 +467,8 @@
       ;; Return the result.
       (cons ok? result)))
 
-  (define (%kernel-maybe-handle-warning msg)
-    (if (current-warning-handler)
+  (define (%kernel-maybe-handle-log-message level category msg)
+    (if (and (eq? level 'warn) (current-warning-handler))
       ;; The current-warning-handler is not supposed to raise any errors,
       ;; because we're already in the error-handling machinery.
       (with-exceptions-blocked [report-exception]

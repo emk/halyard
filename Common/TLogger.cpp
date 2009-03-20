@@ -78,7 +78,6 @@ TLogger::Level TLogger::LevelFromString(const std::string &inLevelStr) {
         return TLogger::kFatal;
     else
         gLog.Fatal("halyard", "Unknown logging level: %s", inLevelStr.c_str());
-    
 }
 
 std::string TLogger::StringFromLevel(Level inLevel) {
@@ -117,6 +116,10 @@ void TLogger::vLog(Level inLevel, const std::string &inCategory,
     buffer[LOG_BUFFER_SIZE-1] = '\0';
     std::string message(buffer.get());
     buffer.reset();
+
+    // If somebody else wants to handle this log message for us, let them.
+    if (MaybeDelegateLogMessage(inLevel, inCategory, message))
+        return;
 
     switch (inLevel) {
         case kTrace:
@@ -183,6 +186,45 @@ void TLogger::Fatal(const std::string &inCategory, const char *inFormat, ...) {
     VLOG_WITH_LEVEL(kFatal);
     // We need to let GCC know that this function never actually returns.
     abort();
+}
+
+bool TLogger::MaybeDelegateLogMessage(Level inLevel,
+                                      const std::string &inCategory,
+                                      const std::string &inMessage)
+{
+    // Log messages below the level of kWarning are never directly
+    // visible to the user, so there's no need for our interpreter to
+    // be able to handle them in a special way. Similarly, fatal errors
+    // are always fatal, and there's no point in letting our
+    // interpreter to anything unusual with them.
+    if (inLevel < kWarn || inLevel == kFatal)
+        return false;
+
+    // If the interpreter makes logging calls from inside
+    // MaybeHandleLogMessage, we don't want to pass them back to
+    // MaybeHandleLogMessage again.
+    if (mIsInMaybeHandleLogMessage)
+        return false;
+
+    // If we don't have an interpreter, handle our log message normally.
+    if (!TInterpreter::HaveInstance())
+        return false;
+
+    // Give TInterpreter a crack at this first (this allows the unit tests,
+    // for example, to override the behavior of WARNING).  If TInterpreter
+    // doesn't want to handle it, treat it normally.
+    bool result = false;
+    mIsInMaybeHandleLogMessage = true;
+    try {
+        TInterpreter *interp(TInterpreter::GetInstance());
+        result = interp->MaybeHandleLogMessage(StringFromLevel(inLevel),
+                                               inCategory, inMessage);
+    } catch (...) {
+        mIsInMaybeHandleLogMessage = false;
+        throw;
+    }
+    mIsInMaybeHandleLogMessage = false;
+    return result;
 }
 
 
