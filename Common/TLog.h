@@ -83,18 +83,18 @@ public:
 	void	Log(const std::string &inMessage);
 	
 	//////////
-	/// Log an error message.  Prepends ERROR_HEADER.
-	///
-	/// \param Format  a printf format string (e.g. "Count is %d.", count)
-	///
-	void	Error(const std::string &inMessage);
-	
-	//////////
 	/// Log a warning message.  Prepends WARNING_HEADER.
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
 	void	Warning(const std::string &inMessage);
+	
+	//////////
+	/// Log an error message.  Prepends ERROR_HEADER.
+	///
+	/// \param Format  a printf format string (e.g. "Count is %d.", count)
+	///
+	void	Error(const std::string &inMessage);
 	
 	//////////
 	/// Log a fatal error message.  Prepends FATAL_HEADER and calls Shutdown().
