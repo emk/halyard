@@ -81,9 +81,9 @@
       (%call-prim 'ErrortraceCompileEnabled)
       #f))
   
-  ;; Write a line to the debug log.
-  (define (debug-log msg)
-    (%call-prim 'Log 'debug "halyard.loader" msg))
+  ;; Write a line to the trace log.
+  (define (trace-log msg)
+    (%call-prim 'Log 'trace "halyard.loader" msg))
 
   ;;===== Splash screen management =====
 
@@ -116,7 +116,7 @@
   ;; Trace our compilation status.
   (define (trace msg)
     ;;(printf "~s~n" msg)
-    (debug-log msg))
+    (trace-log msg))
 
   ;; This parameter is only available in our custom-patched version of PLT
   ;; Scheme.  If it's available, we want to use it, but if not, we need to
@@ -164,7 +164,7 @@
   (define (wrap-load/use-compiled-with-heartbeat load/use-compiled)
     ;; Return a LOAD/USE-COMPILED handler.
     (lambda (file-path expected-module-name)
-      ;;(debug-log (string-append "Loading: " (path->string file-path)))
+      ;;(trace-log (string-append "Loading: " (path->string file-path)))
       (let [[result (load/use-compiled file-path expected-module-name)]]
         (notify-file-load/use-compiled)
         result)))
