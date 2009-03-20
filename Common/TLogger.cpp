@@ -27,6 +27,10 @@
 #include "FileSystem.h"
 #include "TLog.h"
 
+#ifdef HAVE__VSNPRINTF
+#	define vsnprintf _vsnprintf
+#endif
+
 using namespace Halyard;
 
 TLogger Halyard::gLog;
@@ -60,34 +64,49 @@ void HalyardCheckAssertion(int inTest, const char *inDescription,
 //=========================================================================
 //  This is our new, unified logging interface.
 
+// Allow big log messages, just in case there are stack traces involved.
+enum { LOG_BUFFER_SIZE = 10240 };
+
 void TLogger::vLog(Level inLevel, const std::string &inCategory,
                    const char *inFormat, va_list inArgs)
 {
+    // Write our log message to a string.  Some constraints: (1) we want
+    // our buffering code to be re-entrant. (2) We don't want to allocate a
+    // big buffer on the stack. (3) We don't want to depend on vsnprintf
+    // having a sane return value, because the MSDN documentation
+    // (incorrectly?) says it doesn't.  (4) We don't want to allocate a
+    // huge std::string, because then we'd just have to clear it.
+    scoped_array<char> buffer(new char[LOG_BUFFER_SIZE]);
+    vsnprintf(buffer.get(), LOG_BUFFER_SIZE, inFormat, inArgs);
+    buffer[LOG_BUFFER_SIZE-1] = '\0';
+    std::string message(buffer.get());
+    buffer.reset();
+
     switch (inLevel) {
         case kTrace:
         case kDebug:
-            gDebugLog.Log(inFormat, inArgs);
+            gDebugLog.Log(message);
             break;
 
         case kInfo:
-            gDebugLog.Log(inFormat, inArgs);
-            gHalyardLog.Log(inFormat, inArgs);
+            gDebugLog.Log(message);
+            gHalyardLog.Log(message);
             break;
 
         case kWarn:
-            gDebugLog.Log(inFormat, inArgs);
-            gHalyardLog.Warning(inFormat, inArgs);
+            gDebugLog.Log(message);
+            gHalyardLog.Warning(message);
             break;
 
         case kError:
-            gDebugLog.Log(inFormat, inArgs);
-            gHalyardLog.Error(inFormat, inArgs);
+            gDebugLog.Log(message);
+            gHalyardLog.Error(message);
             break;
 
         case kFatal:
         default:
-            gDebugLog.Log(inFormat, inArgs);
-            gHalyardLog.FatalError(inFormat, inArgs);
+            gDebugLog.Log(message);
+            gHalyardLog.FatalError(message);
             break;
     }
 }

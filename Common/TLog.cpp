@@ -45,14 +45,6 @@ using namespace Halyard;
 
 #define MAX_RECENT_ENTRIES (100)
 
-#ifdef HAVE__VSNPRINTF
-#	define vsnprintf _vsnprintf
-#endif
-
-#define FORMAT_MSG(FORMAT,ARGS) \
-	vsnprintf(m_LogBuffer, LOG_BUFFER_SIZE, (FORMAT), (ARGS)); \
-	m_LogBuffer[LOG_BUFFER_SIZE-1] = 0; \
-
 TLog::TLog()
 { 
 	m_LogOpen = false; 
@@ -124,67 +116,58 @@ void TLog::Init(const char *Name, bool OpenFile /* = true */,
          OpenFile, Append);
 }
 
-void TLog::Log(const char *Format, va_list inArgs)
-{
-	FORMAT_MSG(Format, inArgs);
-	LogBuffer(NULL);
+void TLog::Log(const std::string &inMessage) {
+	LogMessage(NULL, inMessage);
 }
 
-void TLog::Error(const char *Format, va_list inArgs)
-{
-	FORMAT_MSG(Format, inArgs);
-	AlertBuffer(TLogger::ALERT_ERROR);
-	LogBuffer(ERROR_HEADER);
+void TLog::Error(const std::string &inMessage) {
+	AlertMessage(TLogger::ALERT_ERROR, inMessage);
+	LogMessage(ERROR_HEADER, inMessage);
     if (!TInterpreterManager::IsInAuthoringMode())
-        ExitWithError(SCRIPT_CRASH);
+        ExitWithError(SCRIPT_CRASH, inMessage);
 }
 
-void TLog::Warning(const char *Format, va_list inArgs)
-{
-	FORMAT_MSG(Format, inArgs);
+void TLog::Warning(const std::string &inMessage) {
     // Give TInterpreter a crack at this first (this allows the unit tests,
     // for example, to override the behavior of WARNING).  If TInterpreter
     // doesn't want to handle it, treat it normally.
     if (!TInterpreter::HaveInstance() ||
-        !TInterpreter::GetInstance()->MaybeHandleWarning(m_LogBuffer))
+        !TInterpreter::GetInstance()->MaybeHandleWarning(inMessage))
     {
         if (!TInterpreterManager::IsInRuntimeMode())
-            AlertBuffer(TLogger::ALERT_WARNING);
-        LogBuffer(WARNING_HEADER);
+            AlertMessage(TLogger::ALERT_WARNING, inMessage);
+        LogMessage(WARNING_HEADER, inMessage);
     }
 }
 
-void TLog::FatalError(const char *Format, va_list inArgs)
-{
-	// We call AlertBuffer before LogBuffer, because
-	// the AlertBuffer code is required NOT to
-	// call back into FatalError, whereas LogBuffer
+void TLog::FatalError(const std::string &inMessage) {
+	// We call AlertMessage before LogMessage, because
+	// the AlertMessage code is required NOT to
+	// call back into FatalError, whereas LogMessage
 	// relies on a lot of subsystems which might
 	// somehow fail.
-	FORMAT_MSG(Format, inArgs);
-	AlertBuffer(TLogger::ALERT_ERROR);
-    LogBuffer(FATAL_HEADER);
-    ExitWithError(APPLICATION_CRASH);
+	AlertMessage(TLogger::ALERT_ERROR, inMessage);
+    LogMessage(FATAL_HEADER, inMessage);
+    ExitWithError(APPLICATION_CRASH, inMessage);
 }
 
-void TLog::ExitWithError(CrashType inType) {
+void TLog::ExitWithError(CrashType inType, const std::string &inMessage) {
     if (TInterpreterManager::IsInCommandLineMode()) {
         TLogger::PrepareToExit();
         exit(1);
     } else {
-        CrashNow(inType);
+        CrashNow(inType, inMessage);
     }
 }
 
-void TLog::CrashNow(CrashType inType) {
+void TLog::CrashNow(CrashType inType, const std::string &inMessage) {
     TLogger::PrepareToExit();
-    CrashReporter::GetInstance()->CrashNow(m_LogBuffer, inType);
+    CrashReporter::GetInstance()->CrashNow(inMessage.c_str(), inType);
     // We shouldn't get here, but just in case.
 	abort();
 }
 
-void TLog::AddToRecentEntries(const std::string &str)
-{
+void TLog::AddToRecentEntries(const std::string &str) {
     if (m_RecentEntries.size() == MAX_RECENT_ENTRIES)
         m_RecentEntries.pop_front();
     m_RecentEntries.push_back(str);
@@ -192,15 +175,14 @@ void TLog::AddToRecentEntries(const std::string &str)
 
 
 //
-//	LogBuffer - 
+//	LogMessage - 
 //
-void TLog::LogBuffer(const char *Header)
-{
+void TLog::LogMessage(const char *Header, const std::string &inMessage) {
     // Build our complete log message.
     std::string msg;
     if (Header != NULL)
         msg = Header;
-    msg += m_LogBuffer;
+    msg += inMessage;
 
 	if (m_LogOpen)
         // If our log file is open, write our message to it.
@@ -210,8 +192,9 @@ void TLog::LogBuffer(const char *Header)
         AddToRecentEntries(msg);
 }
 
-void TLog::AlertBuffer(TLogger::AlertType inType) {
-    TLogger::DisplayAlert(inType, m_LogBuffer);
+void TLog::AlertMessage(TLogger::AlertType inType, const std::string &inMessage)
+{
+    TLogger::DisplayAlert(inType, inMessage.c_str());
 }
 
 //

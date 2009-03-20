@@ -73,9 +73,7 @@ static wxString FindCurlExecutable() {
     for (; i != candidates.end(); ++i) {
         if (i->DoesExist()) {
             wxString result(i->ToNativePathString().c_str());
-            // This debug log message is sometimes obscuring the actual
-            // crash message, so remove it for now.
-            // gLog.Debug("halyard", "Found curl at %s", result.mb_str());
+            gLog.Debug("halyard", "Found curl at %s", result.mb_str());
             return result;
         }
     }
@@ -83,10 +81,8 @@ static wxString FindCurlExecutable() {
     // We didn't find curl in any of the expected places.  So we might as
     // well try the system path.  This is really not a good idea, so
     // issue a warning.
-    // Removing the warning for now, in case it causes problems like the
-    // above debug log message.
-    // gLog.Warn("halyard", "Unable to find curl.exe for uploading debug reports,\n"
-    //              "looking in system PATH.");
+    gLog.Warn("halyard", "Unable to find curl.exe for uploading debug reports, "
+              "looking in system PATH.");
     return CURL_NAME;
 }
 

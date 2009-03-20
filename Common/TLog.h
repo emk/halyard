@@ -29,8 +29,6 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-#define LOG_BUFFER_SIZE	10240
-
 //////////
 /// A class for logging output to a file.
 ///
@@ -82,28 +80,28 @@ public:
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	Log(const char *Format, va_list inArgs);	
+	void	Log(const std::string &inMessage);
 	
 	//////////
 	/// Log an error message.  Prepends ERROR_HEADER.
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	Error(const char *Format, va_list inArgs);
+	void	Error(const std::string &inMessage);
 	
 	//////////
 	/// Log a warning message.  Prepends WARNING_HEADER.
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	Warning(const char *Format, va_list inArgs);
+	void	Warning(const std::string &inMessage);
 	
 	//////////
 	/// Log a fatal error message.  Prepends FATAL_HEADER and calls Shutdown().
 	///
 	/// \param Format  a printf format string (e.g. "Count is %d.", count)
 	///
-	void	FatalError(const char *Format, va_list inArgs)
+	void	FatalError(const std::string &inMessage)
         __attribute__((noreturn));
 
 	//////////
@@ -122,11 +120,6 @@ private:
 	///
 	std::string m_FileName;
 	
-	//////////
-	/// Log buffer
-	///
-	char		m_LogBuffer[LOG_BUFFER_SIZE];
-
     //////////
     /// The most recent lines written to our log file.
     ///
@@ -153,30 +146,34 @@ private:
     void        AddToRecentEntries(const std::string &str);
 
 	//////////
-	/// Write the contents of m_LogBuffer to the log file.
+	/// Write the contents of inMessage to the log file.
 	///
 	/// \param Header  a header to precede the log buffer contents
 	///
-	void		LogBuffer(const char *Header);
+	void		LogMessage(const char *Header, const std::string &inMessage);
 	
 	//////////
-	/// Display an alert message box with the contents of m_LogBuffer.
+	/// Display an alert message box with the contents of inMessage.
 	///
 	/// \param inType  What type of dialog should we display?
 	///
-	void		AlertBuffer(TLogger::AlertType inType);
+	void		AlertMessage(TLogger::AlertType inType,
+                             const std::string &inMessage);
 
     //////////
     /// Exit the engine abruptly with a fatal error.  In COMMAND_LINE mode,
     /// this will exit the engine and return a non-zero result to the
     /// shell.  In other modes, it will try to invoke the CrashReporter.
     ///
-    void        ExitWithError(CrashType inType) __attribute__((noreturn));
+    void        ExitWithError(CrashType inType,
+                              const std::string &inMessage)
+        __attribute__((noreturn));
 
     //////////
     /// Crash the engine with a fatal error.
     ///
-    void        CrashNow(CrashType inType) __attribute__((noreturn));
+    void        CrashNow(CrashType inType, const std::string &inMessage)
+        __attribute__((noreturn));
 };
 
 END_NAMESPACE_HALYARD
