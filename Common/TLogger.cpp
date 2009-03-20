@@ -95,9 +95,9 @@ std::string TLogger::StringFromLevel(Level inLevel) {
 
 
 //=========================================================================
-//  TLogger
+//  TLogger::vLog (and support code)
 //=========================================================================
-//  This is our new, unified logging interface.
+//  This does all the heavy lifting.
 
 // Allow big log messages, just in case there are stack traces involved.
 enum { LOG_BUFFER_SIZE = 10240 };
@@ -120,6 +120,13 @@ void TLogger::vLog(Level inLevel, const std::string &inCategory,
     // If somebody else wants to handle this log message for us, let them.
     if (MaybeDelegateLogMessage(inLevel, inCategory, message))
         return;
+
+    // If appropriate, display an alert containing the log message.  Note
+    // that we do this before actually trying to log anything, because
+    // DisplayAlert is prohibited from calling back into the logging
+    // machinery, whereas some of latter parts of logging are not so
+    // well-behaved.
+    MaybeDisplayAlert(inLevel, inCategory, message);
 
     switch (inLevel) {
         case kTrace:
@@ -148,44 +155,6 @@ void TLogger::vLog(Level inLevel, const std::string &inCategory,
             gHalyardLog.FatalError(message);
             break;
     }
-}
-
-#define VLOG_WITH_LEVEL(LEVEL) \
-    va_list args; \
-    va_start(args, inFormat); \
-    vLog((LEVEL), inCategory, inFormat, args);  \
-    va_end(args);
-
-void TLogger::Log(Level inLevel, const std::string &inCategory,
-                  const char *inFormat, ...)
-{
-    VLOG_WITH_LEVEL(inLevel);
-}
-
-void TLogger::Trace(const std::string &inCategory, const char *inFormat, ...) {
-    VLOG_WITH_LEVEL(kTrace);
-}
-
-void TLogger::Debug(const std::string &inCategory, const char *inFormat, ...) {
-    VLOG_WITH_LEVEL(kDebug);
-}
-
-void TLogger::Info(const std::string &inCategory, const char *inFormat, ...) {
-    VLOG_WITH_LEVEL(kInfo);
-}
-
-void TLogger::Warn(const std::string &inCategory, const char *inFormat, ...) {
-    VLOG_WITH_LEVEL(kWarn);
-}
-
-void TLogger::Error(const std::string &inCategory, const char *inFormat, ...) {
-    VLOG_WITH_LEVEL(kError);
-}
-
-void TLogger::Fatal(const std::string &inCategory, const char *inFormat, ...) {
-    VLOG_WITH_LEVEL(kFatal);
-    // We need to let GCC know that this function never actually returns.
-    abort();
 }
 
 bool TLogger::MaybeDelegateLogMessage(Level inLevel,
@@ -225,6 +194,69 @@ bool TLogger::MaybeDelegateLogMessage(Level inLevel,
     }
     mIsInMaybeHandleLogMessage = false;
     return result;
+}
+
+void TLogger::MaybeDisplayAlert(Level inLevel, const std::string &inCategory,
+                                const std::string &inMessage)
+{
+    switch (inLevel) {
+        case kWarn:
+            if (!TInterpreterManager::IsInRuntimeMode())
+                DisplayAlert(ALERT_WARNING, inMessage.c_str());
+            break;
+
+        case kError:
+        case kFatal:
+            DisplayAlert(ALERT_ERROR, inMessage.c_str());
+            break;
+
+        default:
+            break;
+    }
+}
+
+
+//=========================================================================
+//  TLogger wrapper methods
+//=========================================================================
+//  These provide higher-level interfaces than TLogger::vLog.
+
+#define VLOG_WITH_LEVEL(LEVEL) \
+    va_list args; \
+    va_start(args, inFormat); \
+    vLog((LEVEL), inCategory, inFormat, args);  \
+    va_end(args);
+
+void TLogger::Log(Level inLevel, const std::string &inCategory,
+                  const char *inFormat, ...)
+{
+    VLOG_WITH_LEVEL(inLevel);
+}
+
+void TLogger::Trace(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kTrace);
+}
+
+void TLogger::Debug(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kDebug);
+}
+
+void TLogger::Info(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kInfo);
+}
+
+void TLogger::Warn(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kWarn);
+}
+
+void TLogger::Error(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kError);
+}
+
+void TLogger::Fatal(const std::string &inCategory, const char *inFormat, ...) {
+    VLOG_WITH_LEVEL(kFatal);
+    // We need to let GCC know that this function never actually returns.
+    abort();
 }
 
 

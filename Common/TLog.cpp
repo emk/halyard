@@ -121,25 +121,16 @@ void TLog::Log(const std::string &inMessage) {
 }
 
 void TLog::Warning(const std::string &inMessage) {
-    if (!TInterpreterManager::IsInRuntimeMode())
-        AlertMessage(TLogger::ALERT_WARNING, inMessage);
     LogMessage(WARNING_HEADER, inMessage);
 }
 
 void TLog::Error(const std::string &inMessage) {
-	AlertMessage(TLogger::ALERT_ERROR, inMessage);
 	LogMessage(ERROR_HEADER, inMessage);
     if (!TInterpreterManager::IsInAuthoringMode())
         ExitWithError(SCRIPT_CRASH, inMessage);
 }
 
 void TLog::FatalError(const std::string &inMessage) {
-	// We call AlertMessage before LogMessage, because
-	// the AlertMessage code is required NOT to
-	// call back into FatalError, whereas LogMessage
-	// relies on a lot of subsystems which might
-	// somehow fail.
-	AlertMessage(TLogger::ALERT_ERROR, inMessage);
     LogMessage(FATAL_HEADER, inMessage);
     ExitWithError(APPLICATION_CRASH, inMessage);
 }
@@ -183,11 +174,6 @@ void TLog::LogMessage(const char *Header, const std::string &inMessage) {
     else
         // Otherwise, record our log message in m_RecentEntries.
         AddToRecentEntries(msg);
-}
-
-void TLog::AlertMessage(TLogger::AlertType inType, const std::string &inMessage)
-{
-    TLogger::DisplayAlert(inType, inMessage.c_str());
 }
 
 //

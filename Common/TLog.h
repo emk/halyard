@@ -152,14 +152,6 @@ private:
 	///
 	void		LogMessage(const char *Header, const std::string &inMessage);
 	
-	//////////
-	/// Display an alert message box with the contents of inMessage.
-	///
-	/// \param inType  What type of dialog should we display?
-	///
-	void		AlertMessage(TLogger::AlertType inType,
-                             const std::string &inMessage);
-
     //////////
     /// Exit the engine abruptly with a fatal error.  In COMMAND_LINE mode,
     /// this will exit the engine and return a non-zero result to the

@@ -62,9 +62,14 @@ private:
 
     /// We call this function to see whether anybody wants to handle the
     /// log message for us.
-    bool TLogger::MaybeDelegateLogMessage(Level inLevel,
-                                          const std::string &inCategory,
-                                          const std::string &inMessage);
+    bool MaybeDelegateLogMessage(Level inLevel,
+                                 const std::string &inCategory,
+                                 const std::string &inMessage);
+
+    // If this log message should have a alert dialog, display it.
+    void MaybeDisplayAlert(Level inLevel, const std::string &inCategory,
+                           const std::string &inMessage);
+
 
 public:
     TLogger() : mIsInMaybeHandleLogMessage(false) {}
