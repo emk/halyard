@@ -87,11 +87,11 @@
 
   ;;; Call LOGGER with level 'error.
   (define (log-error category msg . more-msg)
-    (apply logger 'warn category msg more-msg))
+    (apply logger 'error category msg more-msg))
 
   ;;; Call LOGGER with level 'fatal.
   (define (fatal category msg . more-msg)
-    (apply logger 'warn category msg more-msg))
+    (apply logger 'fatal category msg more-msg))
 
   ;;; Show some text in the GUI's status bar.  Not visible in full screen
   ;;; mode!
