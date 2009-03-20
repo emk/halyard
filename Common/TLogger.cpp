@@ -203,20 +203,10 @@ bool TLogger::MaybeDelegateLogMessage(Level inLevel,
 void TLogger::MaybeDisplayAlert(Level inLevel, const std::string &inCategory,
                                 const std::string &inMessage)
 {
-    switch (inLevel) {
-        case kWarn:
-            if (!TInterpreterManager::IsInRuntimeMode())
-                DisplayAlert(ALERT_WARNING, inMessage.c_str());
-            break;
-
-        case kError:
-        case kFatal:
-            DisplayAlert(ALERT_ERROR, inMessage.c_str());
-            break;
-
-        default:
-            break;
-    }
+    if (inLevel >= kError)
+        DisplayAlert(ALERT_ERROR, inMessage.c_str());
+    else if (inLevel >= kWarn && !TInterpreterManager::IsInRuntimeMode())
+        DisplayAlert(ALERT_WARNING, inMessage.c_str());
 }
 
 void TLogger::MaybeExitWithError(Level inLevel, const std::string &inCategory,
@@ -224,10 +214,10 @@ void TLogger::MaybeExitWithError(Level inLevel, const std::string &inCategory,
 {
     // I'm not sure if this SCRIPT_CRASH / APPLICATION_CRASH distinction
     // actually makes much sense, but it's what the old TLogger code did.
-    if (inLevel == kError && !TInterpreterManager::IsInAuthoringMode())
-        ExitWithError(SCRIPT_CRASH, inMessage);
-    else if (inLevel == kFatal)
+    if (inLevel == kFatal)
         ExitWithError(APPLICATION_CRASH, inMessage);
+    else if (inLevel >= kError && !TInterpreterManager::IsInAuthoringMode())
+        ExitWithError(SCRIPT_CRASH, inMessage);
 }
 
 void TLogger::ExitWithError(CrashType inType, const std::string &inMessage) {
