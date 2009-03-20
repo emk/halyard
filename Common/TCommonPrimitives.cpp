@@ -173,25 +173,7 @@ DEFINE_PRIMITIVE(Log)
 	std::string level_str, category, msg;
 	inArgs >> SymbolName(level_str) >> category >> msg;
 	level_str = ::MakeStringLowercase(level_str);
-
-	// Report the problem using the appropriate log level.
-    TLogger::Level level = TLogger::kFatal;
-	if (level_str == "trace")
-        level = TLogger::kTrace;
-	else if (level_str == "debug")
-        level = TLogger::kDebug;
-	else if (level_str == "info")
-        level = TLogger::kInfo;
-	else if (level_str == "warn")
-        level = TLogger::kWarn;
-	else if (level_str == "error")
-        level = TLogger::kError;
-	else if (level_str == "fatal")
-        level = TLogger::kFatal;
-    else
-        gLog.Warn("halyard", "Unknown logging level: %s", level_str.c_str());
-
-    gLog.Log(level, category, "%s", msg.c_str());
+    gLog.Log(TLogger::LevelFromString(level_str), category, "%s", msg.c_str());
 }
 
 

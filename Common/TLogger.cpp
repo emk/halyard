@@ -60,6 +60,42 @@ void HalyardCheckAssertion(int inTest, const char *inDescription,
 
 
 //=========================================================================
+//  Converting log levels to and from strings
+//=========================================================================
+
+TLogger::Level TLogger::LevelFromString(const std::string &inLevelStr) {
+	if (inLevelStr == "trace")
+        return TLogger::kTrace;
+	else if (inLevelStr == "debug")
+        return TLogger::kDebug;
+	else if (inLevelStr == "info")
+        return TLogger::kInfo;
+	else if (inLevelStr == "warn")
+        return TLogger::kWarn;
+	else if (inLevelStr == "error")
+        return TLogger::kError;
+	else if (inLevelStr == "fatal")
+        return TLogger::kFatal;
+    else
+        gLog.Fatal("halyard", "Unknown logging level: %s", inLevelStr.c_str());
+    
+}
+
+std::string TLogger::StringFromLevel(Level inLevel) {
+    switch (inLevel) {
+        case kTrace: return "trace";
+        case kDebug: return "debug";
+        case kInfo:  return "info";
+        case kWarn:  return "warn";
+        case kError: return "error";
+        case kFatal: return "fatal";
+        default:
+            gLog.Fatal("halyard", "Unknown log level");
+    }
+}
+
+
+//=========================================================================
 //  TLogger
 //=========================================================================
 //  This is our new, unified logging interface.

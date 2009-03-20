@@ -50,6 +50,12 @@ public:
         ALERT_ERROR    //< An error dialog
     };
 
+    /// Convert a string to a log level.
+    static Level LevelFromString(const std::string &inLevelStr);
+
+    /// Convert a log level to a string.
+    static std::string StringFromLevel(Level inLevel);
+
     TLogger() {}
     virtual ~TLogger() {}
 
