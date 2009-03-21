@@ -223,9 +223,27 @@
        media-network-timeout playback-timer media-caption cursor-moved
        cursor-shown cursor-hidden))
 
+    ;; Generally speaking, we divide events into two categories: Events
+    ;; which correspond to concrete, high-level user actions (which we log
+    ;; at 'debug level), and events which correspond to lower-level system
+    ;; trivia or minor user actions (which we log at 'trace level).  Note
+    ;; that merely moving the cursor around counts as a low-level action,
+    ;; but clicking the mouse or pressing enter in a text field counts as a
+    ;; high-level action.
+    (def (%log-level-for-event name)
+      (case name
+        [[update-ui mouse-enter mouse-leave mouse-moved text-changed
+          browser-title-changed status-text-changed progress-changed
+          media-finished playback-timer media-caption
+          cursor-moved cursor-shown cursor-hidden]
+         'trace]
+        [else
+         'debug]))
+
     (def (dispatch-event-to-node name args)
-      (trace (symcat 'halyard.event. name)
-             (.full-name) ": " name " event: " args)
+      (logger (.%log-level-for-event name)
+              (symcat 'halyard.event. name)
+              (.full-name) ": " name " event: " args)
       (define event
         (case name
           [[update-ui]
