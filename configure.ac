@@ -65,6 +65,23 @@ LIBRARY_MISSING_IF([test x"$HAVE_WXWIDGETS" != xyes], [wxWidgets])
 AM_PATH_WXRC([HAVE_WXRC=yes], [HAVE_WXRC=no])
 LIBRARY_MISSING_IF([test x"$HAVE_WXRC" != xyes], [wxrc])
 
+# Make sure AC_CHECK_LIB looks in some other common library locations.
+for D in /opt/local; do
+    # Adapted from http://autoconf-archive.cryp.to/smr_with_build_path.html
+    test -d "$D/include" && CPPFLAGS="$CPPFLAGS -I$D/include"
+    test -d "$D/lib" && LDFLAGS="$LDFLAGS -L$D/lib"
+done
+
+# Check for log4cplus.
+AC_LANG_PUSH(C++)
+AC_CHECK_LIB(log4cplus, main, [
+    HAVE_LIBLOG4CPLUS=yes
+    LOG4CPLUS_LIBS=-llog4cplus
+    AC_SUBST(LOG4CPLUS_LIBS)
+], [HAVE_LIBLOG4CPLUS=no])
+AC_LANG_POP(C++)
+LIBRARY_MISSING_IF([test x"$HAVE_LIBLOG4CPLUS" != xyes], [log4cplus])
+
 
 #==========================================================================
 # Checks for Header Files

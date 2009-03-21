@@ -22,6 +22,9 @@
 
 #include "CommonHeaders.h"
 
+#include <log4cplus/logger.h>
+#include <log4cplus/configurator.h>
+
 #include "TVersion.h"
 #include "TInterpreter.h"
 #include "FileSystem.h"
@@ -98,6 +101,20 @@ std::string TLogger::StringFromLevel(Level inLevel) {
     }
 }
 
+/// Internal: Translate to log4cplus log level.
+static log4cplus::LogLevel Log4CPlusLevelFromLevel(TLogger::Level inLevel) {
+    switch (inLevel) {
+        case TLogger::kTrace: return log4cplus::TRACE_LOG_LEVEL;
+        case TLogger::kDebug: return log4cplus::DEBUG_LOG_LEVEL;
+        case TLogger::kInfo:  return log4cplus::INFO_LOG_LEVEL;
+        case TLogger::kWarn:  return log4cplus::WARN_LOG_LEVEL;
+        case TLogger::kError: return log4cplus::ERROR_LOG_LEVEL;
+        case TLogger::kFatal: return log4cplus::FATAL_LOG_LEVEL;
+        default:
+            gLog.Fatal("halyard", "Unknown log level");
+    }    
+}
+
 
 //=========================================================================
 //  TLogger::vLog (and support code)
@@ -132,6 +149,10 @@ void TLogger::vLog(Level inLevel, const std::string &inCategory,
     // machinery, whereas some of latter parts of logging are not so
     // well-behaved.
     MaybeDisplayAlert(inLevel, inCategory, message);
+
+    // Write the message to our logging library.
+    log4cplus::Logger logger(log4cplus::Logger::getInstance(inCategory));
+    logger.log(Log4CPlusLevelFromLevel(inLevel), message);
 
     // Actually write the message to the appropriate log files.
     gTraceLog.Log(inLevel, inCategory, message);
@@ -272,6 +293,10 @@ std::ostream *TLogger::s_ErrorOutput = NULL;
 
 void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
 {
+    // Set up our logging library.
+    log4cplus::BasicConfigurator config;
+    config.configure();
+
 	// Initialize the global log file.
 	gHalyardLog.Init(SHORT_NAME, true, true);
 

@@ -34,3 +34,6 @@
 [submodule "runtime/ruby/lib/buildscript"]
 	path = runtime/ruby/lib/buildscript
 	url = git://imlsrc.dartmouth.edu/buildscript.git
+[submodule "libs/log4cplus"]
+	path = libs/log4cplus
+	url = git://imlsrc.dartmouth.edu/halyard-libs/log4cplus.git

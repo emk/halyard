@@ -42,8 +42,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1"
-				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,LIBXML_STATIC,MZ_PRECISE_GC"
+				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1;..\..\..\libs\log4cplus\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;LIBXML_STATIC;MZ_PRECISE_GC;LOG4CPLUS_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -119,8 +119,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1"
-				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,LIBXML_STATIC,MZ_PRECISE_GC"
+				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1;..\..\..\libs\log4cplus\include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;LIBXML_STATIC;MZ_PRECISE_GC;LOG4CPLUS_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				RuntimeTypeInfo="true"

@@ -122,6 +122,7 @@ halyard_LDADD = \
 	$(XML2_LIBS) \
 	$(FREETYPE_LIBS) \
 	$(SQLITE3_LDFLAGS) \
+	$(LOG4CPLUS_LIBS) \
         $(MZSCHEME_LDFLAGS) \
 	$(CURL_LIBS) \
 	$(WX_LIBS)

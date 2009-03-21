@@ -84,7 +84,8 @@ CommonTest_LDADD = \
 	$(XML2_LIBS) \
 	$(FREETYPE_LIBS) \
 	$(SQLITE3_LDFLAGS) \
-        $(MZSCHEME_LDFLAGS)
+        $(MZSCHEME_LDFLAGS) \
+	$(LOG4CPLUS_LIBS)
 
 
 #==========================================================================
