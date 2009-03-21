@@ -27,8 +27,7 @@
   (set! foo "bar")
   (check (equal? foo "bar"))
 
-  (debug-log "Completed simple tests")
-  (app-log "Completed simple tests")
+  (debug 'halyard.test "Completed simple tests")
 
 
   ;;=======================================================================
@@ -63,7 +62,7 @@
   ;;=======================================================================
 
   (define (mark-card-as-seen card-name)
-    (debug-log (cat "Marking " card-name))
+    (debug 'halyard.test (cat "Marking " card-name))
     (set! (engine-var (cat "seen-" card-name)) "1"))
 
   (card /start ()
