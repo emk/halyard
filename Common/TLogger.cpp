@@ -294,8 +294,10 @@ std::ostream *TLogger::s_ErrorOutput = NULL;
 void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
 {
     // Set up our logging library.
-    log4cplus::BasicConfigurator config;
-    config.configure();
+    FileSystem::Path runtime(FileSystem::GetRuntimeDirectory());
+    FileSystem::Path config_dir(runtime.AddComponent("config"));
+    FileSystem::Path props(config_dir.AddComponent("log4cplus.properties"));
+    log4cplus::PropertyConfigurator::doConfigure(props.ToNativePathString());
 
 	// Initialize the global log file.
 	gHalyardLog.Init(SHORT_NAME, true, true);
