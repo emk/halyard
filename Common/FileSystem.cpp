@@ -78,7 +78,7 @@ Error::Error(const char *inErrorFile, int inErrorLine, int inErrorCode)
 // about it.
 static void ResetErrno() {
     if (errno != 0) 
-        Halyard::gLog.Debug("halyard", "Unexpected errno = %d (ERANGE)", errno);
+        Halyard::gLog.Trace("halyard", "Unexpected errno = %d (ERANGE)", errno);
 	errno = 0;
 }
 
