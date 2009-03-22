@@ -57,6 +57,11 @@ public:
     static std::string StringFromLevel(Level inLevel);
 
 private:
+    //////////
+    /// Have we initialized our log files yet?
+    ///
+    static bool sLogFilesAreInitialized;
+
     /// Used to prevent re-entrant calls to MaybeHandleLogMessage.
     bool mIsInMaybeHandleLogMessage;
 
@@ -79,6 +84,11 @@ private:
         __attribute__((noreturn));
 
 public:
+    //////////
+    /// Initialize TLogger.
+    ///
+    static void InitializeLogFiles();
+
     TLogger() : mIsInMaybeHandleLogMessage(false) {}
     virtual ~TLogger() {}
 
@@ -121,11 +131,6 @@ public:
     /// engine, in a last-ditch effort to restore the user's screen to
     /// reasonable settings.
     typedef void (*ExitPrepFunction)();
-
-	//////////
-	/// Open up all the log files which will be required by our program.
-	///
-	static void OpenStandardLogs();
 
     //////////
     /// Notfy TLog whether standard error is available.

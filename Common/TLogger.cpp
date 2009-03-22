@@ -108,6 +108,37 @@ static log::LogLevel Log4CPlusLevelFromLevel(TLogger::Level inLevel) {
 
 
 //=========================================================================
+//  TLogger initialization
+//=========================================================================
+
+bool TLogger::sLogFilesAreInitialized = false;
+
+void TLogger::InitializeLogFiles() {
+    // log4cplus can substitute environment variables into a *.properties
+    // file.  We use this mechanism to specify our LOG_DIR.
+    FileSystem::Path log_dir(FileSystem::GetAppDataDirectory());
+    SetEnvVar("LOG_DIR", log_dir.ToNativePathString());
+
+    // Set up our logging library.  We pass fShadowEnvironment, which
+    // allows the user to perform simple variable substitutions from within
+    // the *.properties file by shadowing the environment variable
+    // namespace with property definitions.
+    FileSystem::Path config(FileSystem::GetRuntimeDirectory() / "config" /
+                            "log4cplus.properties");
+    unsigned flags(log::PropertyConfigurator::fShadowEnvironment);
+    log::PropertyConfigurator::doConfigure(config.ToNativePathString(),
+                                           log::Logger::getDefaultHierarchy(),
+                                           flags);
+
+    // Now we're ready to start logging.
+    sLogFilesAreInitialized = true;
+
+    // Print our version string to our logs.
+    gLog.Info("halyard", "Launched %s", VERSION_STRING);
+}
+
+
+//=========================================================================
 //  TLogger::vLog (and support code)
 //=========================================================================
 //  This does all the heavy lifting.
@@ -141,9 +172,13 @@ void TLogger::vLog(Level inLevel, const std::string &inCategory,
     // well-behaved.
     MaybeDisplayAlert(inLevel, inCategory, message);
 
-    // Write the message to our logging library.
-    log::Logger logger(log::Logger::getInstance(inCategory));
-    logger.log(Log4CPlusLevelFromLevel(inLevel), message);
+    // Write the message to our logging library.  (We tried to do
+    // initialization on demand, but there were a few early trace messages
+    // that were logged before we could successfully initialize our logs.)
+    if (sLogFilesAreInitialized) {
+        log::Logger logger(log::Logger::getInstance(inCategory));
+        logger.log(Log4CPlusLevelFromLevel(inLevel), message);
+    }
 
     // Decide whether or not we should exit the program.
     MaybeExitWithError(inLevel, inCategory, message);
@@ -210,7 +245,8 @@ void TLogger::MaybeExitWithError(Level inLevel, const std::string &inCategory,
 
 void TLogger::ExitWithError(CrashType inType, const std::string &inMessage) {
     TLogger::PrepareToExit();
-    if (TInterpreterManager::IsInCommandLineMode()) {
+    if (!CrashReporter::HaveInstance() ||
+        TInterpreterManager::IsInCommandLineMode()) {
         exit(1);
     } else {
         CrashReporter::GetInstance()->CrashNow(inMessage.c_str(), inType);
@@ -274,31 +310,6 @@ TLogger::AlertDisplayFunction TLogger::s_AlertDisplayFunction = NULL;
 TLogger::ExitPrepFunction TLogger::s_ExitPrepFunction = NULL;
 bool TLogger::s_IsStandardErrorAvailable = true;
 std::ostream *TLogger::s_ErrorOutput = NULL;
-
-void TLogger::OpenStandardLogs() {
-    // log4cplus can substitute environment variables into a *.properties
-    // file.  We use this mechanism to specify our LOG_DIR, and also our
-    // two most important directories.
-    FileSystem::Path log_dir(FileSystem::GetAppDataDirectory());
-    SetEnvVar("LOG_DIR", log_dir.ToNativePathString());
-    FileSystem::Path script_dir(FileSystem::GetBaseDirectory());
-    SetEnvVar("HALYARD_SCRIPT", script_dir.ToNativePathString());
-    FileSystem::Path runtime_dir(FileSystem::GetRuntimeDirectory());
-    SetEnvVar("HALYARD_RUNTIME", runtime_dir.ToNativePathString());
-
-    // Set up our logging library.  We pass fShadowEnvironment, which
-    // allows the user to perform simple variable substitutions from within
-    // the *.properties file by shadowing the environment variable
-    // namespace with property definitions.
-    FileSystem::Path config(runtime_dir / "config" / "log4cplus.properties");
-    unsigned flags(log::PropertyConfigurator::fShadowEnvironment);
-    log::PropertyConfigurator::doConfigure(config.ToNativePathString(),
-                                           log::Logger::getDefaultHierarchy(),
-                                           flags);
-
-    // Print our version string to our logs.
-	gLog.Info("halyard", "Launched %s", VERSION_STRING);
-}
 
 void TLogger::SetIsStandardErrorAvailable(bool inIsAvailable) {
     s_IsStandardErrorAvailable = inIsAvailable;

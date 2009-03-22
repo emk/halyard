@@ -39,7 +39,7 @@ void Halyard::InitializeCommonCode(CrashReporter *inReporter)
     gDeveloperPrefs.ParsePrefs();
 
     // Open up our logfiles.
-    TLogger::OpenStandardLogs();
+    TLogger::InitializeLogFiles();
     
     // Register our portable interpreter primitives.
     RegisterCommonPrimitives();
