@@ -114,6 +114,13 @@ namespace FileSystem {
 		///
 		Path AddComponent(const std::string &inFileName) const;
 
+        //////////
+        /// An abbreviated form of AddComponent, intended to mimic
+        /// pathname syntax.  Inspired by boost.
+        ///
+        Path operator/(const std::string &inFileName) const
+            { return AddComponent(inFileName); }
+
 		//////////
 		/// Add a "parent directory" component to the end of
 		/// the path.  This may have exciting behavior in the

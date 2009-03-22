@@ -102,6 +102,9 @@ void test_FileSystem (void)
 	TEST(Path("foo.bar").AddComponent("sample").ReplaceExtension("txt") ==
 		 Path("foo.bar").AddComponent("sample.txt"));
 
+    // Test "/" operator.
+    TEST(Path("foo").AddComponent("bar") == Path("foo") / "bar");
+
 	// Test our stat functions.
 	TEST(Path("nosuch").DoesExist() == false);
 	TEST_EXCEPTION(Path("nosuch").IsRegularFile(), Error);
