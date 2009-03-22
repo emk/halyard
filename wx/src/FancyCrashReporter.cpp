@@ -425,12 +425,11 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     }
     report.AddAll(report.GetContext());
 
-    // Open up any logs we haven't opened yet, and as a side effect, write
-    // the most recent entries in those logs to disk.  (TLogger maintains
-    // an internal history of recent writes to unopened logs.)  We need to
-    // do this before checking mFileInfo, below, because it may add new
-    // files to our report.
-    TLogger::OpenRemainingLogsForCrash();
+    // Once upon a time, TLogger maintained internal circular buffers which
+    // could be dumped to disk as log files.  We've removed that
+    // functionality for now, but if we ever wanted to do something like
+    // that again, this would be a good place to do it.
+    // TLogger::OpenRemainingLogsForCrash();
 
     // Add any useful files to the report.
     FileInfoVector::iterator i = mFileInfo.begin();

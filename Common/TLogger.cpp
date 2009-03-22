@@ -22,6 +22,8 @@
 
 #include "CommonHeaders.h"
 
+#include <iostream>
+#include <fstream>
 #include <log4cplus/logger.h>
 #include <log4cplus/configurator.h>
 
@@ -30,7 +32,6 @@
 #include "FileSystem.h"
 #include "CrashReporter.h"
 #include "TSystem.h"
-#include "TLog.h"
 
 #ifdef HAVE__VSNPRINTF
 #	define vsnprintf _vsnprintf
@@ -40,18 +41,6 @@ using namespace Halyard;
 namespace log = log4cplus;
 
 TLogger Halyard::gLog;
-
-// This log is used to log ordinary, relatively important events.  This
-// file typically exists on a normal user's system.
-static TLog gHalyardLog;
-
-// This log is used to log low-level debugging events.  This file typically
-// exists on a developer's system.
-static TLog gDebugLog;
-
-// This log is used to log even lower-level trace events.  This file
-// typically exists on a developer's system.
-static TLog gTraceLog;
 
 
 //=========================================================================
@@ -155,13 +144,6 @@ void TLogger::vLog(Level inLevel, const std::string &inCategory,
     // Write the message to our logging library.
     log::Logger logger(log::Logger::getInstance(inCategory));
     logger.log(Log4CPlusLevelFromLevel(inLevel), message);
-
-    // Actually write the message to the appropriate log files.
-    gTraceLog.Log(inLevel, inCategory, message);
-    if (inLevel >= kDebug)
-        gDebugLog.Log(inLevel, inCategory, message);
-    if (inLevel >= kWarn)
-        gHalyardLog.Log(inLevel, inCategory, message);
 
     // Decide whether or not we should exit the program.
     MaybeExitWithError(inLevel, inCategory, message);
@@ -293,8 +275,7 @@ TLogger::ExitPrepFunction TLogger::s_ExitPrepFunction = NULL;
 bool TLogger::s_IsStandardErrorAvailable = true;
 std::ostream *TLogger::s_ErrorOutput = NULL;
 
-void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
-{
+void TLogger::OpenStandardLogs() {
     // log4cplus can substitute environment variables into a *.properties
     // file.  We use this mechanism to specify our LOG_DIR, and also our
     // two most important directories.
@@ -315,25 +296,8 @@ void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
                                            log::Logger::getDefaultHierarchy(),
                                            flags);
 
-	// Initialize the global log file.
-	gHalyardLog.Init(SHORT_NAME, true, true);
-
-    // Initialize the debug log if we've been asked to.
-	if (inShouldOpenDebugLog) {
-		gDebugLog.Init("Debug");
-        gTraceLog.Init("Trace");
-    }
-
     // Print our version string to our logs.
-	gLog.Info("halyard", "%s", VERSION_STRING);
-}
-
-void TLogger::OpenRemainingLogsForCrash()
-{
-    if (!gDebugLog.IsOpen())
-        gDebugLog.Init("DebugRecent");
-    if (!gTraceLog.IsOpen())
-        gTraceLog.Init("TraceRecent");
+	gLog.Info("halyard", "Launched %s", VERSION_STRING);
 }
 
 void TLogger::SetIsStandardErrorAvailable(bool inIsAvailable) {

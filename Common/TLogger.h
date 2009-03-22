@@ -125,15 +125,7 @@ public:
 	//////////
 	/// Open up all the log files which will be required by our program.
 	///
-	/// \param inOpenDebugLog  Should we open up the debugging log as well?
-	///
-	static void OpenStandardLogs(bool inOpenDebugLog = false);
-
-    //////////
-    /// Open up any logs which weren't opened by OpenStandardLogs, and
-    /// write the contents of m_RecentEntries to disk.
-    ///
-    static void OpenRemainingLogsForCrash();
+	static void OpenStandardLogs();
 
     //////////
     /// Notfy TLog whether standard error is available.
