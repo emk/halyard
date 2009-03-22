@@ -113,6 +113,14 @@ static log::LogLevel Log4CPlusLevelFromLevel(TLogger::Level inLevel) {
 
 bool TLogger::sLogFilesAreInitialized = false;
 
+/// If inPath exists, add it to the crash reporter's list of log files.
+static void RegisterLogFileWithCrashReporter(const FileSystem::Path &inPath) {
+    if (inPath.DoesExist()) {
+        CrashReporter *cr(CrashReporter::GetInstance());
+        cr->AddDiagnosticFile(inPath.ToNativePathString(), "log file");
+    }
+}
+
 void TLogger::InitializeLogFiles() {
     // log4cplus can substitute environment variables into a *.properties
     // file.  We use this mechanism to specify our LOG_DIR.
@@ -135,6 +143,11 @@ void TLogger::InitializeLogFiles() {
 
     // Print our version string to our logs.
     gLog.Info("halyard", "Launched %s", VERSION_STRING);
+
+    // Add our log files to our crash report.
+    RegisterLogFileWithCrashReporter(log_dir / "Halyard.log");
+    RegisterLogFileWithCrashReporter(log_dir / "Debug.log");
+    RegisterLogFileWithCrashReporter(log_dir / "Trace.log");
 }
 
 
