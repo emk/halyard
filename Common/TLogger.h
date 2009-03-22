@@ -108,6 +108,7 @@ public:
     /// Call Log with a level of kError.  May not return.
     void Error(const std::string &inCategory, const char *inFormat, ...);
     /// Call Log with a level of kFatal.  Will never return.
+    __declspec(noreturn)
     void Fatal(const std::string &inCategory, const char *inFormat, ...)
         __attribute__((noreturn));
 
