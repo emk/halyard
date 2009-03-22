@@ -338,6 +338,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\Common\TSystem.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\Common\TTemplateUtils.cpp"
 				>
 			</File>
@@ -500,6 +504,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\TStyleSheet.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Common\TSystem.h"
 				>
 			</File>
 			<File

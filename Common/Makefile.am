@@ -52,6 +52,7 @@ libhalyard_a_SOURCES = \
 	TStateDB.cpp TStateDB.h \
 	TStateListenerManager.cpp TStateListenerManager.h \
 	TStyleSheet.cpp TStyleSheet.h \
+	TSystem.cpp TSystem.h \
 	TTemplateUtils.cpp TTemplateUtils.h \
 	TTextConv.cpp TTextConv.h \
 	TTextTransform.cpp TTextTransform.h \
