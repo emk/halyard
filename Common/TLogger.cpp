@@ -29,6 +29,7 @@
 #include "TInterpreter.h"
 #include "FileSystem.h"
 #include "CrashReporter.h"
+#include "TSystem.h"
 #include "TLog.h"
 
 #ifdef HAVE__VSNPRINTF
@@ -36,6 +37,7 @@
 #endif
 
 using namespace Halyard;
+namespace log = log4cplus;
 
 TLogger Halyard::gLog;
 
@@ -102,14 +104,14 @@ std::string TLogger::StringFromLevel(Level inLevel) {
 }
 
 /// Internal: Translate to log4cplus log level.
-static log4cplus::LogLevel Log4CPlusLevelFromLevel(TLogger::Level inLevel) {
+static log::LogLevel Log4CPlusLevelFromLevel(TLogger::Level inLevel) {
     switch (inLevel) {
-        case TLogger::kTrace: return log4cplus::TRACE_LOG_LEVEL;
-        case TLogger::kDebug: return log4cplus::DEBUG_LOG_LEVEL;
-        case TLogger::kInfo:  return log4cplus::INFO_LOG_LEVEL;
-        case TLogger::kWarn:  return log4cplus::WARN_LOG_LEVEL;
-        case TLogger::kError: return log4cplus::ERROR_LOG_LEVEL;
-        case TLogger::kFatal: return log4cplus::FATAL_LOG_LEVEL;
+        case TLogger::kTrace: return log::TRACE_LOG_LEVEL;
+        case TLogger::kDebug: return log::DEBUG_LOG_LEVEL;
+        case TLogger::kInfo:  return log::INFO_LOG_LEVEL;
+        case TLogger::kWarn:  return log::WARN_LOG_LEVEL;
+        case TLogger::kError: return log::ERROR_LOG_LEVEL;
+        case TLogger::kFatal: return log::FATAL_LOG_LEVEL;
         default:
             gLog.Fatal("halyard", "Unknown log level");
     }    
@@ -151,7 +153,7 @@ void TLogger::vLog(Level inLevel, const std::string &inCategory,
     MaybeDisplayAlert(inLevel, inCategory, message);
 
     // Write the message to our logging library.
-    log4cplus::Logger logger(log4cplus::Logger::getInstance(inCategory));
+    log::Logger logger(log::Logger::getInstance(inCategory));
     logger.log(Log4CPlusLevelFromLevel(inLevel), message);
 
     // Actually write the message to the appropriate log files.
@@ -293,11 +295,25 @@ std::ostream *TLogger::s_ErrorOutput = NULL;
 
 void TLogger::OpenStandardLogs(bool inShouldOpenDebugLog /*= false*/)
 {
-    // Set up our logging library.
-    FileSystem::Path runtime(FileSystem::GetRuntimeDirectory());
-    FileSystem::Path config_dir(runtime.AddComponent("config"));
-    FileSystem::Path props(config_dir.AddComponent("log4cplus.properties"));
-    log4cplus::PropertyConfigurator::doConfigure(props.ToNativePathString());
+    // log4cplus can substitute environment variables into a *.properties
+    // file.  We use this mechanism to specify our LOG_DIR, and also our
+    // two most important directories.
+    FileSystem::Path log_dir(FileSystem::GetAppDataDirectory());
+    SetEnvVar("LOG_DIR", log_dir.ToNativePathString());
+    FileSystem::Path script_dir(FileSystem::GetBaseDirectory());
+    SetEnvVar("HALYARD_SCRIPT", script_dir.ToNativePathString());
+    FileSystem::Path runtime_dir(FileSystem::GetRuntimeDirectory());
+    SetEnvVar("HALYARD_RUNTIME", runtime_dir.ToNativePathString());
+
+    // Set up our logging library.  We pass fShadowEnvironment, which
+    // allows the user to perform simple variable substitutions from within
+    // the *.properties file by shadowing the environment variable
+    // namespace with property definitions.
+    FileSystem::Path config(runtime_dir / "config" / "log4cplus.properties");
+    unsigned flags(log::PropertyConfigurator::fShadowEnvironment);
+    log::PropertyConfigurator::doConfigure(config.ToNativePathString(),
+                                           log::Logger::getDefaultHierarchy(),
+                                           flags);
 
 	// Initialize the global log file.
 	gHalyardLog.Init(SHORT_NAME, true, true);
