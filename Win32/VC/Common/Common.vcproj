@@ -266,10 +266,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\Common\TDeveloperPrefs.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\Common\TestCase.cpp"
 				>
 			</File>
@@ -424,10 +420,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Common\TCommonPrimitives.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\Common\TDeveloperPrefs.h"
 				>
 			</File>
 			<File

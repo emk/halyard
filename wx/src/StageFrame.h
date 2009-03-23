@@ -110,6 +110,12 @@ class StageFrame : public SashFrame,
     wxStopWatch mReloadStopWatch;
 
     //////////
+    /// Are developer tools available in all modes, and not just authoring
+    /// mode?
+    ///
+    bool mAreDevToolsAvailableInAllModes;
+
+    //////////
     /// Does UpdateVideoMode believe that our full-screen options are
     /// currently active?
     ///
@@ -303,6 +309,12 @@ public:
 	/// title.
 	///
 	void ObjectDeleted();
+
+    //////////
+    /// Turn on developer tools even if we're not in authoring mode.
+    ///
+    void EnableDeveloperToolsInAllModes()
+        { mAreDevToolsAvailableInAllModes = true; }
 
 #ifdef __WXMSW__
 

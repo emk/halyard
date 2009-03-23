@@ -24,7 +24,6 @@
 
 #include "TInterpreter.h"
 #include "TStateDB.h"
-#include "TDeveloperPrefs.h"
 #include "lang/scheme/StackBase.h"
 
 using namespace Halyard;

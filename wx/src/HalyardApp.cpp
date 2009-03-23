@@ -32,8 +32,8 @@
 
 #include "TVersion.h"
 #include "TStartup.h"
-#include "TDeveloperPrefs.h"
 #include "CrashReporter.h"
+#include "FileSystem.h"
 
 #include "AppConfig.h"
 #if CONFIG_HAVE_FANCYCRASHREPORT

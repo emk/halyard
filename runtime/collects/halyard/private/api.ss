@@ -389,11 +389,18 @@
   ;;;  Utility Functions
   ;;;======================================================================
 
-  (provide %force-crash)
+  (provide %force-crash enable-developer-tools-in-all-modes!)
 
   ;; Temporary utility function for forcing a hard crash.
   ;; TODO - Remove %force-crash.
   (define (%force-crash)
     (call-prim 'ForceCrash))
+
+  ;;; Normally, the Halyard developer tools (switching in and out of full
+  ;;; screen mode, using the Halyard GUI, etc.) are only available in
+  ;;; authoring mode.  But if you call this function, users will be able
+  ;;; to switch out of full-screen mode and access the authoring tools.
+  (define (enable-developer-tools-in-all-modes!)
+    (call-prim 'EnableDeveloperToolsInAllModes))
   
   ) ; end module

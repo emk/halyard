@@ -23,7 +23,6 @@
 #include "CommonHeaders.h"
 #include "TStartup.h"
 #include "CrashReporter.h"
-#include "TDeveloperPrefs.h"
 #include "TCommonPrimitives.h"
 #include "lang/scheme/TSchemeInterpreter.h"
 #include "ScriptEditorDB.h"
@@ -34,9 +33,6 @@ void Halyard::InitializeCommonCode(CrashReporter *inReporter)
 {
     // Initialize our CrashReporter.
     CrashReporter::InitializeCrashReporting(inReporter);
-
-    // Parse our developer preferences, if we have any.
-    gDeveloperPrefs.ParsePrefs();
 
     // Open up our logfiles.
     TLogger::InitializeLogFiles();

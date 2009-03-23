@@ -30,7 +30,6 @@
 #include "doc/Document.h"
 #include "doc/HalyardProgram.h"
 #include "CrashReporter.h"
-#include "TDeveloperPrefs.h"
 
 #include "AppConfig.h"
 #include "AppGlobals.h"
@@ -204,6 +203,7 @@ StageFrame::StageFrame(wxSize inSize)
                 wxT("StageFrame"), wxDefaultSize,
                 wxDEFAULT_FRAME_STYLE),
 	  mDocument(NULL),
+      mAreDevToolsAvailableInAllModes(false),
       mAreFullScreenOptionsActive(false),
       mCurrentFullScreenDisplayId(wxNOT_FOUND),
 	  mIsUpdatingVideoMode(false)
@@ -814,7 +814,7 @@ bool StageFrame::TryToCloseScriptEditor(wxCloseEvent &inEvent) {
 
 bool StageFrame::AreDevToolsAvailable() {
     return (TInterpreterManager::IsInAuthoringMode()
-            || gDeveloperPrefs.GetPref(DEVTOOLS) == DEVTOOLS_ENABLED);
+            || mAreDevToolsAvailableInAllModes);
 }
 
 void StageFrame::UpdateUiDevTool(wxUpdateUIEvent &inEvent) {

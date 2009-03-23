@@ -532,6 +532,10 @@ DEFINE_PRIMITIVE(ElementSetInDragLayer) {
 	element->SetInDragLayer(in_drag_layer);
 }
 
+DEFINE_PRIMITIVE(EnableDeveloperToolsInAllModes) {
+    wxGetApp().GetStageFrame()->EnableDeveloperToolsInAllModes();
+}
+
 DEFINE_PRIMITIVE(EnableExpensiveEvents) {
 	bool enable;
 	inArgs >> enable;
@@ -1083,6 +1087,7 @@ void Halyard::RegisterWxPrimitives() {
 	REGISTER_PRIMITIVE(ElementIsShown);
 	REGISTER_PRIMITIVE(ElementSetShown);
 	REGISTER_PRIMITIVE(ElementSetInDragLayer);
+    REGISTER_PRIMITIVE(EnableDeveloperToolsInAllModes);
 	REGISTER_PRIMITIVE(EnableExpensiveEvents);
     REGISTER_PRIMITIVE(ErrortraceCompileEnabled);
     REGISTER_PRIMITIVE(Focus);

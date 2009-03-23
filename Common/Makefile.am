@@ -37,7 +37,6 @@ libhalyard_a_SOURCES = \
 	ScriptEditorDB.cpp ScriptEditorDB.h \
 	TCommon.h \
 	TCommonPrimitives.cpp TCommonPrimitives.h \
-	TDeveloperPrefs.cpp TDeveloperPrefs.h \
 	TestCase.cpp TestCase.h \
 	TException.cpp TException.h \
 	TInterpreter.cpp TInterpreter.h \
