@@ -30,6 +30,9 @@
   ;; larger, Halyard uses more memory but displays graphics faster.
   ;; The default size is probably reasonable.
   (set-image-cache-size! (* 4 1024 1024))
+
+  ;; Allow users to exit RUNTIME mode and return to AUTHORING mode.
+  (enable-developer-tools-in-all-modes!)
   
   
   ;;=========================================================================
