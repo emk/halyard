@@ -259,6 +259,10 @@
     ;;  - #f if the action has been performed, and is no longer available.
     (attr %uncompleted (make-hash-table))
 
+    ;; This flag will be set to #t when we're trying to replay a previous
+    ;; series of test actions, and will be set back to #f when we're done.
+    (attr %replaying-test-actions #f :writable? #t)
+
     (def (initialize &rest keys)
       (super)
       ;; Build our table immediately so that we can call .done? before
@@ -275,6 +279,9 @@
     ;;; Run as many test actions as possible.
     (def (run-test-actions)
       (assert (null? (.actions-taken)))
+
+      ;; Do some sanity checks before we start.
+      (.%check-whether-safe-to-run-test-actions)
 
       ;; If we have no available actions right now, check to see if we some
       ;; uncompleted actions "deeper" into the card.  If we do, we can try
@@ -316,6 +323,24 @@
             (command-line-message (cat "    New: " (symbol->string key))))
           (hash-table-put! uncompleted key actions-taken))))
 
+    (def (%check-whether-safe-to-run-test-actions)
+      (when (.%replaying-test-actions)
+        ;; If this flag is set, we were previously in
+        ;; %try-to-return-to-a-state-with-test-actions, and we were in the
+        ;; process of replaying test actions in an effort to return to a
+        ;; previously seen goal state.
+        ;;
+        ;; The last time we ran these actions, none of them performed a
+        ;; non-local exit.  But it appears that when we were replaying
+        ;; them, something changed, and one of the actions tried to JUMP or
+        ;; perform another kind of non-local exit.
+        ;;
+        ;; If we try to proceed anyway, we'll just get stuck in an infinite
+        ;; loop.  So let's just give up entirely for now.
+        (fatal 'halyard.gibbon "Unexpected JUMP when replaying test actions. "
+               "This suggests that parts of this card have too much state to "
+               "be tested using automatic tools.")))
+
     ;; Whenever we see an action for the first time, we record the current
     ;; value of (.actions-taken), just in case we need to find our way back
     ;; to that point in the card.  This function attempts to find a state
@@ -333,6 +358,9 @@
       (unless (null? states-with-test-actions)
         ;; This choice is pretty arbitrary.  Can we do better?
         (let [[goal-state (car states-with-test-actions)]]
+          ;; Set a flag that can check in
+          ;; %check-whether-safe-to-run-test-actions.
+          (set! (.%replaying-test-actions) #t)
           ;; Using the saved action keys, replay our previous series of
           ;; actions as best we can.
           (let loop [[keys goal-state]]
@@ -345,8 +373,9 @@
                   (begin
                     (.run-action action :rerun? #t)
                     (loop (cdr keys)))
-                  (warn 'halyard.gibbon "Action " key
-                        " has mysteriously disappeared"))))))))
+                  (fatal 'halyard.gibbon "Action " key
+                         " has mysteriously disappeared")))))
+          (set! (.%replaying-test-actions) #f))))
 
     )
 
