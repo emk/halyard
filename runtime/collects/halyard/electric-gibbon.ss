@@ -313,7 +313,7 @@
         (define key (action .key))
         (unless (hash-table-has-key? uncompleted key)
           (unless (null? actions-taken)
-            (command-line-message (cat "    New: " key)))
+            (command-line-message (cat "    New: " (symbol->string key))))
           (hash-table-put! uncompleted key actions-taken))))
 
     ;; Whenever we see an action for the first time, we record the current
