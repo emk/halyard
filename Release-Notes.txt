@@ -1,3 +1,76 @@
+0.5.28-gibbon6 - 25 March 2009
+
+This release adds a number of enhancements to Electric Gibbon, including
+support for using release engines with halyard:jump_each:test, support for
+catching multiple Halyard errors in a single test run, and support for
+detecting certain kinds of infinite loops during halyard:jump_each:test.
+
+Detecting multiple Halyard errors required us to add Yet Another Logging
+hack.  Since the old TLogger code was about 20% archaic code, and about 80%
+festering hacks, we refactored it into something cleaner and started using
+log4cplus for the actual output.  The new code is very shiny, but alas, we
+had to add one last tiny hack to get the our new features working anyway.
+
+If your halyard:jump_each:test runs are taking way too long, try:
+
+  rake halyard:jump_each:test MODE=release
+
+PORTING NOTES:
+
+  - Remove config/developer.prefs and decide whether to use
+    ENABLE-DEVELOPER-TOOLS-IN-ALL-MODES!.
+  - All of the old logging functions are deprecated, though they should
+    still be fully supported by deprecated.ss.  I'll be putting up a wiki
+    page explaining the new logging functions and levels shortly.
+
+Brian Campbell (2):
+      Mac build fix: Cast to uint32 when setting /system/clock/milliseconds
+      log: Remove redundant (cat ...) statements from nodes.ss
+
+Eric Kidd (42):
+      log: Combine gLog and gDebugLog into unified logging API
+      log: Remove environment-error
+      log: Remove TLog mask support
+      log: Fix comment in TPrimitives.h
+      log: Replace WITH-ERRORS-BLOCKED with WITH-EXCEPTIONS-BLOCKED
+      log: Promote expensive event logging to a debug message
+      log: Mac build fix: Add abort() to TLogger::Fatal
+      log: Move static functions from TLog to TLogger
+      Merge branch 'master' of ssh://imlsrc.dartmouth.edu/var/lib/git/halyard in
+      log: Move TLog into its own file
+      log: Move vsnprintf (and buffer) into TLogger
+      log: Add LevelFromString and LevelToString functions
+      log: Move warning inteception code to TLogger
+      log: Reorder TLog::Warning and TLog::Error
+      log: Bug fix: Use correct level for LOG-ERROR and FATAL
+      log: Move alert-display code into TLogger
+      log: Move ExitWithError into TLogger
+      log: Make level-based conditionals simpler
+      log: Get rid of level-specific functions in TLog
+      log: Move trace messages into new Trace.log
+      log: Log loader/stage2 progress at level TRACE
+      log: Log user-initiated events, etc., at level DEBUG
+      log: Test fix: Remove remaining debug-log references
+      log: Log "unexpected errno" at level TRACE
+      log: Add rudimentary log4cplus support
+      log: Move log4cplus configuration to external file
+      Add a SetEnvVar function
+      Add FileSystem::Path::operator/
+      log: Configure log4cplus using an external properties file
+      log: Add __declspec(noreturn) to TLogger::Fatal
+      log: Remove old TLog class
+      log: Clean up log4cplus initialization
+      log: Register log files with CrashReporter
+      log: Ignore rolled-over log files in Common/test
+      log: Shrink log file sizes considerably
+      log: Log command-line-error at level DEBUG
+      Remove TDeveloperPrefs
+      halyard/test: Allow users to switch from RUNTIME to AUTHORING mode
+      eg: Clean up "New:" lines in output
+      eg: Try to avoid infinite loops when replaying actions
+      eg: Report multiple errors from a single run of jump_each
+      eg: Allow the use of release *.exe with jump_each
+
 0.5.28-gibbon5 - 18 March 2009
 
 The previous implementation of %deep-test-planner% had a number of issues
