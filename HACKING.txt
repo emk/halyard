@@ -138,7 +138,7 @@ Building Win32 Halyard
 
   Open up $HALYARD_DIR\Halyard.sln. Select Tools > Options > Projects
   and Solutions > VC++ Directories, and add the follow directories to
-  the following categories:
+  the end of the list in the following categories:
 
     Include files:
       C:\Program Files\QuickTime SDK\CIncludes
@@ -148,11 +148,12 @@ Building Win32 Halyard
       C:\sdk\dx9\Lib
 
   Click on "Solution Explorer", right-click on "Application", and
-  select "Properties" > "Configuration: Debug" > "Debugging".  
-  Set "Working Directory" to $HALYARD_DIR/test (the actual path,
-  not the variable name!).  Select "Configuration: Release" and
-  set "Working Directory" to the same value.  Now you'll automatically
-  run Halyard Test when you ask Visual Studio to launch your program.
+  select "Properties" > "Configuration: Debug".  On the left pane,
+  under "Configuration Properties" > "Debugging", set the "Working
+  Directory" to $HALYARD_DIR/test (the actual path, not the variable
+  name!).  Select "Configuration: Release" and set "Working Directory"
+  to the same value.  Now you'll automatically run Halyard/test when
+  you ask Visual Studio to launch your program.
 
   Using a similar process, set the working directories for both versions of
   "CommonTest" to $HALYARD_DIR/Common/test.  The test suites won't run
