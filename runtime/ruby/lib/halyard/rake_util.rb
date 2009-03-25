@@ -23,11 +23,25 @@
 module Halyard
   # Functions that can be used from Rake tasks.
   module RakeUtil
+    # What Halyard executable should we use by default?
+    def default_halyard_executable
+      exe_name =
+        case ENV['MODE'] || 'debug'
+        when 'release'
+          'Halyard.exe'
+        when 'debug'
+          'Halyard_d.exe'
+        else
+          raise "Unknown mode: #{ENV['MODE']}"
+        end
+      "#{$HALYARD_RUNTIME}/#{exe_name}"
+    end
+
     # Run Halyard in command-line mode with the specified command.  Has
     # support for Halyard's fake STDERR on platforms where the real one
     # won't work for a GUI application.
     def halyard_command command, opt = {}
-      opt[:halyard] ||= "#{$HALYARD_RUNTIME}/Halyard_d.exe"
+      opt[:halyard] ||= default_halyard_executable
       cd $HALYARD_SCRIPT do
         begin
           rm_f "temp/output.txt"
