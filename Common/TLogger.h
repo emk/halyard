@@ -62,6 +62,11 @@ private:
     ///
     static bool sLogFilesAreInitialized;
 
+    //////////
+    /// See TryToAvoidExitingWithError.
+    ///
+    static bool sShouldTryToAvoidExitingWithError;
+
     /// Used to prevent re-entrant calls to MaybeHandleLogMessage.
     bool mIsInMaybeHandleLogMessage;
 
@@ -88,6 +93,21 @@ public:
     /// Initialize TLogger.
     ///
     static void InitializeLogFiles();
+
+    //////////
+    /// When we're not in AUTHORING mode, we treat all errors as fatal,
+    /// because in RUNTIME mode the end-user won't know how to recover from
+    /// them, and in COMMAND_LINE mode the engine will generally hang after
+    /// an error.  But some tools, such as those provided by
+    /// jump-to-each-card.ss _can_ recover from non-fatal errors, and need
+    /// to override the default policy.
+    ///
+    /// In COMMAND_LINE mode only, those tools can call this function to
+    /// change the default policy.
+    ///
+    /// KLUDGE - See if we can integrate this better into log4cplus rules.
+    ///
+    static void TryToAvoidExitingWithError();
 
     TLogger() : mIsInMaybeHandleLogMessage(false) {}
     virtual ~TLogger() {}

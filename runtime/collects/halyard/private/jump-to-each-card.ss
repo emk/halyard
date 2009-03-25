@@ -83,6 +83,9 @@
   ;; try to intercept it?
   (define *should-honor-next-jump?* #f)
 
+  ;; Was this test run successful?
+  (define *success?* #t)
+
   ;; Really perform a jump.  This bypasses our jump interception code.
   (define (jump-for-testing card)
     (set! *should-honor-next-jump?* #t)
@@ -94,6 +97,30 @@
                              "Card: ")
                            (card .full-name)))
     (jump card))
+
+  ;; Try to avoid exiting the engine when an error occurs, since
+  ;; END-CARD-ON-ERROR will attempt to keep us running.
+  (define (try-to-avoid-exiting-with-error!)
+    (call-prim 'TryToAvoidExitingWithError))
+
+  ;; When an error occurs, abort the current card and move to the next.
+  (define (end-card-on-error level category msg)
+    (when (eq? level 'error)
+      ;; Mark this test run as failed, and get rid of the %test-planner%
+      ;; for the current card.  We need to do this right away, in case our
+      ;; deferred thunk below gets clobbered by _another_ deferred thunk
+      ;; that runs first and tries to jump off the card.
+      (set! *success?* #f)
+      (set! *test-planner* #f)
+      ;; Since we're being called from inside LOGGER (or possibly some
+      ;; other strange context), there's no guarantee that we can JUMP
+      ;; right now.  (And we're not in a full-fledged callback, anyway, so
+      ;; JUMPs won't work at all.)  So whatever we're going to do, we need to
+      ;; defer it.  But anything we defer might get clobbered by another
+      ;; deferred callback jumping off the card.  Fortunately, almost
+      ;; anything which could clobber our deferred callback will result in
+      ;; someone calling CONTINUE-JUMPING-TO-EACH-CARD anyway.
+      (defer (continue-jumping-to-each-card))))
 
   ;; Jump to the next card in our test sequence.
   (define (continue-jumping-to-each-card)
@@ -109,7 +136,7 @@
       (jump-for-testing (*test-planner* .card))]
      ;; If there are no more cards to jump to, quit.
      [(null? *cards-left-to-jump-to*)
-      (exit-script)]
+      (exit-script *success?*)]
      ;; Jump to the next card that we need to test.
      [else
       (jump-for-testing (pop! *cards-left-to-jump-to*))]))
@@ -143,6 +170,10 @@
               ;; KLUDGE - Clear our deferred thunk queue after each action.
               ;; Yes, this is an excessive amount of knowledge of
               ;; kernel.ss.
+              ;;
+              ;; KLUDGE - This %kernel-check-deferred is also needed for
+              ;; end-card-on-error to run a deferred thunk in a semi-timely
+              ;; manner.
               :after-each-action (fn () (%kernel-check-deferred)))))
 
     ;; Run test actions for as long as we can.  This may trigger a JUMP at
@@ -161,6 +192,13 @@
   (define (jump-to-each-card &key start (planner 'null))
     ;; Choose an appropriate test planner.
     (choose-test-planner planner)
+
+    ;; If we encounter an error while testing a card, skip to the next
+    ;; card.  To do this, we need to disable the code which automatically
+    ;; exits the engine when an error occurs in COMMAND_LINE mode.
+    (try-to-avoid-exiting-with-error!)
+    (hook-add-function! *before-log-message-hook* 'jump-to-each-card
+                        end-card-on-error)
 
     ;; When we reach the end of a card body, we want to move on to the next
     ;; card automatically.

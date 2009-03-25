@@ -112,6 +112,7 @@ static log::LogLevel Log4CPlusLevelFromLevel(TLogger::Level inLevel) {
 //=========================================================================
 
 bool TLogger::sLogFilesAreInitialized = false;
+bool TLogger::sShouldTryToAvoidExitingWithError = false;
 
 /// If inPath exists, add it to the crash reporter's list of log files.
 static void RegisterLogFileWithCrashReporter(const FileSystem::Path &inPath) {
@@ -148,6 +149,11 @@ void TLogger::InitializeLogFiles() {
     RegisterLogFileWithCrashReporter(log_dir / "Halyard.log");
     RegisterLogFileWithCrashReporter(log_dir / "Debug.log");
     RegisterLogFileWithCrashReporter(log_dir / "Trace.log");
+}
+
+void TLogger::TryToAvoidExitingWithError() {
+    ASSERT(TInterpreterManager::IsInCommandLineMode());
+    sShouldTryToAvoidExitingWithError = true;
 }
 
 
@@ -252,7 +258,8 @@ void TLogger::MaybeExitWithError(Level inLevel, const std::string &inCategory,
     // actually makes much sense, but it's what the old TLogger code did.
     if (inLevel == kFatal)
         ExitWithError(APPLICATION_CRASH, inMessage);
-    else if (inLevel >= kError && !TInterpreterManager::IsInAuthoringMode())
+    else if (inLevel >= kError && !TInterpreterManager::IsInAuthoringMode() &&
+             !sShouldTryToAvoidExitingWithError)
         ExitWithError(SCRIPT_CRASH, inMessage);
 }
 

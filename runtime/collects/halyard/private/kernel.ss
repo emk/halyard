@@ -49,6 +49,7 @@
   
   (provide *enter-card-hook* *exit-card-hook*
            *card-body-finished-hook* *before-draw-hook*
+           *before-log-message-hook*
            *dangerous-exit-script-hook*)
 
   ;; Called before running each card.
@@ -63,6 +64,10 @@
 
   ;; Called before *most* screen redraws.
   (define *before-draw-hook* (make-hook 'before-draw))
+
+  ;; Internal: Used to run code before certain classes of log messages
+  ;; are displayed to the user.  This hook is subject to change.
+  (define *before-log-message-hook* (make-hook 'before-log-message))
 
   ;; Called immediately before the engine exits or a script is reloaded.
   ;; This is marked as "dangerous" because the engine no longer has a stage
@@ -468,6 +473,12 @@
       (cons ok? result)))
 
   (define (%kernel-maybe-handle-log-message level category msg)
+    ;; We have two different extension mechanisms here: A general hook,
+    ;; which can't be used to control our return value, and a
+    ;; special-purpose with mizzen's (current-warning-handler).  We could
+    ;; probably do something more unified here, but it would have to happen
+    ;; at the mizzen level.
+    (call-hook-functions *before-log-message-hook* level category msg)
     (if (and (eq? level 'warn) (current-warning-handler))
       ;; The current-warning-handler is not supposed to raise any errors,
       ;; because we're already in the error-handling machinery.
