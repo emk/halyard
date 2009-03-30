@@ -337,7 +337,7 @@
         ;;
         ;; If we try to proceed anyway, we'll just get stuck in an infinite
         ;; loop.  So let's just give up entirely for now.
-        (fatal 'halyard.gibbon "Unexpected JUMP when replaying test actions. "
+        (error "Unexpected JUMP when replaying test actions. "
                "This suggests that parts of this card have too much state to "
                "be tested using automatic tools.")))
 
@@ -373,8 +373,7 @@
                   (begin
                     (.run-action action :rerun? #t)
                     (loop (cdr keys)))
-                  (fatal 'halyard.gibbon "Action " key
-                         " has mysteriously disappeared")))))
+                  (error "Action " key " has mysteriously disappeared")))))
           (set! (.%replaying-test-actions) #f))))
 
     )
