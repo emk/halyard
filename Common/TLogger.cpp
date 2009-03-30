@@ -368,7 +368,7 @@ static void ConsoleAlert(TLogger::AlertType inType, const char *inMessage)
 	*out << std::endl;
     switch (inType) {
 		case TLogger::ALERT_INFO:    *out << "INFO: ";    break;
-        case TLogger::ALERT_WARNING: *out << "WARNING: "; break;
+        case TLogger::ALERT_WARNING: *out << "WARN: ";    break;
         case TLogger::ALERT_ERROR:   *out << "ERROR: ";   break;
     }
 	*out << inMessage << std::endl << std::flush;
