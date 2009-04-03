@@ -242,4 +242,4 @@ private:
     DECLARE_EVENT_TABLE();
 };
 
-#endif DocNotebook_H
+#endif // DocNotebook_H

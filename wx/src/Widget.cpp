@@ -119,4 +119,4 @@ wxAccessible *Widget::GetAccessible() {
     return mWindow->GetAccessible();
 }
 
-#endif wxUSE_ACCESSIBILITY
+#endif // wxUSE_ACCESSIBILITY

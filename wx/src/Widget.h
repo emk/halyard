@@ -118,7 +118,7 @@ public:
     /// Get the accessibility information for this element.
     ///    
     virtual wxAccessible *GetAccessible();
-#endif wxUSE_ACCESSIBILITY
+#endif // wxUSE_ACCESSIBILITY
 };
 
 #endif // Widget_H
