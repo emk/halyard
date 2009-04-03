@@ -28,8 +28,6 @@
 using namespace Halyard;
 
 REGISTER_TEST_CASE_FILE(TStateDB);
-	
-class Halyard::TStateDB;
 
 TStateDB Halyard::gStateDB;
 
