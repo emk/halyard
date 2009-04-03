@@ -22,6 +22,7 @@
 
 #include "CommonHeaders.h"
 #include "TSystem.h"
+#include <string.h>
 
 using namespace Halyard;
 
