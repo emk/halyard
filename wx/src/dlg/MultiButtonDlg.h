@@ -43,8 +43,8 @@ class MultiButtonDlg : public XrcDlg
 public:
 	MultiButtonDlg(wxWindow *inParent, const wxString &inTitle,
                    const wxString &inMessage, const wxString &inButton1,
-                   const wxString &inButton2 = "",
-                   const wxString &inButton3 = "");
+                   const wxString &inButton2 = wxT(""),
+                   const wxString &inButton3 = wxT(""));
 };
 
 #endif // MultiButtonDlg_H

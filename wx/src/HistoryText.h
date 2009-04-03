@@ -37,7 +37,7 @@ class HistoryTextCtrl : public wxTextCtrl
 public:
 	HistoryTextCtrl(wxWindow* parent, 
 					wxWindowID id, 
-					const wxString& value = "", 
+					const wxString& value = wxT(""), 
 					const wxPoint& pos = wxDefaultPosition, 
 					const wxSize& size = wxDefaultSize, 
 					long style = 0, 
