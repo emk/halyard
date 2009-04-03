@@ -240,7 +240,7 @@ namespace Typography {
             bool operator==(const StyleRep &inRep) const;
 
         private:
-            StyleRep::~StyleRep();
+            ~StyleRep();
 		};
 
 		//////////
