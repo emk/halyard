@@ -100,6 +100,11 @@
   ;; Place no limits on running time or memory used.
   (sandbox-eval-limits '(#f #f))
 
+  ;; Allow unrestricted access to the network.
+  (sandbox-network-guard
+   (lambda (what host port type)
+     (void)))
+
   ;; Allow the sandbox to print output to our regular output port.  This
   ;; generally is only visible from CommonTest, but that's better than
   ;; throwing it away.
