@@ -33,7 +33,8 @@
 
   (provide %event% %update-ui-event% %char-event%
            %mouse-event% %url-event% %text-event% %browser-navigate-event%
-           %progress-changed-event% %media-caption-event%)
+           %progress-changed-event% %media-caption-event%
+           %data-received-event% %transfer-finished-event%)
 
   (define-class %event% ()
     (attr %handled? #t :type <boolean> :writable? #t)
@@ -96,6 +97,13 @@
 
   (define-class %media-caption-event% (%event%)
     (attr caption :type <string>))
+
+  (define-class %data-received-event% (%event%)
+    (attr data :type <string>))
+
+  (define-class %transfer-finished-event% (%event%)
+    (attr success? :type <boolean>)
+    (attr message :type <string>))
 
   ;; TODO - should this be moved into nodes.ss and made public?
   (define (for-each-active-node func)
@@ -289,6 +297,12 @@
              :stale? (cadr args))]
           [[cursor-shown cursor-hidden]
            (%event% .new)]
+          [[data-received]
+           (%data-received-event% .new :data (car args))]
+          [[transfer-finished]
+           (%transfer-finished-event% .new
+             :success? (car args)
+             :message (cadr args))]
           [else
            (logger 'error 'halyard.event "Unsupported event type: " name)]))
       (send self name event)

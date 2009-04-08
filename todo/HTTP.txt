@@ -1,0 +1,7 @@
+  Get everything working on Windows
+  Update to latest libcurl
+  Don't dispatch events to objects that are being torn down?
+
+  HTTP POST
+  Progress events
+  Access to headers

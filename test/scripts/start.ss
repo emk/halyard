@@ -104,6 +104,7 @@
   (external-group /features)
   (external-group /bugs)
   (external-group /experiments)
+  (external-group /networking)
   (external-group /updater)
   (external-group /quake2)
   (external-card /benchmark)

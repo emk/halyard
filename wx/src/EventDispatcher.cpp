@@ -344,6 +344,33 @@ bool EventDispatcher::DoEventCursorHidden() {
     return DoSimpleEvent("cursor-hidden");
 }
 
+bool EventDispatcher::DoEventDataReceived(const std::string &data) {
+    if (!EventSetup())
+        return false;
+    
+	TValueList args;
+    args.push_back(TSymbol("data-received"));
+    args.push_back(data);
+    mDispatcher->Run(args);
+    
+	return EventCleanup();    
+}
+
+bool EventDispatcher::DoEventTransferFinished(bool success,
+                                              const std::string &message)
+{
+    if (!EventSetup())
+        return false;
+    
+    TValueList args;
+    args.push_back(TSymbol("transfer-finished"));
+    args.push_back(success);
+    args.push_back(message);
+    mDispatcher->Run(args);
+    
+    return EventCleanup();    
+}
+
 
 //=========================================================================
 // Platform-Specific Methods

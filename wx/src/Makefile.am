@@ -86,6 +86,7 @@ halyard_SOURCES = \
 	GuiUtil.cpp GuiUtil.h \
 	HalyardApp.cpp HalyardApp.h \
 	HistoryText.cpp HistoryText.h \
+	UrlRequest.cpp UrlRequest.h \
 	ImageCache.cpp ImageCache.h \
 	InvisibleElement.h \
 	LightweightAccessible.cpp LightweightAccessible.h \

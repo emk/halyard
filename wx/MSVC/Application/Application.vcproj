@@ -559,6 +559,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\UrlRequest.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\VorbisAudioStream.cpp"
 				>
 			</File>
@@ -845,6 +849,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\TWxPrimitives.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\UrlRequest.h"
 				>
 			</File>
 			<File

@@ -53,6 +53,7 @@
 #include "Transition.h"
 #include "DrawingArea.h"
 #include "MediaElement.h"
+#include "UrlRequest.h"
 
 #if CONFIG_HAVE_QUAKE2
 #	include "Quake2Engine.h"
@@ -684,6 +685,9 @@ void Stage::OnTimer(wxTimerEvent& inEvent)
 
         // Now's an excellent time to update the clock information.
         UpdateClockKeysInStateDB();
+
+        // Give UrlRequest a chance to process any active requests.
+        UrlRequest::ProcessAllRequests();
 
         // Send idle events to all our elements.
         IdleElements();

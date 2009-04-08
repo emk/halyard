@@ -59,6 +59,7 @@
 #include "Stage.h"
 #include "CommandLine.h"
 #include "CommonWxConv.h"
+#include "UrlRequest.h"
 
 // Provided by auto-generated resources.cpp file.
 extern void InitXmlResource();
@@ -498,6 +499,9 @@ bool HalyardApp::OnInit() {
     // reduce application size.
     wxXmlResource::Get()->InitAllHandlers();
     InitXmlResource();
+
+    // Set up our URL library.
+    UrlRequest::Initialize();
     
     // Parse our command-line arguments.  Note that '-e' and '-c' both run
     // script commands, but the former uses multimedia runtime mode, and the
@@ -541,6 +545,9 @@ int HalyardApp::OnExit() {
 
     // Make sure we put back the taskbar, etc.
     ShowSystemWindows();
+
+    // Shut down our URL library.
+    UrlRequest::Cleanup();
 
 #if CONFIG_HAVE_AUDIOSTREAMS
 	// Shut down our audio synthesis layer.

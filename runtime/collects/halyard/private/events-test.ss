@@ -64,6 +64,13 @@
     (test "%media-caption-event% should have caption"
       (define e (%media-caption-event% .new :caption "foo"))
       (assert-equals "foo" (e .caption)))
+    (test "%data-received-event% should have data"
+      (define e (%data-received-event% .new :data "foo"))
+      (assert-equals "foo" (e .data)))
+    (test "%transfer-finished-event% should have success? and message"
+      (define e (%transfer-finished-event% .new :success? #f :message "foo"))
+      (assert-equals #f (e .success?))
+      (assert-equals "foo" (e .message)))
     )
 
   (card /tests/events

@@ -106,8 +106,6 @@ Downloader::Downloader() {
 	ASSERT(s_instance == NULL);
 	s_instance = this;
 
-	curl_global_init(CURL_GLOBAL_ALL);
-
 	m_request = curl_easy_init();
 
 	curl_easy_setopt(m_request, CURLOPT_NOPROGRESS, 0);

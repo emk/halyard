@@ -195,6 +195,16 @@ public:
     /// Dispatch a CursorHidden event.
     ///
     bool DoEventCursorHidden();
+
+    //////////
+    /// Dispatch a DataReceived event.
+    ///
+    bool DoEventDataReceived(const std::string &data);
+
+    //////////
+    /// Dispatch a TransferFinished event.
+    ///
+    bool DoEventTransferFinished(bool success, const std::string &message);
     
 private:
     static wxLongLong PlatformGetEventTimestamp(const wxEvent &event);

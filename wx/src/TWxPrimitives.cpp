@@ -52,6 +52,7 @@
 #include "EditBox.h"
 #include "TStateDB.h"
 #include "dlg/MultiButtonDlg.h"
+#include "UrlRequest.h"
 #include "Downloader.h"
 #include "ProgramTree.h"
 
@@ -560,6 +561,14 @@ DEFINE_PRIMITIVE(HideCursorUntilMouseMoved) {
 DEFINE_PRIMITIVE(Heartbeat) {
 	::SkipPrimitiveLogging();
     wxGetApp().Heartbeat();
+}
+
+DEFINE_PRIMITIVE(UrlRequest) {
+	std::string name, url;
+	TCallbackPtr dispatcher;
+	inArgs >> SymbolName(name) >> dispatcher >> url;
+    R(new UrlRequest(wxGetApp().GetStage(), ToWxString(name.c_str()),
+                     dispatcher, ToWxString(url.c_str())));
 }
 
 DEFINE_PRIMITIVE(IsVistaOrNewer) {
@@ -1093,6 +1102,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(Focus);
     REGISTER_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_PRIMITIVE(Heartbeat);
+    REGISTER_PRIMITIVE(UrlRequest);
     REGISTER_PRIMITIVE(IsVistaOrNewer);
 	REGISTER_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
 	REGISTER_PRIMITIVE(LoadPic);
