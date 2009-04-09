@@ -27,7 +27,7 @@
   (provide %url-request%)
 
   (define-class %url-request% (%invisible-element%)
-    (default %has-engine-element? #f)
+    (value %has-engine-element? #t)
 
     (attr url :type <string>)
 
