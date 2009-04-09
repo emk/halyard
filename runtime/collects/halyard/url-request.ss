@@ -26,17 +26,26 @@
 
   (provide %url-request%)
 
+  ;;; An asynchronous request to download (or upload to) a URL.  This
+  ;;; is actually implemented using libcurl, so it should support (perhaps
+  ;;; with a bit of tweaking of the C++ code) a wide variety of protocols.
   (define-class %url-request% (%invisible-element%)
     (value %has-engine-element? #t)
 
+    ;;; The URL to download (or upload to).
     (attr url :type <string>)
 
+    ;;; Called when a new chunk of data is received from the server.  The
+    ;;; data is provided as (event .data).
     (def (data-received event)
       (void))
 
+    ;;; Called when the transfer is done.  To discover what happened, call
+    ;;; (event .success?) and (event .message?).
     (def (transfer-finished event)
       (void))
 
+    ;; Internal.
     (def (create-engine-node)
       (call-prim 'UrlRequest (.full-name)
                  (make-node-event-dispatcher self)

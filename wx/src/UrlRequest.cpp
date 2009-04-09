@@ -78,18 +78,18 @@ namespace {
 UrlRequest::RequestMap UrlRequest::sRequests;
 
 void UrlRequest::Initialize() {
+    ASSERT(gCurlMultiHandle == NULL);
     curl_global_init(CURL_GLOBAL_ALL);
-    gCurlMultiHandle = ::curl_multi_init();
+    gCurlMultiHandle = curl_multi_init();
     if (!gCurlMultiHandle)
         gLog.Fatal("halyard.url",
                    "Cannot create cURL handle for multiple requests");
 }
 
 void UrlRequest::Cleanup() {
-    if (gCurlMultiHandle) {
-        curl_multi_cleanup(gCurlMultiHandle);
-        gCurlMultiHandle = NULL;
-    }
+    ASSERT(gCurlMultiHandle != NULL);
+    curl_multi_cleanup(gCurlMultiHandle);
+    gCurlMultiHandle = NULL;
     curl_global_cleanup();
 }
 
@@ -147,7 +147,7 @@ UrlRequest::UrlRequest(Stage *inStage, const wxString &inName,
                (const char *) GetName().mb_str(),
                (const char *) inUrl.mb_str());
 
-    mHandle = ::curl_easy_init();
+    mHandle = curl_easy_init();
     if (!mHandle)
         gLog.Fatal("halyard.url", "Unable to initialize CURL handle");
     try {
@@ -168,6 +168,7 @@ UrlRequest::UrlRequest(Stage *inStage, const wxString &inName,
     } catch (...) {
         // If an error occurs, clean up our handle before continuing.
         curl_easy_cleanup(mHandle);
+        mHandle = NULL;
         throw;
     }
 }
@@ -201,10 +202,10 @@ int UrlRequest::DoProgress(double dltotal, double dlnow,
 
 size_t UrlRequest::DoWrite(char* ptr, size_t size, size_t nmemb) {
     ASSERT(mState == STARTED);
-    size_t bytes(size * nmemb);
-    std::string data(ptr, bytes);
+    size_t byte_count(size * nmemb);
+    std::string data(ptr, byte_count);
     GetEventDispatcher()->DoEventDataReceived(data);
-    return bytes;
+    return byte_count;
 }
 
 void UrlRequest::HandleMessage(struct CURLMsg *inMsg) {

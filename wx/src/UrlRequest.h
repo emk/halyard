@@ -36,9 +36,13 @@ struct CURLMsg;
 class UrlRequest : public InvisibleElement {
     typedef std::map<CURL*,UrlRequest*> RequestMap;
 
-    /// Maps all existing easy handles to the corresponding UrlRequest.
+    /// Maps all existing CURL 'easy handles' to the corresponding
+    /// UrlRequest.
     static RequestMap sRequests;
 
+    /// We need to keep track of the relationship between gCurlMultiHandle
+    /// (a CURL multi handle), and mHandle (a CURL easy handle), or we will
+    /// get terribly confused.
     enum State {
         INITIALZING,     //< We're still setting up mHandle.
         STARTED,         //< mHandle is attached to gCurlMultiHandle.
@@ -48,7 +52,7 @@ class UrlRequest : public InvisibleElement {
     /// What is the current state of this request?
     State mState;
 
-    /// A libcurl "easy handle" handle representing this request.
+    /// A CURL "easy handle" handle representing this request.
     CURL *mHandle;
 
     static int ProgressCallback(void *data, double dltotal, double dlnow, 
