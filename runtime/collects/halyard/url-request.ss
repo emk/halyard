@@ -35,6 +35,17 @@
     ;;; The URL to download (or upload to).
     (attr url :type <string>)
 
+    ;;; The HTTP method to use.  For other protocols, such as FTP, use the
+    ;;; analogous HTTP method: FTP download -> GET, FTP upload -> PUT, etc.
+    ;;; Supported values are 'get and 'post.
+    (attr method 'get :type <symbol>)
+
+    ;;; The MIME type to use for the request body, if any.
+    (attr request-content-type #f)
+
+    ;;; The data to send in the request body, if any.
+    (attr request-body #f)
+
     ;;; Called when a new chunk of data is received from the server.  The
     ;;; data is provided as (event .data).
     (def (data-received event)
@@ -49,7 +60,16 @@
     (def (create-engine-node)
       (call-prim 'UrlRequest (.full-name)
                  (make-node-event-dispatcher self)
-                 (.url)))
+                 (.url))
+      (case (.method)
+        [[get] (void)]
+        [[post]
+         (call-prim 'UrlRequestConfigurePost (.full-name)
+                    (.request-content-type) (.request-body))]
+        [else
+         (error (cat self ": Unknown request method " (.method)))])
+      (call-prim 'UrlRequestStart (.full-name))
+      )
     )
 
   )

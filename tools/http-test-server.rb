@@ -21,15 +21,15 @@ get '/hello' do
   "Hello!\n" * (params[:count] || "1").to_i
 end
 
-get '/echo' do
+get '/upload' do
   builder do |xml|
-    xml.form :method => "post", :action => "/echo" do
+    xml.form :method => "post", :action => "/upload" do
       xml.input :type => "text", :name => "message", :value => ""
       xml.input :type => "submit"
     end
   end
 end
 
-post '/echo' do
-  request.body
+post '/upload' do
+  "post: #{request.body.read}"
 end

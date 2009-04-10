@@ -70,12 +70,20 @@
     )
 
   (define-class %url-request-test-case% (%element-test-case%)
-    (def (get url)
-      (define request
-        (%easy-url-request% .new :url (cat "http://localhost:4567" url)))
+    (def (perform request)
       (define result (request .wait-for-response))
       (delete-element request)
       result)
+    (def (get url)
+      (.perform
+       (%easy-url-request% .new :url (cat "http://localhost:4567" url))))
+    (def (post url content-type body)
+      (.perform
+       (%easy-url-request% .new
+         :url (cat "http://localhost:4567" url)
+         :method 'post
+         :request-content-type content-type
+         :request-body body)))
     )
 
   (define-class %test-server-present-test% (%url-request-test-case%)
@@ -83,10 +91,10 @@
       (assert-equals "Hello!\n" (.get "/hello"))))
 
   (define-class %http-get-test% (%url-request-test-case%)
-    (test "GET should return the message body"
+    (test "GET should return the response body"
       (assert-equals "Hello!\n" (.get "/hello")))
 
-    (test "GET should support large messages"
+    (test "GET should support large responses"
       (define (build-hello count)
         ;; Repeat "Hello!\n" COUNT times.  Only works for powers of 2.
         (if (= 1 count)
@@ -99,9 +107,15 @@
       (assert-equals #f (.get "/not-found")))
     )
 
+  (define-class %http-post-test% (%url-request-test-case%)
+    (test "POST should upload data and return the response body"
+      (assert-equals "post: Hello" (.post "/upload" "text/plain" "Hello")))
+    )
+
   (card /networking/tests/url-request
       (%test-suite%
        :tests (list %test-server-present-test%
-                    %http-get-test%)))
+                    %http-get-test%
+                    %http-post-test%)))
 
   )

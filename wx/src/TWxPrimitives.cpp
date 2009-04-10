@@ -571,6 +571,20 @@ DEFINE_PRIMITIVE(UrlRequest) {
                      dispatcher, ToWxString(url.c_str())));
 }
 
+DEFINE_PRIMITIVE(UrlRequestConfigurePost) {
+	std::string name, content_type, body;
+	inArgs >> SymbolName(name) >> content_type >> body;
+    FIND_ELEMENT(UrlRequest, request, ToWxString(name));
+    request->ConfigurePost(content_type, body);
+}
+
+DEFINE_PRIMITIVE(UrlRequestStart) {
+	std::string name;
+	inArgs >> SymbolName(name);
+    FIND_ELEMENT(UrlRequest, request, ToWxString(name));
+    request->Start();
+}
+
 DEFINE_PRIMITIVE(IsVistaOrNewer) {
     // Return true if we're running Windows Vista or newer.  We need to
     // know this so that the updater can deal with the new security model.
@@ -1103,6 +1117,8 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_PRIMITIVE(Heartbeat);
     REGISTER_PRIMITIVE(UrlRequest);
+    REGISTER_PRIMITIVE(UrlRequestConfigurePost);
+    REGISTER_PRIMITIVE(UrlRequestStart);
     REGISTER_PRIMITIVE(IsVistaOrNewer);
 	REGISTER_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
 	REGISTER_PRIMITIVE(LoadPic);

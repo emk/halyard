@@ -88,6 +88,10 @@ public:
 
     virtual ~UrlRequest();
 
+    /// Configure this URL request as a POST.
+    void ConfigurePost(const std::string &inContentType,
+                       const std::string &inBody);
+
     /// Start the URL request.
     void Start();
 

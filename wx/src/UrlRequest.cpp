@@ -168,8 +168,6 @@ UrlRequest::UrlRequest(Stage *inStage, const wxString &inName,
         // work--some authentication failures will not result in a failed
         // transfer.
         CHKE(curl_easy_setopt(mHandle, CURLOPT_FAILONERROR, 1));
-
-        Start();
     } catch (...) {
         // If an error occurs, clean up our handle before continuing.
         curl_easy_cleanup(mHandle);
@@ -187,6 +185,21 @@ UrlRequest::~UrlRequest() {
     // normally.
     ASSERT(mState == INITIALZING || mState == STOPPED);
     curl_easy_cleanup(mHandle);
+}
+
+void UrlRequest::ConfigurePost(const std::string &inContentType,
+                               const std::string &inBody)
+{
+    ASSERT(mState == INITIALZING);
+    gLog.Trace("halyard.url-request", "%s: Posting %d bytes as %s",
+               GetLogName(), inBody.length(), inContentType.c_str());
+
+    // Don't convert POST to GET when following redirects.
+    CHKE(curl_easy_setopt(mHandle, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL));
+
+    // Specify our POST data.  Note that we must set the size first!
+    CHKE(curl_easy_setopt(mHandle, CURLOPT_POSTFIELDSIZE, inBody.length()));
+    CHKE(curl_easy_setopt(mHandle, CURLOPT_COPYPOSTFIELDS, inBody.c_str()));
 }
 
 void UrlRequest::Start() {
