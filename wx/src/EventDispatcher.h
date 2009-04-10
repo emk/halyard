@@ -149,7 +149,7 @@ public:
     //////////
     /// Dispatch a ProgressChanged event.
     ///
-    bool DoEventProgressChanged(bool inIsActive, double inPortionCompleted);
+    bool DoEventProgressChanged(bool inIsDone, double inPortionCompleted);
 
     //////////
     /// Dispatch a PlaybackTimer event.

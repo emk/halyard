@@ -286,7 +286,7 @@ bool EventDispatcher::DoEventStatusTextChanged(const wxString &inText) {
 	return EventCleanup();
 }
 
-bool EventDispatcher::DoEventProgressChanged(bool inIsActive,
+bool EventDispatcher::DoEventProgressChanged(bool inIsDone,
                                              double inPortionCompleted)
 {
     if (!EventSetup())
@@ -294,7 +294,7 @@ bool EventDispatcher::DoEventProgressChanged(bool inIsActive,
 
 	TValueList args;
     args.push_back(TSymbol("progress-changed"));
-    args.push_back(inIsActive);
+    args.push_back(inIsDone);
     args.push_back(inPortionCompleted);
     mDispatcher->Run(args);
 	return EventCleanup();
