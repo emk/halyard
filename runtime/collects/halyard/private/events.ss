@@ -243,7 +243,8 @@
         [[update-ui mouse-enter mouse-leave mouse-moved text-changed
           browser-title-changed status-text-changed progress-changed
           media-finished playback-timer media-caption
-          cursor-moved cursor-shown cursor-hidden]
+          cursor-moved cursor-shown cursor-hidden
+          data-received transfer-finished]
          'trace]
         [else
          'debug]))

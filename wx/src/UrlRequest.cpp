@@ -41,7 +41,7 @@ namespace {
             // TODO - We should just throw the exception here, but I'm too
             // lazy to format a reasonable error string for the exception,
             // so let's cheat and take advantage of gLog for now.
-            gLog.Error("halyard.url",
+            gLog.Error("halyard.url-request",
                        "A CURL error occurred (%d): %s",
                        err, curl_easy_strerror(err));
             THROW("Cannot perform URL request");
@@ -55,7 +55,7 @@ namespace {
             // TODO - We should just throw the exception here, but I'm too
             // lazy to format a reasonable error string for the exception,
             // so let's cheat and take advantage of gLog for now.
-            gLog.Error("halyard.url",
+            gLog.Error("halyard.url-request",
                        "A CURL error occurred (%d): %s",
                        err, curl_multi_strerror(err));
             THROW("Cannot perform URL request");
@@ -82,7 +82,7 @@ void UrlRequest::Initialize() {
     curl_global_init(CURL_GLOBAL_ALL);
     gCurlMultiHandle = curl_multi_init();
     if (!gCurlMultiHandle)
-        gLog.Fatal("halyard.url",
+        gLog.Fatal("halyard.url-request",
                    "Cannot create cURL handle for multiple requests");
 }
 
@@ -143,13 +143,12 @@ UrlRequest::UrlRequest(Stage *inStage, const wxString &inName,
     : InvisibleElement(inStage, inName, inDispatcher),
       mState(INITIALZING), mHandle(NULL)
 {
-    gLog.Debug("halyard.url", "%s: Making URL request to %s",
-               (const char *) GetName().mb_str(),
-               (const char *) inUrl.mb_str());
+    gLog.Debug("halyard.url-request", "%s: Making URL request to %s",
+               GetLogName(), (const char *) inUrl.mb_str());
 
     mHandle = curl_easy_init();
     if (!mHandle)
-        gLog.Fatal("halyard.url", "Unable to initialize CURL handle");
+        gLog.Fatal("halyard.url-request", "Unable to initialize CURL handle");
     try {
         // Set up some standard options.
         CHKE(curl_easy_setopt(mHandle, CURLOPT_NOPROGRESS, 0));
@@ -191,12 +190,15 @@ void UrlRequest::Start() {
     ASSERT(sRequests.find(mHandle) == sRequests.end());
     sRequests.insert(RequestMap::value_type(mHandle, this));
     mState = STARTED;
+    gLog.Trace("halyard.url-request", "%s: Started", GetLogName());
 }
 
 int UrlRequest::DoProgress(double dltotal, double dlnow,
                            double ultotal, double ulnow)
 {
     ASSERT(mState == STARTED);
+    gLog.Trace("halyard.url-request", "%s: Progress up %d/%d down %d/%d",
+               GetLogName(), dlnow, dltotal, ulnow, ultotal);
     return 0;
 }
 
@@ -204,6 +206,8 @@ size_t UrlRequest::DoWrite(char* ptr, size_t size, size_t nmemb) {
     ASSERT(mState == STARTED);
     size_t byte_count(size * nmemb);
     std::string data(ptr, byte_count);
+    gLog.Trace("halyard.url-request", "%s: Write %d bytes",
+               GetLogName(), byte_count);
     GetEventDispatcher()->DoEventDataReceived(data);
     return byte_count;
 }
@@ -216,9 +220,8 @@ void UrlRequest::HandleMessage(struct CURLMsg *inMsg) {
         // Get the result of the transfer and log it.
         CURLcode result(inMsg->data.result);
         std::string message(curl_easy_strerror(result));
-        gLog.Debug("halyard.url", "%s: Transfer finished (%d): %s",
-                   (const char *) GetName().mb_str(),
-                   result, message.c_str());
+        gLog.Debug("halyard.url-request", "%s: Transfer finished (%d): %s",
+                   GetLogName(), result, message.c_str());
 
         // Pass an event to the interpreter.
         bool success(result == CURLE_OK);
@@ -239,4 +242,5 @@ void UrlRequest::Stop() {
     ASSERT(sRequests.find(mHandle) != sRequests.end());
     sRequests.erase(mHandle);
     mState = STOPPED;
+    gLog.Trace("halyard.url-request", "%s: Stopped", GetLogName());
 }

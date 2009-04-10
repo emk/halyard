@@ -54,6 +54,14 @@ class Element
 	wxString mName;
 
     //////////
+    /// Because there's no way to extract a 'const char *' from a wxString
+    /// without it disappearing almost immediately, we also keep a
+    /// std::string version of mName for convenient use with logging
+    /// functions.
+    ///
+    std::string mLogName;
+
+    //////////
     /// The event dispatcher for this object.
     ///
     EventDispatcherPtr mEventDispatcher;
@@ -84,6 +92,13 @@ public:
 	/// given card.
 	///
 	wxString GetName() { return mName; }
+
+    //////////
+    /// Return the name of this element in a fashion suitable for logging.
+    /// The 'const char *' returned is guaranteed to remain valid until the
+    /// element is destroyed.
+    ///
+    const char *GetLogName() { return mLogName.c_str(); }
 
     //////////
     /// Get the event dispatcher associated with this element.

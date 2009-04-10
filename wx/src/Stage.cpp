@@ -1161,6 +1161,8 @@ void Stage::AddElement(ElementPtr inElement)
 	(void) DeleteElementByName(inElement->GetName());
 
 	// Add the new Element to our list.
+    gLog.Trace("halyard.element", "%s: Added to stage",
+               inElement->GetLogName());
 	mElements.push_back(inElement);
 	NotifyElementsChanged();
 }
@@ -1209,8 +1211,9 @@ void Stage::DestroyElement(ElementPtr inElement)
 
 	// Make sure this element isn't on our drawing context stack.
 	if (mDrawingContextStack->ContainsElement(inElement))
-		gLog.Fatal("halyard", "Tried to delete an element with an active drawing "
-						"context");
+		gLog.Fatal("halyard.element",
+                   "%s: Tried to delete element with an active drawing context",
+                   inElement->GetLogName());
 
 	// Clean up any dangling references to this object.
 	if (inElement == mGrabbedElement)
@@ -1243,6 +1246,9 @@ void Stage::DestroyElement(ElementPtr inElement)
     //
 	// TODO - Implemented delayed destruction so element callbacks can
 	// destroy the element they're attached to.
+
+    gLog.Trace("halyard.element", "%s: Removed from stage",
+               inElement->GetLogName());
 }
 
 bool Stage::DeleteElementByName(const wxString &inName)
@@ -1302,7 +1308,8 @@ void Stage::MouseGrab(ElementPtr inElement)
 	{
         std::string name(inElement->GetName().mb_str());
         std::string grabbed_name(mGrabbedElement->GetName().mb_str());
-		gLog.Error("halyard", "Grabbing %s while %s is already grabbed",
+		gLog.Error("halyard.stage.grab",
+                   "Grabbing %s while %s is already grabbed",
 				   name.c_str(), grabbed_name.c_str());
 		MouseUngrab(mGrabbedElement);
 	}
@@ -1316,14 +1323,16 @@ void Stage::MouseUngrab(ElementPtr inElement)
 	if (!mGrabbedElement)
 	{
         std::string name(inElement->GetName().mb_str());
-		gLog.Error("halyard", "Ungrabbing %s when it isn't grabbed", name.c_str());
+		gLog.Error("halyard.stage.grab",
+                   "Ungrabbing %s when it isn't grabbed", name.c_str());
 		return;
 	}
 	if (inElement != mGrabbedElement)
 	{
         std::string name(inElement->GetName().mb_str());
         std::string grabbed_name(mGrabbedElement->GetName().mb_str());
-		gLog.Error("halyard", "Ungrabbing %s when %s is grabbed", name.c_str(),
+		gLog.Error("halyard.stage.grab",
+                   "Ungrabbing %s when %s is grabbed", name.c_str(),
                    grabbed_name.c_str());
 	}
 

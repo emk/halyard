@@ -34,7 +34,7 @@ using namespace Halyard;
 
 Element::Element(Stage *inStage, const wxString &inName,
                  Halyard::TCallbackPtr inDispatcher)
-	: mStage(inStage), mName(inName)
+	: mStage(inStage), mName(inName), mLogName(inName.mb_str())
 {
     ASSERT(mStage);
     ASSERT(mName != wxT(""));

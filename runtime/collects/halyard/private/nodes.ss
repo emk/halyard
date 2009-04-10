@@ -1054,6 +1054,7 @@
 
   (with-instance %node%
     (def (enter-node)
+      (trace 'halyard.element (self .full-name) ": Entering node")
       ;; TODO - Make sure all our template properties are bound.  Mark this
       ;; node as running so we can call .NEW on elements.
       (%assert (eq? (.node-state) 'ENTERING))
@@ -1093,6 +1094,7 @@
       )
 
     (def (exit-node)
+      (trace 'halyard.element (self .full-name) ": Exiting node")
       (%assert (memq (.node-state) '(ENTERING ACTIVE)))
       (set! (.node-state) 'EXITING)
       (.notify-exit)
