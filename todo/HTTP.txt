@@ -1,6 +1,3 @@
-  Don't dispatch events to objects that are being torn down?
-  Make sure (event .success?) is #f if an HTTP error occurs (e.g. 404)
-
   HTTP POST
   Progress events
   Access to headers

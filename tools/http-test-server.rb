@@ -12,6 +12,11 @@ get '/' do
   "This is a primitive web server used for testing Halyard."
 end
 
+get '/not-found' do
+  status 404
+  "This page doesn't exist."
+end
+
 get '/hello' do
   "Hello!\n" * (params[:count] || "1").to_i
 end

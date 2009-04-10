@@ -51,18 +51,22 @@
 
   (define-class %easy-url-request% (%url-request%)
     (attr finished? #f :type <boolean> :writable? #t)
+    (attr success? #f :type <boolean> :writable? #t)
     (attr body "" :type <string> :writable? #t)
 
     (def (data-received event)
       (set! (.body) (cat (.body) (event .data))))
 
     (def (transfer-finished event)
-      (set! (.finished?) #t))
+      (set! (.finished?) #t)
+      (set! (.success?) (event .success?)))
 
     (def (wait-for-response)
       (while (not (.finished?))
         (idle))
-      (.body))
+      (if (.success?)
+        (.body)
+        #f))
     )
 
   (define-class %url-request-test-case% (%element-test-case%)
@@ -90,6 +94,9 @@
           (let [[half (build-hello (/ count 2))]]
             (string-append half half))))
       (assert-equals (build-hello 1024) (.get "/hello?count=1024")))
+
+    (test "GET should fail if it encounters an HTTP error"
+      (assert-equals #f (.get "/not-found")))
     )
 
   (card /networking/tests/url-request

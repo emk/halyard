@@ -163,6 +163,12 @@ UrlRequest::UrlRequest(Stage *inStage, const wxString &inName,
         CHKE(curl_easy_setopt(mHandle, CURLOPT_FOLLOWLOCATION, 1));
         CHKE(curl_easy_setopt(mHandle, CURLOPT_MAXREDIRS, 10));
 
+        // Attempt to turn HTTP response codes >= 400 into outright
+        // failures.  According to the manual, this doesn't always
+        // work--some authentication failures will not result in a failed
+        // transfer.
+        CHKE(curl_easy_setopt(mHandle, CURLOPT_FAILONERROR, 1));
+
         Start();
     } catch (...) {
         // If an error occurs, clean up our handle before continuing.
