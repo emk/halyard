@@ -15,7 +15,7 @@ AM_INIT_AUTOMAKE(halyard, 0.0)
 #   sqlite     3.0.3    3.5.7     3.4.2
 #
 # Libraries we need to build the engine:
-#   curl       7.15.3
+#   curl       7.19.4   7.19.3
 #   tremor     1.0.2
 #   portaudio  18       19        19
 #   wxWidgets  2.6.1p1  2.8.7     2.8.4
@@ -45,7 +45,7 @@ AC_PROG_CC
 # Check for various libraries.
 PKG_CHECK_MODULES(FREETYPE, [freetype2 >= 2.3.4])
 PKG_CHECK_MODULES(XML2, [libxml-2.0 >= 2.4.30])
-PKG_CHECK_MODULES(CURL, [libcurl >= 7.15.3])
+PKG_CHECK_MODULES(CURL, [libcurl >= 7.19.3])
 AX_LIB_SQLITE3(3.0.3)
 LIBRARY_MISSING_IF([test x$success != xyes], [SQLite])
 
