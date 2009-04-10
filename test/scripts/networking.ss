@@ -52,10 +52,10 @@
   (define-class %easy-url-request% (%url-request%)
     (attr finished? #f :type <boolean> :writable? #t)
     (attr success? #f :type <boolean> :writable? #t)
-    (attr body "" :type <string> :writable? #t)
+    (attr response-body "" :type <string> :writable? #t)
 
     (def (data-received event)
-      (set! (.body) (cat (.body) (event .data))))
+      (set! (.response-body) (cat (.response-body) (event .data))))
 
     (def (transfer-finished event)
       (set! (.finished?) #t)
@@ -65,7 +65,7 @@
       (while (not (.finished?))
         (idle))
       (if (.success?)
-        (.body)
+        (.response-body)
         #f))
     )
 
@@ -82,8 +82,8 @@
        (%easy-url-request% .new
          :url (cat "http://localhost:4567" url)
          :method 'post
-         :request-content-type content-type
-         :request-body body)))
+         :content-type content-type
+         :body body)))
     )
 
   (define-class %test-server-present-test% (%url-request-test-case%)
@@ -105,6 +105,13 @@
 
     (test "GET should fail if it encounters an HTTP error"
       (assert-equals #f (.get "/not-found")))
+
+    (test "GET should provide a correct Content-Type"
+      (define request
+        (%easy-url-request% .new :url "http://localhost:4567/hello"))
+      (request .wait-for-response)
+      (assert-equals "text/html" (request .response-content-type)))
+
     )
 
   (define-class %http-post-test% (%url-request-test-case%)

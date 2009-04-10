@@ -263,3 +263,12 @@ void UrlRequest::Stop() {
     mState = STOPPED;
     gLog.Trace("halyard.url-request", "%s: Stopped", GetLogName());
 }
+
+std::string UrlRequest::GetResponseContentType() {
+    char *outContentType;
+    CHKE(curl_easy_getinfo(mHandle, CURLINFO_CONTENT_TYPE, &outContentType));
+    if (outContentType)
+        return outContentType;
+    else
+        return "";
+}

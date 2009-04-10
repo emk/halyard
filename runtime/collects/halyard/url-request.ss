@@ -41,10 +41,15 @@
     (attr method 'get :type <symbol>)
 
     ;;; The MIME type to use for the request body, if any.
-    (attr request-content-type #f)
+    (attr content-type #f)
 
     ;;; The data to send in the request body, if any.
-    (attr request-body #f)
+    (attr body #f)
+
+    ;;; The MIME Content-Type of the response.  This will return #f if the
+    ;;; content type is not yet known.
+    (def (response-content-type)
+      (call-prim 'UrlRequestGetResponseContentType (.full-name)))
 
     ;;; Called when a new chunk of data is received from the server.  The
     ;;; data is provided as (event .data).
@@ -65,7 +70,7 @@
         [[get] (void)]
         [[post]
          (call-prim 'UrlRequestConfigurePost (.full-name)
-                    (.request-content-type) (.request-body))]
+                    (.content-type) (.body))]
         [else
          (error (cat self ": Unknown request method " (.method)))])
       (call-prim 'UrlRequestStart (.full-name))

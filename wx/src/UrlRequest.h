@@ -97,6 +97,10 @@ public:
 
     /// Abort a running URL request.
     void Stop();
+
+    /// Return the MIME type of the response, or "" if the MIME type is
+    /// unknown.
+    std::string GetResponseContentType();
 };
 
 #endif // UrlRequest_H

@@ -578,6 +578,17 @@ DEFINE_PRIMITIVE(UrlRequestConfigurePost) {
     request->ConfigurePost(content_type, body);
 }
 
+DEFINE_PRIMITIVE(UrlRequestGetResponseContentType) {
+	std::string name;
+	inArgs >> SymbolName(name);
+    FIND_ELEMENT(UrlRequest, request, ToWxString(name));
+    std::string content_type(request->GetResponseContentType());
+    if (content_type == "")
+        ::SetPrimitiveResult(false);
+    else
+        ::SetPrimitiveResult(content_type);
+}
+
 DEFINE_PRIMITIVE(UrlRequestStart) {
 	std::string name;
 	inArgs >> SymbolName(name);
@@ -1118,6 +1129,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(Heartbeat);
     REGISTER_PRIMITIVE(UrlRequest);
     REGISTER_PRIMITIVE(UrlRequestConfigurePost);
+    REGISTER_PRIMITIVE(UrlRequestGetResponseContentType);
     REGISTER_PRIMITIVE(UrlRequestStart);
     REGISTER_PRIMITIVE(IsVistaOrNewer);
 	REGISTER_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
