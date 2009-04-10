@@ -54,33 +54,14 @@
 
   (group /networking/tests)
 
-  (define-class %easy-url-request% (%url-request%)
-    (attr finished? #f :type <boolean> :writable? #t)
-    (attr success? #f :type <boolean> :writable? #t)
-    (attr response-body "" :type <string> :writable? #t)
-
-    (def (data-received event)
-      (set! (.response-body) (cat (.response-body) (event .data))))
-
-    (def (transfer-finished event)
-      (set! (.finished?) #t)
-      (set! (.success?) (event .success?)))
-
-    (def (wait-for-response)
-      (while (not (.finished?))
-        (idle))
-      (if (.success?)
-        (.response-body)
-        #f))
-    )
-
   ;; The address of Sinatra-based test server.  This is implemented by
   ;; tools/http-test-server.rb, which must be run manually.
   (define $server "http://localhost:4567")
 
   (define-class %url-request-test-case% (%element-test-case%)
     (def (perform request)
-      (define result (request .wait-for-response))
+      (request .wait)
+      (define result (request .response-body))
       (delete-element request)
       result)
     (def (get url &rest keys)
@@ -121,7 +102,7 @@
     (test "GET should provide a correct Content-Type"
       (define request
         (%easy-url-request% .new :url (cat $server "/hello")))
-      (request .wait-for-response)
+      (request .wait)
       (assert-equals "text/html" (request .response-content-type)))
 
     (test "GET should allow sending custom Accept headers"

@@ -24,6 +24,11 @@
   (require (lib "kernel.ss" "halyard/private"))
   (require (lib "events.ss" "halyard/private"))
 
+
+  ;;=======================================================================
+  ;;  %url-request%
+  ;;=======================================================================
+
   (provide %url-request%)
 
   ;;; An asynchronous request to download (or upload to) a URL.  This
@@ -86,6 +91,59 @@
          (error (cat self ": Unknown request method " (.method)))])
       (call-prim 'UrlRequestStart (.full-name))
       )
+    )
+
+
+  ;;=======================================================================
+  ;;  %easy-url-request%
+  ;;=======================================================================
+
+  (provide %easy-url-request%)
+
+  ;;; This subclass of %url-request% collects the downloaded data
+  ;;; internally, and generally tries to provide a higher-level interface
+  ;;; for downloading URLs.  If you need to be notified when the transfer
+  ;;; is finished, override .transfer-finished and call (super) before
+  ;;; running your own code.
+  (define-class %easy-url-request% (%url-request%)
+    (def (initialize &rest keys)
+      (super)
+      (set! (slot 'finished?) #f)
+      (set! (slot 'success?) #f)
+      (set! (slot 'response-body-chunks) '())
+      (set! (slot 'response-body) #f))
+
+    (def (data-received event)
+      (set! (slot 'response-body-chunks)
+            (cons (event .data) (slot 'response-body-chunks))))
+
+    (def (transfer-finished event)
+      (set! (slot 'finished?) #t)
+      (set! (slot 'success?) (event .success?)))
+
+    ;;; Has this request finished?
+    (def (finished?)
+      (slot 'finished?))
+
+    ;;; Was this request successful?
+    (def (success?)
+      (slot 'success?))
+
+    ;;; Return the response body.  If the transfer failed, or is still
+    ;;; running, returns #f.
+    (def (response-body)
+      (if (.success?)
+        (begin
+          (unless (slot 'response-body)
+            (set! (slot 'response-body)
+                  (apply string-append (reverse (slot 'response-body-chunks)))))
+          (slot 'response-body))
+        #f))
+
+    ;;; Wait until this response is completed.
+    (def (wait)
+      (while (not (.finished?))
+        (idle)))
     )
 
   )
