@@ -190,7 +190,7 @@
   ;;  Element Templates
   ;;=======================================================================
   
-  (provide %text-button% text-button new-text-button)
+  (provide %text-button% text-button new-text-button %progress-bar%)
 
   ;;; A simple and ugly button which doesn't require loading any image
   ;;; files.  We'd obviously like something better than this.
@@ -234,5 +234,38 @@
   
   (define (new-text-button at label action &key name)
     (%text-button% .new :at at :label label :action action :name name))
+
+  (define-class %progress-bar% (%custom-element%)
+    (default alpha? #t)
+
+    ;;; Is the action represented by this progress bar complete?
+    (attr done? #f :type <boolean> :writable? #t)
+
+    ;;; A number between 0.0 and 1.0, inclusive, specifying the percentage
+    ;;; of the progress bar which is filled.
+    (attr value 0.0 :type <number> :writable? #t)
+
+    ;;; The color to use for this progress bar.
+    (attr color (color #x0 #x0 #x80) :type <color> :writable? #t)
+
+    (after-updating [done? value color]
+      (.invalidate))
+
+    ;;; Given a %progress-changed-event% (which was presumably first passed
+    ;;; to another object, and then delegated to us), update the progress
+    ;;; bar display.
+    (def (progress-changed event)
+      (set! (.value) (event .value))
+      (set! (.done?) (event .done?)))
+
+    (def (draw)
+      (trace 'halyard "Drawing progress bar: " (.done?) " " (.value))
+      (unless (.done?)
+        (draw-rectangle (rect 0 0
+                              (inexact->exact
+                               (round (* (.value) (rect-right (dc-rect)))))
+                              (rect-bottom (dc-rect)))
+                        (.color))))
+    )
 
   )

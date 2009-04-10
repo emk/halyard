@@ -151,16 +151,6 @@
     (def (draw-status-text msg)
       (.draw-string (rect 0 580 600 600) msg))
     
-    (def (draw-progress-bar done? value)
-      (define r (rect 600 580 800 600))
-      (draw-rectangle r $color-black)
-      (unless done?
-        (let [[right (+ (rect-left r)
-                        (inexact->exact (round (* value (rect-width r)))))]]
-          (draw-rectangle (rect (rect-left r) (rect-top r)
-                                right (rect-bottom r))
-                          (color #x0 #x0 #x80)))))
-    
     (def (browser-navigate event)
       (if (equal? (event .url) "http://www.nowhere.org/")
         (begin
@@ -178,7 +168,7 @@
       (.draw-status-text (event .text)))
     
     (def (progress-changed event)
-      (.draw-progress-bar (event .done?) (event .value)))
+      (.progress-bar.progress-changed event))
     
     (def (update-ui event)
       (define command (event .command))
@@ -208,6 +198,8 @@
                         :rect (rect 0 70 800 580)
                         :path "sample.html"
                         :fallback? #f))
+
+    (elem progress-bar (%progress-bar% :bounds (rect 600 580 800 600)))
     )
 
   
