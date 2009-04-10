@@ -69,21 +69,28 @@
         #f))
     )
 
+  ;; The address of Sinatra-based test server.  This is implemented by
+  ;; tools/http-test-server.rb, which must be run manually.
+  (define $server "http://localhost:4567")
+
   (define-class %url-request-test-case% (%element-test-case%)
     (def (perform request)
       (define result (request .wait-for-response))
       (delete-element request)
       result)
-    (def (get url)
+    (def (get url &rest keys)
       (.perform
-       (%easy-url-request% .new :url (cat "http://localhost:4567" url))))
-    (def (post url content-type body)
+       (apply send %easy-url-request% 'new
+              :url (cat $server url)
+              keys)))
+    (def (post url content-type body &rest keys)
       (.perform
-       (%easy-url-request% .new
-         :url (cat "http://localhost:4567" url)
-         :method 'post
-         :content-type content-type
-         :body body)))
+       (apply send %easy-url-request% 'new
+              :url (cat $server url)
+              :method 'post
+              :content-type content-type
+              :body body
+              keys)))
     )
 
   (define-class %test-server-present-test% (%url-request-test-case%)
@@ -108,9 +115,13 @@
 
     (test "GET should provide a correct Content-Type"
       (define request
-        (%easy-url-request% .new :url "http://localhost:4567/hello"))
+        (%easy-url-request% .new :url (cat $server "/hello")))
       (request .wait-for-response)
       (assert-equals "text/html" (request .response-content-type)))
+
+    (test "GET should allow sending custom Accept headers"
+      (assert-equals "text/x-foo"
+                     (.get "/headers/Accept" :accept "text/x-foo")))
 
     )
 

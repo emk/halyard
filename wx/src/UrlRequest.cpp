@@ -141,7 +141,7 @@ UrlRequest::UrlRequest(Stage *inStage, const wxString &inName,
                        Halyard::TCallbackPtr inDispatcher,
                        const wxString &inUrl)
     : InvisibleElement(inStage, inName, inDispatcher),
-      mState(INITIALZING), mHandle(NULL)
+      mState(INITIALZING), mHandle(NULL), mHeaders(NULL)
 {
     gLog.Debug("halyard.url-request", "%s: Making URL request to %s",
                GetLogName(), (const char *) inUrl.mb_str());
@@ -184,6 +184,7 @@ UrlRequest::~UrlRequest() {
     // Once we've left the STARTED state, we can dispose of our handle
     // normally.
     ASSERT(mState == INITIALZING || mState == STOPPED);
+    curl_slist_free_all(mHeaders);
     curl_easy_cleanup(mHandle);
 }
 
@@ -202,9 +203,29 @@ void UrlRequest::ConfigurePost(const std::string &inContentType,
     CHKE(curl_easy_setopt(mHandle, CURLOPT_COPYPOSTFIELDS, inBody.c_str()));
 }
 
-void UrlRequest::Start() {
-    // Register our handle.
+void UrlRequest::ConfigureSetHeader(const std::string &inHeader,
+                                    const std::string &inValue)
+{
     ASSERT(mState == INITIALZING);
+    gLog.Trace("halyard.url-request", "%s: Send header %s: %s",
+               GetLogName(), inHeader.c_str(), inValue.c_str());
+    std::string header(inHeader);
+    if (inValue == "")
+        header += ":";
+    else
+        header += ": " + inValue;
+    mHeaders = curl_slist_append(mHeaders, header.c_str());
+    if (!mHeaders)
+        gLog.Fatal("halyard.url-request", "Unable to allocate header");
+}
+
+void UrlRequest::Start() {
+    ASSERT(mState == INITIALZING);
+
+    // Finish our remaining setup.
+    CHKE(curl_easy_setopt(mHandle, CURLOPT_HTTPHEADER, mHeaders));
+
+    // Register our handle.
     CHKM(curl_multi_add_handle(gCurlMultiHandle, mHandle));
     ASSERT(sRequests.find(mHandle) == sRequests.end());
     sRequests.insert(RequestMap::value_type(mHandle, this));

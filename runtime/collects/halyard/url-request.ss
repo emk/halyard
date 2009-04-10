@@ -40,6 +40,10 @@
     ;;; Supported values are 'get and 'post.
     (attr method 'get :type <symbol>)
 
+    ;;; The HTTP 'Accept:' header to use with the request.  Pass #f to use
+    ;;; a reasonable default value.
+    (attr accept #f)
+
     ;;; The MIME type to use for the request body, if any.
     (attr content-type #f)
 
@@ -66,6 +70,9 @@
       (call-prim 'UrlRequest (.full-name)
                  (make-node-event-dispatcher self)
                  (.url))
+      (when (.accept)
+        (call-prim 'UrlRequestConfigureSetHeader (.full-name)
+                   "Accept" (.accept)))
       (case (.method)
         [[get] (void)]
         [[post]

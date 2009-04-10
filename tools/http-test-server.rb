@@ -33,3 +33,8 @@ end
 post '/upload' do
   "post: #{request.body.read}"
 end
+
+get '/headers/:name' do 
+  content_type 'text/plain'
+  env["HTTP_#{params[:name].upcase.gsub(/-/, '_')}"]
+end
