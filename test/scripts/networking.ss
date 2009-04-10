@@ -23,6 +23,8 @@
 
     (text status ((below (.result) 10) $caption-style "Downloading"))
 
+    (elem progress-bar (%progress-bar% :bounds (rect 600 580 750 600)))
+
     (elem req (%url-request% :url "http://iml.dartmouth.edu/halyard")
       (def (display text)
         (set! (.parent.result.text)
@@ -30,6 +32,9 @@
 
       (def (status text)
         (set! (.parent.status.text) text))
+
+      (def (progress-changed event)
+        (.parent.progress-bar.progress-changed event))
 
       (def (data-received event)
         (.display (regexp-replace* "\r\n" (event .data) "\n")))

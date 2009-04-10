@@ -237,8 +237,17 @@ int UrlRequest::DoProgress(double dltotal, double dlnow,
                            double ultotal, double ulnow)
 {
     ASSERT(mState == STARTED);
-    gLog.Trace("halyard.url-request", "%s: Progress up %d/%d down %d/%d",
-               GetLogName(), dlnow, dltotal, ulnow, ultotal);
+    gLog.Trace("halyard.url-request",
+               "%s: Progress up %.0f/%.0f down %.0f/%.0f",
+               GetLogName(), ulnow, ultotal, dlnow, dltotal);
+
+    // Attempt to turn our progress into a value between 0.0 and 1.0.  This
+    // isn't terribly accurate, and it may actually decrease as a download
+    // progresses, just like a normal web browser.
+    double now(ulnow + dlnow);
+    double total(ultotal + dltotal);
+    double fraction(total > 0 ? now / total : 0);
+    GetEventDispatcher()->DoEventProgressChanged(false, fraction);
     return 0;
 }
 
@@ -263,7 +272,8 @@ void UrlRequest::HandleMessage(struct CURLMsg *inMsg) {
         gLog.Debug("halyard.url-request", "%s: Transfer finished (%d): %s",
                    GetLogName(), result, message.c_str());
 
-        // Pass an event to the interpreter.
+        // Pass events to the interpreter.
+        GetEventDispatcher()->DoEventProgressChanged(true, 1.0);
         bool success(result == CURLE_OK);
         GetEventDispatcher()->DoEventTransferFinished(success, message);
     }

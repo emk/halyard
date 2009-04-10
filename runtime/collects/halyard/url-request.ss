@@ -55,6 +55,10 @@
     (def (response-content-type)
       (call-prim 'UrlRequestGetResponseContentType (.full-name)))
 
+    ;;; Called when we need to update our progress bar, if we have one.
+    (def (progress-changed event)
+      (void))
+
     ;;; Called when a new chunk of data is received from the server.  The
     ;;; data is provided as (event .data).
     (def (data-received event)
