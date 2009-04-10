@@ -40,7 +40,7 @@
         (.display (regexp-replace* "\r\n" (event .data) "\n")))
 
       (def (transfer-finished event)
-        (.status (cat (if (event .success?)
+        (.status (cat (if (event .succeeded?)
                           "Transfer succeeded"
                           "Transfer failed")
                       ": " (event .message))))

@@ -67,9 +67,9 @@
     (test "%data-received-event% should have data"
       (define e (%data-received-event% .new :data "foo"))
       (assert-equals "foo" (e .data)))
-    (test "%transfer-finished-event% should have success? and message"
-      (define e (%transfer-finished-event% .new :success? #f :message "foo"))
-      (assert-equals #f (e .success?))
+    (test "%transfer-finished-event% should have succeeded? and message"
+      (define e (%transfer-finished-event% .new :succeeded? #f :message "foo"))
+      (assert-equals #f (e .succeeded?))
       (assert-equals "foo" (e .message)))
     )
 

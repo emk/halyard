@@ -70,7 +70,7 @@
       (void))
 
     ;;; Called when the transfer is done.  To discover what happened, call
-    ;;; (event .success?) and (event .message?).
+    ;;; (event .succeeded?) and (event .message?).
     (def (transfer-finished event)
       (void))
 
@@ -109,7 +109,7 @@
     (def (initialize &rest keys)
       (super)
       (set! (slot 'finished?) #f)
-      (set! (slot 'success?) #f)
+      (set! (slot 'succeeded?) #f)
       (set! (slot 'response-body-chunks) '())
       (set! (slot 'response-body) #f))
 
@@ -119,20 +119,20 @@
 
     (def (transfer-finished event)
       (set! (slot 'finished?) #t)
-      (set! (slot 'success?) (event .success?)))
+      (set! (slot 'succeeded?) (event .succeeded?)))
 
     ;;; Has this request finished?
     (def (finished?)
       (slot 'finished?))
 
     ;;; Was this request successful?
-    (def (success?)
-      (slot 'success?))
+    (def (succeeded?)
+      (slot 'succeeded?))
 
     ;;; Return the response body.  If the transfer failed, or is still
     ;;; running, returns #f.
     (def (response-body)
-      (if (.success?)
+      (if (.succeeded?)
         (begin
           (unless (slot 'response-body)
             (set! (slot 'response-body)

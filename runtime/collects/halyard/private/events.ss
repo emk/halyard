@@ -102,7 +102,7 @@
     (attr data :type <string>))
 
   (define-class %transfer-finished-event% (%event%)
-    (attr success? :type <boolean>)
+    (attr succeeded? :type <boolean>)
     (attr message :type <string>))
 
   ;; TODO - should this be moved into nodes.ss and made public?
@@ -302,7 +302,7 @@
            (%data-received-event% .new :data (car args))]
           [[transfer-finished]
            (%transfer-finished-event% .new
-             :success? (car args)
+             :succeeded? (car args)
              :message (cadr args))]
           [else
            (logger 'error 'halyard.event "Unsupported event type: " name)]))
