@@ -38,3 +38,13 @@ get '/headers/:name' do
   content_type 'text/plain'
   env["HTTP_#{params[:name].upcase.gsub(/-/, '_')}"]
 end
+
+get '/add' do
+  content_type 'application/json'
+  (params[:x].to_i + params[:y].to_i).to_s
+end
+
+post '/echo' do
+  content_type request.content_type
+  request.body
+end

@@ -5,6 +5,7 @@
   (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "test-elements.ss" "halyard"))
   (require (lib "url-request.ss" "halyard"))
+  (require (lib "json-request.ss" "halyard"))
   (require (lib "base.ss" "halyard-test"))
 
   (group /networking (%card-group% :skip-when-jumping-to-each-card? #t))
@@ -57,6 +58,11 @@
   ;; The address of Sinatra-based test server.  This is implemented by
   ;; tools/http-test-server.rb, which must be run manually.
   (define $server "http://localhost:4567")
+
+
+  ;;=======================================================================
+  ;;  %url-request% unit tests
+  ;;=======================================================================
 
   (define-class %url-request-test-case% (%element-test-case%)
     (def (perform request)
@@ -121,5 +127,36 @@
        :tests (list %test-server-present-test%
                     %http-get-test%
                     %http-post-test%)))
+
+
+  ;;=======================================================================
+  ;;  %json-request% unit tests
+  ;;=======================================================================
+
+  (define-class %json-request-test% (%test-case%)
+    (test "JSON GET requests should work"
+      (define request (%json-request% .new :url (cat $server "/add?x=1&y=2")))
+      (request .wait)
+      (assert-equals 3 (request .response)))
+
+    (test "JSON POST requests should work"
+      (define request (%json-request% .new
+                        :url (cat $server "/echo")
+                        :method 'post
+                        :data '(1 2 3)))
+      (request .wait)
+      (assert-equals '(1 2 3) (request .response)))
+
+    (test "Failed JSON requests should raise an error"
+      (define request (%json-request% .new :url (cat $server "/not-found")))
+      (request .wait)
+      (assert-raises exn:fail? (request .response)))
+
+    )
+
+  (card /networking/tests/json-request
+      (%test-suite%
+       :tests (list %json-request-test%)))
+
 
   )
