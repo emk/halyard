@@ -1,0 +1,4 @@
+Extend left-recursion-detector to be an on-the-fly
+left-recursion-rewriter.
+
+Implement an extensible-syntax base language.
