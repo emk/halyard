@@ -5,7 +5,6 @@
   (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "test-elements.ss" "halyard"))
   (require (lib "url-request.ss" "halyard"))
-  (require (lib "json-request.ss" "halyard"))
   (require (lib "base.ss" "halyard-test"))
 
   (group /networking (%card-group% :skip-when-jumping-to-each-card? #t))
@@ -67,7 +66,7 @@
   (define-class %url-request-test-case% (%element-test-case%)
     (def (perform request)
       (request .wait)
-      (define result (request .response-body))
+      (define result (request .response))
       (delete-element request)
       result)
     (def (get url &rest keys)
@@ -103,7 +102,7 @@
       (assert-equals (build-hello 1024) (.get "/hello?count=1024")))
 
     (test "GET should fail if it encounters an HTTP error"
-      (assert-equals #f (.get "/not-found")))
+      (assert-raises exn:fail? (.get "/not-found")))
 
     (test "GET should provide a correct Content-Type"
       (define request
@@ -114,24 +113,12 @@
     (test "GET should allow sending custom Accept headers"
       (assert-equals "text/x-foo"
                      (.get "/headers/Accept" :accept "text/x-foo")))
-
     )
 
   (define-class %http-post-test% (%url-request-test-case%)
     (test "POST should upload data and return the response body"
       (assert-equals "post: Hello" (.post "/upload" "text/plain" "Hello")))
     )
-
-  (card /networking/tests/url-request
-      (%test-suite%
-       :tests (list %test-server-present-test%
-                    %http-get-test%
-                    %http-post-test%)))
-
-
-  ;;=======================================================================
-  ;;  %json-request% unit tests
-  ;;=======================================================================
 
   (define-class %json-request-test% (%test-case%)
     (test "JSON GET requests should work"
@@ -151,12 +138,13 @@
       (define request (%json-request% .new :url (cat $server "/not-found")))
       (request .wait)
       (assert-raises exn:fail? (request .response)))
-
     )
 
-  (card /networking/tests/json-request
+  (card /networking/tests/url-request
       (%test-suite%
-       :tests (list %json-request-test%)))
-
+       :tests (list %test-server-present-test%
+                    %http-get-test%
+                    %http-post-test%
+                    %json-request-test%)))
 
   )

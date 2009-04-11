@@ -23,6 +23,7 @@
 (module url-request (lib "halyard.ss" "halyard")
   (require (lib "kernel.ss" "halyard/private"))
   (require (lib "events.ss" "halyard/private"))
+  (require (lib "json.ss" "json-scheme"))
 
 
   ;;=======================================================================
@@ -111,15 +112,21 @@
       (set! (slot 'finished?) #f)
       (set! (slot 'succeeded?) #f)
       (set! (slot 'response-body-chunks) '())
-      (set! (slot 'response-body) #f))
+      (set! (slot 'response-body) #f)
+      (set! (slot 'transfer-finished-event) #f))
 
     (def (data-received event)
       (set! (slot 'response-body-chunks)
             (cons (event .data) (slot 'response-body-chunks))))
 
     (def (transfer-finished event)
+      (set! (slot 'transfer-finished-event) event)
       (set! (slot 'finished?) #t)
-      (set! (slot 'succeeded?) (event .succeeded?)))
+      (set! (slot 'succeeded?) (event .succeeded?))
+      (when (.succeeded?)
+        (set! (slot 'response-body)
+              (apply string-append (reverse (slot 'response-body-chunks)))))
+      (set! (slot 'response-body-chunks) '()))
 
     ;;; Has this request finished?
     (def (finished?)
@@ -132,18 +139,57 @@
     ;;; Return the response body.  If the transfer failed, or is still
     ;;; running, returns #f.
     (def (response-body)
-      (if (.succeeded?)
-        (begin
-          (unless (slot 'response-body)
-            (set! (slot 'response-body)
-                  (apply string-append (reverse (slot 'response-body-chunks)))))
-          (slot 'response-body))
-        #f))
+      (slot 'response-body))
+
+    ;;; Either return the response body in an appropriate format, or raise
+    ;;; an error if the transfer failed (or if we're still waiting for it
+    ;;; to finish).
+    (def (response)
+      (cond
+       [(not (.finished?))
+        (error (cat "Request to " (.url) " not finished"))]
+       [(not (.succeeded?))
+        (error (cat "Request error: "
+                    ((slot 'transfer-finished-event) .message)))]
+       [else
+        (.parse-response)]))
 
     ;;; Wait until this response is completed.
     (def (wait)
       (while (not (.finished?))
         (idle)))
+
+    ;;; "Protected" method (for overriding by subclasses only).  If you
+    ;;; want to convert (.response-body) to a different format, override
+    ;;; this method.  You may also want to check (.response-content-type).
+    (def (parse-response)
+      (.response-body))
+
     )
+
+
+  ;;=======================================================================
+  ;;  %json-request%
+  ;;=======================================================================
+
+  (provide %json-request%)
+
+  ;;; An HTTP request receiving (and perhaps sending) JSON (JavaScript
+  ;;; Object Notation), a common format for serializing data structures in
+  ;;; web applications.
+  (define-class %json-request% (%easy-url-request%)
+    ;;; The data to send in a JSON POST request (optional).
+    (attr data #f)
+
+    (default accept "application/json")
+    (default content-type "application/json")
+    (default body
+      (with-output-to-string
+        (lambda () (json-write (.data)))))
+
+    (def (parse-response)
+      (json-read (open-input-string (.response-body))))
+    )
+
 
   )
