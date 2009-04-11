@@ -33,6 +33,7 @@
     ;;; The data to send in a JSON POST request (optional).
     (attr data #f)
 
+    (default accept "application/json")
     (default content-type "application/json")
     (default body
       (with-output-to-string
