@@ -23,7 +23,9 @@
 #include "AppHeaders.h"
 #include "Downloader.h"
 #include "HalyardApp.h"
+#include "UrlRequest.h"
 #include "TInterpreter.h"
+#include "CommonWxConv.h"
 
 using namespace Halyard;
 
@@ -88,6 +90,8 @@ bool Download::Perform() {
 	RETURN_ON_ERROR(curl_easy_setopt(m_request, CURLOPT_FOLLOWLOCATION, 1));
 	RETURN_ON_ERROR(curl_easy_setopt(m_request, CURLOPT_MAXREDIRS, 10));
 	
+    UrlRequest::ConfigureProxyServer(m_request, ToWxString(m_url));
+
 	RETURN_ON_ERROR(curl_easy_perform(m_request));
 
 	return true;

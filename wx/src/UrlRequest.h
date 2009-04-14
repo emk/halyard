@@ -85,6 +85,12 @@ public:
     /// Run idle-time tasks for all outstanding UrlRequest objects.
     static void ProcessAllRequests();
 
+    /// Do any proxy server configuration needed for inHandle, assuming we
+    /// want to download inUrl.  Note that this is a public, static
+    /// function (and not a private member function) so that we can call it
+    /// from Downloader.cpp.
+    static void ConfigureProxyServer(CURL *inHandle, const wxString &inUrl);
+
     /// Create a new asynchronous URL request.
     UrlRequest(Stage *inStage, const wxString &inName,
                Halyard::TCallbackPtr inDispatcher,

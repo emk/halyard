@@ -134,6 +134,26 @@ size_t UrlRequest::WriteCallback(char* ptr, size_t size, size_t nmemb,
 
 
 //========================================================================
+//  Proxy configuration
+//========================================================================
+
+#ifdef APP_PLATFORM_WIN32
+
+void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
+    // TODO - See the following URLs:
+    //   http://stackoverflow.com/questions/202547/how-do-i-find-out-the-browsers-proxy-settings
+    //   http://msdn.microsoft.com/en-us/library/aa384096.aspx
+}
+
+#else // !defined(APP_PLATFORM_WIN32)
+
+void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
+    // We don't attempt to auto-configure proxies on non-Windows platforms.
+}
+
+#endif // !defined(APP_PLATFORM_WIN32)
+
+//========================================================================
 //  Instance methods
 //========================================================================
 
@@ -168,6 +188,9 @@ UrlRequest::UrlRequest(Stage *inStage, const wxString &inName,
         // work--some authentication failures will not result in a failed
         // transfer.
         CHKE(curl_easy_setopt(mHandle, CURLOPT_FAILONERROR, 1));
+
+        // If necessary, attempt to configure a proxy server.
+        ConfigureProxyServer(mHandle, inUrl);
     } catch (...) {
         // If an error occurs, clean up our handle before continuing.
         curl_easy_cleanup(mHandle);
