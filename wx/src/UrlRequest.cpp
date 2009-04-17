@@ -139,10 +139,53 @@ size_t UrlRequest::WriteCallback(char* ptr, size_t size, size_t nmemb,
 
 #ifdef APP_PLATFORM_WIN32
 
+#include <windows.h>
+#include <Winhttp.h>
+
 void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
     // TODO - See the following URLs:
     //   http://stackoverflow.com/questions/202547/how-do-i-find-out-the-browsers-proxy-settings
     //   http://msdn.microsoft.com/en-us/library/aa384096.aspx
+
+    bool auto_detect = false;
+    bool have_proxy = false, have_proxy_bypass = false,
+         have_auto_config_url = false;
+    wxString proxy, proxy_bypass, auto_config_url;
+
+    // Look up the Internet Explorer proxy server preferences.
+    WINHTTP_CURRENT_USER_IE_PROXY_CONFIG config;
+    if (!WinHttpGetIEProxyConfigForCurrentUser(&config)) {
+        DWORD error(GetLastError());
+        if (error != ERROR_FILE_NOT_FOUND)
+            gLog.Debug("halyard.url-request.proxy",
+                       "Error getting IE proxy configuration: %d", (int) error);
+    } else {
+        auto_detect = config.fAutoDetect;
+        if (config.lpszProxy) {
+            have_proxy = true;
+            proxy = config.lpszProxy;
+            GlobalFree(config.lpszProxy);
+            gLog.Trace("halyard.url-request.proxy", "Proxy: %s",
+                       (const char *) proxy.mb_str());
+        }
+        if (config.lpszProxyBypass) {
+            have_proxy_bypass = true;
+            proxy_bypass = config.lpszProxyBypass;
+            GlobalFree(config.lpszProxyBypass);
+            gLog.Trace("halyard.url-request.proxy", "Proxy bypass: %s",
+                       (const char *) proxy_bypass.mb_str());
+        }
+        if (config.lpszAutoConfigUrl) {
+            auto_detect = true;
+            have_auto_config_url = true;
+            auto_config_url = config.lpszAutoConfigUrl;
+            GlobalFree(config.lpszAutoConfigUrl);
+            gLog.Trace("halyard.url-request.proxy", "Proxy auto-config URL: %s",
+                       (const char *) auto_config_url.mb_str());
+        }
+    }
+    gLog.Trace("halyard.url-request.proxy", "Proxy auto-detect: %d",
+               (int) auto_detect);
 }
 
 #else // !defined(APP_PLATFORM_WIN32)
