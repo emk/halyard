@@ -222,10 +222,8 @@ private:
             ASSERT(right != NULL);
             return mValue == right->mValue;
         }
-
-        void Write(std::ostream &out) {
-            out << mValue;
-        }
+        
+        virtual void Write(std::ostream &out);
     };
 
     typedef shared_ptr<Impl> ImplPtr;
@@ -248,12 +246,6 @@ private:
                   ", got <" + ToDisplayValue() + ">");
         return impl->mValue;
     }
-
-    //////////
-    /// Return a string representing this TValue (used for error reporting,
-    /// etc.).
-    ///
-    std::string ToDisplayValue() const;
 
 public:
     /// Create an uninitialized TValue.
@@ -304,6 +296,13 @@ public:
     /// each type you can convert a TValue to.  See TValue.cpp for the
     /// manual instantiations.
     template <typename T> friend T tvalue_cast(const TValue &v);
+
+    //////////
+    /// Return a string representing this TValue.  This should only be
+    /// used for error messages or logging, as the format is not
+    /// suitable for parsing.
+    ///
+    std::string ToDisplayValue() const;
 };
 
 // Explicit instantiations of TValue::FindType (above).

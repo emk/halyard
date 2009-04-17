@@ -142,7 +142,7 @@ TArgumentList::TArgumentList(TValueList inVal) {
 TArgumentList &Halyard::operator>>(TArgumentList &args, std::string &out)
 {
     out = args.GetStringArg();
-	args.LogParameter(MakeQuotedString(out));
+	args.LogTValueParameter(out);
     return args;
 }
 
@@ -168,7 +168,7 @@ TArgumentList &Halyard::operator>>(TArgumentList &args, int32 &out)
 TArgumentList &Halyard::operator>>(TArgumentList &args, bool &out)
 {
     out = args.GetBoolArg();
-	args.LogParameter(out ? "#t" : "#f");
+	args.LogTValueParameter(out);
 	return args;
 }
 
