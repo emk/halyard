@@ -129,11 +129,6 @@ TCallbackPtr TArgumentList::GetCallbackArg() {
 	return arg.GetCallbackPtr();
 }
 
-TArgumentList *TArgumentList::GetListArg() {
-	TValue arg = GetNextArg(); 
-	return new TArgumentList(tvalue_cast<TValueList>(arg));
-}
-
 TArgumentList::TArgumentList(TValueList inVal) {
 	mArgList = TValueList(inVal);
 	mArgPtr = mArgList.begin();
@@ -220,13 +215,6 @@ TArgumentList &Halyard::operator>>(TArgumentList &args, TCallbackPtr &out)
     out = args.GetCallbackArg();
 	args.LogTValueParameter(out);
     return args;
-}
-
-TArgumentList &Halyard::operator>>(TArgumentList &args, TArgumentList* &out)
-{
-	out = args.GetListArg();
-	args.LogParameter("#<list>");
-	return args;
 }
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, TValue &out) {

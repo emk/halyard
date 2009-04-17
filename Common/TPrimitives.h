@@ -177,13 +177,6 @@ protected:
 	///
 	virtual TCallbackPtr GetCallbackArg();
 
-	//////////
-	/// Return the next argument as a list.  This object
-	/// is allocated on the heap, and must be destroyed by the
-	/// caller (typically the primitive function) using delete.
-	///
-	virtual TArgumentList *GetListArg();
-
 public:
 	TArgumentList() {}
 	TArgumentList(TValueList inVal);
@@ -210,7 +203,6 @@ public:
 	friend TArgumentList &operator>>(TArgumentList &args,
 									 GraphicsTools::Color &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TCallbackPtr &out);
-	friend TArgumentList &operator>>(TArgumentList &args, TArgumentList* &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TValue &out);
 
 	//////////
