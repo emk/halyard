@@ -326,24 +326,20 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 
 	// Clear the result value and logging flag.
 	gVariableManager.MakeNull("_result");
-	gVariableManager.MakeNull(HALYARD_SKIP_LOGGING_VAR);
     
     // Call it.
     (*primitive)(inArgs);
 
 	// Extract the logged arguments and write them to the debug log.
 	std::string call_info = inArgs.EndLog();
-	if (gVariableManager.IsNull(HALYARD_SKIP_LOGGING_VAR))
-	{
-		if (gVariableManager.IsNull("_result")) {
-			gLog.Trace(log_category, ">>> %s", call_info.c_str());
-		} else {
-			std::ostringstream out;
-			out << gVariableManager.Get("_result");
-			gLog.Trace(log_category, ">>> %s -> %s",
-                       call_info.c_str(), out.str().c_str());
-		}
-	}
+    if (gVariableManager.IsNull("_result")) {
+        gLog.Trace(log_category, ">>> %s", call_info.c_str());
+    } else {
+        std::ostringstream out;
+        out << gVariableManager.Get("_result");
+        gLog.Trace(log_category, ">>> %s -> %s",
+                   call_info.c_str(), out.str().c_str());
+    }
 
     // Make sure all our arguments were used.
     if (inArgs.HasMoreArguments())
