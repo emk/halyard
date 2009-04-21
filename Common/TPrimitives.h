@@ -81,11 +81,6 @@ class TArgumentList
     ///
 	TValueList::iterator mArgPtr;
 
-	friend TArgumentList &operator>>(TArgumentList &inArgs,
-									 const SymbolName &inVoP);
-	friend TArgumentList &operator>>(TArgumentList &inArgs,
-									 const ValueOrPercent &inVoP);
-
 	//////////
 	/// Keeps track of function name and evaluated parameters for Debug.log
 	///
@@ -204,6 +199,10 @@ public:
 									 GraphicsTools::Color &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TCallbackPtr &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TValue &out);
+	friend TArgumentList &operator>>(TArgumentList &inArgs,
+									 const SymbolName &inVoP);
+	friend TArgumentList &operator>>(TArgumentList &inArgs,
+									 const ValueOrPercent &inVoP);
 
 	//////////
 	/// Ask the TArgumentList list to start logging all the parameters
