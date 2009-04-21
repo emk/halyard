@@ -186,6 +186,13 @@ void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
     }
     gLog.Trace("halyard.url-request.proxy", "Proxy auto-detect: %d",
                (int) auto_detect);
+
+    // According to a poster on StackOverflow, all the settings below
+    // should be interpreted as "no proxy".
+    // http://stackoverflow.com/questions/202547/how-do-i-find-out-the-browsers-proxy-settings
+    if (proxy == ":" || proxy == "::" ||
+        proxy_bypass == ":" || proxy_bypass == "::")
+        have_proxy = have_proxy_bypass = false;
 }
 
 #else // !defined(APP_PLATFORM_WIN32)
