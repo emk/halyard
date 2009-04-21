@@ -193,6 +193,22 @@ void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
     if (proxy == ":" || proxy == "::" ||
         proxy_bypass == ":" || proxy_bypass == "::")
         have_proxy = have_proxy_bypass = false;
+
+    // Try our regular HTTP proxy settings.
+    if (have_proxy) {
+        // TODO - Actually parse lpszProxyBypass.  For now, we're assuming
+        // that any server we want to talk to is on the other side of a
+        // proxy server, which should work well enough for our immediate
+        // needs.
+        //
+        // lpszProxyBypass appears to be documented here:
+        // http://msdn.microsoft.com/en-us/library/aa384098(VS.85).aspx
+        // Basically: Hostnames or IP addresses or both, with optional
+        // wildcard characters.  The special value "<local>" means any host
+        // without a period.  On my machine, values are separated by ";".
+        CHKE(curl_easy_setopt(inHandle, CURLOPT_PROXY,
+                              (const char *) proxy.mb_str()));
+    }
 }
 
 #else // !defined(APP_PLATFORM_WIN32)
