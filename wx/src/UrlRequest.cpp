@@ -160,7 +160,7 @@ void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
             gLog.Debug("halyard.url-request.proxy",
                        "Error getting IE proxy configuration: %d", (int) error);
     } else {
-        auto_detect = config.fAutoDetect;
+        auto_detect = config.fAutoDetect ? true : false;
         if (config.lpszProxy) {
             have_proxy = true;
             proxy = config.lpszProxy;
