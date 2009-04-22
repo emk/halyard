@@ -34,7 +34,6 @@ BEGIN_NAMESPACE_HALYARD
 //   std::string
 //
 // Integer
-//   int16
 //   int32
 //   uint32
 //   double
@@ -173,7 +172,6 @@ public:
 	// These functions provide handy wrapper functions
 	// for the protected Get* functions above.
 	friend TArgumentList &operator>>(TArgumentList &args, std::string &out);
-	friend TArgumentList &operator>>(TArgumentList &args, int16 &out);
 	friend TArgumentList &operator>>(TArgumentList &args, int32 &out);
 	friend TArgumentList &operator>>(TArgumentList &args, bool &out);
 	friend TArgumentList &operator>>(TArgumentList &args, uint32 &out);

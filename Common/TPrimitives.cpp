@@ -112,17 +112,6 @@ TArgumentList &Halyard::operator>>(TArgumentList &args, std::string &out)
     return args;
 }
 
-TArgumentList &Halyard::operator>>(TArgumentList &args, int16 &out)
-{
-    int32 temp;
-    temp = args.GetInt32Arg();
-    if (temp < MIN_INT16 || MAX_INT16 < temp)
-		throw TException(__FILE__, __LINE__,
-						 "Can't represent value as 16-bit integer");
-    out = static_cast<short>(temp);
-    return args;
-}
-
 TArgumentList &Halyard::operator>>(TArgumentList &args, int32 &out)
 {
     out = args.GetInt32Arg();
