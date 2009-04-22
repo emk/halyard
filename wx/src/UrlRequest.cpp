@@ -21,6 +21,7 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
+#include "TVersion.h"
 #include "UrlRequest.h"
 #include "EventDispatcher.h"
 
@@ -144,8 +145,15 @@ size_t UrlRequest::WriteCallback(char* ptr, size_t size, size_t nmemb,
 
 void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
     // TODO - See the following URLs:
+    //
     //   http://stackoverflow.com/questions/202547/how-do-i-find-out-the-browsers-proxy-settings
     //   http://msdn.microsoft.com/en-us/library/aa384096.aspx
+    //   http://msdn.microsoft.com/en-us/library/aa384122(VS.85).aspx
+    //   http://msdn.microsoft.com/en-us/library/aa383660(VS.85).aspx
+    //
+    // Our implementation is based on the answer at Stack Overflow.  Note
+    // that there's several sample programs in Windows SDK 6.1, but that
+    // they each take a different approach to configuring the proxy server.
 
     bool auto_detect = false;
     bool have_proxy = false, have_proxy_bypass = false,
@@ -159,6 +167,12 @@ void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
         if (error != ERROR_FILE_NOT_FOUND)
             gLog.Debug("halyard.url-request.proxy",
                        "Error getting IE proxy configuration: %d", (int) error);
+        // The Stack Overflow post suggests we should fall back to
+        // auto_detect here, but frankly, auto_detect looks like a
+        // potential security headache, and I'd rather not turn it on
+        // unless the user has actually configured their system to use it
+        // (in which case, their network administrator has hopefully
+        // weighed the risks).
     } else {
         auto_detect = config.fAutoDetect ? true : false;
         if (config.lpszProxy) {
@@ -176,7 +190,6 @@ void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
                        (const char *) proxy_bypass.mb_str());
         }
         if (config.lpszAutoConfigUrl) {
-            auto_detect = true;
             have_auto_config_url = true;
             auto_config_url = config.lpszAutoConfigUrl;
             GlobalFree(config.lpszAutoConfigUrl);
@@ -187,6 +200,84 @@ void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
     gLog.Trace("halyard.url-request.proxy", "Proxy auto-detect: %d",
                (int) auto_detect);
 
+    // If we've been asked to use automatic proxy configuration and/or
+    // detection, do our best to set it up.
+    if (auto_detect) {
+        // Open up a WinHttp handle.  By passing
+        // WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, we actually ask it to look up
+        // the system wide proxycfg.exe settings, which are entirely
+        // different than the IE settings.  I have no idea whether this has
+        // any effect on WinHttpGetProxyForUrl, but it probably can't hurt.
+        wxString user_agent(VERSION_STRING);
+        HINTERNET hSession(WinHttpOpen(user_agent.wc_str(wxConvLibc),
+                                       WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+                                       WINHTTP_NO_PROXY_NAME,
+                                       WINHTTP_NO_PROXY_NAME, 0));
+        if (hSession) {
+            WINHTTP_AUTOPROXY_OPTIONS options;
+            WINHTTP_PROXY_INFO proxy_info;
+            std::wstring auto_config_url_w;
+
+            // Set up our request.
+            memset(&options, 0, sizeof(options));
+            if (auto_detect) {
+                options.dwFlags |= WINHTTP_AUTOPROXY_AUTO_DETECT;
+                options.dwAutoDetectFlags = (WINHTTP_AUTO_DETECT_TYPE_DHCP |
+                                             WINHTTP_AUTO_DETECT_TYPE_DNS_A);
+            }
+            if (have_auto_config_url) {
+                // Make sure we have a local copy of auto_config_url in
+                // Unicode format.  We don't rely directly on wc_str(),
+                // because in ANSI mode, it may return a pointer to a
+                // temporary buffer.
+                auto_config_url_w =
+                    std::wstring(auto_config_url.wc_str(wxConvLibc));
+                options.dwFlags |= WINHTTP_AUTOPROXY_CONFIG_URL;
+                options.lpszAutoConfigUrl = auto_config_url_w.c_str();
+            }
+            options.fAutoLogonIfChallenged = TRUE;
+
+            // Try to look up the proxy server for this URL.
+            BOOL success =
+                WinHttpGetProxyForUrl(hSession, inUrl.wc_str(wxConvLibc),
+                                      &options, &proxy_info);
+            if (success &&
+                proxy_info.dwAccessType == WINHTTP_ACCESS_TYPE_NAMED_PROXY)
+            {
+                // TODO - We really need to do a better job of parsing the
+                // config.lpszProxy field, which can contain multiple
+                // proxies, separated by either whitespace or semicolons,
+                // and which may contain URL schemes in one of two separate
+                // formats.  Yes, this is getting a bit silly (and since
+                // this structure is used by many different functions, I
+                // don't even know how much of this applies to us).
+                // http://msdn.microsoft.com/en-us/library/aa383912(VS.85).aspx
+                if (proxy_info.lpszProxy) {
+                    have_proxy = true;
+                    proxy = config.lpszProxy;
+                    gLog.Trace("halyard.url-request.proxy", "Auto Proxy: %s",
+                               (const char *) proxy.mb_str());
+                }
+                if (proxy_info.lpszProxyBypass) {
+                    wxString ignored_bypass(config.lpszProxyBypass);
+                    gLog.Trace("halyard.url-request.proxy",
+                               "Ignoring unexpected Auto Proxy Bypass: %s",
+                               (const char *) ignored_bypass.mb_str());
+                }
+            } else {
+                gLog.Trace("halyard.url-request.proxy",
+                           "WinHttpGetProxyForUrl failed: %u",
+                           GetLastError());
+            }
+
+            // Shut down our WinHttp session.
+            WinHttpCloseHandle(hSession);
+        } else {
+            gLog.Trace("halyard.url-request.proxy", "Error in WinHttpOpen: %u",
+                       GetLastError());
+        }
+    }
+
     // According to a poster on StackOverflow, all the settings below
     // should be interpreted as "no proxy".
     // http://stackoverflow.com/questions/202547/how-do-i-find-out-the-browsers-proxy-settings
@@ -196,6 +287,8 @@ void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
 
     // Try our regular HTTP proxy settings.
     if (have_proxy) {
+        // TODO - There may be multiple proxy servers listed in proxy.
+        //
         // TODO - Actually parse lpszProxyBypass.  For now, we're assuming
         // that any server we want to talk to is on the other side of a
         // proxy server, which should work well enough for our immediate
