@@ -32,62 +32,6 @@ using namespace Typography;
 
 extern void test_TStyleSheet(void);
 
-class TDummyArgumentList : public TArgumentList
-{
-	int mCount;
-	std::istringstream mData;
-
-public:
-	TDummyArgumentList()
-		: mCount(11), // Number of tokens in mData
-		  mData("S1 Times 12 r right 0xFFFFFF00 0x00FF0000 -1 2 "
-				"0x00000080 0x00FF0080") {}
-
-public:
-	virtual bool HasMoreArguments() { return mCount > 0; }
-
-protected:
-	// This is a macro, not a template, because MSVC 6 sucks.
-#define DECLARE_GET_ARG(NAME, TYPE) \
-	TYPE NAME() { \
-		ASSERT(mCount > 0); \
-		TYPE result; \
-		mData >> result; \
-		mCount--; \
-		return result; \
-	}
-
-	DECLARE_GET_ARG(GetStringArg, std::string)
-	DECLARE_GET_ARG(GetSymbolArg, std::string)
-	DECLARE_GET_ARG(GetInt32Arg, int32)
-	DECLARE_GET_ARG(GetUInt32Arg, uint32)
-	virtual bool GetBoolArg() { return GetInt32Arg() ? true : false; }
-	DECLARE_GET_ARG(GetDoubleArg, double);
-	virtual TPoint GetPointArg() { ASSERT(false); return TPoint(0, 0); }
-	virtual TRect GetRectArg() { ASSERT(false); return TRect(0, 0, 0, 0); }
-	virtual TPolygon GetPolygonArg() { ASSERT(false); return TPolygon(); }
-	virtual GraphicsTools::Color GetColorArg()
-	{
-		mData >> std::hex;
-		uint32 color = GetUInt32Arg();
-		mData >> std::dec;
-		return GraphicsTools::Color((color & 0xFF000000) >> 24,
-									(color & 0x00FF0000) >> 16,
-									(color & 0x0000FF00) >> 8,
-									(color & 0x000000FF));
-	}
-	virtual void GetValueOrPercentArg(bool &outIsPercent, int32 &outValue)
-	{
-		outIsPercent = false;
-		outValue = GetInt32Arg();
-	}
-	virtual TCallbackPtr GetCallbackArg() { 
-	   ASSERT(false); 
-	   return TCallbackPtr(); 
-	}
-	virtual TArgumentList *GetListArg() { ASSERT(false); return NULL; }
-};
-
 static void test_style(const StyledText &inText, int inBegin, int inEnd,
 					   const Typography::Style &inDesiredStyle)
 {
@@ -100,9 +44,21 @@ static void test_style(const StyledText &inText, int inBegin, int inEnd,
 void test_TStyleSheet(void)
 {
     // Create and get our stylesheet.
-	TDummyArgumentList dummy_args;
-	gStyleSheetManager.AddStyleSheet(dummy_args);
-	TEST(!dummy_args.HasMoreArguments());
+    TValueList arg_values;
+    arg_values.push_back(TSymbol("S1"));
+    arg_values.push_back("Times");
+    arg_values.push_back(12);
+    arg_values.push_back(TSymbol("r"));
+    arg_values.push_back(TSymbol("right"));
+    arg_values.push_back(GraphicsTools::Color(0xFF, 0xFF, 0xFF, 0x00));
+    arg_values.push_back(GraphicsTools::Color(0x00, 0xff, 0x00, 0x00));
+    arg_values.push_back(-1);
+    arg_values.push_back(2);
+    arg_values.push_back(GraphicsTools::Color(0x00, 0x00, 0x00, 0x80));
+    arg_values.push_back(GraphicsTools::Color(0x00, 0xFF, 0x00, 0x80));
+    TArgumentList args(arg_values);
+	gStyleSheetManager.AddStyleSheet(args);
+	TEST(!args.HasMoreArguments());
 	TStyleSheet *style1 = gStyleSheetManager.Find("S1");
 	TEST(style1 != NULL);
 

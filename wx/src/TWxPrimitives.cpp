@@ -559,7 +559,6 @@ DEFINE_PRIMITIVE(HideCursorUntilMouseMoved) {
 }
 
 DEFINE_PRIMITIVE(Heartbeat) {
-	::SkipPrimitiveLogging();
     wxGetApp().Heartbeat();
 }
 
@@ -725,14 +724,12 @@ DEFINE_PRIMITIVE(NotifyEnterCard) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	wxGetApp().GetStage()->NotifyEnterCard(ToWxString(name));
-	::SkipPrimitiveLogging();
 }
 
 DEFINE_PRIMITIVE(NotifyExitCard) {
 	std::string name;
 	inArgs >> SymbolName(name);
 	wxGetApp().GetStage()->NotifyExitCard();
-	::SkipPrimitiveLogging();
 }
 
 DEFINE_PRIMITIVE(MediaAttachCaptionFile) {
@@ -943,7 +940,6 @@ DEFINE_PRIMITIVE(RegisterGroupMember) {
 	inArgs >> SymbolName(name) >> isCard >> isLoaded;
     ProgramTree *tree = wxGetApp().GetStageFrame()->GetProgramTree();
     tree->RegisterGroupMember(ToWxString(name), isCard, isLoaded);
-	::SkipPrimitiveLogging();
 }
 
 DEFINE_PRIMITIVE(RegisterEventDispatcher) {
@@ -1022,10 +1018,6 @@ DEFINE_PRIMITIVE(Wait) {
 }
 
 DEFINE_PRIMITIVE(WakeUpIfNecessary) {
-    // We get called way too often to actually be interesting, so don't log
-    // this primitive.
-	::SkipPrimitiveLogging(); 
-
     // We need to check if we still have a link to the stage.
     // StageFrame::OnClose may sever that link when we're doing event
     // processing in a call to HalyardApp::IdleProc, and when the engine

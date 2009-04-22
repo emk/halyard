@@ -74,6 +74,25 @@ std::ostream &Halyard::operator<<(std::ostream &out,
 
 
 //=========================================================================
+//  TValue::TemplateImpl Methods
+//=========================================================================
+
+template <typename T> 
+void TValue::TemplateImpl<T>::Write(std::ostream &out) {
+    out << mValue;
+}
+
+template <>
+void TValue::TemplateImpl<std::string>::Write(std::ostream &out) {
+    out << MakeQuotedString(mValue);
+}
+
+template <>
+void TValue::TemplateImpl<bool>::Write(std::ostream &out) {
+    out << (mValue ? "#t" : "#f");
+}
+
+//=========================================================================
 //  TValue Methods
 //=========================================================================
 
@@ -258,6 +277,12 @@ void CHECK_TVALUE_GET(const Type &inVal) {
     CHECK_EQ(tvalue_cast<Type>(value), inVal);
 }
 
+template <typename Type>
+void CHECK_TVALUE_DISPLAY(const std::string &inString, const Type &inVal) {
+    TValue value(inVal);
+    CHECK_EQ(inString, value.ToDisplayValue());
+}
+
 BEGIN_TEST_CASE(TestTSymbol, TestCase) {
     CHECK_EQ(TSymbol("foo").GetName(), std::string("foo"));
     CHECK_EQ(TSymbol("foo"), TSymbol("foo"));
@@ -365,13 +390,19 @@ BEGIN_TEST_CASE(TestTValue, TestCase) {
 	CHECK_EQ(tvalue_cast<double>(TValue(MAX_UINT32)), double(MAX_UINT32)); 
 	CHECK_EQ(tvalue_cast<double>(TValue(MIN_INT32)), double(MIN_INT32)); 
 	CHECK_EQ(tvalue_cast<double>(TValue(-1)), -1.0);
+
+    // Test output of TValues.
+    CHECK_TVALUE_DISPLAY("\"foo\"", "foo");
+    CHECK_TVALUE_DISPLAY("10", 10);
+    CHECK_TVALUE_DISPLAY("#t", true);
+    CHECK_TVALUE_DISPLAY("#f", false);
 	
 } END_TEST_CASE(TestTValue);
 
 BEGIN_TEST_CASE(TestTValueTypeChecks, TestCase) {
     CHECK_THROWN_MESSAGE(std::exception, "Expected a string, got <32>",
                          tvalue_cast<std::string>(TValue(32)));
-    CHECK_THROWN_MESSAGE(std::exception, "Expected a symbol, got <hello>",
+    CHECK_THROWN_MESSAGE(std::exception, "Expected a symbol, got <\"hello\">",
                          tvalue_cast<TSymbol>(TValue("hello")));
     CHECK_THROWN_MESSAGE(std::exception,
                          "Expected a signed 32-bit integer, got <2147483648>",

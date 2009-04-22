@@ -34,7 +34,6 @@ BEGIN_NAMESPACE_HALYARD
 //   std::string
 //
 // Integer
-//   int16
 //   int32
 //   uint32
 //   double
@@ -81,25 +80,6 @@ class TArgumentList
     ///
 	TValueList::iterator mArgPtr;
 
-	friend TArgumentList &operator>>(TArgumentList &inArgs,
-									 const SymbolName &inVoP);
-	friend TArgumentList &operator>>(TArgumentList &inArgs,
-									 const ValueOrPercent &inVoP);
-
-	//////////
-	/// Keeps track of function name and evaluated parameters for Debug.log
-	///
-	std::string mDebugString;
-
-	//////////
-	/// Log the value of a parameter for future retrieval by EndLog.
-	/// Note that this function will get called anyway, even if nobody
-	/// calls BeginLog or EndLog.
-	///
-	void LogParameter(const std::string &inParameterValue);
-
-	void LogTValueParameter(const TValue &inParameterValue);
-
 protected:
 	//////////
 	/// Fetch the next argument.
@@ -110,11 +90,6 @@ protected:
 		return *mArgPtr++;
 	}
 
-    //////////
-	/// Return the next argument as a string.
-	///
-	virtual std::string GetStringArg();
-
 	//////////
 	/// Return the next argument as a symbol.  Symbols are basically the
 	/// same as strings, but they're typically used to name options in APIs,
@@ -123,46 +98,6 @@ protected:
 	/// equivalent.
 	///
 	virtual std::string GetSymbolArg();
-
-	//////////
-	/// Return the next argument as a singed, 32-bit integer.
-	///
-	virtual int32 GetInt32Arg();
-
-	//////////
-	/// Return the next argument as an unsinged, 32-bit integer.
-	///
-	virtual uint32 GetUInt32Arg();
-
-	//////////
-	/// Return the next argument as a boolean value.
-	///
-	virtual bool GetBoolArg();
-
-	//////////
-	/// Return the next argument as a double.
-	///
-	virtual double GetDoubleArg();
-
-	//////////
-	/// Return the next argument as a point.
-	///
-	virtual TPoint GetPointArg();
-
-	//////////
-	/// Return the next argument as a rectangle.
-	///
-	virtual TRect GetRectArg();
-
-	//////////
-	/// Return the next argument as a polygon.
-	///
-	virtual TPolygon GetPolygonArg();
-
-	//////////
-	/// Return the next argument as a color.
-	///
-	virtual GraphicsTools::Color GetColorArg();
 
 	//////////
 	/// Return the next argument as either a value or a percentage.
@@ -176,13 +111,6 @@ protected:
 	/// caller (typically the primitive function) using delete.
 	///
 	virtual TCallbackPtr GetCallbackArg();
-
-	//////////
-	/// Return the next argument as a list.  This object
-	/// is allocated on the heap, and must be destroyed by the
-	/// caller (typically the primitive function) using delete.
-	///
-	virtual TArgumentList *GetListArg();
 
 public:
 	TArgumentList() {}
@@ -198,38 +126,26 @@ public:
 
 	// These functions provide handy wrapper functions
 	// for the protected Get* functions above.
-	friend TArgumentList &operator>>(TArgumentList &args, std::string &out);
-	friend TArgumentList &operator>>(TArgumentList &args, int16 &out);
-	friend TArgumentList &operator>>(TArgumentList &args, int32 &out);
-	friend TArgumentList &operator>>(TArgumentList &args, bool &out);
-	friend TArgumentList &operator>>(TArgumentList &args, uint32 &out);
-	friend TArgumentList &operator>>(TArgumentList &args, double &out);
-	friend TArgumentList &operator>>(TArgumentList &args, TRect &out);
-	friend TArgumentList &operator>>(TArgumentList &args, TPolygon &out);
-	friend TArgumentList &operator>>(TArgumentList &args, TPoint &out);
-	friend TArgumentList &operator>>(TArgumentList &args,
-									 GraphicsTools::Color &out);
+    template<typename T> 
+    friend TArgumentList &operator>>(TArgumentList &args, T &out) {
+        TValue arg = args.GetNextArg(); 
+        out = tvalue_cast<T>(arg);
+        return args;
+    }
+
 	friend TArgumentList &operator>>(TArgumentList &args, TCallbackPtr &out);
-	friend TArgumentList &operator>>(TArgumentList &args, TArgumentList* &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TValue &out);
+	friend TArgumentList &operator>>(TArgumentList &inArgs,
+									 const SymbolName &inVoP);
+	friend TArgumentList &operator>>(TArgumentList &inArgs,
+									 const ValueOrPercent &inVoP);
 
-	//////////
-	/// Ask the TArgumentList list to start logging all the parameters
-	/// extracted from it.  You can retrieve this log data from EndLog.
-	///
-	/// \param inFunctionName  The name of the functions to which this
-	///                       TArgumentList corresponds.
-	///
-	void BeginLog(const std::string &inFunctionName);
-
-	//////////
-	/// Stop logging parameters extracted from this TArgumentList, and
-	/// return them (together with the function name), as though they
-	/// were a Scheme function call.
-	/// 
-	/// \return  The complete entry for Debug.log
-	///
-	std::string EndLog();
+    //////////
+    /// Print this argument list to an output stream, for debugging
+    /// purposes.
+    /// 
+    friend std::ostream &operator<<(std::ostream &out, 
+                                    TArgumentList &args);
 };
 
 //////////
@@ -325,6 +241,13 @@ public:
 extern TPrimitiveManager gPrimitiveManager;
 
 //////////
+/// Print this argument list to an output stream, for debugging
+/// purposes.
+/// 
+extern std::ostream &operator<<(std::ostream &out, TArgumentList &args);
+
+
+//////////
 /// A handy macro for declaring a primitive function and registering
 /// it with the gPrimitiveManager, all in one fell swoop.  There are
 /// several bits of pre-processor wizardry going on here:
@@ -375,19 +298,6 @@ extern TPrimitiveManager gPrimitiveManager;
 inline void SetPrimitiveResult(const TValue &inVariable)
 {
 	gVariableManager.Set("_result", inVariable);
-}
-
-#define HALYARD_SKIP_LOGGING_VAR ("_skip_logging")
-
-//////////
-/// Tell the primitive manager not to log the primitive call currently
-/// in progress.
-///
-inline void SkipPrimitiveLogging()
-{
-	// We don't use an engine variable for any particular reason here--
-	// a global would work fine as well.
-	gVariableManager.Set(HALYARD_SKIP_LOGGING_VAR, true);
 }
 
 END_NAMESPACE_HALYARD

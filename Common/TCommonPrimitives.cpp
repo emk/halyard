@@ -110,7 +110,6 @@ DEFINE_PRIMITIVE(HavePrimitive)
 {
 	std::string name;
 	inArgs >> SymbolName(name);
-	::SkipPrimitiveLogging();
 	::SetPrimitiveResult(gPrimitiveManager.DoesPrimitiveExist(name));
 }
 
@@ -146,11 +145,6 @@ DEFINE_PRIMITIVE(Idle)
 
 	// Call our stored idle procedure and let the GUI run for a bit.
 	manager->DoIdle(block);
-
-	// Logging this primitive would only clutter the debug log.  We need
-	// to do this *after* calling DoIdle, so that it doesn't get
-	// confused with any internal primitive calls.
-	::SkipPrimitiveLogging();
 }
 
 
@@ -167,9 +161,6 @@ DEFINE_PRIMITIVE(Idle)
 
 DEFINE_PRIMITIVE(Log)
 {
-	// Logging this primitive call would be redundant and ugly.
-	::SkipPrimitiveLogging();
-
 	std::string level_str, category, msg;
 	inArgs >> SymbolName(level_str) >> category >> msg;
 	level_str = ::MakeStringLowercase(level_str);
@@ -204,8 +195,6 @@ DEFINE_PRIMITIVE(CommandLineError) {
 
 DEFINE_PRIMITIVE(PolygonContains)
 {
-	::SkipPrimitiveLogging();
-
 	TPolygon poly;
 	TPoint pt;
 	inArgs >> poly >> pt;
@@ -221,8 +210,6 @@ DEFINE_PRIMITIVE(PolygonContains)
 
 DEFINE_PRIMITIVE(SetTyped)
 {
-	::SkipPrimitiveLogging();
-
 	TValue val;
 	std::string vname;
 	inArgs >> SymbolName(vname) >> val;
@@ -238,8 +225,6 @@ DEFINE_PRIMITIVE(SetTyped)
 
 DEFINE_PRIMITIVE(Get)
 {
-	::SkipPrimitiveLogging();
-
 	std::string vname;
 	inArgs >> SymbolName(vname);
 
@@ -254,8 +239,6 @@ DEFINE_PRIMITIVE(Get)
 
 DEFINE_PRIMITIVE(VariableInitialized)
 {
-	::SkipPrimitiveLogging();
-
 	std::string vname;
 	inArgs >> SymbolName(vname);
 

@@ -130,10 +130,10 @@ UninstallDisplayIcon={app}\local\branding\application.ico
 Filename: {tmp}\QuickTimeInstaller.exe; Parameters: /passive; Components: quicktime; StatusMsg: Installing QuickTime...
 Filename: {app}\engine\win32\Halyard.exe; Parameters: """{app}"""; WorkingDir: {app}; Description: Launch {cm:AppShortName}; Flags: postinstall
 [Icons]
-Name: {group}\{cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico
+Name: {group}\{cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """."""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico
 Name: {group}\Halyard License; Filename: {app}\engine\win32\LICENSE.txt; Flags: createonlyiffileexists
-Name: {group}\Update {cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; Parameters: "-e ""(set! *updater-only* #t)"" ""{app}"""; WorkingDir: {app}; Flags: createonlyiffileexists; Components: base; Tasks: not autoupdate; IconFilename: {app}\local\branding\update.ico; IconIndex: 0
-Name: {commondesktop}\{cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """{app}"""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico; Tasks: desktopicon
+Name: {group}\Update {cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; Parameters: "-e ""(set! *updater-only* #t)"" ""."""; WorkingDir: {app}; Flags: createonlyiffileexists; Components: base; Tasks: not autoupdate; IconFilename: {app}\local\branding\update.ico; IconIndex: 0
+Name: {commondesktop}\{cm:AppShortName}; Filename: {app}\engine\win32\Halyard.exe; IconIndex: 0; Flags: createonlyiffileexists; Parameters: """."""; WorkingDir: {app}; IconFilename: {app}\local\branding\application.ico; Tasks: desktopicon
 [Tasks]
 Name: desktopicon; Description: Create a shortcut to {cm:AppShortName} on the desktop; Components: base
 Name: autoupdate; Description: Periodically check for updates; Components: base
