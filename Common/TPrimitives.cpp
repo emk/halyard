@@ -32,54 +32,9 @@ TPrimitiveManager Halyard::gPrimitiveManager;
 // TArgumentList Methods
 //=========================================================================
 
-std::string TArgumentList::GetStringArg() {
-	TValue arg = GetNextArg(); 
-	return tvalue_cast<std::string>(arg);
-}
-
 std::string TArgumentList::GetSymbolArg() {
 	TValue arg = GetNextArg(); 
 	return tvalue_cast<TSymbol>(arg).GetName();
-}
-
-int32 TArgumentList::GetInt32Arg() {
-	TValue arg = GetNextArg(); 
-	return tvalue_cast<int32>(arg);
-}
-
-uint32 TArgumentList::GetUInt32Arg() {	
-    TValue arg = GetNextArg(); 
-	return tvalue_cast<uint32>(arg);
-}
-
-bool TArgumentList::GetBoolArg() {
-	TValue arg = GetNextArg(); 
-	return tvalue_cast<bool>(arg);
-}
-
-double TArgumentList::GetDoubleArg() {	
-	TValue arg = GetNextArg(); 
-	return tvalue_cast<double>(arg);
-}
-
-TPoint TArgumentList::GetPointArg() {
-	TValue arg = GetNextArg(); 
-	return tvalue_cast<TPoint>(arg);
-}
-
-TRect TArgumentList::GetRectArg() {
-	TValue arg = GetNextArg(); 
-	return tvalue_cast<TRect>(arg);
-}
-
-TPolygon TArgumentList::GetPolygonArg() {
-	TValue arg = GetNextArg(); 
-	return tvalue_cast<TPolygon>(arg);
-}
-
-GraphicsTools::Color TArgumentList::GetColorArg() {
-	TValue arg = GetNextArg(); 
-	return tvalue_cast<GraphicsTools::Color>(arg);
 }
 
 void TArgumentList::GetValueOrPercentArg(bool &outIsPercent,
@@ -106,60 +61,14 @@ TArgumentList::TArgumentList(TValueList inVal) {
 	mArgPtr = mArgList.begin();
 }
 
-TArgumentList &Halyard::operator>>(TArgumentList &args, std::string &out)
-{
-    out = args.GetStringArg();
+/*
+template<typename T> 
+TArgumentList &operator>>(TArgumentList &args, T &out) {
+    TValue arg = args.GetNextArg(); 
+	out = tvalue_cast<T>(arg);
     return args;
 }
-
-TArgumentList &Halyard::operator>>(TArgumentList &args, int32 &out)
-{
-    out = args.GetInt32Arg();
-	return args;
-}
-
-TArgumentList &Halyard::operator>>(TArgumentList &args, bool &out)
-{
-    out = args.GetBoolArg();
-	return args;
-}
-
-TArgumentList &Halyard::operator>>(TArgumentList &args, uint32 &out)
-{
-    out = args.GetUInt32Arg();
-    return args;
-}
-
-TArgumentList &Halyard::operator>>(TArgumentList &args, double &out)
-{
-    out = args.GetDoubleArg();
-    return args;
-}
-
-TArgumentList &Halyard::operator>>(TArgumentList &args, TRect &out)
-{
-    out = args.GetRectArg();
-    return args;
-}
-
-TArgumentList &Halyard::operator>>(TArgumentList &args, TPolygon &out)
-{
-    out = args.GetPolygonArg();
-    return args;
-}
-
-TArgumentList &Halyard::operator>>(TArgumentList &args, TPoint &out)
-{
-    out = args.GetPointArg();
-    return args;
-}
-
-TArgumentList &Halyard::operator>>(TArgumentList &args,
-								   GraphicsTools::Color &out)
-{
-    out = args.GetColorArg();
-    return args;
-}
+*/
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, TCallbackPtr &out)
 {

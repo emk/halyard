@@ -90,11 +90,6 @@ protected:
 		return *mArgPtr++;
 	}
 
-    //////////
-	/// Return the next argument as a string.
-	///
-	virtual std::string GetStringArg();
-
 	//////////
 	/// Return the next argument as a symbol.  Symbols are basically the
 	/// same as strings, but they're typically used to name options in APIs,
@@ -103,46 +98,6 @@ protected:
 	/// equivalent.
 	///
 	virtual std::string GetSymbolArg();
-
-	//////////
-	/// Return the next argument as a singed, 32-bit integer.
-	///
-	virtual int32 GetInt32Arg();
-
-	//////////
-	/// Return the next argument as an unsinged, 32-bit integer.
-	///
-	virtual uint32 GetUInt32Arg();
-
-	//////////
-	/// Return the next argument as a boolean value.
-	///
-	virtual bool GetBoolArg();
-
-	//////////
-	/// Return the next argument as a double.
-	///
-	virtual double GetDoubleArg();
-
-	//////////
-	/// Return the next argument as a point.
-	///
-	virtual TPoint GetPointArg();
-
-	//////////
-	/// Return the next argument as a rectangle.
-	///
-	virtual TRect GetRectArg();
-
-	//////////
-	/// Return the next argument as a polygon.
-	///
-	virtual TPolygon GetPolygonArg();
-
-	//////////
-	/// Return the next argument as a color.
-	///
-	virtual GraphicsTools::Color GetColorArg();
 
 	//////////
 	/// Return the next argument as either a value or a percentage.
@@ -171,16 +126,13 @@ public:
 
 	// These functions provide handy wrapper functions
 	// for the protected Get* functions above.
-	friend TArgumentList &operator>>(TArgumentList &args, std::string &out);
-	friend TArgumentList &operator>>(TArgumentList &args, int32 &out);
-	friend TArgumentList &operator>>(TArgumentList &args, bool &out);
-	friend TArgumentList &operator>>(TArgumentList &args, uint32 &out);
-	friend TArgumentList &operator>>(TArgumentList &args, double &out);
-	friend TArgumentList &operator>>(TArgumentList &args, TRect &out);
-	friend TArgumentList &operator>>(TArgumentList &args, TPolygon &out);
-	friend TArgumentList &operator>>(TArgumentList &args, TPoint &out);
-	friend TArgumentList &operator>>(TArgumentList &args,
-									 GraphicsTools::Color &out);
+    template<typename T> 
+    friend TArgumentList &operator>>(TArgumentList &args, T &out) {
+        TValue arg = args.GetNextArg(); 
+        out = tvalue_cast<T>(arg);
+        return args;
+    }
+
 	friend TArgumentList &operator>>(TArgumentList &args, TCallbackPtr &out);
 	friend TArgumentList &operator>>(TArgumentList &args, TValue &out);
 	friend TArgumentList &operator>>(TArgumentList &inArgs,
