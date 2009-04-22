@@ -32,34 +32,6 @@ TPrimitiveManager Halyard::gPrimitiveManager;
 // TArgumentList Methods
 //=========================================================================
 
-void TArgumentList::BeginLog(const std::string &inFunctionName)
-{
-	ASSERT(mDebugString.empty());
-	mDebugString = inFunctionName + std::string(":");
-}
-
-void TArgumentList::LogParameter(const std::string &inParameterValue)
-{
-	if (!mDebugString.empty())
-		mDebugString += std::string(" ") + inParameterValue;
-}
-
-void TArgumentList::LogTValueParameter(const TValue &inParameterValue) {
-	std::ostringstream out;
-	out << inParameterValue;
-
-	LogParameter(out.str());
-}
-																  
-
-std::string TArgumentList::EndLog()
-{
-	ASSERT(!mDebugString.empty());
-	std::string result = mDebugString;
-	mDebugString = "";
-	return result;
-}
-
 std::string TArgumentList::GetStringArg() {
 	TValue arg = GetNextArg(); 
 	return tvalue_cast<std::string>(arg);
@@ -137,7 +109,6 @@ TArgumentList::TArgumentList(TValueList inVal) {
 TArgumentList &Halyard::operator>>(TArgumentList &args, std::string &out)
 {
     out = args.GetStringArg();
-	args.LogTValueParameter(out);
     return args;
 }
 
@@ -149,56 +120,48 @@ TArgumentList &Halyard::operator>>(TArgumentList &args, int16 &out)
 		throw TException(__FILE__, __LINE__,
 						 "Can't represent value as 16-bit integer");
     out = static_cast<short>(temp);
-	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, int32 &out)
 {
     out = args.GetInt32Arg();
-	args.LogTValueParameter(out);
 	return args;
 }
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, bool &out)
 {
     out = args.GetBoolArg();
-	args.LogTValueParameter(out);
 	return args;
 }
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, uint32 &out)
 {
     out = args.GetUInt32Arg();
-	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, double &out)
 {
     out = args.GetDoubleArg();
-	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, TRect &out)
 {
     out = args.GetRectArg();
-	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, TPolygon &out)
 {
     out = args.GetPolygonArg();
-	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, TPoint &out)
 {
     out = args.GetPointArg();
-	args.LogTValueParameter(out);
     return args;
 }
 
@@ -206,20 +169,17 @@ TArgumentList &Halyard::operator>>(TArgumentList &args,
 								   GraphicsTools::Color &out)
 {
     out = args.GetColorArg();
-	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, TCallbackPtr &out)
 {
     out = args.GetCallbackArg();
-	args.LogTValueParameter(out);
     return args;
 }
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, TValue &out) {
 	out = args.GetNextArg();
-	args.LogTValueParameter(out);
 	return args;
 }
 
@@ -232,7 +192,6 @@ TArgumentList &Halyard::operator>>(TArgumentList &inArgs,
 								   const SymbolName &inSymbolName)
 {
 	std::string name = inArgs.GetSymbolArg();
-	inArgs.LogParameter(std::string("'") + name);
 	inSymbolName.mName = name;
 	return inArgs;
 }
@@ -259,16 +218,30 @@ TArgumentList &Halyard::operator>>(TArgumentList &inArgs,
 		else
 			result += 0.5;
 		*inVoP.mOutputValue = static_cast<int>(result);
-		inArgs.LogTValueParameter(TPercent(result));
 	}
 	else
 	{
 		*inVoP.mOutputValue = value;
-		inArgs.LogTValueParameter(value);
 	}
 	return inArgs;
 }
 
+
+//=========================================================================
+//  Debugging output
+//=========================================================================
+
+std::ostream &Halyard::operator<<(std::ostream &out, TArgumentList &args)
+{
+    TValueList::iterator arg = args.mArgList.begin();
+    if (arg == args.mArgList.end())
+        return out;
+    out << *(arg++);
+    while (arg != args.mArgList.end()) {
+        out << " " << *(arg++);
+    }
+    return out;
+}
 
 //=========================================================================
 //  TPrimitiveManager Methods
@@ -321,8 +294,15 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 						 ("Unknown primitive: " + inName).c_str());
     PrimitiveFunc primitive = found->second;
 
-	// Ask the TArgumentList to log all the parameters it returns.
-	inArgs.BeginLog(inName);
+    // Log the primitive before executing, so we know what was
+    // happening if it crashes.
+    {
+        std::ostringstream out;
+        out << "<<< " << inName;
+        if (inArgs.HasMoreArguments())
+            out << ": " << inArgs;
+        gLog.Trace(log_category, "%s", out.str().c_str());
+    }
 
 	// Clear the result value and logging flag.
 	gVariableManager.MakeNull("_result");
@@ -330,15 +310,14 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
     // Call it.
     (*primitive)(inArgs);
 
-	// Extract the logged arguments and write them to the debug log.
-	std::string call_info = inArgs.EndLog();
-    if (gVariableManager.IsNull("_result")) {
-        gLog.Trace(log_category, ">>> %s", call_info.c_str());
-    } else {
+    // Log primitive and return value after executing.
+    { 
         std::ostringstream out;
-        out << gVariableManager.Get("_result");
-        gLog.Trace(log_category, ">>> %s -> %s",
-                   call_info.c_str(), out.str().c_str());
+        out << ">>> " << inName;
+        if (!gVariableManager.IsNull("_result")) {
+            out << " -> " << gVariableManager.Get("_result");
+        }
+        gLog.Trace(log_category, "%s", out.str().c_str());
     }
 
     // Make sure all our arguments were used.

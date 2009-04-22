@@ -81,20 +81,6 @@ class TArgumentList
     ///
 	TValueList::iterator mArgPtr;
 
-	//////////
-	/// Keeps track of function name and evaluated parameters for Debug.log
-	///
-	std::string mDebugString;
-
-	//////////
-	/// Log the value of a parameter for future retrieval by EndLog.
-	/// Note that this function will get called anyway, even if nobody
-	/// calls BeginLog or EndLog.
-	///
-	void LogParameter(const std::string &inParameterValue);
-
-	void LogTValueParameter(const TValue &inParameterValue);
-
 protected:
 	//////////
 	/// Fetch the next argument.
@@ -204,23 +190,12 @@ public:
 	friend TArgumentList &operator>>(TArgumentList &inArgs,
 									 const ValueOrPercent &inVoP);
 
-	//////////
-	/// Ask the TArgumentList list to start logging all the parameters
-	/// extracted from it.  You can retrieve this log data from EndLog.
-	///
-	/// \param inFunctionName  The name of the functions to which this
-	///                       TArgumentList corresponds.
-	///
-	void BeginLog(const std::string &inFunctionName);
-
-	//////////
-	/// Stop logging parameters extracted from this TArgumentList, and
-	/// return them (together with the function name), as though they
-	/// were a Scheme function call.
-	/// 
-	/// \return  The complete entry for Debug.log
-	///
-	std::string EndLog();
+    //////////
+    /// Print this argument list to an output stream, for debugging
+    /// purposes.
+    /// 
+    friend std::ostream &operator<<(std::ostream &out, 
+                                    TArgumentList &args);
 };
 
 //////////
@@ -314,6 +289,13 @@ public:
 /// The global object in charge of managing our primitive functions.
 ///
 extern TPrimitiveManager gPrimitiveManager;
+
+//////////
+/// Print this argument list to an output stream, for debugging
+/// purposes.
+/// 
+extern std::ostream &operator<<(std::ostream &out, TArgumentList &args);
+
 
 //////////
 /// A handy macro for declaring a primitive function and registering
