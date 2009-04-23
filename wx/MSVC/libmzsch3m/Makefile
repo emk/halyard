@@ -19,8 +19,6 @@ clean:
 stage1:
 	cd ..\..\..\libs\plt\src\worksp\mzscheme
 	devenv mzscheme.sln /build Release
-	cd ..\mred
-	devenv mred.sln /build Release
 	cd ..\..\..\..\..\wx\MSVC\libmzsch3m
 
 stage2: stage1
