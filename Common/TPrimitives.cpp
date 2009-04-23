@@ -196,7 +196,7 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
     // happening if it crashes.
     {
         std::ostringstream out;
-        out << "<<< " << inName;
+        out << ">>> " << inName;
         if (inArgs.HasMoreArguments())
             out << ": " << inArgs;
         gLog.Trace(log_category, "%s", out.str().c_str());
@@ -211,7 +211,7 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
     // Log primitive and return value after executing.
     { 
         std::ostringstream out;
-        out << ">>> " << inName;
+        out << "<<< " << inName;
         if (!gVariableManager.IsNull("_result")) {
             out << " -> " << gVariableManager.Get("_result");
         }
