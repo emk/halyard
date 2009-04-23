@@ -1,3 +1,68 @@
+0.5.29 - 23 April 2009
+
+This is the first official build with the Electric Gibbon branch
+merged; Electric Gibbon is a new testing tool for simulating clicks on
+elements while jumping to each card.  See the release notes for the
+Electric Gibbon branch releases for details.
+
+This release adds the %url-request% class and subclasses, to support
+communicating over HTTP asynchronously from Scheme, including GET and
+POST requests that send and parse JSON.  Support for proxies is
+incomplete in this release.  This is a work in progress; the API is
+not yet stable.
+
+This release updates the primitive logging machinery.  Primitives are
+now logged along with their arguments before they are executed, to let
+you tell what primitive was called before a crash occurred.  They are
+also logged after the primitive returns, to show the return value.
+
+Brian Campbell (10): 
+      Installer: Pass "." as argument in shortcuts instead of full path 
+      TPrimitives: Move formatting of strings and booleans into TValue 
+      TPrimitives: Remove TArgumentList::GetListArg() and corresponding 
+        operator>>
+      TPrimitives: Suppres noisy primitive logging using log4cplus
+      TPrimitives: Suppress logging of fewer primitive calls
+      TPrimitives: Move all operator>> declarations to one place
+      TPrimitives: Log prim calls before and after they are executed
+      TPrimitives: Remove unused int16 version of operator>>
+      TPrimitives: Factor out many formulaic operator>> functions with a 
+        template
+      TPrimitives: Reverse direction of >>> and <<< when logging primitives
+
+Eric Kidd (28):
+      eg: Make infinite loops result in non-fatal errors
+      TLogger::ConsoleAlert: Display "WARN:", not "WARNING:"
+      Allow unrestricted access to the network
+      Upgrade to libcurl v7.19.4
+      Add asynchronous %url-request% element
+      %url-request%: Properly clean up engine element
+      %url-request%: Make changes suggested in code review
+      Add more trace statements for elements and %url-request%
+      %url-request%: Report HTTP status >= 400 as a failed transfer
+      Mac: Require libcurl v7.19.3
+      %url-request%: Add HTTP POST support
+      %url-request%: Add support for getting the response Content-Type
+      %url-request%: Add support for sending 'Accept' header
+      EventDispatcher: Fix argument name for DoEventProgressChanged
+      /features/browser: Extract %progress-bar% class
+      %url-request%: Implement progress events
+      %url-request%: Make %easy-url-request% part of the official API
+      %url-request%: Rename .success? -> .succeeded?
+      json: Implement %json-request%
+      json: Send "Accept: application/json" with JSON requests
+      json: Merge most of %json-request% into %easy-url-request%
+      %curl-request%: Add stub function for configuring proxy servers
+      Update to Windows SDK v6.1
+      proxy: Query for IE settings and log
+      proxy: Fix boolean casting warning
+      proxy: Assume ":" and "::" in proxy or proxy_bypass mean "no proxy"
+      proxy: Honor proxy, but ignore proxy_bypass for now
+      Merge branch 'master' of git://github.com/lambda/halyard
+
+Tony Garnock-Jones (1):
+      json: Import 3rd-party JSON library
+
 0.5.28-gibbon6 - 25 March 2009
 
 This release adds a number of enhancements to Electric Gibbon, including
