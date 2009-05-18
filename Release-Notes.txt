@@ -1,3 +1,12 @@
+0.5.29.1 - 18 May 2009
+
+This release fixes a build regression in the previous release.  When we
+upgraded to Windows SDK 6.1, we hadn't tested the PLT build process,
+which wound up failing.
+
+Brian Campbell (1):
+      Build fix: libs/plt
+
 0.5.29 - 23 April 2009
 
 This is the first official build with the Electric Gibbon branch
