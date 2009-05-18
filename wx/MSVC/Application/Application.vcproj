@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/src/mzscheme/include;../../../libs/freetype2/include;../../../libs/boost;&quot;../../../libs/wxWidgets/include&quot;;&quot;../../../libs/wxWidgets/contrib/include&quot;;&quot;../../../libs/wxWidgets/lib/mswd&quot;;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/wxcode/hyperlink/include;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec;../../../libs/curl/include;../../../libs/plt/src/worksp"
+				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/src/mzscheme/include;../../../libs/freetype2/include;../../../libs/boost;../../../libs/wxWidgets/include;../../../libs/wxWidgets/contrib/include;../../../libs/wxWidgets\lib\vc_lib\mswud;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/wxcode/hyperlink/include;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec;../../../libs/curl/include;../../../libs/plt/src/worksp"
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;WINVER=0x400;_MT;wxUSE_GUI=1;__WXDEBUG__;WXDEBUG=1;__WXWINDOWS__;REF_HARD_LINKED;IML_Q2_EXTENSIONS;CURL_STATICLIB;MZ_PRECISE_GC;CURL_DISABLE_LDAP"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
@@ -144,7 +144,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/src/mzscheme/include;../../../libs/freetype2/include;../../../libs/boost;&quot;../../../libs/wxWidgets/include&quot;;&quot;../../../libs/wxWidgets/contrib/include&quot;;&quot;../../../libs/wxWidgets/lib/msw&quot;;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/wxcode/hyperlink/include;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec;../../../libs/curl/include;../../../libs/plt/src/worksp"
+				AdditionalIncludeDirectories="../../../Common;../../../libs/plt/src/mzscheme/include;../../../libs/freetype2/include;../../../libs/boost;../../../libs/wxWidgets/include;../../../libs/wxWidgets/contrib/include;../../../libs/wxWidgets\lib\vc_lib\mswu;../../../libs/quake2/wx;../../../libs/wxIE;../../../libs/wxcode/hyperlink/include;../../../libs/portaudio/pa_common;../../../libs/libivorbisdec;../../../libs/curl/include;../../../libs/plt/src/worksp"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;WINVER=0x400;_MT;wxUSE_GUI=1;IML_Q2_EXTENSIONS;CURL_STATICLIB;MZ_PRECISE_GC;CURL_DISABLE_LDAP"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -1105,34 +1105,6 @@
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
-			</File>
-		</Filter>
-		<Filter
-			Name="Other Files"
-			>
-			<File
-				RelativePath="..\..\..\libs\wxcode\hyperlink\src\hyperlink.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\libs\wxcode\hyperlink\include\wx\hyperlink.h"
-				>
 			</File>
 		</Filter>
 	</Files>

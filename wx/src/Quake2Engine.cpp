@@ -30,6 +30,7 @@
 #include "DrawingArea.h"
 #include "TStateDB.h"
 #include "BinMsgConv.h"
+#include "CommonWxConv.h"
 
 using namespace Halyard;
 using FileSystem::GetBaseDirectory;
@@ -134,7 +135,7 @@ void Quake2Engine::RegisterCallback(const std::string &inName,
 void Quake2Engine::HandleCommand()
 {
 	wxString command = CommandArgv(0);
-	CallbackMap::iterator found = mCallbackMap.find(command.mb_str());
+	CallbackMap::iterator found = mCallbackMap.find(ToStdString(command));
 	if (found == mCallbackMap.end())
 		wxQuake2Window::HandleCommand();
 	else
@@ -144,7 +145,7 @@ void Quake2Engine::HandleCommand()
 		TValueList args;
 		int argc = CommandArgc();
 		for (int i = 1; i < argc; i++)
-			args.push_back(CommandArgv(i).mb_str());
+			args.push_back(ToStdString(CommandArgv(i)));
 		callback->Run(args);
 	}
 }

@@ -28,6 +28,7 @@
 // Needed to implement the primitives.
 #include "HalyardApp.h"
 #include "Quake2Engine.h"
+#include "CommonWxConv.h"
 
 using namespace Halyard;
 
@@ -149,7 +150,7 @@ DEFINE_PRIMITIVE(Quake2GetStringVar)
 	REQUIRE_QUAKE2_INITIALIZATION;
 	wxString value;
 	Quake2Engine::GetInstance()->GetVariable(name.c_str(), value);
-	::SetPrimitiveResult(value.mb_str());
+	::SetPrimitiveResult(ToStdString(value));
 }
 
 DEFINE_PRIMITIVE(Quake2SetFloatVar)

@@ -1636,7 +1636,6 @@ void wxActiveX::OnPaint(wxPaintEvent& event)
 {
 	wxLogDebug(wxT("repainting activex win"));
 	wxPaintDC dc(this);
-	dc.BeginDrawing();
 	int w, h;
 	GetSize(&w, &h);
 	RECT posRect;
@@ -1661,7 +1660,6 @@ void wxActiveX::OnPaint(wxPaintEvent& event)
 		dc.DrawRectangle(0, 0, w, h);
 		dc.SetBrush(wxNullBrush);
 	}
-	dc.EndDrawing();
 }
 
 

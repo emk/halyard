@@ -508,7 +508,7 @@ bool HalyardApp::OnInit() {
     // latter is for calling the engine from command-line scripts.
     TInterpreterManager::Mode special_mode = TInterpreterManager::RUNTIME;
 	size_t ac; wxChar **av;
-    for (ac = argc-1, av = argv+1; ac > 0; --ac, ++av) {
+    for (ac = argc-1, av = ((wxChar **) argv)+1; ac > 0; --ac, ++av) {
         wxString arg(av[0]);
         if (ac >= 2 && (arg == wxT("-e") || arg == wxT("-c"))) {
             wxString next(av[1]);
@@ -570,40 +570,10 @@ int HalyardApp::OnExit() {
     return 0;
 }
 
-// If we're building with our custom-patched version of wxWidgets 2.6.1p1,
-// we need to do this the hard way.
-#if defined __WXMSW__ && HAVE_CUSTOM_WXWIDGETS
 
-namespace {
-    // HACK - Do the song and dance required to get a custom event loop running
-    // with wxWidgets 2.6.  This is a gross hack, and requires
-    // patching wxWidgets itself.  A better interface is available on some
-    // platforms in wxWidgets 2.8; see below.
-    class StEventLoopSetup {
-        wxEventLoop **m_evtloop_var;
-        
-    public:
-        StEventLoopSetup(wxEventLoop **evtloop_var)
-            : m_evtloop_var(evtloop_var)
-        {
-            *m_evtloop_var = new wxEventLoop;
-            (*m_evtloop_var)->StartRunning(); // Call our patch.
-        }
+#if wxCHECK_VERSION(2,9,0) && (defined __WXMSW__)
 
-        ~StEventLoopSetup() {
-            (*m_evtloop_var)->StopRunning(); // Call our patch.
-            delete *m_evtloop_var;
-            *m_evtloop_var = NULL;
-        }
-    };
-};
-
-int HalyardApp::MainLoop() {
-    // Create a wxEventLoop object to process events.  This became
-    // necessary in wxWindows 2.5.x or so.
-    StEventLoopSetup setup(&m_mainLoop);
-    return MainLoopInternal();
-}
+// TODO - fill in
 
 // This version of the event loop should work on some wxWidgets 2.8
 // platforms, but probably not all of them.  If it works on your platform,

@@ -753,9 +753,8 @@ bool DocNotebookBar::SafeToRunCommandsForButton(ButtonId buttonId) {
 }
 
 void DocNotebookBar::DrawButton(wxDC &dc, ButtonId buttonId) {
-    wxASSERT(dc.Ok());
+    wxASSERT(dc.IsOk());
     wxRect r = GetButtonRect(buttonId);
-    dc.BeginDrawing();
 
     // Draw the button's icon.
     dc.SetTextForeground(GetGuiColor(UNSELECTED_TEXT));
@@ -786,8 +785,6 @@ void DocNotebookBar::DrawButton(wxDC &dc, ButtonId buttonId) {
     dc.SetPen(wxPen(bottomright, 1, wxSOLID));
     dc.DrawLine(r.GetLeft()+1, r.GetBottom(), r.GetRight()+1, r.GetBottom());
     dc.DrawLine(r.GetRight(), r.GetTop()+1, r.GetRight(), r.GetBottom());
-
-    dc.EndDrawing();
 }
 
 wxBitmap DocNotebookBar::GetButtonBitmap(ButtonId buttonId) {

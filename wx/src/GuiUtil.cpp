@@ -33,7 +33,7 @@ void HideSystemWindows() {
     //
     // BUG - This doesn't actually make sense if the taskbar isn't on our
     // monitor, but that's a pretty rare configuration.
-    ::ShowWindow(::FindWindow("Shell_TrayWnd", NULL), SW_HIDE);
+    ::ShowWindow(::FindWindow(L"Shell_TrayWnd", NULL), SW_HIDE);
 
     // Disable the screen saver while we're in full-screen mode.  There's
     // also related code in HalyardApp.cpp that tried to do the same thing,
@@ -46,7 +46,7 @@ void HideSystemWindows() {
 }
 
 void ShowSystemWindows() {
-    ::ShowWindow(::FindWindow("Shell_TrayWnd", NULL), SW_SHOW);
+    ::ShowWindow(::FindWindow(L"Shell_TrayWnd", NULL), SW_SHOW);
     
     // Re-enable the screen saver.  Fortunately, this doesn't appear to
     // turn the screen saver on if the user has turned it off in the
