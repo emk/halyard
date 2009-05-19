@@ -444,16 +444,24 @@ void wxActiveX::CreateActiveX(LPOLESTR progId)
 // can return a const reference, which is neccessary for event tables
 // probably should use a wxWindows hash table here, but I'm lazy ...
 typedef map<wxString, wxEventType *, NS_wxActiveX::less_wxStringI> ActiveXNamedEventMap;
-static ActiveXNamedEventMap sg_NamedEventMap;
+static ActiveXNamedEventMap *sg_NamedEventMap = NULL;
+static ActiveXNamedEventMap *GetNamedEventMap()
+{
+    // We need to refer to this map with a static pointer.  If we declare it
+    // as a static object, we can get constructor races.
+    if (!sg_NamedEventMap)
+        sg_NamedEventMap = new ActiveXNamedEventMap;
+    return sg_NamedEventMap;
+}
 
 const wxEventType& RegisterActiveXEvent(const wxString& eventName)
 {
     wxString ev = eventName;
-    ActiveXNamedEventMap::iterator it = sg_NamedEventMap.find(ev);
-    if (it == sg_NamedEventMap.end())
+    ActiveXNamedEventMap::iterator it = GetNamedEventMap()->find(ev);
+    if (it == GetNamedEventMap()->end())
     {
         wxEventType  *et = new wxEventType(wxNewEventType());
-        sg_NamedEventMap[ev] = et;
+        (*GetNamedEventMap())[ev] = et;
 
         return *et;
     };
@@ -471,15 +479,23 @@ const wxEventType& RegisterActiveXEvent(const wxString& eventName)
 // can return a const reference, which is neccessary for event tables
 
 typedef map<DISPID, wxEventType *> ActiveXDISPIDEventMap;
-static ActiveXDISPIDEventMap sg_dispIdEventMap;
+static ActiveXDISPIDEventMap *sg_dispIdEventMap = NULL;
+static ActiveXDISPIDEventMap *GetDispIdEventMap()
+{
+    // We need to refer to this map with a static pointer.  If we declare it
+    // as a static object, we can get constructor races.
+    if (!sg_dispIdEventMap)
+        sg_dispIdEventMap = new ActiveXDISPIDEventMap;
+    return sg_dispIdEventMap;
+}
 
 const wxEventType& RegisterActiveXEvent(DISPID event)
 {
-    ActiveXDISPIDEventMap::iterator it = sg_dispIdEventMap.find(event);
-    if (it == sg_dispIdEventMap.end())
+    ActiveXDISPIDEventMap::iterator it = GetDispIdEventMap()->find(event);
+    if (it == GetDispIdEventMap()->end())
     {
         wxEventType  *et = new wxEventType(wxNewEventType());
-        sg_dispIdEventMap[event] = et;
+        (*GetDispIdEventMap())[event] = et;
 
         return *et;
     };
@@ -494,22 +510,28 @@ public:
     ~ActiveXEventMapFlusher()
     {
         // Named events
-        ActiveXNamedEventMap::iterator it = sg_NamedEventMap.end();
-        while (it != sg_NamedEventMap.end())
+        // XXX - Clearly buggy.
+        ActiveXNamedEventMap::iterator it = GetNamedEventMap()->end();
+        while (it != GetNamedEventMap()->end())
         {
             delete it->second;
             it++;
         };
-        sg_NamedEventMap.clear();
+        GetNamedEventMap()->clear();
+        delete sg_NamedEventMap;
+        sg_NamedEventMap = NULL;
 
         // DISPID events
-        ActiveXDISPIDEventMap::iterator dit = sg_dispIdEventMap.end();
-        while (dit != sg_dispIdEventMap.end())
+        // XXX - Clearly buggy.
+        ActiveXDISPIDEventMap::iterator dit = GetDispIdEventMap()->end();
+        while (dit != GetDispIdEventMap()->end())
         {
             delete dit->second;
             dit++;
         };
-        sg_dispIdEventMap.clear();
+        GetDispIdEventMap()->clear();
+        delete sg_dispIdEventMap;
+        sg_dispIdEventMap = NULL;
     };
 };
 
@@ -959,8 +981,8 @@ public:
 
 
         // try to find dispid event
-        ActiveXDISPIDEventMap::iterator dit = sg_dispIdEventMap.find(dispIdMember);
-        if (dit != sg_dispIdEventMap.end())
+        ActiveXDISPIDEventMap::iterator dit = GetDispIdEventMap()->find(dispIdMember);
+        if (dit != GetDispIdEventMap()->end())
         {
             // Dispatch Event
             DispatchEvent(func, *(dit->second), pDispParams);
@@ -968,8 +990,8 @@ public:
         };
 
         // try named event
-        ActiveXNamedEventMap::iterator nit = sg_NamedEventMap.find(func.name);
-        if (nit == sg_NamedEventMap.end())
+        ActiveXNamedEventMap::iterator nit = GetNamedEventMap()->find(func.name);
+        if (nit == GetNamedEventMap()->end())
             return S_OK;
 
         // Dispatch Event
