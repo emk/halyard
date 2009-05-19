@@ -571,16 +571,12 @@ int HalyardApp::OnExit() {
 }
 
 
-#if wxCHECK_VERSION(2,9,0) && (defined __WXMSW__)
-
-// TODO - fill in
-
-// This version of the event loop should work on some wxWidgets 2.8
+// This version of the event loop should work on some wxWidgets 2.8+
 // platforms, but probably not all of them.  If it works on your platform,
 // please add it to the conditional.
-#elif wxCHECK_VERSION(2,8,0) && ((defined __WXMAC_CARBON__) && !wxMAC_USE_RUN_APP_EVENT_LOOP)
-
-#include "wx/ptr_scpd.h"
+#if wxCHECK_VERSION(2,8,0) && \
+    ((defined __WXMSW__) || \
+     (defined __WXMAC_CARBON__) && !wxMAC_USE_RUN_APP_EVENT_LOOP)
 
 class HalyardEventLoop : public wxEventLoop {
 public:
@@ -591,6 +587,31 @@ public:
     }
 };
 
+#else
+#error "No implementation of HalyardEventLoop on this platform"
+#endif // wxCHECK_VERSION(2,8,0) && ...
+
+// This is how we install the event loop under wxWidgets 2.9.
+#if wxCHECK_VERSION(2,9,0)
+
+#include "wx/apptrait.h"
+
+class HalyardAppTraits : public wxGUIAppTraits {
+public:
+    virtual wxEventLoopBase *CreateEventLoop() {
+        return new HalyardEventLoop;
+    }
+};
+
+wxAppTraits *HalyardApp::CreateTraits() {
+    return new HalyardAppTraits;
+}
+
+// This is how we install the event loop under wxWidgets 2.8.
+#elif wxCHECK_VERSION(2,8,0)
+
+#include "wx/ptr_scpd.h"
+
 wxDEFINE_TIED_SCOPED_PTR_TYPE(wxEventLoop);
 
 int HalyardApp::MainLoop() {
@@ -599,8 +620,8 @@ int HalyardApp::MainLoop() {
 }
 
 #else
-#error "No implementation of HalyardApp::MainLoop on this platform"
-#endif
+#error "Cannot install custom HalyardEventLoop in this version of wxWidgets"
+#endif // wxCHECK_VERSION
 
 int HalyardApp::MainLoopInternal() {
     bool error = false;

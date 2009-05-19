@@ -180,11 +180,23 @@ public:
                           const wxChar *msg);
 #endif // __WXDEBUG__
 
+#if wxCHECK_VERSION(2,9,0)
+
+	//////////
+    /// In wxWidgets 2.9, we can override this to replace the standard
+    /// event loop with our own.
+	///
+    virtual wxAppTraits *CreateTraits();
+
+#elif wxCHECK_VERSION(2,8,0)
+
 	//////////
     /// We attempt to replace the standard main loop with one that
 	/// calls TInterpreterManager::Run.
 	///
     virtual int MainLoop();
+
+#endif // wxCHECK_VERSION...
 
     //////////
     /// The cross-platform portion of our main loop.  The return value is
