@@ -267,7 +267,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="cd &quot;$(InputDir)&quot;&#x0D;&#x0A;..\..\libs\wxWidgets\utils\wxrc\vc_mswd\wxrc.exe /c /o resources.cpp &quot;$(InputName).xrc&quot;&#x0D;&#x0A;"
+						CommandLine="cd &quot;$(InputDir)&quot;&#x0D;&#x0A;..\..\libs\wxWidgets\utils\wxrc\vc_mswud\wxrc.exe /c /o resources.cpp &quot;$(InputName).xrc&quot;&#x0D;&#x0A;"
 						Outputs="$(InputDir)resources.cpp"
 					/>
 				</FileConfiguration>
@@ -276,7 +276,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="cd &quot;$(InputDir)&quot;&#x0D;&#x0A;..\..\libs\wxWidgets\utils\wxrc\vc_msw\wxrc.exe /c /o resources.cpp &quot;$(InputName).xrc&quot;&#x0D;&#x0A;"
+						CommandLine="cd &quot;$(InputDir)&quot;&#x0D;&#x0A;..\..\libs\wxWidgets\utils\wxrc\vc_mswu\wxrc.exe /c /o resources.cpp &quot;$(InputName).xrc&quot;&#x0D;&#x0A;"
 						Outputs="$(InputDir)resources.cpp"
 					/>
 				</FileConfiguration>
