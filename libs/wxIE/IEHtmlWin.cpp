@@ -307,6 +307,30 @@ bool wxIEHtmlWin::LoadStream(wxInputStream *is)
     return LoadStream(pstrm);
 };
 
+wxString wxIEHtmlWin::LocationName()
+{
+    HRESULT hret = 0;
+    BSTR bstr;
+    hret = m_webBrowser->get_LocationName(&bstr);
+    if (hret != S_OK)
+        return "";
+    wxString str(bstr);
+    SysFreeString(bstr);
+    return str;
+}
+
+wxString wxIEHtmlWin::LocationUrl()
+{
+    HRESULT hret = 0;
+    BSTR bstr;
+    hret = m_webBrowser->get_LocationURL(&bstr);
+    if (hret != S_OK)
+        return "";
+    wxString str(bstr);
+    SysFreeString(bstr);
+    return str;
+}
+
 
 bool wxIEHtmlWin::GoBack()
 {
@@ -351,6 +375,17 @@ bool wxIEHtmlWin::Refresh(wxIEHtmlRefreshLevel level)
     levelArg.iVal = level;
     hret = m_webBrowser->Refresh2(&levelArg);
     return hret == S_OK;
+}
+
+bool wxIEHtmlWin::IsBusy()
+{
+    HRESULT hret = 0;
+    VARIANT_BOOL busy;
+    hret = m_webBrowser->get_Busy(&busy);
+    if (hret != S_OK)
+        return false; // If the call fails, assume we're not busy.
+    else
+        return (busy == VARIANT_TRUE);
 }
 
 bool wxIEHtmlWin::Stop()

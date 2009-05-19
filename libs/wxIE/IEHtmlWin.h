@@ -95,6 +95,9 @@ public:
     bool LoadStream(istream *strm);
     bool LoadStream(wxInputStream *is);
 
+    wxString LocationName(); // This is not actually the page title.
+    wxString LocationUrl();
+
     void SetCharset(const wxString& charset);
     void SetEditMode(bool seton);
     bool GetEditMode();
@@ -106,6 +109,7 @@ public:
     bool GoHome();
     bool GoSearch();
     bool Refresh(wxIEHtmlRefreshLevel level);
+    bool IsBusy();
     bool Stop();
 
 
