@@ -52,48 +52,82 @@
   code and/or adjust the licensing conditions notice accordingly.
 */
 
-// ----------------------------------------------------------------------------
-// headers
-// ----------------------------------------------------------------------------
-// For compilers that support precompilation, includes "wx/wx.h".
-#if defined(__WXGTK__) || defined(__WXMOTIF__)
-        #include "wx/wx.h"
-#endif
-#include "wx/wxprec.h"
-#include "wxIEApp.h"
-#include "wxIEFrm.h"
-#include "resource.h"
+// This module contains the declarations of the stream adapters and such that
+// used to be in IEHtmlWin.cpp, so that they can be used independently in the
+// wxPython wrappers...
 
 
+#ifndef _IEHTMLSTREAM_H_
+#define _IEHTMLSTREAM_H_
 
-// Create a new application object: this macro will allow wxWindows to create
-// the application object during program execution (it's better than using a
-// static object for many reasons) and also declares the accessor function
-// wxGetApp() which will return the reference of the right type (i.e. wxIEApp and
-// not wxApp)
-IMPLEMENT_APP(wxIEApp)
 
-// ============================================================================
-// implementation
-// ============================================================================
-
-// ----------------------------------------------------------------------------
-// the application class
-// ----------------------------------------------------------------------------
-
-// 'Main program' equivalent: the program execution "starts" here
-bool wxIEApp::OnInit()
+class IStreamAdaptorBase : public IStream
 {
-    // create the main application window
-    wxIEFrame *frame = new wxIEFrame(wxT("IE Test"));
+private:
+    DECLARE_OLE_UNKNOWN(IStreamAdaptorBase);
 
-    // and show it (the frames, unlike simple controls, are not shown when
-    // created initially)
-    frame->Show(TRUE);
+public:
+    string prepend;
 
-    // success: wxApp::OnRun() will be called which will enter the main message
-    // loop and the application will run. If we returned FALSE here, the
-    // application would exit immediately.
-    return TRUE;
-}
+    IStreamAdaptorBase() {}
+    virtual ~IStreamAdaptorBase() {}
 
+    virtual int Read(char *buf, int cb) = 0;
+
+    // ISequentialStream
+    HRESULT STDMETHODCALLTYPE Read(void __RPC_FAR *pv, ULONG cb, ULONG __RPC_FAR *pcbRead);
+
+    HRESULT STDMETHODCALLTYPE Write(const void __RPC_FAR *pv, ULONG cb, ULONG __RPC_FAR *pcbWritten) {return E_NOTIMPL;}
+
+    // IStream
+    HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER __RPC_FAR *plibNewPosition) {return E_NOTIMPL;}
+    HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER libNewSize) {return E_NOTIMPL;}
+    HRESULT STDMETHODCALLTYPE CopyTo(IStream __RPC_FAR *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER __RPC_FAR *pcbRead, ULARGE_INTEGER __RPC_FAR *pcbWritten) {return E_NOTIMPL;}
+    HRESULT STDMETHODCALLTYPE Commit(DWORD grfCommitFlags) {return E_NOTIMPL;}
+    HRESULT STDMETHODCALLTYPE Revert(void) {return E_NOTIMPL;}
+    HRESULT STDMETHODCALLTYPE LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) {return E_NOTIMPL;}
+    HRESULT STDMETHODCALLTYPE UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) {return E_NOTIMPL;}
+    HRESULT STDMETHODCALLTYPE Stat(STATSTG __RPC_FAR *pstatstg, DWORD grfStatFlag) {return E_NOTIMPL;}
+    HRESULT STDMETHODCALLTYPE Clone(IStream __RPC_FAR *__RPC_FAR *ppstm) {return E_NOTIMPL;}
+};    
+    
+
+
+class IStreamAdaptor : public IStreamAdaptorBase
+{
+private:
+    istream *m_is;
+
+public:
+    IStreamAdaptor(istream *is);
+    ~IStreamAdaptor();
+    int Read(char *buf, int cb);
+};
+
+
+
+class IwxStreamAdaptor : public IStreamAdaptorBase
+{
+private:
+    wxInputStream *m_is;
+
+public:
+    IwxStreamAdaptor(wxInputStream *is);
+    ~IwxStreamAdaptor();
+    int Read(char *buf, int cb);
+};
+
+
+class wxOwnedMemInputStream : public wxMemoryInputStream
+{
+public:
+    char *m_data;
+
+    wxOwnedMemInputStream(char *data, size_t len);
+    ~wxOwnedMemInputStream();
+};
+
+
+wxAutoOleInterface<IHTMLTxtRange> wxieGetSelRange(IOleObject *oleObject);
+
+#endif
