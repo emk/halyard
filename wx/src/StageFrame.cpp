@@ -933,8 +933,9 @@ void StageFrame::OnRunTests(wxCommandEvent &inEvent)
 void StageFrame::OnAbout(wxCommandEvent &inEvent)
 {
     wxMessageDialog about(this,
-                          VERSION_STRING "\n"
-                          HALYARD_COPYRIGHT_NOTICE,
+                          wxString(VERSION_STRING "\n"
+                                   HALYARD_COPYRIGHT_NOTICE,
+                                   wxConvLocal),
                           wxT("About Halyard"), wxOK);
     about.ShowModal();
 }
