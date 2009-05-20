@@ -729,7 +729,7 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
         // PORTING - May not work on non-Windows platforms, according to
         // the wxWindows documentation.
         wxMemoryDC offscreen_dc;
-        offscreen_dc.SelectObject(GetCompositingPixmap());
+        offscreen_dc.SelectObjectAsSource(GetCompositingPixmap());
         wxColour color;
         offscreen_dc.GetPixel(x, y, &color);
 
@@ -804,7 +804,7 @@ void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion)
     // Blit our offscreen pixmap to the screen.
     {
         wxMemoryDC srcDC;
-        srcDC.SelectObject(GetCompositingPixmap());
+        srcDC.SelectObjectAsSource(GetCompositingPixmap());
         wxRegionIterator i(inDirtyRegion);
         while (i) {
             inDC.Blit(i.GetX(), i.GetY(), i.GetW(), i.GetH(),

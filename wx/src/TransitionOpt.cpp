@@ -239,7 +239,7 @@ void CrossFade::ShowStep(double inStep, TransitionResources &inResources)
 
 	// Draw our scratch buffer to the screen.
     wxMemoryDC scratch_dc;
-    scratch_dc.SelectObject(inResources.GetScratchBmp());
+    scratch_dc.SelectObjectAsSource(inResources.GetScratchBmp());
 	inResources.GetOutputDC().Blit(bounds.GetLeft(), bounds.GetTop(),
                                    bounds.GetWidth(), bounds.GetHeight(),
                                    &scratch_dc,
@@ -382,8 +382,8 @@ void DirectionalTransition::ShowStep(double inStep,
 
 	// Set up our DCs.
 	wxMemoryDC before_dc, after_dc;
-	before_dc.SelectObject(inResources.GetBeforeBmp());
-	after_dc.SelectObject(inResources.GetAfterBmp());
+	before_dc.SelectObjectAsSource(inResources.GetBeforeBmp());
+	after_dc.SelectObjectAsSource(inResources.GetAfterBmp());
 	p.before_dc = &before_dc;
 	p.after_dc  = &after_dc;
 	p.output_dc = &inResources.GetOutputDC();

@@ -393,7 +393,7 @@ GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
 	GraphicsTools::Color result;
 	if (!HasAlpha()) {
 		wxMemoryDC dc;
-		dc.SelectObject(GetPixmap());
+		dc.SelectObjectAsSource(GetPixmap());
 		wxColour c;
 		dc.GetPixel(inX, inY, &c);
 		result.red   = c.Red();
@@ -435,7 +435,7 @@ void DrawingArea::CompositeInto(wxDC &inDC, const wxRect &inClipRect) {
 
 		// Do the compositing.
 		wxMemoryDC dc;
-		dc.SelectObject(GetPixmap());
+		dc.SelectObjectAsSource(GetPixmap());
 		wxPoint src_loc(clip.x - mBounds.x, clip.y - mBounds.y);
 		if (!inDC.Blit(clip.x, clip.y, clip.width, clip.height,
 					   &dc, src_loc.x, src_loc.y))
