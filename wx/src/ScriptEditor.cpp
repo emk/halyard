@@ -116,9 +116,9 @@ Sometime:
 
 namespace {
     wxString kSchemeWildcards(
-        L"Halyard scripts (*.ss)|*.ss|"
-        L"All Scheme scripts (*.ss; *.scm)|*.ss;*.scm|"
-        L"All files|*");
+        wxT("Halyard scripts (*.ss)|*.ss|")
+        wxT("All Scheme scripts (*.ss; *.scm)|*.ss;*.scm|")
+        wxT("All files|*"));
 }
 
 
@@ -1560,8 +1560,8 @@ void ScriptDoc::OfferToReloadIfChanged() {
     wxString prompt;
     if (GetDocumentDirty()) {
         flags = wxYES_NO|wxNO_DEFAULT;
-        prompt.Printf(L"The file \"%s\" has changed on disk.  Reload it "
-                      L"and lose the changes you've made in the editor?",
+        prompt.Printf(wxT("The file \"%s\" has changed on disk.  Reload it ")
+                      wxT("and lose the changes you've made in the editor?"),
                       GetDocumentTitle().c_str());
     } else {
         flags = wxYES_NO|wxYES_DEFAULT;
@@ -1588,8 +1588,8 @@ bool ScriptDoc::OkToSaveChanges() {
         && path.GetModificationTime() != mSavePointModTime)
     {
         wxString prompt;
-        prompt.Printf(L"The file \"%s\" has changed on disk.  "
-                      L"Overwrite and lose changes?", 
+        prompt.Printf(wxT("The file \"%s\" has changed on disk.  ")
+                      wxT("Overwrite and lose changes?"),
                       GetDocumentTitle().c_str());
         wxMessageDialog dlg(this, prompt, wxT("File Changed"),
                             wxYES_NO|wxNO_DEFAULT);
@@ -2138,8 +2138,8 @@ ScriptEditor::ScriptEditor()
     file_menu->Append(HALYARD_SAVE_ALL, wxT("Save A&ll\tCtrl+Shift+S"),
                       wxT("Save all open files."));
     file_menu->Append(wxID_REVERT, wxT("&Revert"),
-                      L"Revert to the previously saved version of this "
-                      L"file.");
+                      wxT("Revert to the previously saved version of this ")
+                      wxT("file."));
     file_menu->AppendSeparator();
     file_menu->Append(HALYARD_CLOSE_TAB, wxT("&Close Tab\tCtrl+W"),
                       wxT("Close the current tab."));
@@ -2160,8 +2160,8 @@ ScriptEditor::ScriptEditor()
                       wxT("Reverses the last undo."));
     edit_menu->AppendSeparator();
     edit_menu->Append(wxID_CUT, wxT("Cu&t\tCtrl+X"),
-                      L"Delete the selection and put it onto the "
-                      L"clipboard.");
+                      wxT("Delete the selection and put it onto the ")
+                      wxT("clipboard."));
     edit_menu->Append(wxID_COPY, wxT("&Copy\tCtrl+C"),
                       wxT("Copy the selection to the clipboard."));
     edit_menu->Append(wxID_PASTE, wxT("&Paste\tCtrl+V"),
@@ -2208,8 +2208,8 @@ ScriptEditor::ScriptEditor()
                         wxT("Replace all occurances of the search string."));
     search_menu->Append(HALYARD_REPLACE_AND_FIND_AGAIN,
                         wxT("Re&place and Find Again\tCtrl+T"),
-                        L"Replace the selected text and find the next "
-                        L"occurance.");
+                        wxT("Replace the selected text and find the next ")
+                        wxT("occurance."));
     search_menu->AppendSeparator();
 #endif // CONFIG_HAVE_CUSTOM_STC
     search_menu->Append(HALYARD_GOTO_LINE, wxT("Go to &Line...\tCtrl+J"),
