@@ -45,7 +45,7 @@ void Overlay::Show(bool inShow) {
 
 bool Overlay::IsPointInElement(const wxPoint &inPoint) {
 	wxRect bounds = mDrawingArea.GetBounds();
-    if (!bounds.Inside(inPoint)) {
+    if (!bounds.Contains(inPoint)) {
 		// Outside our bounding box.
 		return false; 
 	} else if (!mDrawingArea.HasAlpha() || mAreTransparentAreasClickable) {

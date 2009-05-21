@@ -607,7 +607,7 @@ DEFINE_PRIMITIVE(IsVistaOrNewer) {
     // know this so that the updater can deal with the new security model.
     int major, minor;
     int family = ::wxGetOsVersion(&major, &minor);
-    ::SetPrimitiveResult(family == wxWINDOWS_NT && major >= 6);
+    ::SetPrimitiveResult(family == wxOS_WINDOWS_NT && major >= 6);
 }
 
 

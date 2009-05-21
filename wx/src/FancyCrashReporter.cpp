@@ -472,7 +472,7 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
             // So allow the user to save the report.
             wxFileDialog dlg(NULL, wxT("Save debug report"), wxT(""),
                              wxT("debugrpt"), wxT("ZIP archive (*.zip)|*.zip"),
-                             wxSAVE|wxOVERWRITE_PROMPT);
+                             wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
             if (dlg.ShowModal() == wxID_OK) {
                 // wxCopyFile automatically overwrites the destination.
                 ::wxCopyFile(report.GetCompressedFileName(), dlg.GetPath());

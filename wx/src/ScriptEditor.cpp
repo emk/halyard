@@ -1664,7 +1664,7 @@ bool ScriptDoc::DoSaveAs(const wxString &dialogTitle,
     SelectDocument();
     wxFileDialog dlg(this, dialogTitle, defaultDir,
                      defaultName, kSchemeWildcards,
-                     wxSAVE|wxOVERWRITE_PROMPT);
+                     wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
     if (dlg.ShowModal() == wxID_OK) {
         SetTitleAndPath(dlg.GetPath());
         WriteDocument();
@@ -2533,7 +2533,7 @@ void ScriptEditor::OnOpen(wxCommandEvent &event) {
     wxFileDialog dlg(this, wxT("Open File"), dir,
                      /// \todo Remove wxHIDE_READONLY and implement?
                      wxT(""), kSchemeWildcards,
-                     wxOPEN|wxMULTIPLE);
+                     wxFD_OPEN|wxFD_MULTIPLE);
     if (dlg.ShowModal() == wxID_OK) {
         wxArrayString paths;
         dlg.GetPaths(paths);

@@ -627,7 +627,7 @@ void StageFrame::OpenDocument()
 	wxFileDialog dlg(this, wxT("Open a Halyard program folder:"),
                      wxT(""), wxT(""),
                      wxT("Halyard program (application.halyard)|application.halyard"),
-                     wxOPEN);
+                     wxFD_OPEN);
 
     // Set the dialog's default path to the current working directory,
     // if it appears to be a program (contains a application.halyard

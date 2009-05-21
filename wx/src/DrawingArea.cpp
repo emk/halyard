@@ -387,7 +387,7 @@ void DrawingArea::DrawDCContents(wxDC &inDC)
 
 GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
 	wxRect local_bounds(0, 0, GetBounds().width, GetBounds().height);
-	if (!local_bounds.Inside(wxPoint(inX, inY)) || HasAreaOfZero())
+	if (!local_bounds.Contains(wxPoint(inX, inY)) || HasAreaOfZero())
 		THROW("Can't get color of point outside of current drawing area");
 
 	GraphicsTools::Color result;

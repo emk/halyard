@@ -817,7 +817,7 @@ wxRect DocNotebookBar::GetButtonRect(ButtonId buttonId) {
 
 DocNotebookBar::ButtonId DocNotebookBar::GetButtonForPoint(const wxPoint &p) {
     for (size_t i = 0; i < BUTTON_COUNT; i++)
-        if (GetButtonRect(static_cast<ButtonId>(i)).Inside(p))
+        if (GetButtonRect(static_cast<ButtonId>(i)).Contains(p))
             return static_cast<ButtonId>(i);
     return BUTTON_NONE;
 }
