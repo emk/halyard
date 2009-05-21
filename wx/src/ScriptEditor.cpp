@@ -400,23 +400,12 @@ void ScriptTextCtrl::SetUpTextStyles(int size) {
     StyleSetForeground(wxSTC_STYLE_BRACEBAD, *wxRED);
     StyleSetForeground(wxSTC_LISP_COMMENT, wxColor(0xC0, 0x00, 0x00));
     StyleSetForeground(wxSTC_LISP_KEYWORD, wxColor(0x00, 0x00, 0xC0));
+    StyleSetForeground(wxSTC_LISP_KEYWORD_KW, wxColor(0x00, 0x60, 0x20));
+    StyleSetForeground(wxSTC_LISP_SYMBOL, wxColor(0x80, 0x00, 0x80));
     StyleSetForeground(wxSTC_LISP_STRING, wxColor(0x80, 0x40, 0x00));
     StyleSetForeground(wxSTC_LISP_STRINGEOL, *wxRED);
-
-#if CONFIG_HAVE_CUSTOM_STC
-    StyleSetForeground(wxSTC_LISP_COMMENTBLOCK, wxColor(0xC0, 0x00, 0x00));
-    StyleSetForeground(wxSTC_LISP_CHAR, wxColor(0x80, 0x40, 0x00));
-    StyleSetForeground(wxSTC_LISP_KEYWORDARG, wxColor(0x80, 0x00, 0x80));
-    StyleSetForeground(wxSTC_LISP_WORD1, wxColor(0x00, 0x60, 0x20));
-    StyleSetForeground(wxSTC_LISP_WORD2, wxColor(0x00, 0x60, 0x20));
-    StyleSetForeground(wxSTC_LISP_WORD3, wxColor(0x00, 0x60, 0x20));
-    StyleSetForeground(wxSTC_LISP_WORD4, wxColor(0x00, 0x60, 0x20));
-    StyleSetForeground(wxSTC_LISP_WORD5, wxColor(0x00, 0x60, 0x20));
-#else // !CONFIG_HAVE_CUSTOM_STC
-    StyleSetForeground(wxSTC_LISP_MULTI_COMMENT, wxColor(0xC0, 0x00, 0x00));
-    StyleSetForeground(wxSTC_LISP_KEYWORD_KW, wxColor(0x00, 0x60, 0x20));
     StyleSetForeground(wxSTC_LISP_SPECIAL, wxColor(0x80, 0x40, 0x00));
-#endif // !CONFIG_HAVE_CUSTOM_STC
+    StyleSetForeground(wxSTC_LISP_MULTI_COMMENT, wxColor(0xC0, 0x00, 0x00));
 
     // Boring: wxSTC_LISP_NUMBER, wxSTC_LISP_IDENTIFIER, wxSTC_LISP_OPERATOR
 }
@@ -576,19 +565,6 @@ void ScriptTextCtrl::UpdateIdentifierInformation() {
     Colourise(0, GetTextLength());
 }
 
-#if CONFIG_HAVE_CUSTOM_STC
-
-void ScriptTextCtrl::SetKeywordLists() {
-    SetKeyWords(0, GetKeywords(TScriptIdentifier::KEYWORD));
-    SetKeyWords(1, GetKeywords(TScriptIdentifier::FUNCTION));
-    SetKeyWords(2, GetKeywords(TScriptIdentifier::VARIABLE));
-    SetKeyWords(3, GetKeywords(TScriptIdentifier::CONSTANT));
-    SetKeyWords(4, GetKeywords(TScriptIdentifier::CLASS));
-    SetKeyWords(5, GetKeywords(TScriptIdentifier::TEMPLATE));
-}
-
-#else // !CONFIG_HAVE_CUSTOM_STC
-
 void ScriptTextCtrl::SetKeywordLists() {
     SetKeyWords(0, GetKeywords(TScriptIdentifier::KEYWORD));
     SetKeyWords(1, 
@@ -598,8 +574,6 @@ void ScriptTextCtrl::SetKeywordLists() {
                 + GetKeywords(TScriptIdentifier::CLASS) + wxT(" ")
                 + GetKeywords(TScriptIdentifier::TEMPLATE));
 }
-
-#endif // !CONFIG_HAVE_CUSTOM_STC
 
 wxString ScriptTextCtrl::GetKeywords(TScriptIdentifier::Type type) {
 	std::string result;
