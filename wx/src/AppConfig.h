@@ -61,7 +61,7 @@
 #	define CONFIG_USE_XPMS               0
 #	define CONFIG_ENABLE_FULL_SCREEN     1
 #	define CONFIG_HAVE_FANCYCRASHREPORT  1
-#	define CONFIG_HAVE_CUSTOM_STC        0
+#	define CONFIG_HAVE_CUSTOM_STC_FIND   1
 #   define CONFIG_HAVE_CONSOLE_OUTPUT    0
 #else // !defined __WXMSW__
 #   ifdef HAVE_CARBON_CARBON_H
@@ -76,7 +76,7 @@
 #	define CONFIG_USE_XPMS               1
 #	define CONFIG_ENABLE_FULL_SCREEN     0
 #	define CONFIG_HAVE_FANCYCRASHREPORT  0
-#	define CONFIG_HAVE_CUSTOM_STC        0
+#	define CONFIG_HAVE_CUSTOM_STC_FIND   0
 #   define CONFIG_HAVE_CONSOLE_OUTPUT    1
 #endif // !defined __WXMSW__
 

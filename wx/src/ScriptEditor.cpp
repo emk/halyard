@@ -1007,7 +1007,7 @@ ScriptTextCtrl::GetReplaceAllSearchRange(bool after_original_start_ok) {
     }
 }
 
-#if CONFIG_HAVE_CUSTOM_STC
+#if CONFIG_HAVE_CUSTOM_STC_FIND
 
 bool ScriptTextCtrl::DoFind(const SearchRange &range, bool interactive) {
     // Figure out our Find flags.
@@ -1058,13 +1058,13 @@ bool ScriptTextCtrl::DoFind(const SearchRange &range, bool interactive) {
     }
 }
 
-#else // !CONFIG_HAVE_CUSTOM_STC
+#else // !CONFIG_HAVE_CUSTOM_STC_FIND
 
 bool ScriptTextCtrl::DoFind(const SearchRange &range, bool interactive) {
     return false;
 }
 
-#endif // !CONFIG_HAVE_CUSTOM_STC
+#endif // !CONFIG_HAVE_CUSTOM_STC_FIND
 
 bool ScriptTextCtrl::CanReplace() {
     /// \bug Handle changes of search text in other buffers.
@@ -2165,7 +2165,7 @@ ScriptEditor::ScriptEditor()
 
     // Set up our Search menu.
     wxMenu *search_menu = new wxMenu();
-#if CONFIG_HAVE_CUSTOM_STC
+#if CONFIG_HAVE_CUSTOM_STC_FIND
     search_menu->Append(wxID_FIND, wxT("&Find...\tCtrl+F"),
                         wxT("Grand Unified Find and Replace Dialog."));
     search_menu->AppendSeparator();
@@ -2185,7 +2185,7 @@ ScriptEditor::ScriptEditor()
                         wxT("Replace the selected text and find the next ")
                         wxT("occurance."));
     search_menu->AppendSeparator();
-#endif // CONFIG_HAVE_CUSTOM_STC
+#endif // CONFIG_HAVE_CUSTOM_STC_FIND
     search_menu->Append(HALYARD_GOTO_LINE, wxT("Go to &Line...\tCtrl+J"),
                         wxT("Go to a specific line number."));
     search_menu->Append(HALYARD_GOTO_DEFINITION, 
