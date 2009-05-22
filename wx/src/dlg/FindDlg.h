@@ -62,11 +62,11 @@ private:
     wxButton *mButtonDontFind;
     wxButton *mButtonCancel;
 
-    void TurnOnProcessEnter(wxTextCtrl *ctrl);
+    void InterceptEnterEvents(wxTextCtrl *ctrl);
     void UpdateControls();
 
     void OnText(wxCommandEvent &event);
-    void OnTextEnter(wxCommandEvent &event);
+    void OnKeyDownCheckForEnter(wxKeyEvent &event);
     void OnButton(wxCommandEvent &event);
 
     /// \todo Is it safe to put these in the registry, or does that make

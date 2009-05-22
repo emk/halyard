@@ -29,8 +29,6 @@ using namespace Halyard;
 BEGIN_EVENT_TABLE(FindDlg, XrcDlg)
     EVT_TEXT(XRCID("DLG_SEARCH_TEXT"), FindDlg::OnText)
     EVT_TEXT(XRCID("DLG_REPLACE_TEXT"), FindDlg::OnText)
-    EVT_TEXT_ENTER(XRCID("DLG_SEARCH_TEXT"), FindDlg::OnTextEnter)
-    EVT_TEXT_ENTER(XRCID("DLG_REPLACE_TEXT"), FindDlg::OnTextEnter)
     EVT_BUTTON(XRCID("DLG_FIND"), FindDlg::OnButton)
     EVT_BUTTON(XRCID("DLG_FIND_ALL"), FindDlg::OnButton)
     EVT_BUTTON(XRCID("DLG_REPLACE"), FindDlg::OnButton)
@@ -60,10 +58,10 @@ FindDlg::FindDlg(wxWindow *inParent, bool haveSelection)
     Bind(mButtonDontFind, XRCID("DLG_DONT_FIND"));
     Bind(mButtonCancel, wxID_CANCEL);
 
-    /// We need to do this now, because our dialog editor refuses to allow
-    /// this flag to be set in conjunction with wxTE_MULTILINE.
-    TurnOnProcessEnter(mSearchText);
-    TurnOnProcessEnter(mReplaceText);
+    // We need to go out of our way to intercept enter events, because
+    // wxTE_PROCESS_ENTER does not work reliably with wxTE_MULTILINE.
+    InterceptEnterEvents(mSearchText);
+    InterceptEnterEvents(mReplaceText);
 
     // Change our tab order.  This will have weird results unless tabbing
     // *out* of a multiline wxTextCtrl is handled by wxWidgets (this event
@@ -131,10 +129,11 @@ void FindDlg::EndModal(int retCode) {
     }
 }
 
-/// Enable the wxPROCESS_ENTER style on an existing widget.
-void FindDlg::TurnOnProcessEnter(wxTextCtrl *ctrl) {
-    long style = ctrl->GetWindowStyleFlag();
-    ctrl->SetWindowStyleFlag(style & wxTE_PROCESS_ENTER);
+/// Detect when the user presses enter in ctrl, and dismiss our dialog.
+void FindDlg::InterceptEnterEvents(wxTextCtrl *ctrl) {
+    ctrl->Connect(wxEVT_KEY_DOWN,
+                  wxKeyEventHandler(FindDlg::OnKeyDownCheckForEnter),
+                  NULL, this);
 }
 
 /// Update the controls in our dialog box.
@@ -157,9 +156,18 @@ void FindDlg::OnText(wxCommandEvent &event) {
     UpdateControls();
 }
 
-/// Dismiss the dialog by selecting the default button.
-void FindDlg::OnTextEnter(wxCommandEvent &event) {
-    EndModal(GetDefaultItem()->GetId());
+/// If the user types WXK_RETURN, dismiss the dialog by selecting the
+/// default button.  We need to trap EVT_CHAR instead of EVT_TEXT_ENTER,
+/// because the later doesn't work reliably with multiline controls on
+/// Windows.  We need to trap wxEVT_KEY_DOWN instead of wxEVT_CHAR, because
+/// if we don't trap the former, the enter character will be added to our
+/// wxTextCtrl.
+void FindDlg::OnKeyDownCheckForEnter(wxKeyEvent &event) {
+    // WXK_RETURN is used on MSW and OSX.  Do any platforms use WXK_ENTER?
+    if (event.GetKeyCode() == WXK_RETURN)
+        EndModal(GetDefaultItem()->GetId());
+    else
+        event.Skip();
 }
 
 /// Dismiss the dialog, returning our button ID.
