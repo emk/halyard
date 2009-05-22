@@ -267,6 +267,8 @@ StageFrame::StageFrame(wxSize inSize)
 #endif // CONFIG_HAVE_SCRIPTEDITOR
     mCardMenu->Append(HALYARD_JUMP_CARD, wxT("&Jump to Card...\tCtrl+J"),
                       wxT("Jump to a specified card by name."));
+    // Note that "Esc" does not work reliably as an accelerator, so we also
+    // intercept it in Stage::OnChar.
     mCardMenu->Append(HALYARD_STOP_MOVIES, wxT("&Stop Movies\tEsc"),
                       wxT("Stop any playing movies."));
 

@@ -864,16 +864,25 @@ void Stage::DrawElementBorder(wxDC &inDC, ElementPtr inElement)
 
 void Stage::OnChar(wxKeyEvent &inEvent)
 {
-	// NOTE - We handle this event here, but the stage isn't always
-	// focused.  Is this really a good idea?  Douglas tells me that
-	// Director works like this, so at least there's precedent.
-	if (!ShouldSendEvents())
+	if (!ShouldSendEvents()) {
 		inEvent.Skip();
-	else if (inEvent.GetKeyCode() == WXK_SPACE &&
-			 inEvent.ControlDown() && !inEvent.AltDown())
+    } else if (inEvent.GetKeyCode() == WXK_ESCAPE) {
+        // The menu accelerator for StageFrame::OnStopMovies doesn't appear
+        // to work in wxWidgets 2.9 (and maybe also 2.8).  If the
+        // accelerator doesn't work, we currently receive the escape key
+        // event here.  (We tried calling inEvent.Skip and passing this up
+        // to a handle on the StageFrame, but the event never arrived,
+        // possibly because StageFrame is not configured to receive key
+        // events.)
+        EndMediaElements();
+    } else if (inEvent.GetKeyCode() == WXK_SPACE &&
+               inEvent.ControlDown() && !inEvent.AltDown()) {
 		inEvent.Skip(); // Always allow toggling into edit mode.
-	else
-	{
+	} else {
+        // NOTE - We process character events directed at the Stage here,
+        // but the Stage isn't always focused.  Is this really a good idea?
+        // Douglas tells me that Director works like this, so at least
+        // there's precedent.
 		EventDispatcher *dispatcher = GetEventDispatcher();
 		if (!dispatcher->DoEventChar(inEvent))
 			inEvent.Skip();
