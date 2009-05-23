@@ -440,6 +440,24 @@ DEFINE_PRIMITIVE(DrawBoxOutline) {
 
 }
 
+DEFINE_PRIMITIVE(DrawOvalFill) {
+	TRect bounds;
+	Color color;
+
+	inArgs >> bounds >> color;
+	GetCurrentDrawingArea()->FillOval(TToWxRect(bounds), color);
+}
+
+DEFINE_PRIMITIVE(DrawOvalOutline) {
+	TRect bounds;
+	Color color;
+	int32 width;
+
+	inArgs >> bounds >> color >> width;
+	GetCurrentDrawingArea()->OutlineOval(TToWxRect(bounds), color, width);
+
+}
+
 DEFINE_PRIMITIVE(DrawLine) {
 	TPoint from, to;
 	Color color;
@@ -1109,6 +1127,8 @@ void Halyard::RegisterWxPrimitives() {
 	REGISTER_PRIMITIVE(Download);
 	REGISTER_PRIMITIVE(DrawBoxFill);
 	REGISTER_PRIMITIVE(DrawBoxOutline);
+	REGISTER_PRIMITIVE(DrawOvalFill);
+	REGISTER_PRIMITIVE(DrawOvalOutline);
 	REGISTER_PRIMITIVE(DrawLine);
     REGISTER_PRIMITIVE(DrawLoadProgress);
 	REGISTER_PRIMITIVE(EditBox);

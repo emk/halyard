@@ -402,6 +402,50 @@ void DrawingArea::OutlineBox(const wxRect &inBounds,
                    inWidth, inBounds.height - 2*inWidth), inColor);
 }
 
+void DrawingArea::FillOval(const wxRect &inBounds, 
+                           const GraphicsTools::Color &inColor)
+{
+    wxMemoryDC dc;
+    dc.SelectObject(GetPixmap());
+    CairoContext cr(dc, mBounds.GetWidth(), mBounds.GetHeight());
+
+    cairo_translate(cr, inBounds.GetX(), inBounds.GetY());
+    cairo_scale(cr, inBounds.GetWidth(), inBounds.GetHeight());
+    cairo_arc(cr, 0.5, 0.5, 0.5, 0, 2 * M_PI);
+
+    cairo_set_source_rgba(cr,
+                          inColor.red / 255.0, inColor.green / 255.0,
+                          inColor.blue / 255.0, inColor.alpha / 255.0);
+    cairo_fill(cr);
+
+    InvalidateRect(inBounds);
+}
+
+void DrawingArea::OutlineOval(const wxRect &inBounds,
+                              const GraphicsTools::Color &inColor,
+                              int inWidth)
+{
+    wxMemoryDC dc;
+    dc.SelectObject(GetPixmap());
+    CairoContext cr(dc, mBounds.GetWidth(), mBounds.GetHeight());
+
+    cairo_save(cr);
+    cairo_translate(cr, inBounds.GetX() + inWidth / 2.0,
+                    inBounds.GetY() + inWidth / 2.0);
+    cairo_scale(cr, inBounds.GetWidth() - inWidth,
+                inBounds.GetHeight() - inWidth);
+    cairo_arc(cr, 0.5, 0.5, 0.5, 0, 2 * M_PI);
+    cairo_restore(cr);
+
+    cairo_set_source_rgba(cr,
+                          inColor.red / 255.0, inColor.green / 255.0,
+                          inColor.blue / 255.0, inColor.alpha / 255.0);
+    cairo_set_line_width(cr, inWidth);
+    cairo_stroke(cr);
+
+    InvalidateRect(inBounds);
+}
+
 void DrawingArea::DrawPixMap(GraphicsTools::Point inPoint,
 							 GraphicsTools::PixMap &inPixMap)
 {

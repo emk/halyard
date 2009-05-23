@@ -458,7 +458,8 @@
   (provide draw-graphic measure-graphic measure-graphics mask
            set-image-cache-size! with-dc
            dc-rect color-at clear-dc
-           draw-line draw-rectangle draw-rectangle-outline)
+           draw-line draw-rectangle draw-rectangle-outline
+           draw-oval draw-oval-outline)
 
   ;;; Draw a graphic loaded from PATH at point P in the current DC.  You
   ;;; may optionally specify a sub-rectangle of the graphic to draw.
@@ -544,6 +545,14 @@
   ;;; Draw the outline of a rectangle, with the specified color and line width.
   (define (draw-rectangle-outline r c width)
     (call-prim 'DrawBoxOutline r c width))
+
+  ;;; Draw a filled oval in the specified color.
+  (define (draw-oval r c)
+    (call-prim 'DrawOvalFill r c))
+
+  ;;; Draw the outline of an oval, with the specified color and line width.
+  (define (draw-oval-outline r c width)
+    (call-prim 'DrawOvalOutline r c width))
 
   
   ;;;======================================================================

@@ -472,7 +472,15 @@
       (draw-line (point 10 70) (point 50 70) $color-black 2) 
       (draw-line (point 10 80) (point 50 80) $color-black 3) 
       
-      (draw-rectangle-outline (rect 100 100 200 200) (color 0 0 0 128) 2))
+      (define rectangle-color (color 0 0 0 127))
+      (define oval-color (color 255 0 0 191))
+      
+      (draw-rectangle-outline (rect 100 100 250 200) rectangle-color 4)
+      (draw-oval-outline (rect 100 100 250 200) oval-color 4)
+      
+      (draw-rectangle (rect 300 100 450 200) rectangle-color)
+      (draw-oval (rect 300 100 450 200) oval-color)
+      )
     )
 
 

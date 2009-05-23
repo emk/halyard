@@ -145,11 +145,24 @@ public:
 				 const GraphicsTools::Color &inColor);
 
 	//////////
-	/// Fill in the specified box with the specified color.
+	/// Outline the specified box with the specified color.
 	///
 	void OutlineBox(const wxRect &inBounds,
                     const GraphicsTools::Color &inColor,
 					int inWidth);
+
+	//////////
+	/// Fill in the specified oval with the specified color.
+	///
+	void FillOval(const wxRect &inBounds, 
+                  const GraphicsTools::Color &inColor);
+
+	//////////
+	/// Outline the specified oval with the specified color.
+	///
+	void OutlineOval(const wxRect &inBounds,
+                     const GraphicsTools::Color &inColor,
+                     int inWidth);
 
 	//////////
 	/// Draw a portable PixMap to the screen, blending alpha
