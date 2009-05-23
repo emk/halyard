@@ -168,11 +168,13 @@ public:
 	/// Draw a portable PixMap to the screen, blending alpha
 	/// values appropriately.
 	///
-	/// \param inPoint  The location at which to draw the pixmap.
-	/// \param inPixMap  The pixmap to draw.
+	/// \param inPoint    The location at which to draw the greymap.
+	/// \param inGreyMap  The greymap to draw.
+	/// \param inColor    The color to draw with.
 	///
-	void DrawPixMap(GraphicsTools::Point inPoint,
-					GraphicsTools::PixMap &inPixMap);
+	void DrawGreyMap(GraphicsTools::Point inPoint,
+                     const GraphicsTools::GreyMap *inGreyMap,
+                     GraphicsTools::Color inColor);
 
     //////////
     /// Draw a bitmap on the stage at the specified location.

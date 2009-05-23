@@ -453,20 +453,33 @@ void DrawingArea::OutlineOval(const wxRect &inBounds,
     InvalidateRect(inBounds);
 }
 
-void DrawingArea::DrawPixMap(GraphicsTools::Point inPoint,
-							 GraphicsTools::PixMap &inPixMap)
+void DrawingArea::DrawGreyMap(GraphicsTools::Point inPoint,
+                              const GraphicsTools::GreyMap *inGreyMap,
+                              GraphicsTools::Color inColor)
 {
-    if (HasAreaOfZero()) {
-        // Do nothing.
-    } else if (mHasAlpha) {
-		wxAlphaPixelData data(mPixmap);
-		DrawPixMapOpt(data, inPoint, inPixMap);
-	} else {
-		wxNativePixelData data(mPixmap);
-		DrawPixMapOpt(data, inPoint, inPixMap);		
-	}
+    if (HasAreaOfZero())
+        return;
+
+    CairoContext cr(GetPixmap());
+
+    // Wrap a Cairo surface around our greymap.
+    unsigned char *data = const_cast<unsigned char *>(inGreyMap->pixels);
+    cairo_surface_t *greymap_surface = 
+        cairo_image_surface_create_for_data(data, CAIRO_FORMAT_A8,
+                                            inGreyMap->width, inGreyMap->height,
+                                            inGreyMap->stride);
+    if (cairo_surface_status(greymap_surface) != CAIRO_STATUS_SUCCESS)
+        gLog.Fatal("halyard.cairo",
+                   "Error creating cairo_surface_t in DrawGreyMap");
+
+    cr.SetSourceColor(inColor);
+    cairo_translate(cr, inPoint.x, inPoint.y);
+    cairo_mask_surface(cr, greymap_surface, 0, 0);
+
+    cairo_surface_destroy(greymap_surface);
+
 	InvalidateRect(wxRect(inPoint.x, inPoint.y,
-						  inPixMap.width, inPixMap.height));
+						  inGreyMap->width, inGreyMap->height));
 }
 
 void DrawingArea::DrawBitmap(const wxBitmap &inBitmap,

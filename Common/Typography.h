@@ -40,7 +40,6 @@ namespace Typography {
 	using GraphicsTools::Point;
 	using GraphicsTools::Image;
 	using GraphicsTools::Color;
-	using GraphicsTools::PixMap;
 	using GraphicsTools::GreyMap;
 
 	//////////

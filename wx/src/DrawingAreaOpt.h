@@ -29,11 +29,6 @@
 // alpha channels.  Most of them are parameterized for PixelData type
 // so they can work with both wxNativePixelData and wxAlphaPixelData.
 
-template <class PixelData> extern
-void DrawPixMapOpt(PixelData &inDstData,
-				   GraphicsTools::Point inPoint,
-				   GraphicsTools::PixMap &inPixMap);
-
 extern
 void MaskOpt(wxAlphaPixelData &inDstData,
              wxAlphaPixelData &inMaskData,

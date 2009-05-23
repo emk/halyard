@@ -139,153 +139,95 @@ namespace GraphicsTools {
 	}
 
 	//////////
-	/// A pixmap template.  You can instantiate this with the pixel type of
-	/// your choice.  This class exposes a lot of 'const' member variables
-	/// to support high-speed drawing routines.
+	/// A greyscale image.  The 'stride' value is guaranteed to be
+	/// compatible with Cario's cairo_image_surface_create_for_data
+	/// function.
 	///
-	template <class Pixel>
-	class PixelMap {
-	private:
-		PixelMap &operator=(const PixelMap &inPixelMap)
-		    { ASSERT(false); return *this; }
-		PixelMap(const PixelMap &inPixelMap)
-			: width(0), height(0), pitch(0), pixels(NULL) { ASSERT(false); }
-
+	class GreyMap : boost::noncopyable {
 	public:
 		//////////
-		/// The display width of the pixmap, in pixels. 
+		/// The display width of the greymap, in pixels. 
 		///
 		const Distance width;
 
 		//////////
-		/// The height of the pixmap, in pixels. 
+		/// The height of the greymap, in pixels. 
 		///
 		const Distance height;
 
 		//////////
-		/// The memory width of the pixmap, in pixels. 
+		/// The memory width of each row of the greymap, in pixels. 
 		///
-		const Distance pitch;
+		const Distance stride;
 
 		//////////
-		/// The actual pixmap.  To access the pixel at a given x,y
-		/// co-ordinate, use 'pixmap->pixels[x + bitmap->pitch * y]'.
+		/// The actual greymap.  To access the pixel at a given x,y
+		/// co-ordinate, use 'greymap->pixels[x + bitmap->stride * y]'.
 		/// If you want some error-checking, it might be better
 		/// to call 'At' (below).
 		///
-		Pixel *const pixels;		
+		Channel *const pixels;
 
 	public:
 		//////////
-		/// Create a pixmap.
+		/// Create a greymap.
 		///
-		PixelMap(Distance inWidth, Distance inHeight);
+		GreyMap(Distance inWidth, Distance inHeight);
 
 		//////////
-		/// Destroy a pixmap.
+		/// Destroy a greymap.
 		///
-		~PixelMap();
+		~GreyMap();
 
 		//////////
-		/// Clear the pixmap to the specified color.
+		/// Clear the greymap to the specified color.
 		///
-		void Clear(Pixel inColor);
+		void Clear(Channel inColor);
 
 		//////////
 		/// Access the pixel at (inX,inY).  You can use this function
 		/// on the left-hand-side of an assignment.
 		/// 
-		Pixel &At(int inX, int inY)
+		Channel &At(int inX, int inY)
 		{
 			ASSERT(inX >= 0 && inX < width);
 			ASSERT(inY >= 0 && inY < height);
-			return pixels[inX + pitch * inY];
+			return pixels[inX + stride * inY];
 		}
 
 		//////////
 		/// Access the pixel at 'inPoint'.  You can use this function
 		/// on the left-hand-side of an assignement.
 		///
-		Pixel &At(Point inPoint)
+		Channel &At(Point inPoint)
 		{
 			return At(inPoint.x, inPoint.y);
 		}
 
 		//////////
-		/// Estimate the memory used to store this pixmap.
+		/// Estimate the memory used to store this greymap.
 		///
 		size_t EstimatedMemoryUse() const
 		{
-			return sizeof(PixelMap<Pixel>) + sizeof(Pixel) * height * pitch;
+			return sizeof(GreyMap) + sizeof(Channel) * height * stride;
 		}
-
-		//////////
-		/// Assume that this PixelMap will be drawn at inDrawAt on a
-		/// screen of size (inScreenWidth, inScreenHeight).  Return
-		/// the portion of this PixelMap which will actually be drawn.
-		/// outTopLeft is inclusive; outBottomRight is exclusive.
-		///
-		void ClipDrawOperation(Point inDrawAt,
-							   Distance inScreenWidth,
-							   Distance inScreenHeight,
-							   Point &outTopLeft, Point &outBottomRight);
-	};
-
-	//////////
-	/// An RGBA pixmap, used as a portable output buffer by a number
-	/// of different graphics-related subsystems (i.e., Typography).
-	///
-	class PixMap : public PixelMap<Color> {
-	public:
-		PixMap(Distance inWidth, Distance inHeight)
-			: PixelMap<Color>(inWidth, inHeight) {}
-	};
-
-	//////////
-	/// A single-channel pixel map, typically used for storing greyscale
-	/// images.
-	///
-	class GreyMap : public PixelMap<Channel> {
-	public:
-		GreyMap(Distance inWidth, Distance inHeight)
-			: PixelMap<Channel>(inWidth, inHeight) {}
-
-		//////////
-		/// Fill a color pixmap with 'inColor', treating our grey values as
-		/// an alpha channel, where white -> transparent, and black ->
-		/// opaque.  For example, this could take a greyscale letter "A" and
-		/// create a green "A" on a transparent background.
-		///
-		/// \param outPixMap  (out) A PixMap to fill.  It must be at least
-		///                   as large as this GreyMap.
-		///
-		void TransferToPixMap(Color inColor, PixMap *outPixMap) const;
 	};
 
 	//////////
 	/// An abstract class representing a drawing area.  No pixel-by-pixel
-	/// access is available; for that, create pixmaps and call DrawPixMap.
+	/// access is available; for that, create greymaps and call DrawGreyMap.
 	///
 	class Image {
 	public:
 		Image() {}
 		virtual ~Image() {}
 
-		// This might be a useful optimization, but we haven't implemented
-		// it yet.  Feel free to remove the stubs if they linger.
-#if 0
 		//////////
 		/// Draw a greymap at the specified point, using the specified
 		/// color.
 		///
-		virtual void DrawGreyMap(Point inPoint, GreyMap &inGreyMap,
+		virtual void DrawGreyMap(Point inPoint, const GreyMap *inGreyMap,
 								 Color inColor) = 0;
-#endif // 0
-
-		//////////
-		/// Draw a pixmap at the specified point.
-		///
-		virtual void DrawPixMap(Point inPoint, PixMap &inPixMap) = 0;
 	};
 }
 

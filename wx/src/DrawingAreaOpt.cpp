@@ -79,53 +79,6 @@ BlendPixel<AlphaIterator>(AlphaIterator &i, const Color &c) {
 	i.Alpha() = Color::CombineAlphaChannels(i.Alpha(), c.alpha);
 }
 
-template <class PixelData>
-void DrawPixMapOpt(PixelData &inDstData,
-				   GraphicsTools::Point inPoint,
-				   GraphicsTools::PixMap &inPixMap)
-{
-	// Clip our pixmap boundaries to fit within our screen.
-	Point begin, end;
-	inPixMap.ClipDrawOperation(inPoint, inDstData.GetWidth(),
-							   inDstData.GetHeight(), begin, end);
-		
-	// Figure out where in memory to begin drawing the first row.
-	if ( !inDstData )
-		gLog.Fatal("halyard", "Error: Can't access raw pixels for bitmap");
-	typename PixelData::Iterator dst_row_start(inDstData);
-	dst_row_start.Offset(inDstData, inPoint.x + begin.x, inPoint.y + begin.y);
-	
-	// Figure out where in memory to get the data for the first row.
-	Color *src_base_addr = inPixMap.pixels;
-	Distance src_row_size = inPixMap.pitch;
-	Color *src_row_start = src_base_addr + begin.y * src_row_size + begin.x;
-
-	// Do the actual drawing.
-	for (int y = begin.y; y < end.y; y++)
-	{
-		typename PixelData::Iterator dst_cursor = dst_row_start;
-		Color *src_cursor = src_row_start;
-		for (int x = begin.x; x < end.x; x++)
-		{
-			// Make sure we're in bounds.
-			// TODO - Check dst_cursor is in bounds.
-			//ASSERT(src_cursor >= src_base_addr);
-			//ASSERT(src_cursor <
-			//	   src_base_addr + (inPixMap.height * src_row_size));
-			
-			// Draw a single pixel.
-			BlendPixel(dst_cursor, *src_cursor);
-
-			dst_cursor++;
-			src_cursor++;
-		}
-
-		dst_row_start.OffsetY(inDstData, 1);
-		src_row_start += src_row_size;
-	}
-
-}
-
 extern
 void MaskOpt(wxAlphaPixelData &inDstData,
              wxAlphaPixelData &inMaskData,
@@ -172,13 +125,3 @@ void MaskOpt(wxAlphaPixelData &inDstData,
 		mask_row_start.OffsetY(inMaskData, 1);
 	}
 }
-
-// Manual template instantiations.
-template
-void DrawPixMapOpt(wxNativePixelData &inDstData,
-				   GraphicsTools::Point inPoint,
-				   GraphicsTools::PixMap &inPixMap);
-template
-void DrawPixMapOpt(wxAlphaPixelData &inDstData,
-				   GraphicsTools::Point inPoint,
-				   GraphicsTools::PixMap &inPixMap);
