@@ -323,21 +323,19 @@ void DrawingArea::Clear() {
 }
 
 void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
-	if (HasAreaOfZero()) {
-        // Do nothing.
-    } else if (mHasAlpha) {
-		wxAlphaPixelData data(mPixmap);
-		ClearOpt(data, inColor);
-	} else if (inColor.IsCompletelyOpaque()) {
-		wxMemoryDC dc;
-		dc.SelectObject(GetPixmap());
-		wxBrush brush(wxColor(inColor.red, inColor.green, inColor.blue),
-					  wxSOLID);
-		dc.SetBackground(brush);
-		dc.Clear();
-	} else {
+    if (HasAreaOfZero())
+        return;
+
+    // Actually, I have no idea what Cairo would do in this case, but this
+    // rule was enforced by the old code.
+    if (!mHasAlpha && !inColor.IsCompletelyOpaque())
 		THROW("Cannot clear opaque overlay with transparent color.");
-	}
+    
+    CairoContext cr(GetPixmap());
+    cr.SetSourceColor(inColor);
+    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+    cairo_paint(cr);
+
     InvalidateDrawingArea();
 }
 

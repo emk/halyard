@@ -126,37 +126,6 @@ void DrawPixMapOpt(PixelData &inDstData,
 
 }
 
-void ClearOpt(wxAlphaPixelData &inDstData,
-			  const GraphicsTools::Color &inColor)
-{
-	Point end;
-	end.x = inDstData.GetWidth();
-	end.y = inDstData.GetHeight();
-
-	if ( !inDstData )
-		gLog.Fatal("halyard", "Error: Can't access raw pixels for bitmap");
-	wxAlphaPixelData::Iterator row_start(inDstData);
-	
-	// Draw it
-	Channel a = inColor.alpha;
-	Channel r = MultiplyChannels(inColor.red, a);
-	Channel g = MultiplyChannels(inColor.green, a);
-	Channel b = MultiplyChannels(inColor.blue, a);
-	for (int y = 0; y < end.y; y++) {
-		wxAlphaPixelData::Iterator cursor = row_start;
-		for (int x = 0; x < end.x; x++) {
-			cursor.Red()   = r;
-			cursor.Green() = g;
-			cursor.Blue()  = b;
-			cursor.Alpha() = a;
-
-			cursor++;
-		}
-		
-		row_start.OffsetY(inDstData, 1);
-	}
-}
-
 extern
 void MaskOpt(wxAlphaPixelData &inDstData,
              wxAlphaPixelData &inMaskData,
