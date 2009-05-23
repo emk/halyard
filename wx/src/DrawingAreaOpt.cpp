@@ -126,41 +126,6 @@ void DrawPixMapOpt(PixelData &inDstData,
 
 }
 
-template <class PixelData>
-void FillBoxOpt(PixelData &inDstData,
-				const wxRect &inBounds, 
-				const GraphicsTools::Color &inColor)
-{
-	// Clip the rectangle to fit within the screen 
-	Point begin, end;
-	begin.x = Max(0, Min(inDstData.GetWidth(), inBounds.x));
-	begin.y = Max(0, Min(inDstData.GetHeight(), inBounds.y));
-	end.x = Max(0, Min(inDstData.GetWidth(), 
-					   inBounds.x + inBounds.width));
-	end.y = Max(0, Min(inDstData.GetHeight(),
-					   inBounds.y + inBounds.height));
-
-	// Get iterator for directly accessing memory.
-	if ( !inDstData )
-		gLog.Fatal("halyard", "Error: Can't access raw pixels for bitmap");
-	typename PixelData::Iterator row_start(inDstData);
-	row_start.Offset(inDstData, inBounds.x, inBounds.y);
-	
-	// Draw it
-	for (int y = begin.y; y < end.y; y++)
-	{
-		typename PixelData::Iterator cursor = row_start;
-		for (int x = begin.x; x < end.x; x++)
-		{
-			BlendPixel(cursor, inColor);
-			cursor++;
-		}
-		
-		row_start.OffsetY(inDstData, 1);
-	}
-
-}
-
 void ClearOpt(wxAlphaPixelData &inDstData,
 			  const GraphicsTools::Color &inColor)
 {
@@ -248,11 +213,3 @@ template
 void DrawPixMapOpt(wxAlphaPixelData &inDstData,
 				   GraphicsTools::Point inPoint,
 				   GraphicsTools::PixMap &inPixMap);
-template
-void FillBoxOpt(wxNativePixelData &inDstData,
-				const wxRect &inBounds, 
-				const GraphicsTools::Color &inColor);
-template
-void FillBoxOpt(wxAlphaPixelData &inDstData,
-				const wxRect &inBounds, 
-				const GraphicsTools::Color &inColor);

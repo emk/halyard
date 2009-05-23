@@ -34,11 +34,6 @@ void DrawPixMapOpt(PixelData &inDstData,
 				   GraphicsTools::Point inPoint,
 				   GraphicsTools::PixMap &inPixMap);
 
-template <class PixelData> extern
-void FillBoxOpt(PixelData &inDstData,
-				const wxRect &inBounds,
-				const GraphicsTools::Color &inColor);
-
 extern
 void ClearOpt(wxAlphaPixelData &inDstData,
 			  const GraphicsTools::Color &inColor);

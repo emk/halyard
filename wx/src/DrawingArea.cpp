@@ -365,15 +365,13 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
         // Do nothing.
     } else if (mHasAlpha) {
         if (is_straight) {       
-            wxAlphaPixelData data(mPixmap);
-            FillBoxOpt(data, bounds, inColor);
+            FillBox(bounds, inColor);
         } else {
             gLog.Error("halyard", "Can't draw diagonal lines on transparent overlay");
         }
     } else {
         if (is_straight) {
-            wxNativePixelData data(mPixmap);
-            FillBoxOpt(data, bounds, inColor);
+            FillBox(bounds, inColor);
         } else if (inColor.IsCompletelyOpaque()) {
             wxColor color = GraphicsToolsToWxColor(inColor);
             wxMemoryDC dc;
@@ -398,40 +396,37 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
 void DrawingArea::FillBox(const wxRect &inBounds,
 						  const GraphicsTools::Color &inColor)
 {
-    if (HasAreaOfZero()) {
-        // Do nothing.
-    } else if (mHasAlpha) {
-		wxAlphaPixelData data(mPixmap);
-		FillBoxOpt(data, inBounds, inColor);
-	} else if (inColor.IsCompletelyOpaque()) {
-		wxColor color = GraphicsToolsToWxColor(inColor);
-		wxMemoryDC dc;
-		dc.SelectObject(GetPixmap());
-		wxBrush brush(color, wxSOLID);
-		dc.SetBrush(brush);
-		dc.SetPen(*wxTRANSPARENT_PEN);
-		dc.DrawRectangle(inBounds.x, inBounds.y,
-						 inBounds.width, inBounds.height);
-	} else {
-		wxNativePixelData data(mPixmap);
-		FillBoxOpt(data, inBounds, inColor);
-	}
-	InvalidateRect(inBounds);
+    if (HasAreaOfZero())
+        return;
+    
+    CairoContext cr(GetPixmap());
+    cr.TransformRectToUnitSquare(inBounds);
+    cairo_rectangle(cr, 0, 0, 1, 1);
+    cr.SetSourceColor(inColor);
+    cairo_fill(cr);
+
+    InvalidateRect(inBounds);
 }
 
 void DrawingArea::OutlineBox(const wxRect &inBounds,
                              const GraphicsTools::Color &inColor,
 							 int inWidth)
 {
-    // Do this using box drawing primitives for reliable placement and
-    // alpha channel support.
-    FillBox(wxRect(inBounds.x, inBounds.y, inBounds.width, inWidth), inColor);
-    FillBox(wxRect(inBounds.x, inBounds.y + inWidth,
-                   inWidth, inBounds.height - 2*inWidth), inColor);
-    FillBox(wxRect(inBounds.x, inBounds.y + inBounds.height - inWidth,
-                   inBounds.width, inWidth), inColor);
-    FillBox(wxRect(inBounds.x + inBounds.width - inWidth, inBounds.y + inWidth,
-                   inWidth, inBounds.height - 2*inWidth), inColor);
+    if (HasAreaOfZero())
+        return;
+
+    CairoContext cr(GetPixmap());
+
+    cairo_save(cr);
+    cr.TransformRectToUnitSquare(inBounds, inWidth);
+    cairo_rectangle(cr, 0, 0, 1, 1);
+    cairo_restore(cr); // Undo transformation before drawing stroke.
+
+    cr.SetSourceColor(inColor);
+    cairo_set_line_width(cr, inWidth);
+    cairo_stroke(cr);
+
+    InvalidateRect(inBounds);
 }
 
 void DrawingArea::FillOval(const wxRect &inBounds, 
