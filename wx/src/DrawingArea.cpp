@@ -344,48 +344,38 @@ void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
 void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
 						   const GraphicsTools::Color &inColor, int inWidth)
 {
-    // We special-case straight line drawing, and always use hand-rolled
-    // primitives, because nobody's drawing API is really consistent about
-    // where straight lines should go, and we'd like to make some reasonable
-    // guarantees.
-    bool is_straight = false;
-    wxRect bounds;
+    if (HasAreaOfZero())
+        return;
+    
+    CairoContext cr(GetPixmap());
+
+    // Unfortunately, our legacy line-drawing semantics are fairly
+    // broken--horizontal and vertical lines were special-cased in the
+    // old code, and diagonal lines were just barely supported in a few
+    // special cases.  If you want saner semantics, you'll need a new
+    // line-drawing primitive.  But this should match old-style
+    // horizontal and vertical lines exactly.
     if (inFrom.x == inTo.x) {
-        is_straight = true;
-        bounds = wxRect(wxPoint(inFrom.x, inFrom.y),
-                        wxPoint(inTo.x + inWidth - 1, inTo.y - 1));
+        cairo_move_to(cr, inFrom.x + inWidth / 2.0, inFrom.y);
+        cairo_line_to(cr, inTo.x   + inWidth / 2.0, inTo.y);
     } else if (inFrom.y == inTo.y) {
-        is_straight = true;
-        bounds = wxRect(wxPoint(inFrom.x, inFrom.y),
-                        wxPoint(inTo.x - 1, inTo.y + inWidth - 1));
+        cairo_move_to(cr, inFrom.x, inFrom.y + inWidth / 2.0);
+        cairo_line_to(cr, inTo.x,   inTo.y   + inWidth / 2.0);
+    } else {
+        // Yes, our legacy diagonal lines really did have round endcaps--I
+        // checked under wxWidgets 2.9 on Windows, and wxWidgets 2.8 on the
+        // Mac.  Pretty unfortunate, really.
+        cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+        cairo_move_to(cr, inFrom.x, inFrom.y);
+        cairo_line_to(cr, inTo.x,   inTo.y);
     }
 
-    // Do the actual drawing.
-	if (HasAreaOfZero()) {
-        // Do nothing.
-    } else if (mHasAlpha) {
-        if (is_straight) {       
-            FillBox(bounds, inColor);
-        } else {
-            gLog.Error("halyard", "Can't draw diagonal lines on transparent overlay");
-        }
-    } else {
-        if (is_straight) {
-            FillBox(bounds, inColor);
-        } else if (inColor.IsCompletelyOpaque()) {
-            wxColor color = GraphicsToolsToWxColor(inColor);
-            wxMemoryDC dc;
-            dc.SelectObject(GetPixmap());
-            wxPen pen(color, inWidth, wxSOLID);
-            dc.SetPen(pen);
-            dc.DrawLine(inFrom.x, inFrom.y, inTo.x, inTo.y);
-        } else {
-            gLog.Error("halyard", "Can't draw diagonal transparent lines");
-        }
-    }
+    cr.SetSourceColor(inColor);
+    cairo_set_line_width(cr, inWidth);
+    cairo_stroke(cr);
 
     // This is slightly annoying, but should handle the maximum bounds of
-    // Windows GDI lines.
+    // our various types of line.
     InvalidateRect(wxRect(wxPoint(std::min(inFrom.x, inTo.x),
                                   std::min(inFrom.y, inTo.y)),
                           wxPoint(std::max(inFrom.x, inTo.x),
