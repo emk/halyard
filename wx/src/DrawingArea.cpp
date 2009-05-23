@@ -44,18 +44,48 @@ using namespace Halyard;
 //  CairoContext
 //=========================================================================
 
+/// A Cairo drawing context for a wxBitmap.  This class is a thin
+/// wrapper around an ordinary cairo_t drawing context, and it can be
+/// passed to functions expecting a cairo_t value.  It also provides
+/// some convenience functions.
 class CairoContext {
+    wxMemoryDC mDC;
     cairo_surface_t *mSurface;
     cairo_t *mCairo;
 
+    /// Platform-specific surface allocation.
     cairo_surface_t *GetSurface(wxDC &inDC, int inWidth, int inHeight);
 
 public:
-    CairoContext(wxDC &inDC, int inWidth, int inHeight);
+    CairoContext(wxBitmap &inPixmap);
     ~CairoContext();
 
+    /// Implicity convert a CairoContext to a cairo_t *.
     operator cairo_t *() { return mCairo; }
+
+    /// Call cairo_set_source_rgba using inColor.
+    void SetSourceColor(const GraphicsTools::Color &inColor);
+
+    /// Transform the drawing context so that the square 0,0,1,1 will be
+    /// mapped to inRect.  If you pass in inStrokeWidth, value of inRect
+    /// will be inset by half of inStrokeWidth, allowing you to draw a
+    /// Halyard-style stroke entirely within inRect.
+    void TransformRectToUnitSquare(const wxRect &inRect, int inStrokeWidth = 0);
 };
+
+/// Construct a Cairo context for inPixmap.
+CairoContext::CairoContext(wxBitmap &inPixmap)
+    : mSurface(NULL), mCairo(NULL)
+{
+    mDC.SelectObject(inPixmap);
+    mSurface = GetSurface(mDC, inPixmap.GetWidth(), inPixmap.GetHeight());
+    if (cairo_surface_status(mSurface) != CAIRO_STATUS_SUCCESS)
+        gLog.Fatal("halyard.cairo",
+                   "Error creating cairo_surface_t for bitmap");
+    mCairo = cairo_create(mSurface);
+    if (cairo_status(mCairo) != CAIRO_STATUS_SUCCESS)
+        gLog.Fatal("halyard.cairo", "Error creating cairo_t for bitmap");
+}
 
 #if defined(__WXMAC_OSX__)
 
@@ -85,18 +115,6 @@ CairoContext::GetSurface(wxDC &inDC, int inWidth, int inHeight) {
 #error "No implementation of CairoContext::GetSurface for this platform"
 #endif
 
-CairoContext::CairoContext(wxDC &inDC, int inWidth, int inHeight)
-    : mSurface(NULL), mCairo(NULL)
-{
-    mSurface = GetSurface(inDC, inWidth, inHeight);
-    if (cairo_surface_status(mSurface) != CAIRO_STATUS_SUCCESS)
-        gLog.Fatal("halyard.cairo",
-                   "Error creating cairo_surface_t for bitmap");
-    mCairo = cairo_create(mSurface);
-    if (cairo_status(mCairo) != CAIRO_STATUS_SUCCESS)
-        gLog.Fatal("halyard.cairo", "Error creating cairo_t for bitmap");
-}
-
 CairoContext::~CairoContext() {
     if (mCairo) {
         cairo_destroy(mCairo);
@@ -106,6 +124,20 @@ CairoContext::~CairoContext() {
         cairo_surface_destroy(mSurface);
         mSurface = NULL;
     }
+}
+
+void CairoContext::SetSourceColor(const GraphicsTools::Color &inColor) {
+    cairo_set_source_rgba(mCairo,
+                          inColor.red / 255.0, inColor.green / 255.0,
+                          inColor.blue / 255.0, inColor.alpha / 255.0);
+}
+
+void CairoContext::TransformRectToUnitSquare(const wxRect &inRect,
+                                             int inStrokeWidth) {
+    cairo_translate(mCairo, inRect.GetX() + inStrokeWidth / 2.0,
+                    inRect.GetY() + inStrokeWidth / 2.0);
+    cairo_scale(mCairo, inRect.GetWidth() - inStrokeWidth,
+                inRect.GetHeight() - inStrokeWidth);
 }
 
 
@@ -405,17 +437,13 @@ void DrawingArea::OutlineBox(const wxRect &inBounds,
 void DrawingArea::FillOval(const wxRect &inBounds, 
                            const GraphicsTools::Color &inColor)
 {
-    wxMemoryDC dc;
-    dc.SelectObject(GetPixmap());
-    CairoContext cr(dc, mBounds.GetWidth(), mBounds.GetHeight());
-
-    cairo_translate(cr, inBounds.GetX(), inBounds.GetY());
-    cairo_scale(cr, inBounds.GetWidth(), inBounds.GetHeight());
+    if (HasAreaOfZero())
+        return;
+    
+    CairoContext cr(GetPixmap());
+    cr.TransformRectToUnitSquare(inBounds);
     cairo_arc(cr, 0.5, 0.5, 0.5, 0, 2 * M_PI);
-
-    cairo_set_source_rgba(cr,
-                          inColor.red / 255.0, inColor.green / 255.0,
-                          inColor.blue / 255.0, inColor.alpha / 255.0);
+    cr.SetSourceColor(inColor);
     cairo_fill(cr);
 
     InvalidateRect(inBounds);
@@ -425,21 +453,17 @@ void DrawingArea::OutlineOval(const wxRect &inBounds,
                               const GraphicsTools::Color &inColor,
                               int inWidth)
 {
-    wxMemoryDC dc;
-    dc.SelectObject(GetPixmap());
-    CairoContext cr(dc, mBounds.GetWidth(), mBounds.GetHeight());
+    if (HasAreaOfZero())
+        return;
+
+    CairoContext cr(GetPixmap());
 
     cairo_save(cr);
-    cairo_translate(cr, inBounds.GetX() + inWidth / 2.0,
-                    inBounds.GetY() + inWidth / 2.0);
-    cairo_scale(cr, inBounds.GetWidth() - inWidth,
-                inBounds.GetHeight() - inWidth);
+    cr.TransformRectToUnitSquare(inBounds, inWidth);
     cairo_arc(cr, 0.5, 0.5, 0.5, 0, 2 * M_PI);
-    cairo_restore(cr);
+    cairo_restore(cr); // Undo transformation before drawing stroke.
 
-    cairo_set_source_rgba(cr,
-                          inColor.red / 255.0, inColor.green / 255.0,
-                          inColor.blue / 255.0, inColor.alpha / 255.0);
+    cr.SetSourceColor(inColor);
     cairo_set_line_width(cr, inWidth);
     cairo_stroke(cr);
 
