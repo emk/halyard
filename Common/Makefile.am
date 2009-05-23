@@ -3,7 +3,8 @@
 # non MSVC++ platforms yet.
 AM_CPPFLAGS = $(BOOST_CPPFLAGS) -I$(top_srcdir)/libs/sha1 \
 	-I$(top_srcdir)/libs/sqlite3-plus/sqlite3-plus
-AM_CXXFLAGS = $(XML2_CFLAGS) $(FREETYPE_CFLAGS) $(MZSCHEME_CFLAGS)
+AM_CXXFLAGS = $(XML2_CFLAGS) $(FREETYPE_CFLAGS) $(MZSCHEME_CFLAGS) \
+	$(CAIRO_CFLAGS)
 
 noinst_LIBRARIES = libimlunit.a libhalyard.a
 
@@ -84,7 +85,8 @@ CommonTest_LDADD = \
 	$(FREETYPE_LIBS) \
 	$(SQLITE3_LDFLAGS) \
         $(MZSCHEME_LDFLAGS) \
-	$(LOG4CPLUS_LIBS)
+	$(LOG4CPLUS_LIBS) \
+	$(CAIRO_LIBS)
 
 
 #==========================================================================

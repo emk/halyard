@@ -21,6 +21,14 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
+
+#include <cairo.h>
+
+#ifdef __WXMAC_OSX__
+// Needed for Cairo.
+#include <Carbon/Carbon.h>
+#endif
+
 #include "DrawingArea.h"
 #include "DrawingAreaOpt.h"
 #include "Stage.h"
@@ -31,6 +39,79 @@
 #endif // CONFIG_HAVE_QUAKE2
 
 using namespace Halyard;
+
+//=========================================================================
+//  CairoContext
+//=========================================================================
+
+class CairoContext {
+    cairo_surface_t *mSurface;
+    cairo_t *mCairo;
+
+    cairo_surface_t *GetSurface(wxDC &inDC, int inWidth, int inHeight);
+
+public:
+    CairoContext(wxDC &inDC, int inWidth, int inHeight);
+    ~CairoContext();
+
+    operator cairo_t *() { return mCairo; }
+};
+
+#if defined(__WXMAC_OSX__)
+
+#include <cairo-quartz.h>
+
+cairo_surface_t *
+CairoContext::GetSurface(wxDC &inDC, int inWidth, int inHeight) {
+    wxGraphicsContext *wx_context(inDC.GetGraphicsContext());
+    CGContextRef context((CGContextRef) wx_context->GetNativeContext());
+    if (!context)
+        THROW("Cannot retrieve native graphics context for DC");
+    return cairo_quartz_surface_create_for_cg_context(context,
+                                                      inWidth, inHeight);
+}
+
+#elif defined(__WXMSW__)
+
+#include <windows.h>
+#include <cairo-win32.h>
+
+cairo_surface_t *
+CairoContext::GetSurface(wxDC &inDC, int inWidth, int inHeight) {
+    return cairo_win32_surface_create((HDC) inDC.GetHDC());
+}
+
+#else
+#error "No implementation of CairoContext::GetSurface for this platform"
+#endif
+
+CairoContext::CairoContext(wxDC &inDC, int inWidth, int inHeight)
+    : mSurface(NULL), mCairo(NULL)
+{
+    mSurface = GetSurface(inDC, inWidth, inHeight);
+    if (cairo_surface_status(mSurface) != CAIRO_STATUS_SUCCESS)
+        gLog.Fatal("halyard.cairo",
+                   "Error creating cairo_surface_t for bitmap");
+    mCairo = cairo_create(mSurface);
+    if (cairo_status(mCairo) != CAIRO_STATUS_SUCCESS)
+        gLog.Fatal("halyard.cairo", "Error creating cairo_t for bitmap");
+}
+
+CairoContext::~CairoContext() {
+    if (mCairo) {
+        cairo_destroy(mCairo);
+        mCairo = NULL;
+    }
+    if (mSurface) {
+        cairo_surface_destroy(mSurface);
+        mSurface = NULL;
+    }
+}
+
+
+//=========================================================================
+//  DrawingArea methods
+//=========================================================================
 
 DrawingArea::DrawingArea(Stage *inStage, int inWidth, int inHeight,
 						 bool inHasAlpha)
