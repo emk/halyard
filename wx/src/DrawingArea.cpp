@@ -63,6 +63,9 @@ public:
     /// Implicity convert a CairoContext to a cairo_t *.
     operator cairo_t *() { return mCairo; }
 
+    /// Retrieve the surface associated with this context.
+    cairo_surface_t *GetSurface() { return mSurface; }
+
     /// Call cairo_set_source_rgba using inColor.
     void SetSourceColor(const GraphicsTools::Color &inColor);
 
@@ -499,20 +502,21 @@ void DrawingArea::DrawBitmap(const wxBitmap &inBitmap,
 
 void DrawingArea::Mask(const wxBitmap &inMask, wxCoord inX, wxCoord inY)
 {
-    if (HasAreaOfZero() ||
-        inMask.GetWidth() == 0 || inMask.GetHeight() == 0)
-    {
-        // One or both bitmaps has an area of 0, so do nothing.
-    } else if (mHasAlpha && inMask.HasAlpha()) {
-        // Both bitmaps have alpha channels, so call our helper routine.
-        // It's safe to cast away const, because the mask won't be
-        // modified.
-		wxAlphaPixelData data(mPixmap);
-		wxAlphaPixelData mask(const_cast<wxBitmap &>(inMask));
-		MaskOpt(data, mask, inX, inY);
-    } else {
-        THROW("Mask graphic and drawing area must both have alpha channels");
-    }
+    // If either bitmap has an area of 0, give up immediately.
+    if (HasAreaOfZero() || inMask.GetWidth() == 0 || inMask.GetHeight() == 0)
+        return;
+
+    CairoContext cr(GetPixmap());
+    CairoContext mask_cr(const_cast<wxBitmap &>(inMask));
+
+    // Our transfer semantics are a bit weird: We want to erase our
+    // destination surface everywhere that inMask is not opaque.  Only the
+    // alpha channel on inMask matters.  This drawing code was arrived at
+    // by trial and error.
+    cairo_set_source_surface(cr, mask_cr.GetSurface(), inX, inY);
+    cairo_set_operator(cr, CAIRO_OPERATOR_DEST_IN);
+    cairo_paint(cr);
+
     InvalidateRect(wxRect(inX, inY, inMask.GetWidth(), inMask.GetHeight()));
 }
 

@@ -29,9 +29,4 @@
 // alpha channels.  Most of them are parameterized for PixelData type
 // so they can work with both wxNativePixelData and wxAlphaPixelData.
 
-extern
-void MaskOpt(wxAlphaPixelData &inDstData,
-             wxAlphaPixelData &inMaskData,
-             wxCoord inX, wxCoord inY);
-
 #endif // DrawingAreaOpt_H
