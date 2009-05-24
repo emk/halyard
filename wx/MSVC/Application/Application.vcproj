@@ -314,6 +314,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CairoContext.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CommonWxConv.cpp"
 				>
 			</File>
@@ -637,6 +641,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\BufferSpan.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CairoContext.h"
 				>
 			</File>
 			<File

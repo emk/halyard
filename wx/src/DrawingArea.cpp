@@ -23,14 +23,9 @@
 #include "AppHeaders.h"
 
 #include <wx/rawbmp.h>
-#include <cairo.h>
-
-#ifdef __WXMAC_OSX__
-// Needed for Cairo.
-#include <Carbon/Carbon.h>
-#endif
 
 #include "DrawingArea.h"
+#include "CairoContext.h"
 #include "Stage.h"
 #include "CommonWxConv.h"
 
@@ -39,109 +34,6 @@
 #endif // CONFIG_HAVE_QUAKE2
 
 using namespace Halyard;
-
-//=========================================================================
-//  CairoContext
-//=========================================================================
-
-/// A Cairo drawing context for a wxBitmap.  This class is a thin
-/// wrapper around an ordinary cairo_t drawing context, and it can be
-/// passed to functions expecting a cairo_t value.  It also provides
-/// some convenience functions.
-class CairoContext {
-    wxMemoryDC mDC;
-    cairo_surface_t *mSurface;
-    cairo_t *mCairo;
-
-    /// Platform-specific surface allocation.
-    cairo_surface_t *CreateSurface(wxDC &inDC, int inWidth, int inHeight);
-
-public:
-    CairoContext(wxBitmap &inPixmap);
-    ~CairoContext();
-
-    /// Implicity convert a CairoContext to a cairo_t *.
-    operator cairo_t *() { return mCairo; }
-
-    /// Retrieve the surface associated with this context.
-    cairo_surface_t *GetSurface() { return mSurface; }
-
-    /// Call cairo_set_source_rgba using inColor.
-    void SetSourceColor(const GraphicsTools::Color &inColor);
-
-    /// Transform the drawing context so that the square 0,0,1,1 will be
-    /// mapped to inRect.  If you pass in inStrokeWidth, value of inRect
-    /// will be inset by half of inStrokeWidth, allowing you to draw a
-    /// Halyard-style stroke entirely within inRect.
-    void TransformRectToUnitSquare(const wxRect &inRect, int inStrokeWidth = 0);
-};
-
-/// Construct a Cairo context for inPixmap.
-CairoContext::CairoContext(wxBitmap &inPixmap)
-    : mSurface(NULL), mCairo(NULL)
-{
-    mDC.SelectObject(inPixmap);
-    mSurface = CreateSurface(mDC, inPixmap.GetWidth(), inPixmap.GetHeight());
-    if (cairo_surface_status(mSurface) != CAIRO_STATUS_SUCCESS)
-        gLog.Fatal("halyard.cairo",
-                   "Error creating cairo_surface_t for bitmap");
-    mCairo = cairo_create(mSurface);
-    if (cairo_status(mCairo) != CAIRO_STATUS_SUCCESS)
-        gLog.Fatal("halyard.cairo", "Error creating cairo_t for bitmap");
-}
-
-#if defined(__WXMAC_OSX__)
-
-#include <cairo-quartz.h>
-
-cairo_surface_t *
-CairoContext::CreateSurface(wxDC &inDC, int inWidth, int inHeight) {
-    wxGraphicsContext *wx_context(inDC.GetGraphicsContext());
-    CGContextRef context((CGContextRef) wx_context->GetNativeContext());
-    if (!context)
-        THROW("Cannot retrieve native graphics context for DC");
-    return cairo_quartz_surface_create_for_cg_context(context,
-                                                      inWidth, inHeight);
-}
-
-#elif defined(__WXMSW__)
-
-#include <windows.h>
-#include <cairo-win32.h>
-
-cairo_surface_t *
-CairoContext::CreateSurface(wxDC &inDC, int inWidth, int inHeight) {
-    return cairo_win32_surface_create((HDC) inDC.GetHDC());
-}
-
-#else
-#error "No implementation of CairoContext::CreateSurface for this platform"
-#endif
-
-CairoContext::~CairoContext() {
-    if (mCairo) {
-        cairo_destroy(mCairo);
-        mCairo = NULL;
-    }
-    if (mSurface) {
-        cairo_surface_destroy(mSurface);
-        mSurface = NULL;
-    }
-}
-
-void CairoContext::SetSourceColor(const GraphicsTools::Color &inColor) {
-    cairo_set_source_rgba(mCairo,
-                          inColor.red / 255.0, inColor.green / 255.0,
-                          inColor.blue / 255.0, inColor.alpha / 255.0);
-}
-
-void CairoContext::TransformRectToUnitSquare(const wxRect &inRect,
-                                             int inStrokeWidth) {
-    cairo_translate(mCairo, inRect.GetX() + inStrokeWidth / 2.0,
-                    inRect.GetY() + inStrokeWidth / 2.0);
-    cairo_scale(mCairo, inRect.GetWidth() - inStrokeWidth,
-                inRect.GetHeight() - inStrokeWidth);
-}
 
 
 //=========================================================================
