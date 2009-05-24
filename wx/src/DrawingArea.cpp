@@ -54,7 +54,7 @@ class CairoContext {
     cairo_t *mCairo;
 
     /// Platform-specific surface allocation.
-    cairo_surface_t *GetSurface(wxDC &inDC, int inWidth, int inHeight);
+    cairo_surface_t *CreateSurface(wxDC &inDC, int inWidth, int inHeight);
 
 public:
     CairoContext(wxBitmap &inPixmap);
@@ -78,7 +78,7 @@ CairoContext::CairoContext(wxBitmap &inPixmap)
     : mSurface(NULL), mCairo(NULL)
 {
     mDC.SelectObject(inPixmap);
-    mSurface = GetSurface(mDC, inPixmap.GetWidth(), inPixmap.GetHeight());
+    mSurface = CreateSurface(mDC, inPixmap.GetWidth(), inPixmap.GetHeight());
     if (cairo_surface_status(mSurface) != CAIRO_STATUS_SUCCESS)
         gLog.Fatal("halyard.cairo",
                    "Error creating cairo_surface_t for bitmap");
@@ -92,7 +92,7 @@ CairoContext::CairoContext(wxBitmap &inPixmap)
 #include <cairo-quartz.h>
 
 cairo_surface_t *
-CairoContext::GetSurface(wxDC &inDC, int inWidth, int inHeight) {
+CairoContext::CreateSurface(wxDC &inDC, int inWidth, int inHeight) {
     wxGraphicsContext *wx_context(inDC.GetGraphicsContext());
     CGContextRef context((CGContextRef) wx_context->GetNativeContext());
     if (!context)
@@ -107,12 +107,12 @@ CairoContext::GetSurface(wxDC &inDC, int inWidth, int inHeight) {
 #include <cairo-win32.h>
 
 cairo_surface_t *
-CairoContext::GetSurface(wxDC &inDC, int inWidth, int inHeight) {
+CairoContext::CreateSurface(wxDC &inDC, int inWidth, int inHeight) {
     return cairo_win32_surface_create((HDC) inDC.GetHDC());
 }
 
 #else
-#error "No implementation of CairoContext::GetSurface for this platform"
+#error "No implementation of CairoContext::CreateSurface for this platform"
 #endif
 
 CairoContext::~CairoContext() {
