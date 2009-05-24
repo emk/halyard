@@ -77,25 +77,6 @@ static const char *byte_to_hex_string[256] = {
 
 
 //=========================================================================
-//  Support Methods
-//=========================================================================
-
-void Halyard::UpdateSpecialVariablesForGraphic(const TRect &bounds)
-{
-	TPoint p(bounds.Right(), bounds.Bottom());
-	gVariableManager.Set("_Graphic_X", (int32) p.X());
-	gVariableManager.Set("_Graphic_Y", (int32) p.Y());
-}
-
-void Halyard::UpdateSpecialVariablesForText(const TPoint &bottomLeft)
-{
-	TPoint p = bottomLeft;
-	gVariableManager.Set("_INCR_X", (int32) p.X());
-	gVariableManager.Set("_INCR_Y", (int32) p.Y());
-}
-
-
-//=========================================================================
 //  Implementation of Common Primitives
 //=========================================================================
 

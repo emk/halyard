@@ -33,23 +33,6 @@ BEGIN_NAMESPACE_HALYARD
 ///
 extern void RegisterCommonPrimitives();
 
-//////////
-/// Update '_Graphic_X' and '_Graphic_Y' variables to hold
-/// leftmost and bottommost edges of the most recently drawn graphic.
-///
-/// \param bounds  The graphic's rectangle, already offset from the origin.
-///
-extern void UpdateSpecialVariablesForGraphic(const TRect &bounds);
-
-//////////
-/// Update '_INCR_X' and '_INCR_Y' variables to hold
-/// leftmost and bottommost edges of the most recently drawn graphic.
-///
-/// \param bottomLeft  The text's bottom left point, already offset from the
-///                   origin.
-///
-extern void UpdateSpecialVariablesForText(const TPoint &bottomLeft);
-
 END_NAMESPACE_HALYARD
 
 #endif // TCommonPrimitives_H

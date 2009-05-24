@@ -306,8 +306,6 @@ TRect TStyleSheet::Draw(const std::string& inText,
 	TextRenderingEngine engine(text, inPosition, inLineLength,
 							   mJustification, inImage);
 	engine.RenderText();
-	UpdateSpecialVariablesForText(TPoint(engine.GetRightBound(),
-										 engine.GetBottomBound()));
 
     // Return the bounding box of the text we drew.
     Typography::BoundingBox bounds = engine.GetBounds();
