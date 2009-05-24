@@ -26,6 +26,7 @@
 #include "AppConfig.h"
 
 class Stage;
+class CairoContext;
 
 #if CONFIG_HAVE_QUAKE2
 class wxQuake2Overlay;
@@ -224,13 +225,13 @@ public:
 	GraphicsTools::Color GetPixel(wxCoord inX, wxCoord inY);
 
 	//////////
-	/// Composite our data into the specified DC.
+	/// Composite our data into the specified CairoContext.
 	///
-	/// \param inDC  The compositing DC.
+	/// \param inCairo     The compositing context.
 	/// \param inClipRect  The rectangle (in terms of inDC co-ordinates)
-	///                   which we're updating.
+	///                    which we're updating.
 	///
-	void CompositeInto(wxDC &inDC, const wxRect &inClipRect);
+	void CompositeInto(CairoContext &inCairo, const wxRect &inClipRect);
 };
 
 #endif // DrawingArea_H

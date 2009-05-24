@@ -465,32 +465,27 @@ GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
 	return result;
 }
 
-void DrawingArea::CompositeInto(wxDC &inDC, const wxRect &inClipRect) {
+void DrawingArea::CompositeInto(CairoContext &inCairo, const wxRect &inClipRect)
+{
     if (HasAreaOfZero()) 
         return;
 
 	if (mIsShown && inClipRect.Intersects(mBounds)) {
-		// Figure out how much of inClipRect actually applies to us.
-		wxRect clip(inClipRect);
-		clip.Intersect(mBounds);
-		
 		// Log this operation so we have some hope of actually being
 		// able to debug off-screen compositing.
 		wxLogTrace(TRACE_STAGE_DRAWING,
-				   wxT("Dirty: %d %d %d %d Bounds: %d %d %d %d Clip: %d %d %d %d"),
+				   wxT("Clip: %d %d %d %d Bounds: %d %d %d %d "),
 				   inClipRect.GetLeft(), inClipRect.GetTop(),
 				   inClipRect.GetRight(), inClipRect.GetBottom(),
 				   mBounds.GetLeft(), mBounds.GetTop(),
-				   mBounds.GetRight(), mBounds.GetBottom(),
-				   clip.GetLeft(), clip.GetTop(),
-				   clip.GetRight(), clip.GetBottom());
+				   mBounds.GetRight(), mBounds.GetBottom());
 
 		// Do the compositing.
-		wxMemoryDC dc;
-		dc.SelectObjectAsSource(GetPixmap());
-		wxPoint src_loc(clip.x - mBounds.x, clip.y - mBounds.y);
-		if (!inDC.Blit(clip.x, clip.y, clip.width, clip.height,
-					   &dc, src_loc.x, src_loc.y))
-			gLog.Error("halyard", "Cannot composite offscreen layers.");
+        CairoContext cr(GetPixmap());
+        cairo_set_source_surface(inCairo, cr.GetSurface(),
+                                 mBounds.x, mBounds.y);
+        cairo_rectangle(inCairo, inClipRect.x, inClipRect.y,
+                        inClipRect.width, inClipRect.height);
+        cairo_fill(inCairo);
 	}
 }

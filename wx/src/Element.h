@@ -28,6 +28,7 @@
 class wxAccessible;
 class Stage;
 class DrawingArea;
+class CairoContext;
 
 
 //////////
@@ -181,7 +182,8 @@ public:
 	/// \param inClipRect  The rectangle (in terms of inDC co-ordinates)
 	///                   which we're updating.
 	///
-	virtual void CompositeInto(wxDC &inDC, const wxRect &inClipRect) {}
+    virtual void CompositeInto(CairoContext &inCairo,
+                               const wxRect &inClipRect) {}
 
     //////////
     /// When we redraw the Stage, we want to exclude certain elements

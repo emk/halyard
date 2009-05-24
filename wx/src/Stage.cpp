@@ -51,6 +51,7 @@
 #include "CursorElement.h"
 #include "TStateListenerManager.h"
 #include "Transition.h"
+#include "CairoContext.h"
 #include "DrawingArea.h"
 #include "MediaElement.h"
 #include "UrlRequest.h"
@@ -163,12 +164,11 @@ Stage::~Stage()
 wxBitmap &Stage::GetCompositingPixmap() {
 	// Make sure our compositing is up to date.
 	if (!mRectsToComposite.empty()) {
-		wxMemoryDC dc;
-		dc.SelectObject(mCompositingPixmap);
+        CairoContext cr(mCompositingPixmap);
 		DirtyList::iterator dirty_i = mRectsToComposite.begin();
 		wxLogTrace(TRACE_STAGE_DRAWING, wxT("Begin compositing."));
 		for (; dirty_i != mRectsToComposite.end(); ++dirty_i) {
-			GetBackgroundDrawingArea()->CompositeInto(dc, *dirty_i);
+			GetBackgroundDrawingArea()->CompositeInto(cr, *dirty_i);
 
             // Composite elements in two passes: regular elements first,
             // and then elements in the drag layer.
@@ -177,10 +177,10 @@ wxBitmap &Stage::GetCompositingPixmap() {
             ElementCollection::iterator elem_i;
 			for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
                 if (!(*elem_i)->IsInDragLayer())
-                    (*elem_i)->CompositeInto(dc, *dirty_i);
+                    (*elem_i)->CompositeInto(cr, *dirty_i);
 			for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
                 if ((*elem_i)->IsInDragLayer())
-                    (*elem_i)->CompositeInto(dc, *dirty_i);
+                    (*elem_i)->CompositeInto(cr, *dirty_i);
 		}
 		wxLogTrace(TRACE_STAGE_DRAWING, wxT("End compositing."));
 		mRectsToComposite.clear();
