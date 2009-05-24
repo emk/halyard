@@ -486,15 +486,17 @@ void DrawingArea::DrawGreyMap(GraphicsTools::Point inPoint,
 }
 
 void DrawingArea::DrawBitmap(const wxBitmap &inBitmap,
-							 wxCoord inX, wxCoord inY,
-							 bool inTransparent)
+							 wxCoord inX, wxCoord inY)
 {
     if (HasAreaOfZero())
         return;
-    
-	wxMemoryDC dc;
-	dc.SelectObject(GetPixmap());
-	dc.DrawBitmap(inBitmap, inX, inY, inTransparent);
+
+    CairoContext cr(GetPixmap());
+    CairoContext src_cr(const_cast<wxBitmap &>(inBitmap));
+
+    cairo_set_source_surface(cr, src_cr.GetSurface(), inX, inY);
+    cairo_paint(cr);
+
     InvalidateRect(wxRect(inX, inY,
                           inBitmap.GetWidth(),
                           inBitmap.GetHeight()));

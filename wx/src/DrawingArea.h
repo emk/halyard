@@ -182,11 +182,8 @@ public:
 	/// \param inBitmap  The bitmap to draw.
 	/// \param inX  The X coordinate to draw it at.
 	/// \param inY  The Y coordinate to draw it at.
-	/// [in_optional] inTransparent - Should we honor transparency information
-	///                               in the bitmap?
     ///
-    void DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
-					bool inTransparent = true);
+    void DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY);
 
     //////////
     /// Use the alpha channel of a bitmap to selectively mask parts of the
