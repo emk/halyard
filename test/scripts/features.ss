@@ -968,7 +968,7 @@
   
   (define-class %animation-demo% (%standard-test-card%)
     (def (reset-elements)
-      (map delete-element-if-exists '(rect foo bar sprite)) 
+      (map delete-element-if-exists '(rect foo bar sprite lens)) 
       (new-rectangle (rect 400 50 500 150) (color 0 0 255) :name 'rect)
       (new-text (point 400 160) $splash-style "Foo" :name 'foo)
       (new-text (point 400 200) $splash-style "Bar" :name 'bar)
@@ -976,7 +976,9 @@
         (prefix-and-suffix "anim/lud03_gauge_" 
                            (map (fn (x) (zero-pad 2 x)) (range 0 20)) 
                            ".png")
-        :name 'sprite))
+        :name 'sprite)
+      (new-graphic (point 400 375) "lens.png" :name 'lens :alpha? #t))
+    
     (setup
       (.reset-elements)))
   
@@ -1073,6 +1075,15 @@
          (quantize 3.2
            (slide @foo (point 0 0))
            (slide @bar (point 150 400))))))
+    (example-animation scale ((below (.quantize) 10) "Scale")
+      (def (play)
+       (animate 500
+         (after
+           ;; XXX - We scale to 2.1, because interpolate-value interprets
+           ;; 2.0 as an integer, and rounds all the intermediate values to
+           ;; the nearest integer.
+           [0.0 (interpolate (@lens .scale) 2.1)]
+           [0.5 (interpolate (@lens .scale) 0)]))))
     )
 
 

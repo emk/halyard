@@ -644,6 +644,7 @@ static wxBitmap load_picture(const std::string &inName) {
 }
 
 static void draw_picture(const std::string &inName, TPoint inLoc,
+                         double scale_x, double scale_y,
 						 TRect *inRect = NULL)
 {
 	// Load our image.
@@ -653,6 +654,10 @@ static void draw_picture(const std::string &inName, TPoint inLoc,
 
 	// If we were given a sub-rectangle, try to extract it.
 	if (inRect) {
+        // We can implement scaling if we move this code into DrawBitmap.
+        if (scale_x != 1.0 || scale_y != 1.0)
+            THROW("Scaling of sub-bitmaps is unimplemented");
+
 		wxRect rect(inRect->Left(), inRect->Top(),
 					inRect->Right() - inRect->Left(),
 					inRect->Bottom() - inRect->Top());
@@ -668,7 +673,8 @@ static void draw_picture(const std::string &inName, TPoint inLoc,
 	}
 
 	// Draw our bitmap.
-	GetCurrentDrawingArea()->DrawBitmap(bitmap, inLoc.X(), inLoc.Y());
+	GetCurrentDrawingArea()->DrawBitmap(bitmap, inLoc.X(), inLoc.Y(),
+                                        scale_x, scale_y);
 }
 
 DEFINE_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
@@ -678,8 +684,9 @@ DEFINE_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
 DEFINE_PRIMITIVE(LoadPic) {
 	std::string	picname;
     TPoint		loc;
+    double      scale_x, scale_y;
 
-	inArgs >> picname >> loc;
+	inArgs >> picname >> loc >> scale_x >> scale_y;
 
 	// Process flags.
 	// XXX - We're just throwing them away for now.
@@ -687,16 +694,17 @@ DEFINE_PRIMITIVE(LoadPic) {
 		THROW("loadpic flags are not implemented");
 
 	// Do the dirty work.
-	draw_picture(picname, loc);
+	draw_picture(picname, loc, scale_x, scale_y);
 }
 
 DEFINE_PRIMITIVE(LoadSubPic) {
 	std::string	picname;
     TPoint		loc;
+    double      scale_x, scale_y;
 	TRect		subrect;
 
-	inArgs >> picname >> loc >> subrect;
-	draw_picture(picname, loc, &subrect);
+	inArgs >> picname >> loc >> subrect >> scale_x >> scale_y;
+	draw_picture(picname, loc, scale_x, scale_y, &subrect);
 }
 
 DEFINE_PRIMITIVE(MarkUnprocessedEventsAsStale) {
@@ -720,12 +728,15 @@ DEFINE_PRIMITIVE(MaybeLoadSplash) {
 
 DEFINE_PRIMITIVE(MeasurePic) {
 	std::string	picname;
-    inArgs >> picname;
+    double      scale_x, scale_y;
+    inArgs >> picname >> scale_x >> scale_y;
     wxBitmap pic(load_picture(picname));
     if (!pic.Ok()) {
 		THROW("Can't load the specified image");
     } else {
-        wxRect r(wxRect(0, 0, pic.GetWidth(), pic.GetHeight()));
+        wxRect r(wxRect(0, 0,
+                        ceil(pic.GetWidth() * scale_x),
+                        ceil(pic.GetHeight() * scale_y)));
         ::SetPrimitiveResult(WxToTRect(r));
     }
 }

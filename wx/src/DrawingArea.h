@@ -183,7 +183,8 @@ public:
 	/// \param inX  The X coordinate to draw it at.
 	/// \param inY  The Y coordinate to draw it at.
     ///
-    void DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY);
+    void DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
+                    double inScaleX = 1.0, double inScaleY = 1.0);
 
     //////////
     /// Use the alpha channel of a bitmap to selectively mask parts of the
