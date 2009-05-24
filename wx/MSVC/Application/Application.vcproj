@@ -676,10 +676,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\DrawingAreaOpt.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\DrawingContextStack.h"
 				>
 			</File>
@@ -1056,31 +1052,6 @@
 		<Filter
 			Name="Optimized Source Files"
 			>
-			<File
-				RelativePath="..\..\src\DrawingAreaOpt.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						InlineFunctionExpansion="2"
-						EnableIntrinsicFunctions="true"
-						OmitFramePointers="true"
-						UsePrecompiledHeader="0"
-						DebugInformationFormat="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-			</File>
 			<File
 				RelativePath="..\..\src\TransitionOpt.cpp"
 				>

@@ -76,7 +76,6 @@ halyard_SOURCES = \
 	DocNotebook.cpp DocNotebook.h \
 	Downloader.cpp Downloader.h \
 	DrawingArea.cpp DrawingArea.h \
-	DrawingAreaOpt.cpp DrawingAreaOpt.h \
 	DrawingContextStack.cpp DrawingContextStack.h \
 	EditBox.cpp EditBox.h \
 	Element.cpp Element.h \

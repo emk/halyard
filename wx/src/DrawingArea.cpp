@@ -22,6 +22,7 @@
 
 #include "AppHeaders.h"
 
+#include <wx/rawbmp.h>
 #include <cairo.h>
 
 #ifdef __WXMAC_OSX__
@@ -30,7 +31,6 @@
 #endif
 
 #include "DrawingArea.h"
-#include "DrawingAreaOpt.h"
 #include "Stage.h"
 #include "CommonWxConv.h"
 
