@@ -177,6 +177,14 @@ public:
                      GraphicsTools::Color inColor);
 
     //////////
+    /// Return the size of inBitmap, optionally scaled.  Note that the
+    /// right and bottom edges are rounded upward to the nearest pixel if
+    /// inScaleX and inScaleY results in a non-integral size.
+    ///
+    static wxSize MeasureBitmap(const wxBitmap &inBitmap,
+                                double inScaleX = 1.0, double inScaleY = 1.0);
+
+    //////////
     /// Draw a bitmap on the stage at the specified location.
 	///
 	/// \param inBitmap  The bitmap to draw.

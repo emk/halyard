@@ -377,6 +377,13 @@ void DrawingArea::DrawGreyMap(GraphicsTools::Point inPoint,
 						  inGreyMap->width, inGreyMap->height));
 }
 
+wxSize DrawingArea::MeasureBitmap(const wxBitmap &inBitmap,
+                                  double inScaleX, double inScaleY)
+{
+    return wxSize(ceil(inBitmap.GetWidth() * inScaleX),
+                  ceil(inBitmap.GetHeight() * inScaleY));
+}
+
 void DrawingArea::DrawBitmap(const wxBitmap &inBitmap,
 							 wxCoord inX, wxCoord inY,
                              double inScaleX, double inScaleY)
@@ -392,9 +399,8 @@ void DrawingArea::DrawBitmap(const wxBitmap &inBitmap,
     cairo_set_source_surface(cr, src_cr.GetSurface(), 0, 0);
     cairo_paint(cr);
 
-    InvalidateRect(wxRect(inX, inY,
-                          ceil(inBitmap.GetWidth() * inScaleX),
-                          ceil(inBitmap.GetHeight() * inScaleY)));
+    InvalidateRect(wxRect(wxPoint(inX, inY),
+                          MeasureBitmap(inBitmap, inScaleX, inScaleY)));
 }
 
 void DrawingArea::Mask(const wxBitmap &inMask, wxCoord inX, wxCoord inY)

@@ -734,9 +734,8 @@ DEFINE_PRIMITIVE(MeasurePic) {
     if (!pic.Ok()) {
 		THROW("Can't load the specified image");
     } else {
-        wxRect r(wxRect(0, 0,
-                        ceil(pic.GetWidth() * scale_x),
-                        ceil(pic.GetHeight() * scale_y)));
+        wxRect r(wxPoint(0, 0),
+                 DrawingArea::MeasureBitmap(pic, scale_x, scale_y));
         ::SetPrimitiveResult(WxToTRect(r));
     }
 }
