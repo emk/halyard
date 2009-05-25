@@ -227,11 +227,7 @@ public:
 	//////////
 	/// Composite our data into the specified CairoContext.
 	///
-	/// \param inCairo     The compositing context.
-	/// \param inClipRect  The rectangle (in terms of inDC co-ordinates)
-	///                    which we're updating.
-	///
-	void CompositeInto(CairoContext &inCairo, const wxRect &inClipRect);
+	void CompositeInto(CairoContext &inCr);
 };
 
 #endif // DrawingArea_H

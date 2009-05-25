@@ -176,14 +176,11 @@ public:
     virtual bool IsInDragLayer() const { return false; }
 
 	//////////
-	/// Composite our data into the specified DC.
+	/// Composite our data into the specified CairoContext.  The Cairo
+	/// clipping region will be set up correctly before this function is
+	/// called.
 	///
-	/// \param inDC  The compositing DC.
-	/// \param inClipRect  The rectangle (in terms of inDC co-ordinates)
-	///                   which we're updating.
-	///
-    virtual void CompositeInto(CairoContext &inCairo,
-                               const wxRect &inClipRect) {}
+    virtual void CompositeInto(CairoContext &inCr) {}
 
     //////////
     /// When we redraw the Stage, we want to exclude certain elements

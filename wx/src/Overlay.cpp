@@ -78,8 +78,8 @@ void Overlay::SetInDragLayer(bool inDragLayer) {
     }
 }
 
-void Overlay::CompositeInto(CairoContext &inCairo, const wxRect &inClipRect) {
-    mDrawingArea.CompositeInto(inCairo, inClipRect);
+void Overlay::CompositeInto(CairoContext &inCr) {
+    mDrawingArea.CompositeInto(inCr);
 }
 
 void Overlay::SetSize(const wxSize &inSize) {

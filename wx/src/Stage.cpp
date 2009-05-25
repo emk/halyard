@@ -165,23 +165,33 @@ wxBitmap &Stage::GetCompositingPixmap() {
 	// Make sure our compositing is up to date.
 	if (!mRectsToComposite.empty()) {
         CairoContext cr(mCompositingPixmap);
-		DirtyList::iterator dirty_i = mRectsToComposite.begin();
 		wxLogTrace(TRACE_STAGE_DRAWING, wxT("Begin compositing."));
-		for (; dirty_i != mRectsToComposite.end(); ++dirty_i) {
-			GetBackgroundDrawingArea()->CompositeInto(cr, *dirty_i);
 
-            // Composite elements in two passes: regular elements first,
-            // and then elements in the drag layer.
-			ElementCollection::iterator elem_begin = mElements.begin();
-            ElementCollection::iterator elem_end = mElements.end();
-            ElementCollection::iterator elem_i;
-			for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
-                if (!(*elem_i)->IsInDragLayer())
-                    (*elem_i)->CompositeInto(cr, *dirty_i);
-			for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
-                if ((*elem_i)->IsInDragLayer())
-                    (*elem_i)->CompositeInto(cr, *dirty_i);
-		}
+        // Set up our clipping region.  Since each component of this region
+        // is rectangular and aligned to the pixel grid, we should use the
+        // fast clipping path in Cairo.
+        DirtyList::iterator dirty_i = mRectsToComposite.begin();
+        for (; dirty_i != mRectsToComposite.end(); ++dirty_i) {
+            cairo_rectangle(cr, dirty_i->x, dirty_i->y,
+                            dirty_i->width, dirty_i->height);
+        }
+        cairo_clip(cr);
+
+        // Draw our background.
+        GetBackgroundDrawingArea()->CompositeInto(cr);
+
+        // Composite elements in two passes: regular elements first,
+        // and then elements in the drag layer.
+        ElementCollection::iterator elem_begin = mElements.begin();
+        ElementCollection::iterator elem_end = mElements.end();
+        ElementCollection::iterator elem_i;
+        for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
+            if (!(*elem_i)->IsInDragLayer())
+                (*elem_i)->CompositeInto(cr);
+        for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
+            if ((*elem_i)->IsInDragLayer())
+                (*elem_i)->CompositeInto(cr);
+
 		wxLogTrace(TRACE_STAGE_DRAWING, wxT("End compositing."));
 		mRectsToComposite.clear();
 	}

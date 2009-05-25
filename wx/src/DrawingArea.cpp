@@ -465,27 +465,12 @@ GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
 	return result;
 }
 
-void DrawingArea::CompositeInto(CairoContext &inCairo, const wxRect &inClipRect)
-{
-    if (HasAreaOfZero()) 
+void DrawingArea::CompositeInto(CairoContext &inCr) {
+    if (HasAreaOfZero() || !mIsShown)
         return;
 
-	if (mIsShown && inClipRect.Intersects(mBounds)) {
-		// Log this operation so we have some hope of actually being
-		// able to debug off-screen compositing.
-		wxLogTrace(TRACE_STAGE_DRAWING,
-				   wxT("Clip: %d %d %d %d Bounds: %d %d %d %d "),
-				   inClipRect.GetLeft(), inClipRect.GetTop(),
-				   inClipRect.GetRight(), inClipRect.GetBottom(),
-				   mBounds.GetLeft(), mBounds.GetTop(),
-				   mBounds.GetRight(), mBounds.GetBottom());
-
-		// Do the compositing.
-        CairoContext cr(GetPixmap());
-        cairo_set_source_surface(inCairo, cr.GetSurface(),
-                                 mBounds.x, mBounds.y);
-        cairo_rectangle(inCairo, inClipRect.x, inClipRect.y,
-                        inClipRect.width, inClipRect.height);
-        cairo_fill(inCairo);
-	}
+    // Draw the contents of our offscreen pixmap.
+    CairoContext cr(GetPixmap());
+    cairo_set_source_surface(inCr, cr.GetSurface(), mBounds.x, mBounds.y);
+    cairo_paint(inCr);
 }
