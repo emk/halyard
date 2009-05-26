@@ -1,3 +1,53 @@
+0.5.30 - 26 May 2009
+
+This release upgrades the engine to be able to run on top of wxWidgets
+2.9 RC 3, while maintaining compatibility with wxWidgets 2.8 for the
+Mac build.  We updated wx and wxIE to their latest versions, and
+forward ported our patches to apply to them.  We also have also sent
+some of these patches upstream, in the hope that we will no longer
+have to maintain them separately.  We also did some more Unicode
+cleanup in order to build against the new wxWidgets.
+
+Things to look out for, that may have broken or changed; we have tested
+most of these things, but there may be corner cases that were missed:
+  - Keyboard commands.  We fixed a few bugs with keyboard commands such
+    as the escape key, but there may be something we missed.
+  - Text entry widgets, and other native controls.
+  - Performance.  We have not noticed any performance regressions, but
+    it would be good to be on the lookout.
+  - The script editor.
+
+The patches below marked as BROKEN mean that the build was broken, the
+program would not launch, or the program had significant crashing bugs
+at that stage of the porting process.  We have allowed these to remain
+in the history to document the upgrade process, but marked as BROKEN so
+we can avoid them when bisecting history and the like.
+
+Brian Campbell (5):
+      BROKEN: Port to wx 2.9
+      BROKEN: wxIE: Re-apply constructor race fix to wxactivex.cpp
+      BROKEN: wxIE: Port our interface changes forward
+      BROKEN: Add more required wxWidgets projects and update dependencies
+      BROKEN: Override wxGUIAppTraits to install custom event loop in wx 2.9
+
+Eric Kidd (16):
+      BROKEN: Update Quake 2 for wxWidgets 2.9
+      BROKEN: Fix custom build using wxrc.exe
+      BROKEN: Organize projects into folders
+      BROKEN: wxWidgets: Use non-DLL C runtime
+      BROKEN: Remove unusued Halyard.sln configurations
+      BROKEN: Replace wxIE with new version from wxPython
+      Fix cross-fade crash using wxMemoryDC::SelectObjectAsSource
+      Mac build fix: Explicitly convert "About" text to Unicode
+      ScriptEditor: Replace irregular use of L"..." with wxT("...")
+      wxWidgets: Ignore build byproducts and Emacs backup files
+      ScriptEditor: Always use standard syntax highlighting
+      ScriptEditor: Reapply our FindText patch
+      Remove deprecated wxWidgets 2.6 APIs
+      ScriptEditor: Fix indentation, etc., for square brackets
+      ScriptEditor: Properly handle enter key in find dialog
+      Stage: Intercept Escape manually if menu accelerator fails
+
 0.5.29.1 - 18 May 2009
 
 This release fixes a build regression in the previous release.  When we
