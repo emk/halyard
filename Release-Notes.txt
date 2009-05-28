@@ -1,3 +1,12 @@
+0.5.30.1 - 27 May 2009
+
+This release is a build fix for 0.5.30, which did not have all of the
+build dependencise listed and thus could not be reproducably built.
+
+Brian Campbell (2):
+      Build fix: Remove unnecessary libraries from PLT build step
+      Build fix: add extra dependencies to wxRC
+
 0.5.30 - 26 May 2009
 
 This release upgrades the engine to be able to run on top of wxWidgets
