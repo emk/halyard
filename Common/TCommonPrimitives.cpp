@@ -416,6 +416,13 @@ DEFINE_PRIMITIVE(ForceCrash)
     *reinterpret_cast<unsigned int *>(NULL) = 0xDEADBEEF;
 }
 
+DEFINE_PRIMITIVE(Noop)
+{
+}
+
+DEFINE_PRIMITIVE(UntracedNoop)
+{
+}
 
 //=========================================================================
 //  RegisterCommonPrimitives
@@ -450,4 +457,6 @@ void Halyard::RegisterCommonPrimitives()
     REGISTER_PRIMITIVE(StateDbUnregisterListeners);
     REGISTER_PRIMITIVE(TryToAvoidExitingWithError);
     REGISTER_PRIMITIVE(ForceCrash);
+    REGISTER_PRIMITIVE(Noop);
+    REGISTER_PRIMITIVE(UntracedNoop);
 }
