@@ -107,8 +107,15 @@
       (%kernel-check-state)
       result))
   
+  (define *have-primitive-hash* (make-hash-table))
   (define (have-prim? name)
-    (%call-prim 'HavePrimitive name))
+    (hash-table-get *have-primitive-hash* name
+                    (fn ()
+                      (let [[have-it? (%call-prim 'HavePrimitive name)]]
+                        (hash-table-put! *have-primitive-hash*
+                                         name
+                                         have-it?)
+                        have-it?))))
 
   (define *runtime-directory* #f)
 
