@@ -477,12 +477,14 @@
         (unregister-node! self table))
       
       (def (full-name)
-        (let [[parent (.parent)]]
-          (cond 
-           [(not parent) (.name)] ;; Root node
-           [(root-node? parent) (symcat "/" (.name))]
-           [else (symcat (parent .full-name) "/" (.name))])))
-
+        (unless (has-slot? '%node-full-name)
+          (set! (slot '%node-full-name)
+                (let [[parent (.parent)]]
+                  (cond 
+                   [(not parent) (.name)] ;; Root node
+                   [(root-node? parent) (symcat "/" (.name))]
+                   [else (symcat (parent .full-name) "/" (.name))]))))
+        (slot '%node-full-name))
       ))
       
 
