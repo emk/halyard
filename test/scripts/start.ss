@@ -113,4 +113,7 @@
   ;; group in our program--it's entirely for cosmetic reasons.
   (namespace-require '(lib "tests.ss" "halyard"))
   (namespace-require '(lib "test-cases.ss" "halyard-test"))
+
+  ;; Benchmarks.
+  (require (lib "benchmark.ss" "halyard"))
   )
