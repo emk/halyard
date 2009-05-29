@@ -475,11 +475,22 @@
       (define rectangle-color (color 0 0 0 127))
       (define oval-color (color 255 0 0 191))
       
+      ;; Test outlines.
       (draw-rectangle-outline (rect 100 100 250 200) rectangle-color 4)
       (draw-oval-outline (rect 100 100 250 200) oval-color 4)
-      
+
+      ;; Test shapes.
       (draw-rectangle (rect 300 100 450 200) rectangle-color)
       (draw-oval (rect 300 100 450 200) oval-color)
+
+      ;; Test alignment of horizontal and vertical lines.
+      (draw-rectangle-outline (rect 500 100 650 200) rectangle-color 4)
+      (draw-line (point 500 100) (point 650 100) (color 255 0 0 128) 4)
+      (draw-line (point 500 100) (point 500 200) (color 0 0 255 128) 4)
+
+      ;; Test diagonal lines.
+      (draw-line (point 100 300) (point 200 400) $color-black 10)
+      (draw-line (point 100 300) (point 200 400) $color-highlight 1)
       )
     )
 
