@@ -164,7 +164,7 @@ Stage::~Stage()
 wxBitmap &Stage::GetCompositingPixmap() {
 	// Make sure our compositing is up to date.
 	if (!mRectsToComposite.empty()) {
-        CairoContext cr(mCompositingPixmap);
+        CairoBitmapContext cr(mCompositingPixmap);
 		wxLogTrace(TRACE_STAGE_DRAWING, wxT("Begin compositing."));
 
         // Set up our clipping region.  Since each component of this region

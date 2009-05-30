@@ -57,14 +57,21 @@ public:
 /// passed to functions expecting a cairo_t value.  It also provides
 /// some convenience functions.
 class CairoContext {
-    wxMemoryDC mDC;
     CairoSurfacePtr mSurface;
     cairo_t *mCairo;
 
+protected:
+    /// Create a CairoContext without initializing it.  You must call
+    /// Initialize before finishing the constructor.
+    CairoContext();
+
+    /// Initialize the context.
+    void Initialize(CairoSurfacePtr inSurface);
+
 public:
-    /// Construct a Cairo context for inPixmap.
-    CairoContext(wxBitmap &inPixmap);
-    ~CairoContext();
+    /// Construct a Cairo context for inSurface.
+    CairoContext(CairoSurfacePtr inSurface);
+    virtual ~CairoContext();
 
     /// Implicity convert a CairoContext to a cairo_t *.
     operator cairo_t *() { return mCairo; }
@@ -80,6 +87,16 @@ public:
     /// will be inset by half of inStrokeWidth, allowing you to draw a
     /// Halyard-style stroke entirely within inRect.
     void TransformRectToUnitSquare(const wxRect &inRect, int inStrokeWidth = 0);
+};
+
+/// A Cairo drawing context for a wxBitmap.  Note that this class does not
+/// correctly support wxBitmap objects with alpha channels on Windows.
+class CairoBitmapContext : public CairoContext {
+    wxMemoryDC mDC;
+
+public:
+    /// Construct a Cairo context for a bitmap.
+    CairoBitmapContext(wxBitmap &inBitmap);
 };
 
 #endif // CairoDrawing_H

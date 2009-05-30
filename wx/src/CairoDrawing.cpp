@@ -49,11 +49,15 @@ CairoSurfacePtr::CairoSurfacePtr()
 
 /// Take ownership of a Cairo surface, without increasing the reference
 /// count.  Note that this constructor must be invoked explicitly, because
-/// we don't want the ownership transfer to be surprising.
+/// we don't want the ownership transfer to be surprising.  Note that we
+/// also check cairo_surface_status to make sure this surface is valid.
 CairoSurfacePtr::CairoSurfacePtr(cairo_surface_t *inSurface)
     : mSurface(inSurface)
 {
     ASSERT(inSurface != NULL);
+    if (cairo_surface_status(mSurface) != CAIRO_STATUS_SUCCESS)
+        gLog.Fatal("halyard.cairo",
+                   "Invalid surface passed to CairoSurfacePtr");
 }
 
 /// Copy constructor.
@@ -128,17 +132,24 @@ CairoSurfacePtr::FromDC(wxDC &inDC) {
 //  CairoContext methods
 //=========================================================================
 
-CairoContext::CairoContext(wxBitmap &inPixmap)
+CairoContext::CairoContext()
     : mCairo(NULL)
 {
-    mDC.SelectObject(inPixmap);
-    mSurface = CairoSurfacePtr::FromDC(mDC);
-    if (cairo_surface_status(mSurface.get()) != CAIRO_STATUS_SUCCESS)
-        gLog.Fatal("halyard.cairo",
-                   "Error creating cairo_surface_t for bitmap");
+}
+
+void CairoContext::Initialize(CairoSurfacePtr inSurface) {
+    ASSERT(mSurface.is_null());
+    ASSERT(!mCairo);
+    mSurface = inSurface;
     mCairo = cairo_create(mSurface.get());
     if (cairo_status(mCairo) != CAIRO_STATUS_SUCCESS)
         gLog.Fatal("halyard.cairo", "Error creating cairo_t for bitmap");
+}
+
+CairoContext::CairoContext(CairoSurfacePtr inSurface)
+    : mCairo(NULL)
+{
+    Initialize(inSurface);
 }
 
 CairoContext::~CairoContext() {
@@ -160,4 +171,14 @@ void CairoContext::TransformRectToUnitSquare(const wxRect &inRect,
                     inRect.GetY() + inStrokeWidth / 2.0);
     cairo_scale(mCairo, inRect.GetWidth() - inStrokeWidth,
                 inRect.GetHeight() - inStrokeWidth);
+}
+
+
+//=========================================================================
+//  CairoBitmapContext methods
+//=========================================================================
+
+CairoBitmapContext::CairoBitmapContext(wxBitmap &inBitmap) {
+    mDC.SelectObject(inBitmap);
+    Initialize(CairoSurfacePtr::FromDC(mDC));
 }

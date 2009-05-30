@@ -226,7 +226,7 @@ void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
     if (!mHasAlpha && !inColor.IsCompletelyOpaque())
 		THROW("Cannot clear opaque overlay with transparent color.");
     
-    CairoContext cr(GetPixmap());
+    CairoBitmapContext cr(GetPixmap());
     cr.SetSourceColor(inColor);
     cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
     cairo_paint(cr);
@@ -240,7 +240,7 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
     if (HasAreaOfZero())
         return;
     
-    CairoContext cr(GetPixmap());
+    CairoBitmapContext cr(GetPixmap());
 
     // Unfortunately, our legacy line-drawing semantics are fairly
     // broken--horizontal and vertical lines were special-cased in the
@@ -282,7 +282,7 @@ void DrawingArea::FillBox(const wxRect &inBounds,
     if (HasAreaOfZero())
         return;
     
-    CairoContext cr(GetPixmap());
+    CairoBitmapContext cr(GetPixmap());
     cr.TransformRectToUnitSquare(inBounds);
     cairo_rectangle(cr, 0, 0, 1, 1);
     cr.SetSourceColor(inColor);
@@ -298,7 +298,7 @@ void DrawingArea::OutlineBox(const wxRect &inBounds,
     if (HasAreaOfZero())
         return;
 
-    CairoContext cr(GetPixmap());
+    CairoBitmapContext cr(GetPixmap());
 
     cairo_save(cr);
     cr.TransformRectToUnitSquare(inBounds, inWidth);
@@ -318,7 +318,7 @@ void DrawingArea::FillOval(const wxRect &inBounds,
     if (HasAreaOfZero())
         return;
     
-    CairoContext cr(GetPixmap());
+    CairoBitmapContext cr(GetPixmap());
     cr.TransformRectToUnitSquare(inBounds);
     cairo_arc(cr, 0.5, 0.5, 0.5, 0, 2 * M_PI);
     cr.SetSourceColor(inColor);
@@ -334,7 +334,7 @@ void DrawingArea::OutlineOval(const wxRect &inBounds,
     if (HasAreaOfZero())
         return;
 
-    CairoContext cr(GetPixmap());
+    CairoBitmapContext cr(GetPixmap());
 
     cairo_save(cr);
     cr.TransformRectToUnitSquare(inBounds, inWidth);
@@ -355,7 +355,7 @@ void DrawingArea::DrawGreyMap(GraphicsTools::Point inPoint,
     if (HasAreaOfZero())
         return;
 
-    CairoContext cr(GetPixmap());
+    CairoBitmapContext cr(GetPixmap());
 
     // Wrap a Cairo surface around our greymap.
     unsigned char *data = const_cast<unsigned char *>(inGreyMap->pixels);
@@ -391,8 +391,8 @@ void DrawingArea::DrawBitmap(const wxBitmap &inBitmap,
     if (HasAreaOfZero())
         return;
 
-    CairoContext cr(GetPixmap());
-    CairoContext src_cr(const_cast<wxBitmap &>(inBitmap));
+    CairoBitmapContext cr(GetPixmap());
+    CairoBitmapContext src_cr(const_cast<wxBitmap &>(inBitmap));
 
     cairo_translate(cr, inX, inY);
     cairo_scale(cr, inScaleX, inScaleY);
@@ -409,8 +409,8 @@ void DrawingArea::Mask(const wxBitmap &inMask, wxCoord inX, wxCoord inY)
     if (HasAreaOfZero() || inMask.GetWidth() == 0 || inMask.GetHeight() == 0)
         return;
 
-    CairoContext cr(GetPixmap());
-    CairoContext mask_cr(const_cast<wxBitmap &>(inMask));
+    CairoBitmapContext cr(GetPixmap());
+    CairoBitmapContext mask_cr(const_cast<wxBitmap &>(inMask));
 
     // Our transfer semantics are a bit weird: We want to erase our
     // destination surface everywhere that inMask is not opaque.  Only the
@@ -470,7 +470,7 @@ void DrawingArea::CompositeInto(CairoContext &inCr) {
         return;
 
     // Draw the contents of our offscreen pixmap.
-    CairoContext cr(GetPixmap());
+    CairoBitmapContext cr(GetPixmap());
     cairo_set_source_surface(inCr, cr.GetSurface().get(), mBounds.x, mBounds.y);
     cairo_paint(inCr);
 }
