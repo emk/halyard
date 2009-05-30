@@ -24,6 +24,7 @@
 
 #include <wx/rawbmp.h>
 
+#include "Typography.h"
 #include "DrawingArea.h"
 #include "CairoDrawing.h"
 #include "Stage.h"
@@ -45,14 +46,14 @@ DrawingArea::DrawingArea(Stage *inStage, int inWidth, int inHeight,
 	: mStage(inStage), mBounds(wxPoint(0, 0), wxSize(inWidth, inHeight)),
       mIsShown(true), mHasAlpha(inHasAlpha)
 {
-	InitializePixmap();
+	InitializeSurface();
 }
 
 DrawingArea::DrawingArea(Stage *inStage, const wxRect &inBounds,
 						 bool inHasAlpha)
 	: mStage(inStage), mBounds(inBounds), mIsShown(true), mHasAlpha(inHasAlpha)
 {
-	InitializePixmap();
+	InitializeSurface();
 }
 
 DrawingArea::~DrawingArea() {
@@ -65,18 +66,24 @@ bool DrawingArea::HasAreaOfZero() const {
     // area 0.  So before calling any wxRawBitmap functions (or any routine
     // named *Opt), call this function and immediately give up if it
     // returns false.
+    // TODO - Do we still need this for cairo_image_surface?
 	return (mBounds.GetWidth() == 0 || mBounds.GetHeight() == 0);
 }
 
-void DrawingArea::InitializePixmap() {
+void DrawingArea::InitializeSurface() {
     if (HasAreaOfZero())
         return;
 
-	mPixmap.Create(mBounds.GetWidth(), mBounds.GetHeight(),
-				   mHasAlpha ? 32 : 24);
-	if (mHasAlpha)
-		mPixmap.UseAlpha();
-	Clear();
+    // Create a new Cairo surface with the appropriate size and bit depth.
+    // Note that we need to use cairo_image_surface (and not one of the
+    // various platform-specific accelerated surfaces) because we need to
+    // be able to get at the raw data in MaybeInitializeGameOverlay and in
+    // GetPixel.
+    cairo_format_t format =
+        HasAlpha() ? CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24;
+    mSurface = CairoSurfacePtr(cairo_image_surface_create(format, 
+                                                          mBounds.GetWidth(),
+                                                          mBounds.GetHeight()));
 
     MaybeInitializeGameOverlay();
 }
@@ -93,28 +100,13 @@ void DrawingArea::MaybeInitializeGameOverlay() {
     if (HasAreaOfZero())
         return;
 
-    int format;
-    unsigned char *data;
-    int stride;
-    if (mHasAlpha) {
-        // PORTING - This assumes a BGR offscreen buffer.
-        wxAlphaPixelData pdata(mPixmap);
-        wxAlphaPixelData::Iterator iter(pdata);
-        format = Q2_FORMAT_BGRA_PREMUL;
-        ASSERT(wxAlphaPixelData::Iterator::PixelFormat::BLUE == 0);
-        data = &(iter.Blue());
-        iter.OffsetY(pdata, 1);
-        stride = &(iter.Blue()) - data;
-    } else {
-        // PORTING - This assumes a BGR offscreen buffer.
-        wxNativePixelData pdata(mPixmap);
-        wxNativePixelData::Iterator iter(pdata);
-        format = Q2_FORMAT_BGR;
-        ASSERT(wxNativePixelData::Iterator::PixelFormat::BLUE == 0);
-        data = &(iter.Blue());
-        iter.OffsetY(pdata, 1);
-        stride = &(iter.Blue()) - data;
-    }
+    // PORTABILITY - Determine what format our surface is in.  Note that
+    // our cairo_image_surface is stored using native endianness.
+    ASSERT(wxBYTE_ORDER == wxLITTLE_ENDIAN);
+    int format = mHasAlpha ? Q2_FORMAT_BGRA_PREMUL : Q2_FORMAT_BGRX;
+
+    unsigned char *data = cairo_image_surface_get_data(mSurface.get());
+    int stride = cairo_image_surface_get_stride(mSurface.get());
     shared_ptr<wxQuake2Overlay>
         ptr(new wxQuake2Overlay(format, data, mBounds, stride));
     mQuake2Overlay = ptr;
@@ -155,7 +147,7 @@ void DrawingArea::GameOverlayMoveTo(const wxPoint &inPoint) {}
 #endif // !CONFIG_HAVE_QUAKE2
 
 void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
-                                 bool inHasPixmapChanged)
+                                 bool inHasSurfaceChanged)
 {
     // TODO - We can probably get away with less invalidation if this
     // DrawingArea isn't shown, but keep a careful eye on the Quake
@@ -165,16 +157,16 @@ void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
     r.Intersect(wxRect(wxPoint(0, 0),
                        mBounds.GetSize()));
 	if (!r.IsEmpty()) {
-        if (inHasPixmapChanged)
+        if (inHasSurfaceChanged)
             GameOverlayDirtyRect(r);
 	    r.Offset(mBounds.GetPosition());
 	    mStage->InvalidateRect(r);
 	}
 }
 
-void DrawingArea::InvalidateDrawingArea(bool inHasPixmapChanged) {
+void DrawingArea::InvalidateDrawingArea(bool inHasSurfaceChanged) {
     InvalidateRect(wxRect(0, 0, mBounds.GetWidth(), mBounds.GetHeight()),
-                   0, inHasPixmapChanged);
+                   0, inHasSurfaceChanged);
 }
 
 void DrawingArea::SetSize(const wxSize &inSize) {
@@ -187,11 +179,11 @@ void DrawingArea::SetSize(const wxSize &inSize) {
     // Update our size.
     mBounds = wxRect(mBounds.GetPosition(), inSize);
 
-    // Allocate a new, empty pixmap.  This will invalidate the rectangle
+    // Allocate a new, empty surface.  This will invalidate the rectangle
     // covered by the new size, and reallocate our Quake 2 overlay if we're
     // supposed to have one.
-    mPixmap = wxBitmap();
-    InitializePixmap();
+    mSurface = CairoSurfacePtr();
+    InitializeSurface();
 }
 
 void DrawingArea::Show(bool inShow) {
@@ -226,7 +218,7 @@ void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
     if (!mHasAlpha && !inColor.IsCompletelyOpaque())
 		THROW("Cannot clear opaque overlay with transparent color.");
     
-    CairoBitmapContext cr(GetPixmap());
+    CairoContext cr(mSurface);
     cr.SetSourceColor(inColor);
     cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
     cairo_paint(cr);
@@ -240,7 +232,7 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
     if (HasAreaOfZero())
         return;
     
-    CairoBitmapContext cr(GetPixmap());
+    CairoContext cr(mSurface);
 
     // Unfortunately, our legacy line-drawing semantics are fairly
     // broken--horizontal and vertical lines were special-cased in the
@@ -282,7 +274,7 @@ void DrawingArea::FillBox(const wxRect &inBounds,
     if (HasAreaOfZero())
         return;
     
-    CairoBitmapContext cr(GetPixmap());
+    CairoContext cr(mSurface);
     cr.TransformRectToUnitSquare(inBounds);
     cairo_rectangle(cr, 0, 0, 1, 1);
     cr.SetSourceColor(inColor);
@@ -298,7 +290,7 @@ void DrawingArea::OutlineBox(const wxRect &inBounds,
     if (HasAreaOfZero())
         return;
 
-    CairoBitmapContext cr(GetPixmap());
+    CairoContext cr(mSurface);
 
     cairo_save(cr);
     cr.TransformRectToUnitSquare(inBounds, inWidth);
@@ -318,7 +310,7 @@ void DrawingArea::FillOval(const wxRect &inBounds,
     if (HasAreaOfZero())
         return;
     
-    CairoBitmapContext cr(GetPixmap());
+    CairoContext cr(mSurface);
     cr.TransformRectToUnitSquare(inBounds);
     cairo_arc(cr, 0.5, 0.5, 0.5, 0, 2 * M_PI);
     cr.SetSourceColor(inColor);
@@ -334,7 +326,7 @@ void DrawingArea::OutlineOval(const wxRect &inBounds,
     if (HasAreaOfZero())
         return;
 
-    CairoBitmapContext cr(GetPixmap());
+    CairoContext cr(mSurface);
 
     cairo_save(cr);
     cr.TransformRectToUnitSquare(inBounds, inWidth);
@@ -355,7 +347,7 @@ void DrawingArea::DrawGreyMap(GraphicsTools::Point inPoint,
     if (HasAreaOfZero())
         return;
 
-    CairoBitmapContext cr(GetPixmap());
+    CairoContext cr(mSurface);
 
     // Wrap a Cairo surface around our greymap.
     unsigned char *data = const_cast<unsigned char *>(inGreyMap->pixels);
@@ -391,7 +383,7 @@ void DrawingArea::DrawBitmap(const wxBitmap &inBitmap,
     if (HasAreaOfZero())
         return;
 
-    CairoBitmapContext cr(GetPixmap());
+    CairoContext cr(mSurface);
     CairoBitmapContext src_cr(const_cast<wxBitmap &>(inBitmap));
 
     cairo_translate(cr, inX, inY);
@@ -409,7 +401,7 @@ void DrawingArea::Mask(const wxBitmap &inMask, wxCoord inX, wxCoord inY)
     if (HasAreaOfZero() || inMask.GetWidth() == 0 || inMask.GetHeight() == 0)
         return;
 
-    CairoBitmapContext cr(GetPixmap());
+    CairoContext cr(mSurface);
     CairoBitmapContext mask_cr(const_cast<wxBitmap &>(inMask));
 
     // Our transfer semantics are a bit weird: We want to erase our
@@ -428,13 +420,35 @@ void DrawingArea::DrawDCContents(wxDC &inDC)
     if (HasAreaOfZero())
         return;
     
-	wxMemoryDC dc;
-	dc.SelectObject(GetPixmap());
-	if (!dc.Blit(0, 0, GetPixmap().GetWidth(), GetPixmap().GetHeight(),
-				 &inDC, 0, 0))
-		Clear(GraphicsTools::Color(0, 0, 0));
-	InvalidateRect(wxRect(0, 0,
-						  GetPixmap().GetWidth(), GetPixmap().GetHeight()));
+    CairoContext cr(mSurface);
+    CairoSurfacePtr src(CairoSurfacePtr::FromDC(inDC));
+    cairo_set_source_surface(cr, src.get(), 0, 0);
+    cairo_paint(cr);
+    // TODO - If the blit fails for some reason, call:
+    //Clear(GraphicsTools::Color(0, 0, 0));
+
+	InvalidateDrawingArea();
+}
+
+void DrawingArea::DrawSimpleText(GraphicsTools::Point inAt, wxString inText,
+                                 GraphicsTools::Color inColor)
+{
+    // Choose a text style to use.
+    Typography::Style style("Times", 12);
+    style.SetShadowOffset(0);
+    style.SetColor(inColor);
+
+    // Build a styled string.
+	Typography::StyledText text(style);
+    text.AppendText(inText.wc_str());
+    text.EndConstruction();
+
+    // Render the text.
+    Typography::TextRenderingEngine engine(text, inAt,
+                                           mBounds.GetWidth() - inAt.x,
+                                           Typography::kLeftJustification,
+                                           this);
+	engine.RenderText();
 }
 
 GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
@@ -442,27 +456,30 @@ GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
 	if (!local_bounds.Contains(wxPoint(inX, inY)) || HasAreaOfZero())
 		THROW("Can't get color of point outside of current drawing area");
 
-	GraphicsTools::Color result;
+    // Recover the actual pixel data.  Note that the pixel is stored using
+    // native endianness, so we need to treat it as a uint32 and extract
+    // the channels using arithmetic operators.
+    unsigned char *data = cairo_image_surface_get_data(mSurface.get());
+    int stride = cairo_image_surface_get_stride(mSurface.get());
+    uint32 pixel = *reinterpret_cast<uint32 *>(data + stride*inY +
+                                               4*sizeof(unsigned char)*inX);
+    unsigned char alpha = (pixel >> 24) & 0xFF;
+    unsigned char red   = (pixel >> 16) & 0xFF;
+    unsigned char green = (pixel >>  8) & 0xFF;
+    unsigned char blue  = (pixel >>  0) & 0xFF;
+    
 	if (!HasAlpha()) {
-		wxMemoryDC dc;
-		dc.SelectObjectAsSource(GetPixmap());
-		wxColour c;
-		dc.GetPixel(inX, inY, &c);
-		result.red   = c.Red();
-		result.green = c.Green();
-		result.blue  = c.Blue();
-		result.alpha = 255;
+        return GraphicsTools::Color(red, green, blue);
 	} else {
-		wxAlphaPixelData data(GetPixmap());
-		wxAlphaPixelData::Iterator i(data);
-		i.Offset(data, inX, inY);
-		// Attempt to reverse pre-multiplications.
-		result.red   = i.Alpha() ? (i.Red()   * 255) / i.Alpha() : 0;
-		result.green = i.Alpha() ? (i.Green() * 255) / i.Alpha() : 0;
-		result.blue  = i.Alpha() ? (i.Blue()  * 255) / i.Alpha() : 0;
-		result.alpha = i.Alpha();
+		// Attempt to reverse pre-multiplications, avoiding division by 0.
+        if (alpha)
+            return GraphicsTools::Color((red   * 255) / alpha,
+                                        (green * 255) / alpha,
+                                        (blue  * 255) / alpha,
+                                        alpha);
+        else
+            return GraphicsTools::Color(0, 0, 0, 0);
 	}
-	return result;
 }
 
 void DrawingArea::CompositeInto(CairoContext &inCr) {
@@ -470,7 +487,6 @@ void DrawingArea::CompositeInto(CairoContext &inCr) {
         return;
 
     // Draw the contents of our offscreen pixmap.
-    CairoBitmapContext cr(GetPixmap());
-    cairo_set_source_surface(inCr, cr.GetSurface().get(), mBounds.x, mBounds.y);
+    cairo_set_source_surface(inCr, mSurface.get(), mBounds.x, mBounds.y);
     cairo_paint(inCr);
 }

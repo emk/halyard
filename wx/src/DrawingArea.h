@@ -24,9 +24,9 @@
 #define DrawingArea_H
 
 #include "AppConfig.h"
+#include "CairoDrawing.h"
 
 class Stage;
-class CairoContext;
 
 #if CONFIG_HAVE_QUAKE2
 class wxQuake2Overlay;
@@ -36,7 +36,7 @@ class wxQuake2Overlay;
 class DrawingArea : public GraphicsTools::Image {
     Stage *mStage;
 	wxRect mBounds;
-    wxBitmap mPixmap;
+    CairoSurfacePtr mSurface;
     bool mIsShown;
     bool mHasAlpha;
 
@@ -50,9 +50,9 @@ class DrawingArea : public GraphicsTools::Image {
     bool HasAreaOfZero() const;
 
     //////////
-    /// Initialize our underlying pixmap.
+    /// Initialize our underlying Cairo surface.
     ///
-	void InitializePixmap();
+	void InitializeSurface();
 
     /// If we have a copy wxQuake2, and it's running, then initialize
     /// the Quake 2 overlay object associated with this drawing area.
@@ -76,19 +76,19 @@ class DrawingArea : public GraphicsTools::Image {
 	/// \param inRect  The rectangle to invalidate.
 	/// \param inInflate  The number of pixels by which we should inflate
 	/// 		         the rectangle.
-    /// \param inHasPixmapChanged  If false, the contents of this rect haven't
+    /// \param inHasSurfaceChanged  If false, the contents of this rect haven't
     ///               changed, just the stage's alpha-compositing for this
     ///               region.  If we're relying on game engine for real-time
     ///               compositing, it doesn't need to reconvert the data in
     ///               this rectangle.
 	///	
 	void InvalidateRect(const wxRect &inRect, int inInflate = 0,
-                        bool inHasPixmapChanged = true);
+                        bool inHasSurfaceChanged = true);
 
     //////////
     /// Invalidate everything associated with this drawing area.
     ///
-    void InvalidateDrawingArea(bool inHasPixmapChanged = true);
+    void InvalidateDrawingArea(bool inHasSurfaceChanged = true);
 
 public:
     DrawingArea(Stage *inStage, int inWidth, int inHeight, bool inHasAlpha);
@@ -98,13 +98,6 @@ public:
     /// Set the size of this DrawingArea.  Erases all contents.
     void SetSize(const wxSize &inSize);
 
-    /// If HasAreaOfZero is true, we won't have an actual mPixmap.  So
-    /// don't call this function unless we have some reason to believe
-    /// the mPixmap actually exists.
-    ///
-    /// TODO - Remove this function when we remove
-    /// Stage::GetBackgroundPixmap.
-    wxBitmap &GetPixmap() { ASSERT(!HasAreaOfZero()); return mPixmap; }
 	wxRect GetBounds() { return mBounds; }
 	bool HasAlpha() { return mHasAlpha; }
 
@@ -217,6 +210,16 @@ public:
 	/// \param inDC  a DC the same size as the stage
 	///
 	void DrawDCContents(wxDC &inDC);
+
+    //////////
+    /// Draw a 12-point string of text at the specified location.  This is
+    /// used for drawing copyright notices on the splash screen before
+    /// we've set up a real typography engine.  Note that we make no
+    /// guarantees about what font we use or whether we anti-alias the
+    /// text.
+    ///
+	void DrawSimpleText(GraphicsTools::Point inAt, wxString inText,
+                        GraphicsTools::Color inColor);
 
 	//////////
 	/// Get the color at the specified location (specified in DrawingArea

@@ -239,14 +239,6 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
 	wxBitmap &GetCompositingPixmap();
 
 	//////////
-	/// Get the background pixmap associated with this stage.
-	///
-	/// TODO - Remove this method eventually and send all requests
-	/// directly to mBackgroundDrawingArea.
-	///
-	wxBitmap &GetBackgroundPixmap();
-
-	//////////
 	/// Validate the entire stage--i.e., mark it as having been redrawn.
 	///
 	void ValidateStage();

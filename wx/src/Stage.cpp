@@ -51,6 +51,7 @@
 #include "CursorElement.h"
 #include "TStateListenerManager.h"
 #include "Transition.h"
+#include "CommonWxConv.h"
 #include "CairoDrawing.h"
 #include "DrawingArea.h"
 #include "MediaElement.h"
@@ -198,10 +199,6 @@ wxBitmap &Stage::GetCompositingPixmap() {
 	return mCompositingPixmap;
 }
 
-wxBitmap &Stage::GetBackgroundPixmap() {
-	return mBackgroundDrawingArea->GetPixmap();
-}
-
 DrawingArea *Stage::GetCurrentDrawingArea() {
 	return mDrawingContextStack->GetCurrentDrawingArea();
 }
@@ -234,21 +231,14 @@ void Stage::MaybeShowSplashScreen() {
     std::string halyard_copyright =
         std::string(HALYARD_COPYRIGHT_NAME) + ". " + HALYARD_COPYRIGHT_NOTICE;
 
-    // Now, set up a drawing context for our text.  We use wxWidgets to
-    // draw the text because our font system won't have any text styles
-    // loaded yet.
-    wxMemoryDC dc;
-    dc.SelectObject(GetBackgroundPixmap());
-    
-    // Prepare to draw the text.
-    dc.SetTextForeground(*wxWHITE);
-    dc.SetTextBackground(*wxBLACK);
-    dc.SetFont(*wxNORMAL_FONT);
-        
-    // Draw the text.
-    dc.DrawText(wxString(script_copyright.c_str(), wxConvLocal), 5, 515);
-    dc.DrawText(wxString(halyard_copyright.c_str(), wxConvLocal), 5, 530);
-    InvalidateRect(wxRect(0, 500, 800, 100));
+    // Draw our copyright strings.
+    GraphicsTools::Color white(255, 255, 255);
+    GetBackgroundDrawingArea()->DrawSimpleText(GraphicsTools::Point(5, 515),
+                                               ToWxString(script_copyright),
+                                               white);
+    GetBackgroundDrawingArea()->DrawSimpleText(GraphicsTools::Point(5, 530),
+                                               ToWxString(halyard_copyright),
+                                               white);
 }
 
 void Stage::MaybeDrawSplashGraphic(const std::string &inName) {
