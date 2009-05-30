@@ -25,7 +25,7 @@
 #include <wx/rawbmp.h>
 
 #include "DrawingArea.h"
-#include "CairoContext.h"
+#include "CairoDrawing.h"
 #include "Stage.h"
 #include "CommonWxConv.h"
 
@@ -396,7 +396,7 @@ void DrawingArea::DrawBitmap(const wxBitmap &inBitmap,
 
     cairo_translate(cr, inX, inY);
     cairo_scale(cr, inScaleX, inScaleY);
-    cairo_set_source_surface(cr, src_cr.GetSurface(), 0, 0);
+    cairo_set_source_surface(cr, src_cr.GetSurface().get(), 0, 0);
     cairo_paint(cr);
 
     InvalidateRect(wxRect(wxPoint(inX, inY),
@@ -416,7 +416,7 @@ void DrawingArea::Mask(const wxBitmap &inMask, wxCoord inX, wxCoord inY)
     // destination surface everywhere that inMask is not opaque.  Only the
     // alpha channel on inMask matters.  This drawing code was arrived at
     // by trial and error.
-    cairo_set_source_surface(cr, mask_cr.GetSurface(), inX, inY);
+    cairo_set_source_surface(cr, mask_cr.GetSurface().get(), inX, inY);
     cairo_set_operator(cr, CAIRO_OPERATOR_DEST_IN);
     cairo_paint(cr);
 
@@ -471,6 +471,6 @@ void DrawingArea::CompositeInto(CairoContext &inCr) {
 
     // Draw the contents of our offscreen pixmap.
     CairoContext cr(GetPixmap());
-    cairo_set_source_surface(inCr, cr.GetSurface(), mBounds.x, mBounds.y);
+    cairo_set_source_surface(inCr, cr.GetSurface().get(), mBounds.x, mBounds.y);
     cairo_paint(inCr);
 }

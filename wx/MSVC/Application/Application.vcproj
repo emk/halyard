@@ -314,7 +314,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CairoContext.cpp"
+				RelativePath="..\..\src\CairoDrawing.cpp"
 				>
 			</File>
 			<File
@@ -644,7 +644,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\CairoContext.h"
+				RelativePath="..\..\src\CairoDrawing.h"
 				>
 			</File>
 			<File

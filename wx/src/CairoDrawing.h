@@ -20,10 +20,37 @@
 //
 // @END_LICENSE
 
-#ifndef CairoContext_H
-#define CairoContext_H
+#ifndef CairoDrawing_H
+#define CairoDrawing_H
 
 #include <cairo.h>
+
+/// A cairo_surface_t "smart pointer".  A CairoSurfacePtr maintains a
+/// reference to a Cairo surface, and releases the reference when the
+/// CairoSurfacePtr is destroyed.  Conceptually, this class should work as
+/// much like boost::shared_ptr as possible.
+class CairoSurfacePtr {
+    cairo_surface_t *mSurface;
+
+public:
+    CairoSurfacePtr();
+    explicit CairoSurfacePtr(cairo_surface_t *inSurface);
+    CairoSurfacePtr(const CairoSurfacePtr &inSurface);
+    ~CairoSurfacePtr();
+    CairoSurfacePtr &operator=(const CairoSurfacePtr &inPtr);
+
+    /// Is this pointer NULL?  We provide this instead of 'operator bool',
+    /// becaus the latter is actually quite hard to implement correctly.
+    bool is_null() const { return mSurface == NULL; }
+
+    /// Return the underlying surface without incrementing the reference
+    /// count.  This function is analogous to boost::shared_ptr::get.
+    cairo_surface_t *get() { return mSurface; }
+
+    /// Create a surface from the specified wxDC.  Does not support alpha
+    /// channels in any sort of portable fashion.
+    static CairoSurfacePtr FromDC(wxDC &inDC);
+};
 
 /// A Cairo drawing context for a wxBitmap.  This class is a thin
 /// wrapper around an ordinary cairo_t drawing context, and it can be
@@ -31,11 +58,8 @@
 /// some convenience functions.
 class CairoContext {
     wxMemoryDC mDC;
-    cairo_surface_t *mSurface;
+    CairoSurfacePtr mSurface;
     cairo_t *mCairo;
-
-    /// Platform-specific surface allocation.
-    cairo_surface_t *CreateSurface(wxDC &inDC, int inWidth, int inHeight);
 
 public:
     /// Construct a Cairo context for inPixmap.
@@ -46,7 +70,7 @@ public:
     operator cairo_t *() { return mCairo; }
 
     /// Retrieve the surface associated with this context.
-    cairo_surface_t *GetSurface() { return mSurface; }
+    CairoSurfacePtr GetSurface() { return mSurface; }
 
     /// Call cairo_set_source_rgba using inColor.
     void SetSourceColor(const GraphicsTools::Color &inColor);
@@ -58,4 +82,4 @@ public:
     void TransformRectToUnitSquare(const wxRect &inRect, int inStrokeWidth = 0);
 };
 
-#endif // CairoContext_H
+#endif // CairoDrawing_H

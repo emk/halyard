@@ -51,7 +51,7 @@
 #include "CursorElement.h"
 #include "TStateListenerManager.h"
 #include "Transition.h"
-#include "CairoContext.h"
+#include "CairoDrawing.h"
 #include "DrawingArea.h"
 #include "MediaElement.h"
 #include "UrlRequest.h"
