@@ -176,7 +176,8 @@ wxBitmap &Stage::GetCompositingPixmap() {
             cairo_rectangle(cr, dirty_i->x, dirty_i->y,
                             dirty_i->width, dirty_i->height);
         }
-        cairo_clip(cr);
+        cairo_clip(cr); // Does not clear path.
+        cairo_new_path(cr);
 
         // Draw our background.
         GetBackgroundDrawingArea()->CompositeInto(cr);
