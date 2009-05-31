@@ -446,7 +446,7 @@ void DrawingArea::DrawSimpleText(GraphicsTools::Point inAt, wxString inText,
                                  GraphicsTools::Color inColor)
 {
     // Choose a text style to use.
-    Typography::Style style("Times", 12);
+    Typography::Style style("Nimbus Sans L", 12);
     style.SetShadowOffset(0);
     style.SetColor(inColor);
 
