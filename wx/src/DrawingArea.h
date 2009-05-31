@@ -171,22 +171,22 @@ public:
                      GraphicsTools::Color inColor);
 
     //////////
-    /// Return the size of inBitmap, optionally scaled.  Note that the
+    /// Return the size of inSurface, optionally scaled.  Note that the
     /// right and bottom edges are rounded upward to the nearest pixel if
-    /// inScaleX and inScaleY results in a non-integral size.
+    /// inScaleX and inScaleY results in a non-integral size.  Only works
+    /// for cairo_image_surface objects.
     ///
-    static wxSize MeasureBitmap(const wxBitmap &inBitmap,
-                                double inScaleX = 1.0, double inScaleY = 1.0);
+    static wxSize MeasureSurface(CairoSurfacePtr inSurface,
+                                 double inScaleX = 1.0, double inScaleY = 1.0);
 
     //////////
-    /// Draw a bitmap on the stage at the specified location.
+    /// Draw a surface on the stage at the specified location, with
+    /// optional scaling and clipping.  The inClipRect, if specified, is in
+    /// co-ordinates relative to inSurface.
 	///
-	/// \param inBitmap  The bitmap to draw.
-	/// \param inX  The X coordinate to draw it at.
-	/// \param inY  The Y coordinate to draw it at.
-    ///
-    void DrawBitmap(const wxBitmap &inBitmap, wxCoord inX, wxCoord inY,
-                    double inScaleX = 1.0, double inScaleY = 1.0);
+    void DrawSurface(CairoSurfacePtr inSurface, wxCoord inX, wxCoord inY,
+                     double inScaleX = 1.0, double inScaleY = 1.0,
+                     wxRect *inClipRect = NULL);
 
     //////////
     /// Use the alpha channel of a bitmap to selectively mask parts of the
@@ -199,7 +199,7 @@ public:
     /// \param inX The X coordinate to erase at.
     /// \param inY The Y coordinate to erase at.
     ///
-    void Mask(const wxBitmap &inMask, wxCoord inX, wxCoord inY);
+    void Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY);
 
 	//////////
 	/// Blit the contents of the specified DC to our offscreen buffer.

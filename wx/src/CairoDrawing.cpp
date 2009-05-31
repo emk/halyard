@@ -91,6 +91,24 @@ CairoSurfacePtr &CairoSurfacePtr::operator=(const CairoSurfacePtr &inSurface) {
     return *this;
 }
 
+/// Get the width of a non-null image surface.
+int CairoSurfacePtr::GetWidth() {
+    if (!mSurface)
+        THROW("Cannot get width of null surface");
+    if (cairo_surface_get_type(mSurface) != CAIRO_SURFACE_TYPE_IMAGE)
+        THROW("Cannot get width of non-image surface");
+    return cairo_image_surface_get_width(mSurface);
+}
+
+/// Get the height of a non-null image surface.
+int CairoSurfacePtr::GetHeight() {
+    if (!mSurface)
+        THROW("Cannot get height of null surface");
+    if (cairo_surface_get_type(mSurface) != CAIRO_SURFACE_TYPE_IMAGE)
+        THROW("Cannot get height of non-image surface");
+    return cairo_image_surface_get_height(mSurface);
+}
+
 
 //=========================================================================
 //  Creating CairoSurfacePtr objects

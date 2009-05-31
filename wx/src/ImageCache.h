@@ -24,14 +24,15 @@
 #define ImageCache_H
 
 #include "TInterpreter.h"
+#include "CairoDrawing.h"
 
 /// A cache of recently displayed wxBitmap objects.
 class ImageCache : public Halyard::TReloadNotified
 {
 	struct CachedImage {
-		wxBitmap bitmap;
-		time_t   last_used;
-		int      count;
+		CairoSurfacePtr surface;
+		time_t          last_used;
+		int             count;
 	};
 
 	typedef std::map<std::string,CachedImage> Cache;
@@ -39,9 +40,10 @@ class ImageCache : public Halyard::TReloadNotified
 	size_t mCurrentBytes;
 	Cache mCache;
 
-	size_t ImageSize(const wxBitmap &inBitmap);
+	size_t SurfaceSize(CairoSurfacePtr inSurface);
 	Cache::iterator BetterToPurge(Cache::iterator inA, Cache::iterator inB);
 	void RequireFreeSpace(size_t inSpaceNeeded);
+    CairoSurfacePtr SurfaceFromImage(wxImage &inImage);
 
 public:
 	ImageCache();
@@ -50,7 +52,7 @@ public:
 	size_t GetMaxCacheSize() { return mMaxBytes; }
 	void SetMaxCacheSize(size_t inMaxBytes) { mMaxBytes = inMaxBytes; }
 
-	wxBitmap GetBitmap(wxString inPath);
+	CairoSurfacePtr GetSurface(wxString inPath);
 
 	void NotifyReloadScriptStarting();
 };

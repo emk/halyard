@@ -122,7 +122,7 @@ static E *R(E *elem) {
         } \
     } while (0)
 
-static wxBitmap load_picture(const std::string &inName);
+static CairoSurfacePtr load_picture(const std::string &inName);
 
 
 //=========================================================================
@@ -637,44 +637,24 @@ DEFINE_PRIMITIVE(IsVistaOrNewer) {
 	XXX - Flags not implemented!
 -----------------------------------------------------------------------*/
 
-static wxBitmap load_picture(const std::string &inName) {
+static CairoSurfacePtr load_picture(const std::string &inName) {
 	// Load our image.
     wxString name(ToWxString(inName));
-	return wxGetApp().GetStage()->GetImageCache()->GetBitmap(name);
+	return wxGetApp().GetStage()->GetImageCache()->GetSurface(name);
 }
 
 static void draw_picture(const std::string &inName, TPoint inLoc,
                          double scale_x, double scale_y,
-						 TRect *inRect = NULL)
+						 wxRect *inClipRect = NULL)
 {
 	// Load our image.
-	wxBitmap bitmap(load_picture(inName));
-	if (!bitmap.Ok())
+	CairoSurfacePtr surface(load_picture(inName));
+	if (surface.is_null())
 		THROW("Can't load the specified image");
 
-	// If we were given a sub-rectangle, try to extract it.
-	if (inRect) {
-        // We can implement scaling if we move this code into DrawBitmap.
-        if (scale_x != 1.0 || scale_y != 1.0)
-            THROW("Scaling of sub-bitmaps is unimplemented");
-
-		wxRect rect(inRect->Left(), inRect->Top(),
-					inRect->Right() - inRect->Left(),
-					inRect->Bottom() - inRect->Top());
-		if (rect.GetX() < 0 || rect.GetY() < 0 ||
-			rect.GetWidth() > bitmap.GetWidth() ||
-			rect.GetHeight() > bitmap.GetHeight())
-		{
-			THROW("Sub-rectangle does not fit inside image");
-		}
-		bitmap = bitmap.GetSubBitmap(rect);
-		inLoc.SetX(inLoc.X() + rect.GetX());
-		inLoc.SetY(inLoc.Y() + rect.GetY());
-	}
-
 	// Draw our bitmap.
-	GetCurrentDrawingArea()->DrawBitmap(bitmap, inLoc.X(), inLoc.Y(),
-                                        scale_x, scale_y);
+	GetCurrentDrawingArea()->DrawSurface(surface, inLoc.X(), inLoc.Y(),
+                                         scale_x, scale_y, inClipRect);
 }
 
 DEFINE_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
@@ -701,10 +681,11 @@ DEFINE_PRIMITIVE(LoadSubPic) {
 	std::string	picname;
     TPoint		loc;
     double      scale_x, scale_y;
-	TRect		subrect;
+	TRect		clip_trect;
 
-	inArgs >> picname >> loc >> subrect >> scale_x >> scale_y;
-	draw_picture(picname, loc, scale_x, scale_y, &subrect);
+	inArgs >> picname >> loc >> scale_x >> scale_y >> clip_trect;
+    wxRect clip_rect(TToWxRect(clip_trect));
+	draw_picture(picname, loc, scale_x, scale_y, &clip_rect);
 }
 
 DEFINE_PRIMITIVE(MarkUnprocessedEventsAsStale) {
@@ -716,7 +697,7 @@ DEFINE_PRIMITIVE(Mask) {
     TPoint		loc;
 
 	inArgs >> path >> loc;
-    wxBitmap mask = load_picture(path.c_str());
+    CairoSurfacePtr mask(load_picture(path.c_str()));
 	GetCurrentDrawingArea()->Mask(mask, loc.X(), loc.Y());
 }
 
@@ -730,12 +711,12 @@ DEFINE_PRIMITIVE(MeasurePic) {
 	std::string	picname;
     double      scale_x, scale_y;
     inArgs >> picname >> scale_x >> scale_y;
-    wxBitmap pic(load_picture(picname));
-    if (!pic.Ok()) {
+    CairoSurfacePtr pic(load_picture(picname));
+    if (pic.is_null()) {
 		THROW("Can't load the specified image");
     } else {
         wxRect r(wxPoint(0, 0),
-                 DrawingArea::MeasureBitmap(pic, scale_x, scale_y));
+                 DrawingArea::MeasureSurface(pic, scale_x, scale_y));
         ::SetPrimitiveResult(WxToTRect(r));
     }
 }

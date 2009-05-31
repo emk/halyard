@@ -64,23 +64,22 @@ void AnimatedOverlay::UpdatePosition() {
                             mBasePosition.y + mCurrentOffset.y));
 }
 
-wxBitmap AnimatedOverlay::LoadPicture(const std::string &inName) {
+CairoSurfacePtr AnimatedOverlay::LoadGraphic(const std::string &inName) {
 	// Load our image.
     wxString name(inName.c_str(), wxConvLocal);
-    return wxGetApp().GetStage()->GetImageCache()->GetBitmap(name);
+    return wxGetApp().GetStage()->GetImageCache()->GetSurface(name);
 }
 
 void AnimatedOverlay::DrawGraphic(const std::string &inName) {
 	// Load our image.
-	wxBitmap bitmap(LoadPicture(inName));
-	if (!bitmap.Ok()) {
+	CairoSurfacePtr surface(LoadGraphic(inName));
+	if (surface.is_null())
 		THROW("Error loading image for AnimatedOverlay");
-	}
 	
 	// Draw our bitmap.
 	DrawingArea *dc = GetDrawingArea();
 	dc->Clear();
-	dc->DrawBitmap(bitmap, 0, 0);
+	dc->DrawSurface(surface, 0, 0);
 }
 
 void AnimatedOverlay::NotifyStateChanged() {

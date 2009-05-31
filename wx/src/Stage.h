@@ -27,6 +27,7 @@
 #include "AppGlobals.h"
 #include "DirtyList.h"
 #include "DrawingContextStack.h"
+#include "CairoDrawing.h"
 
 class StageFrame;
 class Element;
@@ -361,7 +362,7 @@ public:
     /// Halyard script. Such graphics currently include script icons and
     /// the splash screens.
     ///
-    wxBitmap GetBrandingGraphic(const std::string &inName);
+    CairoSurfacePtr GetBrandingGraphic(const std::string &inName);
 
     //////////
     /// If we can, show a splash screen for the loading program.  This is

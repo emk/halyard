@@ -24,6 +24,7 @@
 #define AnimatedOverlay_H
 
 #include "Overlay.h"
+#include "CairoDrawing.h"
 
 /// An Overlay which moves and changes appearance automatically.
 /// The changes are controlled by keys in the TStateDB.
@@ -37,7 +38,7 @@ class AnimatedOverlay : public Overlay, public Halyard::TStateListener {
 	std::string mStatePath;
 	
     void UpdatePosition();
-	wxBitmap LoadPicture(const std::string &inName);
+	CairoSurfacePtr LoadGraphic(const std::string &inName);
 	void DrawGraphic(const std::string &inName);
 	
 public:

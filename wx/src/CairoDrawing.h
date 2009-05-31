@@ -50,6 +50,9 @@ public:
     /// Create a surface from the specified wxDC.  Does not support alpha
     /// channels in any sort of portable fashion.
     static CairoSurfacePtr FromDC(wxDC &inDC);
+
+    int GetWidth();
+    int GetHeight();
 };
 
 /// A Cairo drawing context for a wxBitmap.  This class is a thin

@@ -371,46 +371,56 @@ void DrawingArea::DrawGreyMap(GraphicsTools::Point inPoint,
 						  inGreyMap->width, inGreyMap->height));
 }
 
-wxSize DrawingArea::MeasureBitmap(const wxBitmap &inBitmap,
-                                  double inScaleX, double inScaleY)
+wxSize DrawingArea::MeasureSurface(CairoSurfacePtr inSurface,
+                                   double inScaleX, double inScaleY)
 {
-    return wxSize(ceil(inBitmap.GetWidth() * inScaleX),
-                  ceil(inBitmap.GetHeight() * inScaleY));
+    return wxSize(ceil(inSurface.GetWidth()  * inScaleX),
+                  ceil(inSurface.GetHeight() * inScaleY));
 }
 
-void DrawingArea::DrawBitmap(const wxBitmap &inBitmap,
-							 wxCoord inX, wxCoord inY,
-                             double inScaleX, double inScaleY)
+void DrawingArea::DrawSurface(CairoSurfacePtr inSurface,
+                              wxCoord inX, wxCoord inY,
+                              double inScaleX, double inScaleY,
+                              wxRect *inClipRect)
 {
     if (HasAreaOfZero())
         return;
 
     CairoContext cr(mSurface);
-    CairoBitmapContext src_cr(const_cast<wxBitmap &>(inBitmap));
 
     cairo_translate(cr, inX, inY);
     cairo_scale(cr, inScaleX, inScaleY);
-    cairo_set_source_surface(cr, src_cr.GetSurface().get(), 0, 0);
+
+    if (inClipRect) {
+        // This is mostly here for legacy purposes.
+        cairo_rectangle(cr, inClipRect->GetX(), inClipRect->GetY(),
+                        inClipRect->GetWidth(), inClipRect->GetHeight());
+        cairo_clip(cr);
+    }
+
+    cairo_set_source_surface(cr, inSurface.get(), 0, 0);
     cairo_paint(cr);
 
     InvalidateRect(wxRect(wxPoint(inX, inY),
-                          MeasureBitmap(inBitmap, inScaleX, inScaleY)));
+                          MeasureSurface(inSurface, inScaleX, inScaleY)));
 }
 
-void DrawingArea::Mask(const wxBitmap &inMask, wxCoord inX, wxCoord inY)
+void DrawingArea::Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY)
 {
     // If either bitmap has an area of 0, give up immediately.
     if (HasAreaOfZero() || inMask.GetWidth() == 0 || inMask.GetHeight() == 0)
         return;
 
     CairoContext cr(mSurface);
-    CairoBitmapContext mask_cr(const_cast<wxBitmap &>(inMask));
 
     // Our transfer semantics are a bit weird: We want to erase our
     // destination surface everywhere that inMask is not opaque.  Only the
     // alpha channel on inMask matters.  This drawing code was arrived at
-    // by trial and error.
-    cairo_set_source_surface(cr, mask_cr.GetSurface().get(), inX, inY);
+    // by trial and error.  Note that we clip our drawing operations to
+    // only affect an area the size of inMask.
+    cairo_rectangle(cr, inX, inY, inMask.GetWidth(), inMask.GetHeight());
+    cairo_clip(cr);
+    cairo_set_source_surface(cr, inMask.get(), inX, inY);
     cairo_set_operator(cr, CAIRO_OPERATOR_DEST_IN);
     cairo_paint(cr);
 
