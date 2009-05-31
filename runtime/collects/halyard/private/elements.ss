@@ -467,14 +467,14 @@
                         &key [subrect :rect #f] [scale-x 1.0] [scale-y 1.0])
     (let [[native (resolve-content-path "graphics" path)]]
       (if subrect
-          (call-prim 'LoadSubPic native p scale-x scale-y subrect)
-          (call-prim 'LoadPic native p scale-x scale-y))))
+          (call-prim 'LoadGraphic native p scale-x scale-y subrect)
+          (call-prim 'LoadGraphic native p scale-x scale-y))))
   
   ;;; Return a rectangle located at 0,0 large enough to hold the graphic
   ;;; specified by NAME.
   (define (measure-graphic path &key [scale-x 1.0] [scale-y 1.0])
     (let [[native (resolve-content-path "graphics" path)]]
-      (call-prim 'MeasurePic native scale-x scale-y)))
+      (call-prim 'MeasureGraphic native scale-x scale-y)))
 
   ;;; Measure a list of graphics, returning a single bounding box large
   ;;; enough to contain any of the graphics.

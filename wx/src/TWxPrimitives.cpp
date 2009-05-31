@@ -640,49 +640,36 @@ DEFINE_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
 
 static CairoSurfacePtr load_image(const std::string &inName) {
 	// Load our image.
-    wxString name(ToWxString(inName));
-	return wxGetApp().GetStage()->GetImageCache()->GetImage(name);
+    CairoSurfacePtr image =
+        wxGetApp().GetStage()->GetImageCache()->GetImage(ToWxString(inName));
+    if (image.is_null())
+		THROW("Can't load the specified image");
+    return image;
 }
 
 static void draw_image(const std::string &inName, TPoint inLoc,
                          double scale_x, double scale_y,
 						 wxRect *inClipRect = NULL)
 {
-	// Load our image.
 	CairoSurfacePtr image(load_image(inName));
-	if (image.is_null())
-		THROW("Can't load the specified image");
-
-	// Draw our bitmap.
 	GetCurrentDrawingArea()->DrawImage(image, inLoc.X(), inLoc.Y(),
                                        scale_x, scale_y, inClipRect);
 }
 
-DEFINE_PRIMITIVE(LoadPic) {
-	std::string	picname;
+DEFINE_PRIMITIVE(LoadGraphic) {
+	std::string	path;
     TPoint		loc;
     double      scale_x, scale_y;
 
-	inArgs >> picname >> loc >> scale_x >> scale_y;
-
-	// Process flags.
-	// XXX - We're just throwing them away for now.
-	if (inArgs.HasMoreArguments())
-		THROW("loadpic flags are not implemented");
-
-	// Do the dirty work.
-	draw_image(picname, loc, scale_x, scale_y);
-}
-
-DEFINE_PRIMITIVE(LoadSubPic) {
-	std::string	picname;
-    TPoint		loc;
-    double      scale_x, scale_y;
-	TRect		clip_trect;
-
-	inArgs >> picname >> loc >> scale_x >> scale_y >> clip_trect;
-    wxRect clip_rect(TToWxRect(clip_trect));
-	draw_image(picname, loc, scale_x, scale_y, &clip_rect);
+	inArgs >> path >> loc >> scale_x >> scale_y;
+    if (inArgs.HasMoreArguments()) {
+        TRect clip_trect;
+        inArgs >> clip_trect;
+        wxRect clip_rect(TToWxRect(clip_trect));
+        draw_image(path, loc, scale_x, scale_y, &clip_rect);
+    } else {
+        draw_image(path, loc, scale_x, scale_y);
+    }
 }
 
 DEFINE_PRIMITIVE(MarkUnprocessedEventsAsStale) {
@@ -704,18 +691,14 @@ DEFINE_PRIMITIVE(MaybeLoadSplash) {
 	wxGetApp().GetStage()->MaybeDrawSplashGraphic(picname);
 }
 
-DEFINE_PRIMITIVE(MeasurePic) {
-	std::string	picname;
+DEFINE_PRIMITIVE(MeasureGraphic) {
+	std::string	path;
     double      scale_x, scale_y;
-    inArgs >> picname >> scale_x >> scale_y;
-    CairoSurfacePtr image(load_image(picname));
-    if (image.is_null()) {
-		THROW("Can't load the specified image");
-    } else {
-        wxRect r(wxPoint(0, 0),
-                 DrawingArea::MeasureImage(image, scale_x, scale_y));
-        ::SetPrimitiveResult(WxToTRect(r));
-    }
+    inArgs >> path >> scale_x >> scale_y;
+    CairoSurfacePtr image(load_image(path));
+    wxRect r(wxPoint(0, 0),
+             DrawingArea::MeasureImage(image, scale_x, scale_y));
+    ::SetPrimitiveResult(WxToTRect(r));
 }
 
 DEFINE_PRIMITIVE(NotifyEnterCard) {
@@ -1133,12 +1116,11 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(UrlRequestStart);
     REGISTER_PRIMITIVE(IsVistaOrNewer);
 	REGISTER_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
-	REGISTER_PRIMITIVE(LoadPic);
-	REGISTER_PRIMITIVE(LoadSubPic);
+	REGISTER_PRIMITIVE(LoadGraphic);
     REGISTER_PRIMITIVE(MarkUnprocessedEventsAsStale);
 	REGISTER_PRIMITIVE(Mask);
     REGISTER_PRIMITIVE(MaybeLoadSplash);
-    REGISTER_PRIMITIVE(MeasurePic);
+    REGISTER_PRIMITIVE(MeasureGraphic);
 	REGISTER_PRIMITIVE(MediaAttachCaptionFile);
 	REGISTER_PRIMITIVE(MediaSetVolume);
 	REGISTER_PRIMITIVE(MouseGrab);
