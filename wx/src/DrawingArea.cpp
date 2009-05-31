@@ -371,17 +371,17 @@ void DrawingArea::DrawGreyMap(GraphicsTools::Point inPoint,
 						  inGreyMap->width, inGreyMap->height));
 }
 
-wxSize DrawingArea::MeasureSurface(CairoSurfacePtr inSurface,
-                                   double inScaleX, double inScaleY)
+wxSize DrawingArea::MeasureImage(CairoSurfacePtr inImage,
+                                 double inScaleX, double inScaleY)
 {
-    return wxSize(ceil(inSurface.GetWidth()  * inScaleX),
-                  ceil(inSurface.GetHeight() * inScaleY));
+    return wxSize(ceil(inImage.GetWidth()  * inScaleX),
+                  ceil(inImage.GetHeight() * inScaleY));
 }
 
-void DrawingArea::DrawSurface(CairoSurfacePtr inSurface,
-                              wxCoord inX, wxCoord inY,
-                              double inScaleX, double inScaleY,
-                              wxRect *inClipRect)
+void DrawingArea::DrawImage(CairoSurfacePtr inImage,
+                            wxCoord inX, wxCoord inY,
+                            double inScaleX, double inScaleY,
+                            wxRect *inClipRect)
 {
     if (HasAreaOfZero())
         return;
@@ -398,11 +398,11 @@ void DrawingArea::DrawSurface(CairoSurfacePtr inSurface,
         cairo_clip(cr);
     }
 
-    cairo_set_source_surface(cr, inSurface.get(), 0, 0);
+    cairo_set_source_surface(cr, inImage.get(), 0, 0);
     cairo_paint(cr);
 
     InvalidateRect(wxRect(wxPoint(inX, inY),
-                          MeasureSurface(inSurface, inScaleX, inScaleY)));
+                          MeasureImage(inImage, inScaleX, inScaleY)));
 }
 
 void DrawingArea::Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY)

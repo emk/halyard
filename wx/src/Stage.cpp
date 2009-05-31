@@ -203,12 +203,12 @@ DrawingArea *Stage::GetCurrentDrawingArea() {
 	return mDrawingContextStack->GetCurrentDrawingArea();
 }
 
-CairoSurfacePtr Stage::GetBrandingGraphic(const std::string &inName) {
+CairoSurfacePtr Stage::GetBrandingImage(const std::string &inName) {
     FileSystem::Path path(FileSystem::GetBrandingFilePath(inName));
     if (!path.DoesExist() || !path.IsRegularFile())
         return CairoSurfacePtr();
     wxString native_path(path.ToNativePathString().c_str(), wxConvLocal);
-    return GetImageCache()->GetSurface(native_path);
+    return GetImageCache()->GetImage(native_path);
 }
 
 void Stage::MaybeShowSplashScreen() {
@@ -246,9 +246,9 @@ void Stage::MaybeDrawSplashGraphic(const std::string &inName) {
 
     // TODO - We assume the bitmap is 800x450 pixels, and we lay out
     // this screen using hard-coded co-ordinates.
-    CairoSurfacePtr surface(GetBrandingGraphic(inName));
-    if (!surface.is_null())
-        mBackgroundDrawingArea->DrawSurface(surface, 0, 60);
+    CairoSurfacePtr image(GetBrandingImage(inName));
+    if (!image.is_null())
+        mBackgroundDrawingArea->DrawImage(image, 0, 60);
 }
 
 void Stage::DrawLoadProgress() {
@@ -266,10 +266,10 @@ void Stage::DrawLoadProgress() {
     int x_end = x_begin + x_space * frac;
     
     // Load our image, and use it to draw the progress bar.
-    CairoSurfacePtr surface(GetBrandingGraphic("progress.png"));
-    if (!surface.is_null()) {
+    CairoSurfacePtr image(GetBrandingImage("progress.png"));
+    if (!image.is_null()) {
         for (int x = x_begin; x < x_end; ++x)
-            mBackgroundDrawingArea->DrawSurface(surface, x, y_pos);
+            mBackgroundDrawingArea->DrawImage(image, x, y_pos);
     }
 }
 

@@ -100,7 +100,7 @@ void ImageCache::RequireFreeSpace(size_t inSpaceNeeded)
 	}
 }
 
-CairoSurfacePtr ImageCache::GetSurface(wxString inPath)
+CairoSurfacePtr ImageCache::GetImage(wxString inPath)
 {
     std::string path(inPath.mb_str());
     

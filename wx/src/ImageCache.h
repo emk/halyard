@@ -52,7 +52,7 @@ public:
 	size_t GetMaxCacheSize() { return mMaxBytes; }
 	void SetMaxCacheSize(size_t inMaxBytes) { mMaxBytes = inMaxBytes; }
 
-	CairoSurfacePtr GetSurface(wxString inPath);
+	CairoSurfacePtr GetImage(wxString inPath);
 
 	void NotifyReloadScriptStarting();
 };

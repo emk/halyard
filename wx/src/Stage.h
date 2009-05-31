@@ -362,7 +362,7 @@ public:
     /// Halyard script. Such graphics currently include script icons and
     /// the splash screens.
     ///
-    CairoSurfacePtr GetBrandingGraphic(const std::string &inName);
+    CairoSurfacePtr GetBrandingImage(const std::string &inName);
 
     //////////
     /// If we can, show a splash screen for the loading program.  This is

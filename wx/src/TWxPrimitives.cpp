@@ -122,8 +122,6 @@ static E *R(E *elem) {
         } \
     } while (0)
 
-static CairoSurfacePtr load_picture(const std::string &inName);
-
 
 //=========================================================================
 //  Implementation of wxWindows Primitives
@@ -628,6 +626,9 @@ DEFINE_PRIMITIVE(IsVistaOrNewer) {
     ::SetPrimitiveResult(family == wxOS_WINDOWS_NT && major >= 6);
 }
 
+DEFINE_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
+    wxGetApp().LaunchUpdateInstallerBeforeExiting();
+}
 
 /*---------------------------------------------------------------------
     (LOADPIC PICTURE X Y <FLAGS...>)
@@ -637,28 +638,24 @@ DEFINE_PRIMITIVE(IsVistaOrNewer) {
 	XXX - Flags not implemented!
 -----------------------------------------------------------------------*/
 
-static CairoSurfacePtr load_picture(const std::string &inName) {
+static CairoSurfacePtr load_image(const std::string &inName) {
 	// Load our image.
     wxString name(ToWxString(inName));
-	return wxGetApp().GetStage()->GetImageCache()->GetSurface(name);
+	return wxGetApp().GetStage()->GetImageCache()->GetImage(name);
 }
 
-static void draw_picture(const std::string &inName, TPoint inLoc,
+static void draw_image(const std::string &inName, TPoint inLoc,
                          double scale_x, double scale_y,
 						 wxRect *inClipRect = NULL)
 {
 	// Load our image.
-	CairoSurfacePtr surface(load_picture(inName));
-	if (surface.is_null())
+	CairoSurfacePtr image(load_image(inName));
+	if (image.is_null())
 		THROW("Can't load the specified image");
 
 	// Draw our bitmap.
-	GetCurrentDrawingArea()->DrawSurface(surface, inLoc.X(), inLoc.Y(),
-                                         scale_x, scale_y, inClipRect);
-}
-
-DEFINE_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
-    wxGetApp().LaunchUpdateInstallerBeforeExiting();
+	GetCurrentDrawingArea()->DrawImage(image, inLoc.X(), inLoc.Y(),
+                                       scale_x, scale_y, inClipRect);
 }
 
 DEFINE_PRIMITIVE(LoadPic) {
@@ -674,7 +671,7 @@ DEFINE_PRIMITIVE(LoadPic) {
 		THROW("loadpic flags are not implemented");
 
 	// Do the dirty work.
-	draw_picture(picname, loc, scale_x, scale_y);
+	draw_image(picname, loc, scale_x, scale_y);
 }
 
 DEFINE_PRIMITIVE(LoadSubPic) {
@@ -685,7 +682,7 @@ DEFINE_PRIMITIVE(LoadSubPic) {
 
 	inArgs >> picname >> loc >> scale_x >> scale_y >> clip_trect;
     wxRect clip_rect(TToWxRect(clip_trect));
-	draw_picture(picname, loc, scale_x, scale_y, &clip_rect);
+	draw_image(picname, loc, scale_x, scale_y, &clip_rect);
 }
 
 DEFINE_PRIMITIVE(MarkUnprocessedEventsAsStale) {
@@ -697,7 +694,7 @@ DEFINE_PRIMITIVE(Mask) {
     TPoint		loc;
 
 	inArgs >> path >> loc;
-    CairoSurfacePtr mask(load_picture(path.c_str()));
+    CairoSurfacePtr mask(load_image(path.c_str()));
 	GetCurrentDrawingArea()->Mask(mask, loc.X(), loc.Y());
 }
 
@@ -711,12 +708,12 @@ DEFINE_PRIMITIVE(MeasurePic) {
 	std::string	picname;
     double      scale_x, scale_y;
     inArgs >> picname >> scale_x >> scale_y;
-    CairoSurfacePtr pic(load_picture(picname));
-    if (pic.is_null()) {
+    CairoSurfacePtr image(load_image(picname));
+    if (image.is_null()) {
 		THROW("Can't load the specified image");
     } else {
         wxRect r(wxPoint(0, 0),
-                 DrawingArea::MeasureSurface(pic, scale_x, scale_y));
+                 DrawingArea::MeasureImage(image, scale_x, scale_y));
         ::SetPrimitiveResult(WxToTRect(r));
     }
 }

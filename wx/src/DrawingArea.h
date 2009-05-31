@@ -176,17 +176,18 @@ public:
     /// inScaleX and inScaleY results in a non-integral size.  Only works
     /// for cairo_image_surface objects.
     ///
-    static wxSize MeasureSurface(CairoSurfacePtr inSurface,
-                                 double inScaleX = 1.0, double inScaleY = 1.0);
+    static wxSize MeasureImage(CairoSurfacePtr inImage,
+                               double inScaleX = 1.0, double inScaleY = 1.0);
 
     //////////
     /// Draw a surface on the stage at the specified location, with
     /// optional scaling and clipping.  The inClipRect, if specified, is in
-    /// co-ordinates relative to inSurface.
+    /// co-ordinates relative to inSurface.  Only works for
+    /// cairo_image_surface objects.
 	///
-    void DrawSurface(CairoSurfacePtr inSurface, wxCoord inX, wxCoord inY,
-                     double inScaleX = 1.0, double inScaleY = 1.0,
-                     wxRect *inClipRect = NULL);
+    void DrawImage(CairoSurfacePtr inImage, wxCoord inX, wxCoord inY,
+                   double inScaleX = 1.0, double inScaleY = 1.0,
+                   wxRect *inClipRect = NULL);
 
     //////////
     /// Use the alpha channel of a bitmap to selectively mask parts of the

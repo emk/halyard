@@ -38,16 +38,16 @@ AnimatedOverlay::AnimatedOverlay(Stage *inStage, const wxString &inName,
 								 const std::string &inCursorName,
                                  bool inHasAlpha,
                                  const std::string &inStatePath, 
-								 TValueList graphics)
+								 TValueList images)
      : Overlay(inStage, inName, inBounds, inDispatch, inCursorName,
                inHasAlpha),
        mBasePosition(inBounds.GetPosition()), mCurrentOffset(0, 0),
        mStatePath(inStatePath)
 {
-	// convert TValueList to GraphicsList
-	TValueList::iterator iter = graphics.begin();
-	for (; iter != graphics.end(); ++iter)
-		mGraphics.push_back(tvalue_cast<std::string>(*iter));
+	// convert TValueList to ImageList
+	TValueList::iterator iter = images.begin();
+	for (; iter != images.end(); ++iter)
+		mImages.push_back(tvalue_cast<std::string>(*iter));
 	
 	NotifyStateChanged();
 }
@@ -64,22 +64,22 @@ void AnimatedOverlay::UpdatePosition() {
                             mBasePosition.y + mCurrentOffset.y));
 }
 
-CairoSurfacePtr AnimatedOverlay::LoadGraphic(const std::string &inName) {
+CairoSurfacePtr AnimatedOverlay::LoadImage(const std::string &inName) {
 	// Load our image.
     wxString name(inName.c_str(), wxConvLocal);
-    return wxGetApp().GetStage()->GetImageCache()->GetSurface(name);
+    return wxGetApp().GetStage()->GetImageCache()->GetImage(name);
 }
 
-void AnimatedOverlay::DrawGraphic(const std::string &inName) {
+void AnimatedOverlay::DrawImage(const std::string &inName) {
 	// Load our image.
-	CairoSurfacePtr surface(LoadGraphic(inName));
-	if (surface.is_null())
+	CairoSurfacePtr image(LoadImage(inName));
+	if (image.is_null())
 		THROW("Error loading image for AnimatedOverlay");
 	
 	// Draw our bitmap.
 	DrawingArea *dc = GetDrawingArea();
 	dc->Clear();
-	dc->DrawSurface(surface, 0, 0);
+	dc->DrawImage(image, 0, 0);
 }
 
 void AnimatedOverlay::NotifyStateChanged() {
@@ -91,13 +91,13 @@ void AnimatedOverlay::NotifyStateChanged() {
         UpdatePosition();
     }
 
-    // Handle changes to our graphic.
+    // Handle changes to our image.
 	int32 index(tvalue_cast<int32>(gStateDB.Get(this, mStatePath + "/index")));
-	if (index < 0 || static_cast<size_t>(index) >= mGraphics.size())
+	if (index < 0 || static_cast<size_t>(index) >= mImages.size())
 		THROW("Invalid index for AnimatedOverlay");
-	std::string graphic = mGraphics.at(index);
-    if (graphic != mCurrentGraphic) {
-        mCurrentGraphic = graphic;
-        DrawGraphic(graphic);
+	std::string image = mImages.at(index);
+    if (image != mCurrentImage) {
+        mCurrentImage = image;
+        DrawImage(image);
     }
 }
