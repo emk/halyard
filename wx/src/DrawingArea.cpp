@@ -355,9 +355,11 @@ void DrawingArea::DrawGreyMap(GraphicsTools::Point inPoint,
         cairo_image_surface_create_for_data(data, CAIRO_FORMAT_A8,
                                             inGreyMap->width, inGreyMap->height,
                                             inGreyMap->stride);
-    if (cairo_surface_status(greymap_surface) != CAIRO_STATUS_SUCCESS)
+    cairo_status_t status(cairo_surface_status(greymap_surface));
+    if (status != CAIRO_STATUS_SUCCESS)
         gLog.Fatal("halyard.cairo",
-                   "Error creating cairo_surface_t in DrawGreyMap");
+                   "Error creating cairo_surface_t in DrawGreyMap: %s",
+                   cairo_status_to_string(status));
 
     cr.SetSourceColor(inColor);
     cairo_translate(cr, inPoint.x, inPoint.y);

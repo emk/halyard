@@ -57,7 +57,8 @@ CairoSurfacePtr::CairoSurfacePtr(cairo_surface_t *inSurface)
     ASSERT(inSurface != NULL);
     if (cairo_surface_status(mSurface) != CAIRO_STATUS_SUCCESS)
         gLog.Fatal("halyard.cairo",
-                   "Invalid surface passed to CairoSurfacePtr");
+                   "Invalid surface passed to CairoSurfacePtr: %s",
+                   cairo_status_to_string(cairo_surface_status(mSurface)));
 }
 
 /// Copy constructor.
@@ -138,12 +139,22 @@ CairoContext::CairoContext()
 }
 
 void CairoContext::Initialize(CairoSurfacePtr inSurface) {
+    ASSERT(!inSurface.is_null());
     ASSERT(mSurface.is_null());
     ASSERT(!mCairo);
+
+    cairo_status_t surface_status(cairo_surface_status(inSurface.get()));
+    if (surface_status != CAIRO_STATUS_SUCCESS)
+        gLog.Fatal("halyard.cairo",
+                   "Cannot create cairo_t for broken surface: %s",
+                   cairo_status_to_string(surface_status));
+    
     mSurface = inSurface;
     mCairo = cairo_create(mSurface.get());
     if (cairo_status(mCairo) != CAIRO_STATUS_SUCCESS)
-        gLog.Fatal("halyard.cairo", "Error creating cairo_t for bitmap");
+        gLog.Fatal("halyard.cairo",
+                   "Error creating cairo_t for surface: %s",
+                   cairo_status_to_string(cairo_status(mCairo)));
 }
 
 CairoContext::CairoContext(CairoSurfacePtr inSurface)
@@ -154,6 +165,11 @@ CairoContext::CairoContext(CairoSurfacePtr inSurface)
 
 CairoContext::~CairoContext() {
     if (mCairo) {
+        if (cairo_status(mCairo) != CAIRO_STATUS_SUCCESS)
+            gLog.Warn("halyard.cairo",
+                      "Error during Cairo drawing operations: %s",
+                      cairo_status_to_string(cairo_status(mCairo)));
+
         cairo_destroy(mCairo);
         mCairo = NULL;
     }
