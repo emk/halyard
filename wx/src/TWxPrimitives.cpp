@@ -122,8 +122,6 @@ static E *R(E *elem) {
         } \
     } while (0)
 
-static wxBitmap load_picture(const std::string &inName);
-
 
 //=========================================================================
 //  Implementation of wxWindows Primitives
@@ -440,6 +438,24 @@ DEFINE_PRIMITIVE(DrawBoxOutline) {
 
 }
 
+DEFINE_PRIMITIVE(DrawOvalFill) {
+	TRect bounds;
+	Color color;
+
+	inArgs >> bounds >> color;
+	GetCurrentDrawingArea()->FillOval(TToWxRect(bounds), color);
+}
+
+DEFINE_PRIMITIVE(DrawOvalOutline) {
+	TRect bounds;
+	Color color;
+	int32 width;
+
+	inArgs >> bounds >> color >> width;
+	GetCurrentDrawingArea()->OutlineOval(TToWxRect(bounds), color, width);
+
+}
+
 DEFINE_PRIMITIVE(DrawLine) {
 	TPoint from, to;
 	Color color;
@@ -610,6 +626,9 @@ DEFINE_PRIMITIVE(IsVistaOrNewer) {
     ::SetPrimitiveResult(family == wxOS_WINDOWS_NT && major >= 6);
 }
 
+DEFINE_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
+    wxGetApp().LaunchUpdateInstallerBeforeExiting();
+}
 
 /*---------------------------------------------------------------------
     (LOADPIC PICTURE X Y <FLAGS...>)
@@ -619,74 +638,38 @@ DEFINE_PRIMITIVE(IsVistaOrNewer) {
 	XXX - Flags not implemented!
 -----------------------------------------------------------------------*/
 
-static wxBitmap load_picture(const std::string &inName) {
+static CairoSurfacePtr load_image(const std::string &inName) {
 	// Load our image.
-    wxString name(ToWxString(inName));
-	return wxGetApp().GetStage()->GetImageCache()->GetBitmap(name);
-}
-
-static void draw_picture(const std::string &inName, TPoint inLoc,
-						 TRect *inRect = NULL)
-{
-	// Load our image.
-	wxBitmap bitmap(load_picture(inName));
-	if (!bitmap.Ok())
+    CairoSurfacePtr image =
+        wxGetApp().GetStage()->GetImageCache()->GetImage(ToWxString(inName));
+    if (image.is_null())
 		THROW("Can't load the specified image");
-
-	// If we were given a sub-rectangle, try to extract it.
-	if (inRect) {
-		wxRect rect(inRect->Left(), inRect->Top(),
-					inRect->Right() - inRect->Left(),
-					inRect->Bottom() - inRect->Top());
-		if (rect.GetX() < 0 || rect.GetY() < 0 ||
-			rect.GetWidth() > bitmap.GetWidth() ||
-			rect.GetHeight() > bitmap.GetHeight())
-		{
-			THROW("Sub-rectangle does not fit inside image");
-		}
-		bitmap = bitmap.GetSubBitmap(rect);
-		inLoc.SetX(inLoc.X() + rect.GetX());
-		inLoc.SetY(inLoc.Y() + rect.GetY());
-	}
-
-	// Draw our bitmap.
-	GetCurrentDrawingArea()->DrawBitmap(bitmap, inLoc.X(), inLoc.Y());
-
-	// Update our special variables.
-	// XXX - TRect constructor uses height/width order!  Ayiee!
-	TRect bounds(TRect(inLoc.X(), inLoc.Y(),
-					   inLoc.X() + bitmap.GetWidth(),
-					   inLoc.Y() + bitmap.GetHeight()));
-					   
-	UpdateSpecialVariablesForGraphic(bounds);	
+    return image;
 }
 
-DEFINE_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
-    wxGetApp().LaunchUpdateInstallerBeforeExiting();
+static void draw_image(const std::string &inName, TPoint inLoc,
+                         double scale_x, double scale_y,
+						 wxRect *inClipRect = NULL)
+{
+	CairoSurfacePtr image(load_image(inName));
+	GetCurrentDrawingArea()->DrawImage(image, inLoc.X(), inLoc.Y(),
+                                       scale_x, scale_y, inClipRect);
 }
 
-DEFINE_PRIMITIVE(LoadPic) {
-	std::string	picname;
+DEFINE_PRIMITIVE(LoadGraphic) {
+	std::string	path;
     TPoint		loc;
+    double      scale_x, scale_y;
 
-	inArgs >> picname >> loc;
-
-	// Process flags.
-	// XXX - We're just throwing them away for now.
-	if (inArgs.HasMoreArguments())
-		THROW("loadpic flags are not implemented");
-
-	// Do the dirty work.
-	draw_picture(picname, loc);
-}
-
-DEFINE_PRIMITIVE(LoadSubPic) {
-	std::string	picname;
-    TPoint		loc;
-	TRect		subrect;
-
-	inArgs >> picname >> loc >> subrect;
-	draw_picture(picname, loc, &subrect);
+	inArgs >> path >> loc >> scale_x >> scale_y;
+    if (inArgs.HasMoreArguments()) {
+        TRect clip_trect;
+        inArgs >> clip_trect;
+        wxRect clip_rect(TToWxRect(clip_trect));
+        draw_image(path, loc, scale_x, scale_y, &clip_rect);
+    } else {
+        draw_image(path, loc, scale_x, scale_y);
+    }
 }
 
 DEFINE_PRIMITIVE(MarkUnprocessedEventsAsStale) {
@@ -698,7 +681,7 @@ DEFINE_PRIMITIVE(Mask) {
     TPoint		loc;
 
 	inArgs >> path >> loc;
-    wxBitmap mask = load_picture(path.c_str());
+    CairoSurfacePtr mask(load_image(path.c_str()));
 	GetCurrentDrawingArea()->Mask(mask, loc.X(), loc.Y());
 }
 
@@ -708,16 +691,14 @@ DEFINE_PRIMITIVE(MaybeLoadSplash) {
 	wxGetApp().GetStage()->MaybeDrawSplashGraphic(picname);
 }
 
-DEFINE_PRIMITIVE(MeasurePic) {
-	std::string	picname;
-    inArgs >> picname;
-    wxBitmap pic(load_picture(picname));
-    if (!pic.Ok()) {
-		THROW("Can't load the specified image");
-    } else {
-        wxRect r(wxRect(0, 0, pic.GetWidth(), pic.GetHeight()));
-        ::SetPrimitiveResult(WxToTRect(r));
-    }
+DEFINE_PRIMITIVE(MeasureGraphic) {
+	std::string	path;
+    double      scale_x, scale_y;
+    inArgs >> path >> scale_x >> scale_y;
+    CairoSurfacePtr image(load_image(path));
+    wxRect r(wxPoint(0, 0),
+             DrawingArea::MeasureImage(image, scale_x, scale_y));
+    ::SetPrimitiveResult(WxToTRect(r));
 }
 
 DEFINE_PRIMITIVE(NotifyEnterCard) {
@@ -1109,6 +1090,8 @@ void Halyard::RegisterWxPrimitives() {
 	REGISTER_PRIMITIVE(Download);
 	REGISTER_PRIMITIVE(DrawBoxFill);
 	REGISTER_PRIMITIVE(DrawBoxOutline);
+	REGISTER_PRIMITIVE(DrawOvalFill);
+	REGISTER_PRIMITIVE(DrawOvalOutline);
 	REGISTER_PRIMITIVE(DrawLine);
     REGISTER_PRIMITIVE(DrawLoadProgress);
 	REGISTER_PRIMITIVE(EditBox);
@@ -1133,12 +1116,11 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(UrlRequestStart);
     REGISTER_PRIMITIVE(IsVistaOrNewer);
 	REGISTER_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
-	REGISTER_PRIMITIVE(LoadPic);
-	REGISTER_PRIMITIVE(LoadSubPic);
+	REGISTER_PRIMITIVE(LoadGraphic);
     REGISTER_PRIMITIVE(MarkUnprocessedEventsAsStale);
 	REGISTER_PRIMITIVE(Mask);
     REGISTER_PRIMITIVE(MaybeLoadSplash);
-    REGISTER_PRIMITIVE(MeasurePic);
+    REGISTER_PRIMITIVE(MeasureGraphic);
 	REGISTER_PRIMITIVE(MediaAttachCaptionFile);
 	REGISTER_PRIMITIVE(MediaSetVolume);
 	REGISTER_PRIMITIVE(MouseGrab);

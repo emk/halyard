@@ -24,21 +24,22 @@
 #define AnimatedOverlay_H
 
 #include "Overlay.h"
+#include "CairoDrawing.h"
 
 /// An Overlay which moves and changes appearance automatically.
 /// The changes are controlled by keys in the TStateDB.
 class AnimatedOverlay : public Overlay, public Halyard::TStateListener {
     wxPoint mBasePosition;
     wxPoint mCurrentOffset;
-    std::string mCurrentGraphic;
+    std::string mCurrentImage;
 
-	typedef std::vector<std::string> GraphicsList;
-	GraphicsList mGraphics;
+	typedef std::vector<std::string> ImageList;
+	ImageList mImages;
 	std::string mStatePath;
 	
     void UpdatePosition();
-	wxBitmap LoadPicture(const std::string &inName);
-	void DrawGraphic(const std::string &inName);
+	CairoSurfacePtr LoadImage(const std::string &inName);
+	void DrawImage(const std::string &inName);
 	
 public:
 	AnimatedOverlay(Stage *inStage, const wxString &inName, 
@@ -47,7 +48,7 @@ public:
                     const std::string &inCursorName,
                     bool inHasAlpha,
                     const std::string &inStatePath, 
-                    Halyard::TValueList graphics);
+                    Halyard::TValueList images);
 
     virtual void MoveTo(const wxPoint &inPoint);
 	virtual void NotifyStateChanged();

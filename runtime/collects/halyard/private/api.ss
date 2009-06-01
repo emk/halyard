@@ -365,7 +365,7 @@
   ;;;   The text may extend below the bottom of this box if necessary.
   ;;; @param STYLESHEET style The stylesheet to use.
   ;;; @param STRING text The text to draw.
-  ;;; @xref measure-text text-position *text-x* *text-y*
+  ;;; @xref measure-text
   ;;; @legacy text textaa
   (define (draw-text r style text)
     ;; XXX - TextAA uses an idiosyncratic formating language.
@@ -380,8 +380,6 @@
   ;;; @xref draw-text
   (define (measure-text style text
                         &key (max-width (rect-width $screen-rect)))
-    ;;; XXX - Note that we stomp the "saved-text-position" used by
-    ;;; deprecated.ss.
     (call-prim 'MeasureTextAA (stylesheet-long-name style) text max-width))
 
 

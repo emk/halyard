@@ -685,13 +685,22 @@ void StageFrame::CheckForUpdateLockFile() {
 void StageFrame::LoadIcon(const std::string &inName, wxIconBundle &ioIcons,
                           bool &ioHaveIcon)
 {
-    wxBitmap bitmap = mStage->GetBrandingGraphic(inName);
-    if (bitmap.Ok()) {
-        wxIcon icon;
-        icon.CopyFromBitmap(bitmap);
-        ioIcons.AddIcon(icon);
-        ioHaveIcon = true;
-    }
+    // We duplicate some code from Stage::GetBrandingGraphic, because
+    // (unlike that function) we don't want to go through the image cache,
+    // because it will only give us a Cairo surface, which we can't use as
+    // an icon.
+    FileSystem::Path path(FileSystem::GetBrandingFilePath(inName));
+    if (!path.DoesExist() || !path.IsRegularFile())
+        return;
+    wxString native_path(path.ToNativePathString().c_str(), wxConvLocal);
+
+    wxIcon icon;
+    icon.LoadFile(native_path, wxBITMAP_TYPE_ANY);
+    if (!icon.Ok())
+        return;
+
+    ioIcons.AddIcon(icon);
+    ioHaveIcon = true;
 }
 
 void StageFrame::ObjectChanged()

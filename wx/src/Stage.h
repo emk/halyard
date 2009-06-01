@@ -27,6 +27,7 @@
 #include "AppGlobals.h"
 #include "DirtyList.h"
 #include "DrawingContextStack.h"
+#include "CairoDrawing.h"
 
 class StageFrame;
 class Element;
@@ -239,14 +240,6 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
 	wxBitmap &GetCompositingPixmap();
 
 	//////////
-	/// Get the background pixmap associated with this stage.
-	///
-	/// TODO - Remove this method eventually and send all requests
-	/// directly to mBackgroundDrawingArea.
-	///
-	wxBitmap &GetBackgroundPixmap();
-
-	//////////
 	/// Validate the entire stage--i.e., mark it as having been redrawn.
 	///
 	void ValidateStage();
@@ -369,7 +362,7 @@ public:
     /// Halyard script. Such graphics currently include script icons and
     /// the splash screens.
     ///
-    wxBitmap GetBrandingGraphic(const std::string &inName);
+    CairoSurfacePtr GetBrandingImage(const std::string &inName);
 
     //////////
     /// If we can, show a splash screen for the loading program.  This is

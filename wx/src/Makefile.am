@@ -5,7 +5,7 @@ AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(WX_CPPFLAGS) -I$(top_srcdir)/Common
 # -Werror.  We can remove -Wno-deprecated-declarations once we port the
 # official Windows build to 2.8.
 AM_CXXFLAGS = $(FREETYPE_CFLAGS) $(MZSCHEME_CFLAGS) $(CURL_CFLAGS) \
-	-Wno-deprecated-declarations
+	$(CAIRO_CFLAGS) -Wno-deprecated-declarations
 
 if NEED_BUNDLE
 
@@ -58,6 +58,7 @@ halyard_SOURCES = \
 	BrowserElement.cpp BrowserElement.h \
 	BrowserElementWx.cpp BrowserElementWx.h \
 	BufferSpan.cpp BufferSpan.h \
+	CairoDrawing.cpp CairoDrawing.h \
 	CommonWxConv.cpp CommonWxConv.h \
 	Cursor.cpp Cursor.h \
 	CursorElement.cpp CursorElement.h \
@@ -76,7 +77,6 @@ halyard_SOURCES = \
 	DocNotebook.cpp DocNotebook.h \
 	Downloader.cpp Downloader.h \
 	DrawingArea.cpp DrawingArea.h \
-	DrawingAreaOpt.cpp DrawingAreaOpt.h \
 	DrawingContextStack.cpp DrawingContextStack.h \
 	EditBox.cpp EditBox.h \
 	Element.cpp Element.h \
@@ -126,6 +126,7 @@ halyard_LDADD = \
 	$(LOG4CPLUS_LIBS) \
         $(MZSCHEME_LDFLAGS) \
 	$(CURL_LIBS) \
+	$(CAIRO_LIBS) \
 	$(WX_LIBS)
 
 # Temporarily disabled because of dependencies on wxWidgets 2.6 APIs

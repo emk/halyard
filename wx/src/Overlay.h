@@ -46,7 +46,7 @@ public:
 	virtual void DrawElementBorder(wxDC &inDC);
 	virtual DrawingArea *GetDrawingArea() { return &mDrawingArea; }
     virtual void SetInDragLayer(bool inDragLayer);
-	virtual void CompositeInto(wxDC &inDC, const wxRect &inClipRect);
+	virtual void CompositeInto(CairoContext &inCr);
 
     /// Set the size of this overlay.  Erases all contents.
     void SetSize(const wxSize &inSize);

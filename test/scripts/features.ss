@@ -472,7 +472,26 @@
       (draw-line (point 10 70) (point 50 70) $color-black 2) 
       (draw-line (point 10 80) (point 50 80) $color-black 3) 
       
-      (draw-rectangle-outline (rect 100 100 200 200) (color 0 0 0 128) 2))
+      (define rectangle-color (color 0 0 0 127))
+      (define oval-color (color 255 0 0 191))
+      
+      ;; Test outlines.
+      (draw-rectangle-outline (rect 100 100 250 200) rectangle-color 4)
+      (draw-oval-outline (rect 100 100 250 200) oval-color 4)
+
+      ;; Test shapes.
+      (draw-rectangle (rect 300 100 450 200) rectangle-color)
+      (draw-oval (rect 300 100 450 200) oval-color)
+
+      ;; Test alignment of horizontal and vertical lines.
+      (draw-rectangle-outline (rect 500 100 650 200) rectangle-color 4)
+      (draw-line (point 500 100) (point 650 100) (color 255 0 0 128) 4)
+      (draw-line (point 500 100) (point 500 200) (color 0 0 255 128) 4)
+
+      ;; Test diagonal lines.
+      (draw-line (point 100 300) (point 200 400) $color-black 10)
+      (draw-line (point 100 300) (point 200 400) $color-highlight 1)
+      )
     )
 
 
@@ -949,7 +968,7 @@
   
   (define-class %animation-demo% (%standard-test-card%)
     (def (reset-elements)
-      (map delete-element-if-exists '(rect foo bar sprite)) 
+      (map delete-element-if-exists '(rect foo bar sprite lens)) 
       (new-rectangle (rect 400 50 500 150) (color 0 0 255) :name 'rect)
       (new-text (point 400 160) $splash-style "Foo" :name 'foo)
       (new-text (point 400 200) $splash-style "Bar" :name 'bar)
@@ -957,7 +976,9 @@
         (prefix-and-suffix "anim/lud03_gauge_" 
                            (map (fn (x) (zero-pad 2 x)) (range 0 20)) 
                            ".png")
-        :name 'sprite))
+        :name 'sprite)
+      (new-graphic (point 400 375) "lens.png" :name 'lens :alpha? #t))
+    
     (setup
       (.reset-elements)))
   
@@ -1054,6 +1075,15 @@
          (quantize 3.2
            (slide @foo (point 0 0))
            (slide @bar (point 150 400))))))
+    (example-animation scale ((below (.quantize) 10) "Scale")
+      (def (play)
+       (animate 500
+         (after
+           ;; XXX - We scale to 2.1, because interpolate-value interprets
+           ;; 2.0 as an integer, and rounds all the intermediate values to
+           ;; the nearest integer.
+           [0.0 (interpolate (@lens .scale) 2.1)]
+           [0.5 (interpolate (@lens .scale) 0)]))))
     )
 
 

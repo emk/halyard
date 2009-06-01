@@ -1212,11 +1212,7 @@ void TextRenderingEngine::DrawGreyMap(Point inPosition,
 
 	// If we have a destination image, draw to it.
 	if (mImage)
-	{
-		PixMap colorized(inGreyMap->width, inGreyMap->height);
-		inGreyMap->TransferToPixMap(inColor, &colorized);
-		mImage->DrawPixMap(inPosition, colorized);
-	}
+		mImage->DrawGreyMap(inPosition, inGreyMap, inColor);
 }
 
 void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,

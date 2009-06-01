@@ -51,6 +51,8 @@
 #include "CursorElement.h"
 #include "TStateListenerManager.h"
 #include "Transition.h"
+#include "CommonWxConv.h"
+#include "CairoDrawing.h"
 #include "DrawingArea.h"
 #include "MediaElement.h"
 #include "UrlRequest.h"
@@ -163,46 +165,51 @@ Stage::~Stage()
 wxBitmap &Stage::GetCompositingPixmap() {
 	// Make sure our compositing is up to date.
 	if (!mRectsToComposite.empty()) {
-		wxMemoryDC dc;
-		dc.SelectObject(mCompositingPixmap);
-		DirtyList::iterator dirty_i = mRectsToComposite.begin();
+        CairoBitmapContext cr(mCompositingPixmap);
 		wxLogTrace(TRACE_STAGE_DRAWING, wxT("Begin compositing."));
-		for (; dirty_i != mRectsToComposite.end(); ++dirty_i) {
-			GetBackgroundDrawingArea()->CompositeInto(dc, *dirty_i);
 
-            // Composite elements in two passes: regular elements first,
-            // and then elements in the drag layer.
-			ElementCollection::iterator elem_begin = mElements.begin();
-            ElementCollection::iterator elem_end = mElements.end();
-            ElementCollection::iterator elem_i;
-			for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
-                if (!(*elem_i)->IsInDragLayer())
-                    (*elem_i)->CompositeInto(dc, *dirty_i);
-			for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
-                if ((*elem_i)->IsInDragLayer())
-                    (*elem_i)->CompositeInto(dc, *dirty_i);
-		}
+        // Set up our clipping region.  Since each component of this region
+        // is rectangular and aligned to the pixel grid, we should use the
+        // fast clipping path in Cairo.
+        DirtyList::iterator dirty_i = mRectsToComposite.begin();
+        for (; dirty_i != mRectsToComposite.end(); ++dirty_i) {
+            cairo_rectangle(cr, dirty_i->x, dirty_i->y,
+                            dirty_i->width, dirty_i->height);
+        }
+        cairo_clip(cr); // Does not clear path.
+        cairo_new_path(cr);
+
+        // Draw our background.
+        GetBackgroundDrawingArea()->CompositeInto(cr);
+
+        // Composite elements in two passes: regular elements first,
+        // and then elements in the drag layer.
+        ElementCollection::iterator elem_begin = mElements.begin();
+        ElementCollection::iterator elem_end = mElements.end();
+        ElementCollection::iterator elem_i;
+        for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
+            if (!(*elem_i)->IsInDragLayer())
+                (*elem_i)->CompositeInto(cr);
+        for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
+            if ((*elem_i)->IsInDragLayer())
+                (*elem_i)->CompositeInto(cr);
+
 		wxLogTrace(TRACE_STAGE_DRAWING, wxT("End compositing."));
 		mRectsToComposite.clear();
 	}
 	return mCompositingPixmap;
 }
 
-wxBitmap &Stage::GetBackgroundPixmap() {
-	return mBackgroundDrawingArea->GetPixmap();
-}
-
 DrawingArea *Stage::GetCurrentDrawingArea() {
 	return mDrawingContextStack->GetCurrentDrawingArea();
 }
 
-wxBitmap Stage::GetBrandingGraphic(const std::string &inName) {
-    FileSystem::Path path =
-        FileSystem::GetBrandingFilePath(inName);
+CairoSurfacePtr Stage::GetBrandingImage(const std::string &inName) {
+    FileSystem::Path path(FileSystem::GetBrandingFilePath(inName));
     if (!path.DoesExist() || !path.IsRegularFile())
-        return wxBitmap();
+        return CairoSurfacePtr();
     wxString native_path(path.ToNativePathString().c_str(), wxConvLocal);
-    return GetImageCache()->GetBitmap(native_path);
+    return GetImageCache()->GetImage(native_path);
 }
 
 void Stage::MaybeShowSplashScreen() {
@@ -224,21 +231,14 @@ void Stage::MaybeShowSplashScreen() {
     std::string halyard_copyright =
         std::string(HALYARD_COPYRIGHT_NAME) + ". " + HALYARD_COPYRIGHT_NOTICE;
 
-    // Now, set up a drawing context for our text.  We use wxWidgets to
-    // draw the text because our font system won't have any text styles
-    // loaded yet.
-    wxMemoryDC dc;
-    dc.SelectObject(GetBackgroundPixmap());
-    
-    // Prepare to draw the text.
-    dc.SetTextForeground(*wxWHITE);
-    dc.SetTextBackground(*wxBLACK);
-    dc.SetFont(*wxNORMAL_FONT);
-        
-    // Draw the text.
-    dc.DrawText(wxString(script_copyright.c_str(), wxConvLocal), 5, 515);
-    dc.DrawText(wxString(halyard_copyright.c_str(), wxConvLocal), 5, 530);
-    InvalidateRect(wxRect(0, 500, 800, 100));
+    // Draw our copyright strings.
+    GraphicsTools::Color white(255, 255, 255);
+    GetBackgroundDrawingArea()->DrawSimpleText(GraphicsTools::Point(5, 515),
+                                               ToWxString(script_copyright),
+                                               white);
+    GetBackgroundDrawingArea()->DrawSimpleText(GraphicsTools::Point(5, 530),
+                                               ToWxString(halyard_copyright),
+                                               white);
 }
 
 void Stage::MaybeDrawSplashGraphic(const std::string &inName) {
@@ -247,9 +247,9 @@ void Stage::MaybeDrawSplashGraphic(const std::string &inName) {
 
     // TODO - We assume the bitmap is 800x450 pixels, and we lay out
     // this screen using hard-coded co-ordinates.
-    wxBitmap bitmap = GetBrandingGraphic(inName);
-    if (bitmap.Ok())
-        mBackgroundDrawingArea->DrawBitmap(bitmap, 0, 60);
+    CairoSurfacePtr image(GetBrandingImage(inName));
+    if (!image.is_null())
+        mBackgroundDrawingArea->DrawImage(image, 0, 60);
 }
 
 void Stage::DrawLoadProgress() {
@@ -267,10 +267,10 @@ void Stage::DrawLoadProgress() {
     int x_end = x_begin + x_space * frac;
     
     // Load our image, and use it to draw the progress bar.
-    wxBitmap bitmap = GetBrandingGraphic("progress.png");
-    if (bitmap.Ok()) {
+    CairoSurfacePtr image(GetBrandingImage("progress.png"));
+    if (!image.is_null()) {
         for (int x = x_begin; x < x_end; ++x)
-            mBackgroundDrawingArea->DrawBitmap(bitmap, x, y_pos);
+            mBackgroundDrawingArea->DrawImage(image, x, y_pos);
     }
 }
 

@@ -43,17 +43,20 @@ ImageCache::~ImageCache()
     // Do nothing, for now.
 }
 
-size_t ImageCache::ImageSize(const wxBitmap &inBitmap)
+size_t ImageCache::SurfaceSize(CairoSurfacePtr inSurface)
 {
-    // TODO - This is somewhat approximate.
-    return inBitmap.GetWidth() * inBitmap.GetHeight() * 3;
+    // It wouldn't hurt to throw in an overhead factor for the
+    // cairo_surface_t object, too.
+    int height = cairo_image_surface_get_height(inSurface.get());
+    int stride = cairo_image_surface_get_stride(inSurface.get());
+    return height * stride;
 }
 
 ImageCache::Cache::iterator
 ImageCache::BetterToPurge(Cache::iterator inA, Cache::iterator inB)
 {
-	size_t size_a = ImageSize(inA->second.bitmap);
-	size_t size_b = ImageSize(inB->second.bitmap);
+	size_t size_a = SurfaceSize(inA->second.surface);
+	size_t size_b = SurfaceSize(inB->second.surface);
 
 	// If one of the images is much older than the other, purge it.  It
 	// doesn't take *too* long to load images.
@@ -92,48 +95,36 @@ void ImageCache::RequireFreeSpace(size_t inSpaceNeeded)
 
 		// Purge it.
 		gLog.Trace("halyard", "Purging image: %s", candidate->first.c_str());
-		mCurrentBytes -= ImageSize(candidate->second.bitmap);
+		mCurrentBytes -= SurfaceSize(candidate->second.surface);
 		mCache.erase(candidate);
 	}
 }
 
-wxBitmap ImageCache::GetBitmap(wxString inPath)
+CairoSurfacePtr ImageCache::GetImage(wxString inPath)
 {
     std::string path(inPath.mb_str());
     
     // Look for the image in our cache.
     Cache::iterator found = mCache.find(path);
-    if (found != mCache.end())
-    {
+    if (found != mCache.end()) {
 		found->second.count++;
 		found->second.last_used = ::wxGetUTCTime();
-		return found->second.bitmap;
+		return found->second.surface;
     }
 
     // We're going to have to load the image.
     wxImage image;
     image.LoadFile(inPath);
-    if (!image.Ok())
-	{
-		// Load failed, return an empty bitmap.
-		wxBitmap bitmap;
-		ASSERT(!bitmap.Ok());
-		return bitmap; 
+    if (!image.Ok()) {
+		// Load failed, return a null surface.
+		return CairoSurfacePtr();
 	}
-    // XXX - Work around bug with drawing of masked images to 32-bit
-    // wxBitmaps by converting all masks to alpha channels.
-    if (image.HasMask())
-        image.InitAlpha();
-    // We MUST use an explicit bit depth here, because wxWindows gets
-    // confused about mask colors when using DDBs instead of DIBs.
-    // Symptom: all colors equivalent to 24-bit mask color using a 16-bit
-    // comparison become transparent.
-	wxBitmap bitmap(image, image.HasAlpha() ? 32 : 24);
+    CairoSurfacePtr surface(SurfaceFromImage(image));
 
     // If the image is too big to cache, just return it.
-	size_t size = ImageSize(image);
+	size_t size = SurfaceSize(surface);
 	if (size > GetMaxCacheSize() / 2)
-		return bitmap;
+		return surface;
 
 	// Make sure there's enough room in our cache to hold this image.
 	RequireFreeSpace(size);
@@ -141,11 +132,11 @@ wxBitmap ImageCache::GetBitmap(wxString inPath)
 	// Store the image into our cache, and return it.
 	mCurrentBytes += size;
 	CachedImage cached;
-	cached.bitmap    = bitmap;
+	cached.surface   = surface;
 	cached.last_used = ::wxGetUTCTime();
 	cached.count     = 1;
 	mCache.insert(Cache::value_type(path, cached));
-	return bitmap;
+	return surface;
 }
 
 void ImageCache::NotifyReloadScriptStarting()
@@ -153,4 +144,60 @@ void ImageCache::NotifyReloadScriptStarting()
     // Dump our entire cache when the script gets reloaded.
     mCache.clear();
 	mCurrentBytes = 0;
+}
+
+CairoSurfacePtr ImageCache::SurfaceFromImage(wxImage &inImage) {
+    // If the image has a mask, convert it to an alpha channel.  This saves
+    // us from needing an extra code path to handle masks.
+    if (inImage.HasMask())
+        inImage.InitAlpha();
+
+    // Create a new Cairo surface to hold our image data.
+    cairo_format_t format =
+        inImage.HasAlpha() ? CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24;
+    int width = inImage.GetWidth();
+    int height = inImage.GetHeight();
+    CairoSurfacePtr surface(cairo_image_surface_create(format, width, height));
+
+    // Copy the data from our wxImage to our cairo_image_surface.
+    unsigned char *image_data = inImage.GetData();
+    unsigned char *alpha_data = inImage.GetAlpha();
+    unsigned char *surface_data = cairo_image_surface_get_data(surface.get());
+    int surface_stride = cairo_image_surface_get_stride(surface.get());
+    for (int y = 0; y < height; y++) {
+        unsigned char *image_row(image_data + 3*width*y);
+        unsigned char *surface_row(surface_data + surface_stride*y);
+
+        // Copy one scan line.  Note that we need to store pixels in the
+        // native endianness.
+        if (inImage.HasAlpha()) {
+            ASSERT(alpha_data);
+            unsigned char *alpha_row(alpha_data + width*y);
+            for (int x = 0; x < width; x++) {
+                // Premultiply each channel with the alpha data.  The
+                // pre-multiplication function is adapted from
+                // wxDIB::Create.
+                unsigned char alpha = alpha_row[x];
+                unsigned char red   = image_row[3*x+0];
+                unsigned char green = image_row[3*x+1];
+                unsigned char blue  = image_row[3*x+2];
+                uint32 pixel =
+                    alpha << 24 |
+                    ((red   * alpha + 127) / 255) << 16 |
+                    ((green * alpha + 127) / 255) <<  8 |
+                    ((blue  * alpha + 127) / 255) <<  0;
+                *reinterpret_cast<uint32 *>(surface_row + 4*x) = pixel;
+            }
+        } else {
+            for (int x = 0; x < width; x++) {
+                unsigned char red   = image_row[3*x+0];
+                unsigned char green = image_row[3*x+1];
+                unsigned char blue  = image_row[3*x+2];
+                uint32 pixel = red << 16 | green << 8 | blue << 0;
+                *reinterpret_cast<uint32 *>(surface_row + 4*x) = pixel;
+            }
+        }
+    }
+
+    return surface;
 }

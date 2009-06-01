@@ -46,6 +46,7 @@ AC_PROG_CC
 PKG_CHECK_MODULES(FREETYPE, [freetype2 >= 2.3.4])
 PKG_CHECK_MODULES(XML2, [libxml-2.0 >= 2.4.30])
 PKG_CHECK_MODULES(CURL, [libcurl >= 7.19.3])
+PKG_CHECK_MODULES(CAIRO, [cairo >= 1.8.4])
 AX_LIB_SQLITE3(3.0.3)
 LIBRARY_MISSING_IF([test x$success != xyes], [SQLite])
 

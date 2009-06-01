@@ -480,21 +480,23 @@
   (provide draw-graphic measure-graphic measure-graphics mask
            set-image-cache-size! with-dc
            dc-rect color-at clear-dc
-           draw-line draw-rectangle draw-rectangle-outline)
+           draw-line draw-rectangle draw-rectangle-outline
+           draw-oval draw-oval-outline)
 
   ;;; Draw a graphic loaded from PATH at point P in the current DC.  You
   ;;; may optionally specify a sub-rectangle of the graphic to draw.
-  (define (draw-graphic p path &key (subrect :rect #f))
+  (define (draw-graphic p path
+                        &key [subrect :rect #f] [scale-x 1.0] [scale-y 1.0])
     (let [[native (resolve-content-path "graphics" path)]]
       (if subrect
-          (call-prim 'LoadSubPic native p subrect)
-          (call-prim 'LoadPic native p))))
+          (call-prim 'LoadGraphic native p scale-x scale-y subrect)
+          (call-prim 'LoadGraphic native p scale-x scale-y))))
   
   ;;; Return a rectangle located at 0,0 large enough to hold the graphic
   ;;; specified by NAME.
-  (define (measure-graphic path)
+  (define (measure-graphic path &key [scale-x 1.0] [scale-y 1.0])
     (let [[native (resolve-content-path "graphics" path)]]
-      (call-prim 'MeasurePic native)))
+      (call-prim 'MeasureGraphic native scale-x scale-y)))
 
   ;;; Measure a list of graphics, returning a single bounding box large
   ;;; enough to contain any of the graphics.
@@ -566,6 +568,14 @@
   ;;; Draw the outline of a rectangle, with the specified color and line width.
   (define (draw-rectangle-outline r c width)
     (call-prim 'DrawBoxOutline r c width))
+
+  ;;; Draw a filled oval in the specified color.
+  (define (draw-oval r c)
+    (call-prim 'DrawOvalFill r c))
+
+  ;;; Draw the outline of an oval, with the specified color and line width.
+  (define (draw-oval-outline r c width)
+    (call-prim 'DrawOvalOutline r c width))
 
   
   ;;;======================================================================
@@ -657,15 +667,26 @@
   ;;; want; the engine can't compute a reasonable value automatically.
   (define-class %graphic% (%custom-element%)
     (attr path :type <string> :label "Path" :writable? #t)
+    (attr scale 1.0 :type <number> :label "Scale" :writable? #t)
 
-    (value shape (measure-graphic (.path)))
-    (after-updating path
-      (set! (.shape) (measure-graphic (.path)))
+    (attr scale-x (.scale) :type <number> :label "Scale X" :writable? #t)
+    (attr scale-y (.scale) :type <number> :label "Scale Y" :writable? #t)
+    (after-updating scale
+      (set! (.scale-x) (.scale))
+      (set! (.scale-y) (.scale)))
+    
+    (value shape (measure-graphic (.path)
+                                  :scale-x (.scale-x) :scale-y (.scale-y)))
+
+    (after-updating [path scale-x scale-y]
+      (set! (.shape) (measure-graphic (.path)
+                                      :scale-x (.scale-x) :scale-y (.scale-y)))
       (.invalidate))
 
     ;; TODO - Optimize erase-background now that we can update the graphic.
     (def (draw)
-      (draw-graphic (point 0 0) (.path))))
+      (draw-graphic (point 0 0) (.path)
+                    :scale-x (.scale-x) :scale-y (.scale-y))))
   
   ;;; Declare a %graphic% element.
   (define-node-helper graphic (at path) %graphic%)
