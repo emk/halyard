@@ -43,4 +43,70 @@
         ((.label) .append! ((report .benchmark) .name)))
       ((.label) .append! "(Done!)"))
     )
+
+
+  ;;=======================================================================
+  ;;  Drawing benchmarks
+  ;;=======================================================================
+  ;;  These are located here, and not in halyard/benchmarks, because some
+  ;;  of them require graphics or styles.
+
+  (define-benchmark "clear-dc 400x400 opaque overlay" 500
+    (define dc
+      (%custom-element% .new :at (point 0 0) :shape (shape 400 400) :alpha? #f))
+    (with-dc dc
+      (benchmark (clear-dc (color 255 0 0))))
+    (delete-element dc))
+
+  (define-benchmark "draw-rectangle 400x400 opaque overlay" 500
+    (define dc
+      (%custom-element% .new :at (point 0 0) :shape (shape 400 400) :alpha? #f))
+    (with-dc dc
+      (benchmark (draw-rectangle (rect 0 0 400 400) (color 255 0 0))))
+    (delete-element dc))
+
+  (define-benchmark "clear-dc 400x400 alpha overlay" 500
+    (define dc
+      (%custom-element% .new :at (point 0 0) :shape (shape 400 400) :alpha? #t))
+    (with-dc dc
+      (benchmark (clear-dc (color 255 0 0 128))))
+    (delete-element dc))
+
+  (define-benchmark "draw-rectangle 400x400 alpha overlay" 500
+    (define dc
+      (%custom-element% .new :at (point 0 0) :shape (shape 400 400) :alpha? #f))
+    (with-dc dc
+      (benchmark (draw-rectangle (rect 0 0 400 400) (color 255 0 0 128))))
+    (delete-element dc))
+
+  (define-benchmark "draw-graphic 110x110 on alpha overlay" 500
+    (define dc
+      (%custom-element% .new
+                        :at (point 0 0)
+                        :shape (measure-graphic "lens.png")
+                        :alpha? #t))
+    (with-dc dc
+      (benchmark (draw-graphic (point 0 0) "lens.png")))
+    (delete-element dc))
+
+  (define-benchmark "mask 128x128 on alpha overlay" 500
+    (define dc
+      (%custom-element% .new
+                        :at (point 0 0)
+                        :shape (measure-graphic "mask/mask.png")
+                        :alpha? #t))
+    (with-dc dc
+      (benchmark (mask (point 0 0) "mask/mask.png")))
+    (delete-element dc))
+
+  (define-benchmark "draw-text 13 18-point letters on alpha overlay" 500
+    (define shape (measure-text $caption-style "Hello, world!"))
+    (define dc (%custom-element% .new :at (point 0 0) :shape shape :alpha? #t))
+    (with-dc dc
+      (benchmark (draw-text shape $caption-style "Hello, world!")))
+    (delete-element dc))
+
+  (define-benchmark "measure-text 13 18-point letters" 500
+    (benchmark (measure-text $caption-style "Hello, world!")))
+    
   )
