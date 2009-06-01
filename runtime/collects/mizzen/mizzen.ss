@@ -40,7 +40,7 @@
   ;; Export the normal Swindle language, minus a few specific features
   ;; we override below.
   (provide (all-from-except (lib "swindle.ss" "swindle")
-                            defclass box unbox
+                            defclass box unbox define-syntax-parameter
                             ;; We replace these so ruby-objects.ss can
                             ;; implement a custom syntax for method
                             ;; dispatch.

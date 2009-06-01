@@ -24,13 +24,16 @@
 ;;; considerably with performance-tuning mizzen.
 (module benchmark "mizzen.ss"
 
+  ;; For syntax-parameterize.
+  (require (lib "stxparam.ss" "mzlib"))
+
 
   ;;=======================================================================
   ;;  Benchmarking library
   ;;=======================================================================
 
   (provide %benchmark% %benchmark-report% memory-allocated all-benchmarks
-           define-benchmark)
+           benchmark define-benchmark)
   
   (define-class %benchmark% ()
     (attr name :type <string>)
@@ -72,22 +75,36 @@
   (define (set-benchmarks! lst)
     (set! *benchmarks* lst))
 
+  (define-syntax-parameter benchmark
+    (lambda (stx)
+      (raise-syntax-error #f "can only be used inside define-benchmark" stx)))
+
   (define-syntax define-benchmark
     (syntax-rules (benchmark)
-      [(_ name count init-code ... (benchmark body ...))
+      [(_ name count body ...)
        (set-benchmarks!
         (cons
          (%benchmark% .new
            :name name :count count
            :function (fn (remaining)
-                       init-code ...
-                       (define bytes (memory-allocated body ...))
-                       (define start (current-milliseconds))
-                       (let next [[remaining remaining]]
-                         (unless (zero? remaining)
-                           body ...
-                           (next (- remaining 1))))
-                       (values (- (current-milliseconds) start) bytes)))
+                       (let [[bytes #f] [milliseconds #f]]
+                         (syntax-parameterize
+                             [[benchmark
+                               (syntax-rules ()
+                                 [(_ . benchmarked-code)
+                                  (begin
+                                    (set! bytes
+                                          (memory-allocated . benchmarked-code))
+                                    (let [[start (current-milliseconds)]]
+                                      (let next [[remaining remaining]]
+                                        (unless (zero? remaining)
+                                          (begin . benchmarked-code)
+                                          (next (- remaining 1))))
+                                      (set! milliseconds
+                                            (- (current-milliseconds)
+                                               start))))])]]
+                           body ...)
+                         (values milliseconds bytes))))
          *benchmarks*))]))
 
 
