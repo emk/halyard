@@ -1,3 +1,28 @@
+0.5.31 - 1 June 2009
+
+This release introduces a number of simple performance optimizations.
+Element creating has always been slow, so we have done some
+benchmarking, and discovered several quick and easy performance
+optimizations that buy us a good deal of extra performance.  We also
+expose a bit more of our benchmarking to Halyard programs, so we
+can more easily compare the differences in performance depending on
+the size of the program we're running or other factors affected by
+the program (like monkey patching).
+
+In order to set up engine nodes, such as setting their in-drag-layer?
+and shown? properties, after they have been created, we have created a
+new method that is overridable on nodes,
+.FINISH-INITIALIZING-ENGINE-NODE.  This is called after
+.CREATE-ENGINE-NODE, to allow further initialization to be overridden
+separately.
+
+Brian Campbell (5):
+      kernel.ss: Cache results of have-prim?
+      nodes.ss: Cache node .full-name computation
+      Move Halyard benchmarks from test into runtime
+      Add Noop and UntracedNoop primitives for benchmarking
+      Performance: Don't set element parameters to default values on setup
+
 0.5.30.1 - 27 May 2009
 
 This release is a build fix for 0.5.30, which did not have all of the
