@@ -348,6 +348,13 @@
     (def (create-engine-node)
       (void))
 
+    ;;; Perform any further initialization of the engine node, before
+    ;;; setup is called.  This is separate from .CREATE-ENGINE-NODE so
+    ;;; that creation of the engine node and further initialization of
+    ;;; the node can be overridden independently.
+    (def (finish-initializing-engine-node)
+      (void))
+
     ;;; Create any child elements, and do one-time initialization.  We
     ;;; assume that .SETUP will be called in both normal runtime mode, and
     ;;; in editing mode (assuming we ever get a GUI editor).
@@ -1069,6 +1076,9 @@
       (.notify-enter)
       ;; If we have an associated engine node, create it now.
       (.create-engine-node)
+      ;; Do any other low-level initialization we need to do on the engine
+      ;; node before we begin setup.
+      (.finish-initializing-engine-node)
       ;; Do initial setup, and create any child elements.
       (.call-method-with-mandatory-super 'setup)
       ;; Let the node know all initialization functions have been run.

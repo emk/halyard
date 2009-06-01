@@ -113,15 +113,22 @@
     (after-updating shown?
       (set! (element-shown? self) (.shown?)))
 
+    (def (finish-initializing-engine-node)
+      ;; NOTE - As a performance optimization, because of the expense of
+      ;; primitive calls, we only set SHOWN? in the engine if it is
+      ;; different than the default.  This should eliminate two primitive
+      ;; calls in the default case.
+      ;; NOTE - This is overridden by %invisible-element%, since .SHOWN
+      ;; does not make much sense for invisible elements.  If there is
+      ;; more code added here, please check to see if we need to change
+      ;; %invisible-element% as well.
+      (unless (.shown?)
+        (set! (element-shown? self) (.shown?))))
+
     ;;; Return the bounding box of this element, or #f if it has no
     ;;; bounding-box.
     (def (bounding-box)
       #f)
-
-    (setup
-      ;; TODO - This is technically too late to set this value, and we should
-      ;; probably add a SHOWN? parameter to every object creation primitive.
-      (set! (element-shown? self) (.shown?)))
 
     ;;; Raise this element above its siblings.
     (def (raise-to-top!)
@@ -148,7 +155,13 @@
   (define-class %invisible-element% (%element%)
     (value at (point 0 0)) 
     (value shown? #f)
-    (default %has-engine-element? #f))
+    (default %has-engine-element? #f)
+
+    (def (finish-initializing-engine-node)
+      ;; By default, we don't have an engine node, so there's not much 
+      ;; initialization we can do.  This overrides the setup of
+      ;; SHOWN? in %element%.
+      (void)))
 
   ;;; The superclass of all native GUI elements which can be displayed
   ;;; on the stage.
@@ -169,10 +182,10 @@
   ;; Let the engine know whether we want a cursor.  Note that the engine
   ;; knows nothing about 'auto, so we need to map it to #f manually.
   (define (set-wants-cursor! elem value)
-    (call-prim 'WantsCursorSet (elem .full-name)
-                  (case value
-                    [[#f auto] #f]
-                    [[#t] #t])))
+    (call-prim 'WantsCursorSet (elem .full-name) 
+               (case value
+                 [[#f auto] #f]
+                 [[#t] #t])))
 
   ;; Let the engine know whether we're currently dragging this object.
   (define (set-in-drag-layer?! elem value)
@@ -300,11 +313,20 @@
                       (parent->card self (as <polygon> (.bounds)))
                       (make-node-event-dispatcher self) (.cursor))))
 
+    (def (finish-initializing-engine-node)
+      ;; Optimization so we don't incur an extra prim call overhead when
+      ;; setting wants-cursor to the default value.
+      (unless (eq? (.wants-cursor?) 'auto)
+        (set-wants-cursor! self (.wants-cursor?)))
+
+      ;; Optimization so we don't incur an extra prim call overhead when
+      ;; setting in-drag-layer? to the default value.
+      (if (.dragging?)
+        (set-in-drag-layer?! self (.dragging?))))
+
     (setup
       ;; We need to postpone this until the underlying engine object
       ;; is created.
-      (set-wants-cursor! self (.wants-cursor?))
-      (set-in-drag-layer?! self (.dragging?))
       (.invalidate))
 
     (def (bounding-box)
