@@ -199,12 +199,29 @@ void CairoContext::SetSourceColor(const GraphicsTools::Color &inColor) {
                           inColor.blue / 255.0, inColor.alpha / 255.0);
 }
 
-void CairoContext::TransformRectToUnitSquare(const wxRect &inRect,
+bool CairoContext::TransformRectToUnitSquare(const wxRect &inRect,
                                              int inStrokeWidth) {
-    cairo_translate(mCairo, inRect.GetX() + inStrokeWidth / 2.0,
-                    inRect.GetY() + inStrokeWidth / 2.0);
-    cairo_scale(mCairo, inRect.GetWidth() - inStrokeWidth,
-                inRect.GetHeight() - inStrokeWidth);
+    int height = inRect.GetHeight();
+    int width = inRect.GetWidth();
+
+    // TODO - I don't know whether our old drawing layer handled this case,
+    // but we should eventually try to do something reasonable.
+    if (inStrokeWidth > width || inStrokeWidth > width)
+        gLog.Warn("halyard.cairo",
+                  "Not implemented: %d pixel border on a %dx%d shape",
+                  inStrokeWidth, width, height);
+
+    // TODO - What if the width or the height is greater than 0, but less
+    // than the stroke width?
+    if (width - inStrokeWidth > 0 && height - inStrokeWidth > 0) {
+        cairo_translate(mCairo, inRect.GetX() + inStrokeWidth / 2.0,
+                        inRect.GetY() + inStrokeWidth / 2.0);
+        cairo_scale(mCairo, width - inStrokeWidth,
+                    height - inStrokeWidth);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 

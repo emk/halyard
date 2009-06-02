@@ -275,7 +275,8 @@ void DrawingArea::FillBox(const wxRect &inBounds,
         return;
     
     CairoContext cr(mSurface);
-    cr.TransformRectToUnitSquare(inBounds);
+    if (!cr.TransformRectToUnitSquare(inBounds))
+        return;
     cairo_rectangle(cr, 0, 0, 1, 1);
     cr.SetSourceColor(inColor);
     cairo_fill(cr);
@@ -293,7 +294,8 @@ void DrawingArea::OutlineBox(const wxRect &inBounds,
     CairoContext cr(mSurface);
 
     cairo_save(cr);
-    cr.TransformRectToUnitSquare(inBounds, inWidth);
+    if (!cr.TransformRectToUnitSquare(inBounds))
+        return;
     cairo_rectangle(cr, 0, 0, 1, 1);
     cairo_restore(cr); // Undo transformation before drawing stroke.
 
@@ -310,8 +312,9 @@ void DrawingArea::FillOval(const wxRect &inBounds,
     if (HasAreaOfZero())
         return;
     
-    CairoContext cr(mSurface);
-    cr.TransformRectToUnitSquare(inBounds);
+    CairoContext cr(mSurface); 
+    if (!cr.TransformRectToUnitSquare(inBounds))
+        return;
     cairo_arc(cr, 0.5, 0.5, 0.5, 0, 2 * M_PI);
     cr.SetSourceColor(inColor);
     cairo_fill(cr);
@@ -329,7 +332,8 @@ void DrawingArea::OutlineOval(const wxRect &inBounds,
     CairoContext cr(mSurface);
 
     cairo_save(cr);
-    cr.TransformRectToUnitSquare(inBounds, inWidth);
+    if (!cr.TransformRectToUnitSquare(inBounds))
+        return;
     cairo_arc(cr, 0.5, 0.5, 0.5, 0, 2 * M_PI);
     cairo_restore(cr); // Undo transformation before drawing stroke.
 

@@ -88,8 +88,10 @@ public:
     /// Transform the drawing context so that the square 0,0,1,1 will be
     /// mapped to inRect.  If you pass in inStrokeWidth, value of inRect
     /// will be inset by half of inStrokeWidth, allowing you to draw a
-    /// Halyard-style stroke entirely within inRect.
-    void TransformRectToUnitSquare(const wxRect &inRect, int inStrokeWidth = 0);
+    /// Halyard-style stroke entirely within inRect.  Returns true if the
+    /// transform succeeded, and false if the resulting matrix would be
+    /// invalid.
+    bool TransformRectToUnitSquare(const wxRect &inRect, int inStrokeWidth = 0);
 };
 
 /// A Cairo drawing context for a wxBitmap.  Note that this class does not
