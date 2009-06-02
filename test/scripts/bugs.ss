@@ -141,5 +141,26 @@
       (new-text (point 0 0) $caption-style " "
                 :name 'example :parent @workspace)))
 
+  (card /bugs/bug-f17014-element-initialization 
+      (%bug-card% 
+       :bug-id "F17014" :status 'fixed
+       :bug-title 
+       "0.5.31: Does not properly initialize elements with :shown? #f"
+       :instructions 
+       "You should see 4 sentences below, and they should be true")
+    (text hidden ((point 100 100) $caption-style "This should not be visible"
+                  :shown? #f))
+    (text explicit-shown ((below (.hidden) 10) $caption-style 
+                          "This should be visible" :shown? #t))
+    (text default-shown ((below (.explicit-shown) 10) $caption-style
+                         "This should also be visible"))
+    (text wants-cursor ((below (.default-shown) 10) $caption-style
+                        "This text should have a finger cursor"
+                        :wants-cursor? #t))
+    (text in-drag-layer ((below (.wants-cursor) 10) $caption-style
+                         "This text should be on top of the rectangle"
+                         :dragging? #t))
+    (rectangle rect ((.in-drag-layer.bounds) (color 0 70 50))))
+
   )
 

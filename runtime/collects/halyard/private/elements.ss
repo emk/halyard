@@ -314,6 +314,8 @@
                       (make-node-event-dispatcher self) (.cursor))))
 
     (def (finish-initializing-engine-node)
+      (super)
+
       ;; Optimization so we don't incur an extra prim call overhead when
       ;; setting wants-cursor to the default value.
       (unless (eq? (.wants-cursor?) 'auto)
