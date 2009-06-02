@@ -1,3 +1,101 @@
+0.5.32 - 2 June 2009
+
+In this release, we replace Halyard's offscreen drawing routines with
+Cairo.  Cairo is a fast, portable 2D graphics library, used by Firefox,
+Gnome and many other open source projects.
+
+We're merging the Cairo branch slightly ahead of schedule, because we're
+in the middle of performance tuning, and Cairo appears to be
+significantly faster than our old drawing code for at least one
+operation (drawing rectangles in transparent overlays), and potentially
+faster for a few other common operations.
+    
+Here is some data from the /benchmarking card.  All times are in
+microseconds, and numbers are accurate to the nearest 100 microseconds
+or so.  These benchmarks were performed in a Parallels VM on a year-old
+MacBook Pro, and Halyard was compiled in Release mode.
+    
+                        Before  Cairo
+  a. Clear opaque overlay  462    260
+  b. Fill opaque overlay   500    280
+  c. Clear alpha overlay   380    280
+  d. Fill alpha overlay   1982    382
+  e. Draw graphic          802    742
+  f. Mask                  702    822
+  g. Draw text            1022   1120
+  h. Measure text          922    842
+    
+Operations (a)-(c) appear to be faster, although the improvement is near
+the margin of error.  Operation (d) has improved enormously (and
+consistently, across many benchmarking trials).  Other operations are at
+or near the margin of error, with slight performance decreases in (f)
+and (g).  These latter two could very well be real--there are
+non-trivial code changes on both paths.  But as the values of (a) and
+(c) in the first column show, equivalent operations can vary by a
+hundred microseconds or so.
+
+This release fixes several long-standing drawing bugs, and adds several
+new APIs.
+
+* Bug fix: Diagonal lines now work on transparent overlays
+* Bug fix: Opaque images now on transparent overlays
+
+Now that we're using Cairo for offscreen drawing, we can support all
+drawing operations on transparent overlays.  This means no more "image
+with a single transparent pixel" hacks.
+
+* New: draw-oval and draw-oval-outline
+
+This version of Halyard includes two new drawing primitives.  Note that,
+in general, we don't intend to export a large number of these
+special-purpose primitives.  Instead, we hope to export Cairo's more
+flexible API, which can draw a wide variety of images using a relatively
+small set of functions.
+
+* New: %graphic% now takes :scale, :scale-x and :scale-y parameters
+* New: draw-graphic and measure-graphic now take :scale-x and :scale-y
+    parameters
+
+On an experimental basis, we're now exposing the ability to resize
+images.  These parameters are floating point numbers, relative to a
+scale 1.0.  In the future, we _may_ decide to move the scale parameters
+from %graphic% to %custom-element%.
+
+Eric Kidd (33):
+      DrawingArea: Add basic Cairo support
+      DrawingArea: Add support for DRAW-OVAL and DRAW-OVAL-OUTLINE
+      DrawingArea: Factor common code into CairoContext
+      DrawingArea: Draw rectangles using Cairo primitives
+      Add example code for diagonal lines
+      DrawingArea: Draw lines using Cairo
+      DrawingArea: Clear DrawingArea using Cairo
+      DrawingArea: Draw letters using Cairo
+      DrawingArea: Rename CairoContext::GetSurface -> CreateSurface
+      BREAKS WIN32: DrawingArea: Re-implement Mask using Cairo
+      DrawingArea: Delete DrawingAreaOpt.{h,cpp}
+      BREAKS WIN32: DrawingArea: Draw bitmaps using Cairo
+      Remove last vestigial support for _INCR_X, etc.
+      DrawingArea: Add scaling to DRAW-GRAPHIC
+      DrawingArea: Move CairoContext into a separate file
+      pixman: Put pixman.lib into pixman build directory
+      DrawingArea: Factor out bitmap measuring code
+      BREAKS WIN32: DrawingArea: Composite onto stage using Cairo
+      Stage: Use Cairo to manage clipping regions
+      Cairo: Create a CairoSurfacePtr class
+      Cairo: Extract CairoBitmapContext from CairoContext
+      BREAKS MAC: DrawingArea: Use a cairo_image_surface instead of a wxBitmap
+      Cairo: Include error strings in error messages
+      FIXES MAC & WIN32: ImageCache: Store loaded images as Cairo surfaces
+      Rename (graphic|surface) -> image in ImageCache, DrawingArea APIs
+      Clean up *Pic primitives.
+      Stage: Clear path after setting up clip
+      Make splash screen copyright text more attractive
+      Benchmark: Allow (benchmark ...) form to appear anywhere
+      Benchmark: Add benchmarks for simple drawing calls
+      Merge branch 'cairo' of ssh://imlsrc.dartmouth.edu/var/lib/git/halyard
+      DrawingArea: Do not try to fill 0-area shapes
+      Merge branch 'v0.5.31-fix' of ssh://imlsrc.dartmouth.edu/var/lib/git/halya
+
 0.5.31.1 - 2 June 2009
 
 This release fixes a regression introduced by the previous release.
