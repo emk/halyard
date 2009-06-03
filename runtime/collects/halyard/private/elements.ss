@@ -541,10 +541,11 @@
   (define-syntax with-dc
     (syntax-rules ()
       [(with-dc dc body ...)
-       (dynamic-wind
-           (lambda () (call-prim 'DcPush (dc .full-name)))
-           (lambda () (begin/var body ...))
-           (lambda () (call-prim 'DcPop (dc .full-name))))]))
+       (let [[full-name (dc .full-name)]]
+         (dynamic-wind
+             (lambda () (call-prim 'DcPush full-name))
+             (lambda () (begin/var body ...))
+             (lambda () (call-prim 'DcPop full-name))))]))
   (define-syntax-indent with-dc 1)
 
   ;;; Get the bounding rectangle of the current DC.
