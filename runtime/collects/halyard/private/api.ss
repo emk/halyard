@@ -359,7 +359,8 @@
        (define name (register-style :name 'name args ...))]))
   (define-syntax-indent define-stylesheet 1)
 
-  ;;; Draw a string of text.
+  ;;; Draw a string of text.  Returns the bounding box of the text as
+  ;;; drawn.
   ;;;
   ;;; @param RECT r The recentangle in which to draw the text.
   ;;;   The text may extend below the bottom of this box if necessary.

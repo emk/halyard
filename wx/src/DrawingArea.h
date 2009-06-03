@@ -185,9 +185,9 @@ public:
     /// co-ordinates relative to inSurface.  Only works for
     /// cairo_image_surface objects.
 	///
-    void DrawImage(CairoSurfacePtr inImage, wxCoord inX, wxCoord inY,
-                   double inScaleX = 1.0, double inScaleY = 1.0,
-                   wxRect *inClipRect = NULL);
+    wxRect DrawImage(CairoSurfacePtr inImage, wxCoord inX, wxCoord inY,
+                     double inScaleX = 1.0, double inScaleY = 1.0,
+                     wxRect *inClipRect = NULL);
 
     //////////
     /// Use the alpha channel of a bitmap to selectively mask parts of the

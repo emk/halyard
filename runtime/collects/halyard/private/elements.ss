@@ -487,6 +487,7 @@
 
   ;;; Draw a graphic loaded from PATH at point P in the current DC.  You
   ;;; may optionally specify a sub-rectangle of the graphic to draw.
+  ;;; Returns the bounding box of the graphic as drawn.
   (define (draw-graphic p path
                         &key [subrect :rect #f] [scale-x 1.0] [scale-y 1.0])
     (let [[native (resolve-content-path "graphics" path)]]

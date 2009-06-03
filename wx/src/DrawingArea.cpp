@@ -382,13 +382,15 @@ wxSize DrawingArea::MeasureImage(CairoSurfacePtr inImage,
                   ceil(inImage.GetHeight() * inScaleY));
 }
 
-void DrawingArea::DrawImage(CairoSurfacePtr inImage,
-                            wxCoord inX, wxCoord inY,
-                            double inScaleX, double inScaleY,
-                            wxRect *inClipRect)
+wxRect DrawingArea::DrawImage(CairoSurfacePtr inImage,
+                              wxCoord inX, wxCoord inY,
+                              double inScaleX, double inScaleY,
+                              wxRect *inClipRect)
 {
+    wxSize size(MeasureImage(inImage, inScaleX, inScaleY));
+    wxRect bounds(wxPoint(inX, inY), size);
     if (HasAreaOfZero())
-        return;
+        return bounds;
 
     CairoContext cr(mSurface);
 
@@ -405,8 +407,10 @@ void DrawingArea::DrawImage(CairoSurfacePtr inImage,
     cairo_set_source_surface(cr, inImage.get(), 0, 0);
     cairo_paint(cr);
 
-    InvalidateRect(wxRect(wxPoint(inX, inY),
-                          MeasureImage(inImage, inScaleX, inScaleY)));
+    // TODO - If we intersect bounds with inClipRect, we can invalidate
+    // fewer pixels.
+    InvalidateRect(bounds);
+    return bounds;
 }
 
 void DrawingArea::Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY)

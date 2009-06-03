@@ -652,8 +652,10 @@ static void draw_image(const std::string &inName, TPoint inLoc,
 						 wxRect *inClipRect = NULL)
 {
 	CairoSurfacePtr image(load_image(inName));
-	GetCurrentDrawingArea()->DrawImage(image, inLoc.X(), inLoc.Y(),
-                                       scale_x, scale_y, inClipRect);
+    wxRect bounds =
+        GetCurrentDrawingArea()->DrawImage(image, inLoc.X(), inLoc.Y(),
+                                           scale_x, scale_y, inClipRect);
+    ::SetPrimitiveResult(WxToTRect(bounds));
 }
 
 DEFINE_PRIMITIVE(LoadGraphic) {
@@ -980,11 +982,13 @@ DEFINE_PRIMITIVE(TextAA) {
 
     inArgs >> SymbolName(style) >> bounds >> text;
 
-	gStyleSheetManager.Draw(style, text,
-							GraphicsTools::Point(bounds.Left(),
-												 bounds.Top()),
-							bounds.Right() - bounds.Left(),
-							GetCurrentDrawingArea());
+	TRect bounds_used =
+        gStyleSheetManager.Draw(style, text,
+                                GraphicsTools::Point(bounds.Left(),
+                                                     bounds.Top()),
+                                bounds.Right() - bounds.Left(),
+                                GetCurrentDrawingArea());
+    ::SetPrimitiveResult(bounds_used);
 }
 
 DEFINE_PRIMITIVE(Wait) {

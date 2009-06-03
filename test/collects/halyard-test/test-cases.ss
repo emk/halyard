@@ -30,6 +30,34 @@
     result)
   
   ;;=======================================================================
+  ;;  Drawing test cases
+  ;;=======================================================================
+
+  (define-class %drawing-test% (%element-test-case%)
+    (def (dc)
+      (%custom-element% .new :name 'scratch-dc :bounds (rect 0 0 300 300)))
+      
+    (test "draw-text should return the bounds of the drawn text"
+      (with-dc (.dc)
+        (assert-equals
+         (draw-text (rect 10 20 110 220) $caption-style "Hello, world!")
+         (move-rect-left-top-to
+          (measure-text $caption-style "Hello, world!")
+          (point 10 20)))))
+
+    (test "measure-graphic should return the bounds of the drawn graphic"
+      (with-dc (.dc)
+        (assert-equals
+         (draw-graphic (point 10 20) "lens.png")
+         (move-rect-left-top-to (measure-graphic "lens.png") (point 10 20)))))
+    )
+
+  (card /tests/drawing-test
+      (%element-test-suite%
+       :tests (list %drawing-test%)))
+
+
+  ;;=======================================================================
   ;;  Element Syntax test cases
   ;;=======================================================================
   
