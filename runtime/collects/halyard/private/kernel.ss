@@ -433,6 +433,9 @@
       (when (%kernel-paused?)
         (%kernel-clear-state))))
 
+  (define (%kernel-set-should-wake-up)
+    (set! *%kernel-should-wake-up?* #t))
+
   (define (%kernel-paused?)
     (eq? *%kernel-state* 'PAUSED))
 
@@ -572,6 +575,7 @@
   ;; Some slightly less important global state variables.  See the
   ;; functions which define and use them for details.
   (define *%kernel-jump-card* #f)
+  (define *%kernel-should-wake-up?* #f)
 
   ;; Deferred thunks are used to implement (deferred-callback () ...).
   ;; See run-deferred for details.
@@ -613,8 +617,10 @@
     ;; resulted in a number of subtle bugs, and should probably be
     ;; redesigned.
     (unless *%kernel-running-callback?*
-      (when (have-prim? 'WakeUpIfNecessary)
-        (%call-prim 'WakeUpIfNecessary))))
+      (when *%kernel-should-wake-up?*
+        (set! *%kernel-should-wake-up?* #f)
+        (%kernel-wake-up)
+        (trace 'halyard.wait "wait: finished waking up"))))
 
   (define (%kernel-assert-safe-to-run-deferred-thunks)
     ;; Here's a whole list of things that should be true if we're about

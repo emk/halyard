@@ -91,7 +91,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 						 inStageSize.GetHeight(), 24),
 	  mOffscreenFadePixmap(inStageSize.GetWidth(),
 						   inStageSize.GetHeight(), 24),
-	  mDesiredCursor(NULL), mActualCursor(NULL), mNeedToWakeUp(false),
+	  mDesiredCursor(NULL), mActualCursor(NULL),
       mElementsHaveChanged(false),
       mShouldHideCursorUntilMouseMoved(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
@@ -605,23 +605,9 @@ void Stage::InterpreterSleep()
     TInterpreter::GetInstance()->Pause();
 }
 
-/// Wake up our Scheme interpreter.
-void Stage::InterpreterWakeUp()
-{
-	// We can't check TInterpreter::GetInstance()->Paused() because
-	// the engine might have already woken the script up on its own.
-	// TODO - Keep track of who we're sleeping for.
-    ASSERT(TInterpreter::HaveInstance());
-    TInterpreter::GetInstance()->WakeUp();
-    gLog.Debug("halyard.wait", "wait: Finished waking up");
-}
-
-void Stage::InterpreterWakeUpIfNecessary() {
-    if (mNeedToWakeUp) {
-        mNeedToWakeUp = false;
-        if (TInterpreter::HaveInstance())
-            InterpreterWakeUp();
-    }
+void Stage::InterpreterSetShouldWakeUp() {
+    if (TInterpreter::HaveInstance())
+        TInterpreter::GetInstance()->SetShouldWakeUp();
 }
 
 Stage::ElementCollection::iterator
@@ -669,13 +655,6 @@ void Stage::OnTimer(wxTimerEvent& inEvent)
     // If we've reached the end of our current WAIT, end it.
 	if (mWaitElement && mWaitElement->HasReachedFrame(mWaitFrame))
 		EndWait();
-
-    // We used to call InterpreterWakeUpIfNecessary here (and also in
-    // Stage::NotifyCardEntered), because it was illegal to call
-    // InterpreterWakeUp from a callback. But we now have a supposedly
-    // better system, involving interpreter calls to WakeUpIfNecessary.  So
-    // we don't do call InterpreterWakeUpIfNecessary here, because even
-    // though it was perfectly safe and legal, it wasn't sufficient.
 
 	// Send an idle event to the Scheme engine occasionally.
 	if (ShouldSendEvents() &&
@@ -1067,7 +1046,6 @@ void Stage::Screenshot(const wxString &inFilename)
 bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 {
 	ASSERT(!mWaitElement);
-    ASSERT(!mNeedToWakeUp);
 
 	// Look for our element.
 	ElementCollection::iterator i =
@@ -1114,7 +1092,7 @@ void Stage::EndWait()
 	ASSERT(mWaitElement.get());
 	mWaitElement = MediaElementPtr();
 	mWaitFrame = 0;
-    mNeedToWakeUp = true;
+    InterpreterSetShouldWakeUp();
 }
 
 void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)

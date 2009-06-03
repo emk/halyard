@@ -153,6 +153,11 @@ public:
 	/// which aren't paused; check to be certain.
 	///
 	virtual void WakeUp(void) = 0;
+
+    //////////
+    /// Set a flag indicating that we should wake up at the next
+    /// reasonable opportunity.
+    virtual void SetShouldWakeUp() = 0;
 	
 	//////////
 	/// Is the CardManager paused?
