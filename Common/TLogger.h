@@ -112,6 +112,10 @@ public:
     TLogger() : mIsInMaybeHandleLogMessage(false) {}
     virtual ~TLogger() {}
 
+    /// Does anybody care about log messages concerning inCategory at
+    /// inLevel or below?
+    bool IsEnabledFor(Level inLevel, const std::string &inCategory);
+
     /// Log a message, and possibly quit the engine or report a crash
     /// if the log level is high enough.
     ///

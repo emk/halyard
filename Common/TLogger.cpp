@@ -275,6 +275,11 @@ void TLogger::ExitWithError(CrashType inType, const std::string &inMessage) {
     }
 }
 
+bool TLogger::IsEnabledFor(Level inLevel, const std::string &inCategory) {
+    log::Logger logger(log::Logger::getInstance(inCategory));
+    return logger.isEnabledFor(inLevel);
+}
+
 
 //=========================================================================
 //  TLogger wrapper methods

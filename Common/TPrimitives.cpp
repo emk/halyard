@@ -183,6 +183,7 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
     
     // Build the log category name for this primitive.
     std::string log_category("halyard.prim." + inName);
+    bool should_log(gLog.IsEnabledFor(TLogger::kTrace, log_category));
 
     // Find the primitive.
     std::map<std::string,PrimitiveFunc>::iterator found =
@@ -194,7 +195,7 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 
     // Log the primitive before executing, so we know what was
     // happening if it crashes.
-    {
+    if (should_log) {
         std::ostringstream out;
         out << ">>> " << inName;
         if (inArgs.HasMoreArguments())
@@ -209,7 +210,7 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
     (*primitive)(inArgs);
 
     // Log primitive and return value after executing.
-    { 
+    if (should_log) { 
         std::ostringstream out;
         out << "<<< " << inName;
         if (!gVariableManager.IsNull("_result")) {
