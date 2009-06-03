@@ -50,10 +50,10 @@
                   'goodbye 'something 'something-else 'lorem 'ipsum 'dolor
                   'sit 'amet 1 2 3 4 5 6 7 8 9 10)))
 
-  (define-benchmark "Call UntracedNoop primitive" 1000
+  (define-benchmark "Call UntracedNoop primitive" 10000
     (benchmark (call-prim 'UntracedNoop)))
 
-  (define-benchmark "Call Noop primitive" 1000
+  (define-benchmark "Call Noop primitive" 10000
     (benchmark (call-prim 'Noop)))
 
   (define-benchmark "Create and destroy %invisible-element%" 100
