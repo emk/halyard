@@ -185,6 +185,7 @@ public:
     virtual bool CanSuspend();
 	virtual void Pause(void);
 	virtual void WakeUp(void);
+    virtual void SetShouldWakeUp();
 	virtual bool Paused(void);
 	virtual void KillCurrentCard(void);
 	virtual void JumpToCardByName(const char *inName);

@@ -1002,16 +1002,6 @@ DEFINE_PRIMITIVE(Wait) {
 	wxGetApp().GetStage()->Wait(ToWxString(name), frame);
 }
 
-DEFINE_PRIMITIVE(WakeUpIfNecessary) {
-    // We need to check if we still have a link to the stage.
-    // StageFrame::OnClose may sever that link when we're doing event
-    // processing in a call to HalyardApp::IdleProc, and when the engine
-    // returns to Scheme, we'll be the next function called before
-    // kernel.ss notices that the interpreter has been killed.
-    if (wxGetApp().HaveStage())
-        wxGetApp().GetStage()->InterpreterWakeUpIfNecessary();
-}
-
 DEFINE_PRIMITIVE(WantsCursorGet) {
 	std::string name;
 	inArgs >> SymbolName(name);
@@ -1161,7 +1151,6 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(MaybeExitScriptGui);
 	REGISTER_PRIMITIVE(TextAA);
     REGISTER_PRIMITIVE(Wait);
-    REGISTER_PRIMITIVE(WakeUpIfNecessary);
     REGISTER_PRIMITIVE(WantsCursorGet);
     REGISTER_PRIMITIVE(WantsCursorSet);
     REGISTER_PRIMITIVE(Zone);

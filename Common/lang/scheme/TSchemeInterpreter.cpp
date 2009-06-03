@@ -721,6 +721,11 @@ void TSchemeInterpreter::WakeUp(void)
     (void) CallSchemeSimple("%kernel-wake-up");
 }
 
+void TSchemeInterpreter::SetShouldWakeUp(void)
+{
+    (void) CallSchemeSimple("%kernel-set-should-wake-up");
+}
+
 bool TSchemeInterpreter::Paused(void)
 {
     // MANUAL GC PROOF REQUIRED - We do no allocation after the call to

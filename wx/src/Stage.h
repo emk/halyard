@@ -178,11 +178,6 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
 	///
 	ElementPtr mGrabbedElement;
 
-    //////////
-    /// Are we currently waiting for a movie to reach a specified time?
-    ///
-    bool mNeedToWakeUp;
-
 	//////////
 	/// The movie we're waiting on, or NULL if we're not waiting on anything.
 	///
@@ -280,10 +275,10 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
 	///
 	void InterpreterSleep();
 
-	//////////
-	/// Wake the interpreter up.
-	///
-	void InterpreterWakeUp();
+    //////////
+    /// Wake the interpreter up at the next opportunity.
+    ///
+    void InterpreterSetShouldWakeUp();
 
 	//////////
 	/// Find an element by name, and return an iterator.
@@ -492,11 +487,6 @@ public:
     /// Update the TStateDB system clock.
     ///
     void UpdateClockKeysInStateDB();
-
-    //////////
-    /// Wake the interpreter up if mNeedToWakeUp is true.
-    ///
-    void InterpreterWakeUpIfNecessary();
 
 	//////////
 	/// Redirect all further drawing calls to the specified element until
