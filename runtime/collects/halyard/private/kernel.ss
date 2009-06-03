@@ -819,6 +819,8 @@
   ;;  Node/Engine Interface
   ;;=======================================================================
 
+  (provide %real-engine%)
+
   (define (enable-expensive-events enable?)
     (when (have-prim? 'EnableExpensiveEvents)
       (call-prim 'EnableExpensiveEvents enable?)))
@@ -861,7 +863,6 @@
         (call-prim 'DeleteElements (elem .full-name))))
 
     (def (exit-node node)
-      (call-prim 'StateDbUnregisterListeners (node .full-name))
       (%kernel-cancel-deferred-thunks-for node))
     )
 

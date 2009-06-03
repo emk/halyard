@@ -48,7 +48,7 @@
 
   (provide set-state-db! register-state-db-fn!
            state-db-fn define-state-db-fn define-state-db-listener)
-  
+
   ;;; Set the specified key in the state database.
   ;;;
   ;;; @param SYMBOL key The key to set.
@@ -62,6 +62,8 @@
   ;;; @param NODE node The node to which this listener should be attached.
   ;;; @param LISTENER listener 
   (define (register-state-db-fn! node fn)
+    (with-instance node
+      (set! (slot '%node-has-state-db-listeners?) #t))
     (call-prim 'StateDbRegisterListener (node .full-name) fn))
 
   (define (make-state-db-fn f)
@@ -108,6 +110,24 @@
         ;; which a reasonable SELF variable is defined.
         (register-state-db-fn! #,(datum->syntax-object #'name 'self) value))]))
   (define-syntax-indent define-state-db-listener 1)
+
+  ;; We monkey patch the %real-engine% class in order to unregister our
+  ;; nodes exactly when the engine is exiting the node.  This is a little
+  ;; bit questionable, but matches what we've been doing and have tested
+  ;; for a while.  We may be able to move this to monkey patching 
+  ;; .NOTIFY-EXIT on %node%, but we would need to do some more reasoning
+  ;; and testing to make sure that's the right time.
+  (with-instance %real-engine%
+    (advise before (exit-node node)
+      ;; We need to access a slot on the node directly, so we open it 
+      ;; with WITH-INSTACE.  This is a performance hack to avoid extra
+      ;; mizzen dispatch.
+      (with-instance node
+        ;; A performance optimization to avoid an extra prim call for the
+        ;; vast majority of nodes that don't have state-db listeners.
+        (when (and (has-slot? '%node-has-state-db-listeners?)
+                   (slot '%node-has-state-db-listeners?))
+          (call-prim 'StateDbUnregisterListeners (.full-name))))))
 
 
   ;;;======================================================================
