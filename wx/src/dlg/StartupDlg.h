@@ -24,6 +24,7 @@
 #define StartupDlg_H
 
 #include "XrcDlg.h"
+#include <wx/docview.h>
 
 //////////
 /// This is the dialog which pops up at startup time and asks you whether
@@ -33,6 +34,7 @@ class StartupDlg : public XrcDlg
 {
     DECLARE_EVENT_TABLE();
 	
+    wxFileHistory mRecentFiles;
 	wxRadioButton *mRadioRecent;
 	wxRadioButton *mRadioOpen;
 	wxRadioButton *mRadioNew;

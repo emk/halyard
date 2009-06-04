@@ -24,6 +24,8 @@
 
 #include <wx/laywin.h>
 #include <wx/config.h>
+// For wxFileHistory.
+#include <wx/docview.h>
 
 #include "TVersion.h"
 #include "TInterpreter.h"
@@ -40,6 +42,7 @@
 #include "ProgramTree.h"
 #include "LocationBox.h"
 #include "FancyStatusBar.h"
+#include "CommonWxConv.h"
 #include "TestHarness.h"
 #include "Listener.h"
 #include "Timecoder.h"
@@ -631,31 +634,33 @@ void StageFrame::OpenDocument()
                      wxT("Halyard program (application.halyard)|application.halyard"),
                      wxFD_OPEN);
 
-    // Set the dialog's default path to the current working directory,
-    // if it appears to be a program (contains a application.halyard
-    // file).  Otherwise, try defaulting to the last opened program.
-	shared_ptr<wxConfigBase> config(new wxConfig);
-	wxString recent;
-    FileSystem::Path data_file = 
-        FileSystem::GetBaseDirectory().AddComponent("application.halyard");
-    
-    if (data_file.DoesExist()) 
-        dlg.SetPath(wxString(data_file.ToNativePathString().c_str(),
-                             wxConvLocal));
-	else if (config->Read(wxT("/Recent/DocPath"), &recent))
-		dlg.SetPath(recent);
+    // We keep track of any files we open from within this dialog using a
+    // wxFileHistory object.  By default, we offer to open the
+    // most-recently-seen file.  Note that if we were launched from inside
+    // a Halyard-based program, we may have added that program to our
+    // recent files list.
+    wxFileHistory history;
+    shared_ptr<wxConfigBase> config(new wxConfig);
+    config->SetPath(wxT("/Recent"));
+    history.Load(*config);
+    if (history.GetCount() > 0) {
+        std::string prev_dir_str(ToStdString(history.GetHistoryFile(0)));
+        FileSystem::Path prev_dir(FileSystem::Path::NativePath(prev_dir_str));
+        FileSystem::Path prev_file(prev_dir / "application.halyard");
+        if (prev_file.DoesExist())
+            dlg.SetPath(ToWxString(prev_file.ToNativePathString()));
+    }
 
-	if (dlg.ShowModal() == wxID_OK)
-	{
+	if (dlg.ShowModal() == wxID_OK) {
         // We call GetDirectory instead of GetPath because we don't actually
         // care about the file itself--it's just a known file within a valid
         // Halyard program directory.
 		wxString dir = dlg.GetDirectory();
         OpenDocument(dir);
 
-        // We want the full path here--not just the directory--to save
-        // typing the next time the user opens this document.
-		config->Write(wxT("/Recent/DocPath"), dlg.GetPath());
+        // If we successfully opened the document, add it to our history.
+        history.AddFileToHistory(dir);
+        history.Save(*config);
 	}
 }
 

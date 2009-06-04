@@ -27,6 +27,7 @@
 #include <wx/evtloop.h>
 #include <wx/sysopt.h>
 #include <wx/stdpaths.h>
+#include <wx/config.h>
 #include <wx/fileconf.h>
 #include <wx/filefn.h>
 
@@ -425,11 +426,22 @@ bool HalyardApp::OnInit() {
     // launched from.
     FileSystem::Path candidate_directory(FileSystem::GetBaseDirectory());
     do {
-        FileSystem::Path 
-            candidate_path(candidate_directory.AddComponent
-                           ("application.halyard"));
-        if(::wxFileExists(ToWxString(candidate_path.ToNativePathString()))) {
+        FileSystem::Path candidate_path(candidate_directory /
+                                        "application.halyard");
+        if (candidate_path.DoesExist()) {
             FileSystem::SetBaseDirectory(candidate_directory);
+            if (TInterpreterManager::IsInAuthoringMode()) {
+                // If we're in authoring mode, artificially add this
+                // directory to our our recent files list, so that it
+                // appears in StartupDlg.
+                wxFileHistory history;
+                shared_ptr<wxConfigBase> config(new wxConfig);
+                config->SetPath(wxT("/Recent"));
+                history.Load(*config);
+                std::string dir(candidate_directory.ToNativePathString());
+                history.AddFileToHistory(ToWxString(dir));
+                history.Save(*config);
+            }
             break;
         }
     } while (candidate_directory.MaybeGetParentDirectory(candidate_directory));

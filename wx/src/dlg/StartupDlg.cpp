@@ -21,6 +21,7 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
+#include <wx/config.h>
 #include "../HalyardApp.h"
 #include "../StageFrame.h"
 #include "StartupDlg.h"
@@ -42,20 +43,26 @@ StartupDlg::StartupDlg(wxWindow *inParent)
 	Bind(mRadioRecent, XRCID("DLG_STARTUP_RECENT"));
 	Bind(mRecentList, XRCID("DLG_STARTUP_LIST"));
 
-    // XXX - HACK - We need to SetFocus here to prevent later
-    // calls to SetFocus from selecting mRadioNew as the default
-    // button.  Presumably this bug will get fixed in wxWindows.
-    //
-    // https://sourceforge.net/tracker/index.php?func=detail&aid=992497&group_id=9863&atid=109863
-    mRadioOpen->SetFocus();
-	mRadioOpen->SetValue(true);
-
     /// \todo Turn "new program" back on when it works better.
     mRadioNew->Disable();
 
-	// TODO - Implement the recent documents list.
-	mRadioRecent->Disable();
-	mRecentList->Disable();
+    // Load our file history.
+    shared_ptr<wxConfigBase> config(new wxConfig);
+    config->SetPath(wxT("/Recent"));
+    mRecentFiles.Load(*config);
+    if (mRecentFiles.GetCount() == 0) {
+        mRadioRecent->Disable();
+        mRecentList->Disable();
+        mRadioOpen->SetValue(true);
+    } else {
+        // Insert our files into our dialog box.
+        std::vector<wxString> files;
+        for (size_t i = 0; i < mRecentFiles.GetCount(); i++)
+            files.push_back(mRecentFiles.GetHistoryFile(i));
+        mRecentList->InsertItems(files.size(), &files[0], 0);
+        mRadioRecent->SetValue(true);
+        mRecentList->Select(0);
+    }
 }
 
 void StartupDlg::OnOK(wxCommandEvent &inEvent)
@@ -63,11 +70,31 @@ void StartupDlg::OnOK(wxCommandEvent &inEvent)
 	Hide();
 
 	BEGIN_EXCEPTION_TRAPPER()
-		if (mRadioNew->GetValue())
-			wxGetApp().GetStageFrame()->NewDocument();
-		else if (mRadioOpen->GetValue())
-			wxGetApp().GetStageFrame()->OpenDocument();
-	END_EXCEPTION_TRAPPER(TException::ReportException)
+
+    if (mRadioNew->GetValue()) {
+        wxGetApp().GetStageFrame()->NewDocument();
+    } else if (mRadioOpen->GetValue()) {
+        wxGetApp().GetStageFrame()->OpenDocument();
+    } else if (mRadioRecent->GetValue()) {
+        // Get the selected directory name.
+        int selected(mRecentList->GetSelection());
+        wxString dir(mRecentFiles.GetHistoryFile(selected));
+
+        if (!wxFileName::DirExists(dir)) {
+            gLog.Error("halyard", "This program cannot be found");
+        } else {
+            // Open the program in dir.
+            wxGetApp().GetStageFrame()->OpenDocument(dir);
+
+            // Add dir to our recent files list.
+            mRecentFiles.AddFileToHistory(dir);
+            shared_ptr<wxConfigBase> config(new wxConfig);
+            config->SetPath(wxT("/Recent"));
+            mRecentFiles.Save(*config);
+        }
+    }
+
+    END_EXCEPTION_TRAPPER(TException::ReportException)
 	
 	EndModal(wxID_OK);
 }
