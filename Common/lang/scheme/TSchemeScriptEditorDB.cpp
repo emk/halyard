@@ -38,7 +38,8 @@ void TSchemeScriptEditorDB::UpdateDatabase() {
         ScriptEditorDB::UpdateDatabase();
         ProcessTree("scripts", ".ss");
         ProcessTree("collects", ".ss");
-        ProcessTree("runtime", ".ss");
+        ProcessTree("runtime/collects", ".ss");
+        ProcessTree("runtime/plt", ".ss");
         
         transaction.Commit();
     }
