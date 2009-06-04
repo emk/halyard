@@ -43,9 +43,6 @@ StartupDlg::StartupDlg(wxWindow *inParent)
 	Bind(mRadioRecent, XRCID("DLG_STARTUP_RECENT"));
 	Bind(mRecentList, XRCID("DLG_STARTUP_LIST"));
 
-    /// \todo Turn "new program" back on when it works better.
-    mRadioNew->Disable();
-
     // Load our file history.
     shared_ptr<wxConfigBase> config(new wxConfig);
     config->SetPath(wxT("/Recent"));
@@ -53,7 +50,7 @@ StartupDlg::StartupDlg(wxWindow *inParent)
     if (mRecentFiles.GetCount() == 0) {
         mRadioRecent->Disable();
         mRecentList->Disable();
-        mRadioOpen->SetValue(true);
+        mRadioNew->SetValue(true);
     } else {
         // Insert our files into our dialog box.
         std::vector<wxString> files;

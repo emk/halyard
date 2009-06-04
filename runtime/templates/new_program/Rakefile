@@ -1,0 +1,6 @@
+# Command-line build tools.  Run 'rake --tasks' for instructions.  -*- Ruby -*-
+require 'config/boot'
+require 'halyard/rake'
+
+# By default, run our unit tests.
+task :default => "halyard:test"

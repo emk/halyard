@@ -206,6 +206,12 @@ class StageFrame : public SashFrame,
     void UpdateVideoMode(bool inIsFullScreen, bool inIsIconized);
 
     //////////
+    /// Copy files from inTemplateName into inDir, overwriting an exisiting
+    /// files.
+    ///
+    void UseTemplate(const wxString &inDir, const wxString &inTemplateName);
+
+    //////////
     /// Try to load an icon with the specified name into our bundle. If
     /// we succeed, set ioHaveIcon to true.
     ///

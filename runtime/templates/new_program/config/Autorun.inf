@@ -1,0 +1,5 @@
+[autorun]
+open=My_Program_Setup.exe
+label=My Program
+icon=application.ico,0
+

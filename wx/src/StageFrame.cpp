@@ -26,6 +26,7 @@
 #include <wx/config.h>
 // For wxFileHistory.
 #include <wx/docview.h>
+#include <wx/dir.h>
 
 #include "TVersion.h"
 #include "TInterpreter.h"
@@ -599,30 +600,82 @@ void StageFrame::UpdateVideoMode(bool inIsFullScreen, bool inIsIconized) {
     }
 }
 
+void StageFrame::UseTemplate(const wxString &inDir,
+                             const wxString &inTemplateName)
+{
+    // Locate our template directory.
+    FileSystem::Path template_path(FileSystem::GetRuntimeDirectory() /
+                                  "templates" / ToStdString(inTemplateName));
+    ASSERT(template_path.DoesExist());
+    wxString template_dir(ToWxString(template_path.ToNativePathString()));
+
+    // Recursively generate a list of all files in our template directory.
+    wxArrayString files;
+    wxDir::GetAllFiles(template_dir, &files, wxEmptyString,
+                       wxDIR_FILES | wxDIR_DIRS | wxDIR_HIDDEN);
+
+    // Copy all the files we found to inDir.
+    for (wxArrayString::iterator i(files.begin()); i != files.end(); ++i) {
+        // Turn our absolute path back into a relative path.
+        wxFileName file(*i);
+        if (!file.MakeRelativeTo(template_dir))
+            gLog.Fatal("halyard",
+                       "Can't construct relative path in UseTemplate");
+
+        // Make sure the destination directory exists and copy the file.
+        wxString sep(wxFileName::GetPathSeparator());
+        wxFileName::Mkdir(inDir + sep + file.GetPath(), 0777, // Umask applied.
+                          wxPATH_MKDIR_FULL);
+        ::wxCopyFile(*i, inDir + sep + file.GetFullPath());
+    }
+}
+
 void StageFrame::NewDocument()
 {
 	wxASSERT(mDocument == NULL);
-	wxDirDialog dlg(this,
-                    wxT("Add Halyard data to an existing program folder:"));
+	wxFileDialog dlg(this, wxT("New Halyard program"), wxEmptyString,
+                     wxEmptyString, wxFileSelectorDefaultWildcardStr,
+                     wxFD_SAVE);
 
-	shared_ptr<wxConfigBase> config(new wxConfig);
-	wxString recent;
-	if (config->Read(wxT("/Recent/DocPath"), &recent))
-		dlg.SetPath(recent);
+	if (dlg.ShowModal() == wxID_OK) {
+        // Create a directory to hold our program.
+		wxString dir(dlg.GetPath());
+        if (::wxFileExists(dir))
+            THROW("Cannot overwrite an old file with a new program");
+        wxFileName::Mkdir(dir);
 
-	if (dlg.ShowModal() == wxID_OK)
-	{
-		wxString file = dlg.GetPath();
-		mDocument = new Document(std::string(file.mb_str()));
-		config->Write(wxT("/Recent/DocPath"), file);
+        // Add necessary files to the new project.
+        UseTemplate(dir, wxT("new_program"));
+        UseTemplate(dir, wxT("update_tools"));
 
-		ProgramPropDlg prop_dlg(this, mDocument->GetHalyardProgram());
-		prop_dlg.ShowModal();
+        // Fill in reasonable default properties for the program.  We used
+        // to ask the user to fill these in for us, but that added an extra
+        // step to program creation.
+		mDocument = new Document(ToStdString(dir));
+        Halyard::HalyardProgram *program(mDocument->GetHalyardProgram());
+        wxFileName dir_name(dir, wxT(""));
+        program->SetString("name", ToStdString(dir_name.GetDirs().Last()));
+        program->SetString("copyright",
+                           ToStdString(wxT("Copyright ") +
+                                       wxDateTime::Now().Format(wxT("%Y")) +
+                                       wxT(" ") + ::wxGetUserName()));
+        mDocument->Save();
 
+        // TODO - This code is duplicated in OpenDocument.
 		SetObject(mDocument->GetHalyardProgram());
 		mProgramTree->RegisterDocument(mDocument);
         CrashReporter::GetInstance()->RegisterDocument(mDocument);
 		mStage->Show();
+
+        // Add the newly-created program to our recent files list.
+        // TODO - This code is duplicated in OpenDocument and several other
+        // places.
+        wxFileHistory history;
+        shared_ptr<wxConfigBase> config(new wxConfig);
+        config->SetPath(wxT("/Recent"));
+        history.Load(*config);
+        history.AddFileToHistory(dir);
+        history.Save(*config);
 	}
 }
 
@@ -844,9 +897,7 @@ void StageFrame::OnExit(wxCommandEvent &inEvent)
 
 void StageFrame::UpdateUiNewProgram(wxUpdateUIEvent &inEvent)
 {
-	//inEvent.Enable(mDocument == NULL);
-    /// \todo Turn "new program" back on when it works better.
-    inEvent.Enable(false);
+	inEvent.Enable(AreDevToolsAvailable() && mDocument == NULL);
 }
 
 void StageFrame::OnNewProgram(wxCommandEvent &inEvent)
