@@ -46,16 +46,16 @@ StartupDlg::StartupDlg(wxWindow *inParent)
     // Load our file history.
     shared_ptr<wxConfigBase> config(new wxConfig);
     config->SetPath(wxT("/Recent"));
-    mRecentFiles.Load(*config);
-    if (mRecentFiles.GetCount() == 0) {
+    mHistory.Load(*config);
+    if (mHistory.GetCount() == 0) {
         mRadioRecent->Disable();
         mRecentList->Disable();
         mRadioNew->SetValue(true);
     } else {
         // Insert our files into our dialog box.
         std::vector<wxString> files;
-        for (size_t i = 0; i < mRecentFiles.GetCount(); i++)
-            files.push_back(mRecentFiles.GetHistoryFile(i));
+        for (size_t i = 0; i < mHistory.GetCount(); i++)
+            files.push_back(mHistory.GetHistoryFile(i));
         mRecentList->InsertItems(files.size(), &files[0], 0);
         mRadioRecent->SetValue(true);
         mRecentList->Select(0);
@@ -75,7 +75,7 @@ void StartupDlg::OnOK(wxCommandEvent &inEvent)
     } else if (mRadioRecent->GetValue()) {
         // Get the selected directory name.
         int selected(mRecentList->GetSelection());
-        wxString dir(mRecentFiles.GetHistoryFile(selected));
+        wxString dir(mHistory.GetHistoryFile(selected));
 
         if (!wxFileName::DirExists(dir)) {
             gLog.Error("halyard", "This program cannot be found");

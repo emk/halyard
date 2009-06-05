@@ -34,7 +34,7 @@ class StartupDlg : public XrcDlg
 {
     DECLARE_EVENT_TABLE();
 	
-    wxFileHistory mRecentFiles;
+    wxFileHistory mHistory;
 	wxRadioButton *mRadioRecent;
 	wxRadioButton *mRadioOpen;
 	wxRadioButton *mRadioNew;
