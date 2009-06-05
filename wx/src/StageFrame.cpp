@@ -660,22 +660,7 @@ void StageFrame::NewDocument()
                                        wxDateTime::Now().Format(wxT("%Y")) +
                                        wxT(" ") + ::wxGetUserName()));
         mDocument->Save();
-
-        // TODO - This code is duplicated in OpenDocument.
-		SetObject(mDocument->GetHalyardProgram());
-		mProgramTree->RegisterDocument(mDocument);
-        CrashReporter::GetInstance()->RegisterDocument(mDocument);
-		mStage->Show();
-
-        // Add the newly-created program to our recent files list.
-        // TODO - This code is duplicated in OpenDocument and several other
-        // places.
-        wxFileHistory history;
-        shared_ptr<wxConfigBase> config(new wxConfig);
-        config->SetPath(wxT("/Recent"));
-        history.Load(*config);
-        history.AddFileToHistory(dir);
-        history.Save(*config);
+        FinishOpeningDocument(dir);
 	}
 }
 
@@ -704,27 +689,41 @@ void StageFrame::OpenDocument()
             dlg.SetPath(ToWxString(prev_file.ToNativePathString()));
     }
 
+    // Destroy our wxConfig object before we call OpenDocument, so that we
+    // don't clobber the changes made by FinishOpeningDocument.
+    config.reset();
+
 	if (dlg.ShowModal() == wxID_OK) {
         // We call GetDirectory instead of GetPath because we don't actually
         // care about the file itself--it's just a known file within a valid
         // Halyard program directory.
 		wxString dir = dlg.GetDirectory();
         OpenDocument(dir);
-
-        // If we successfully opened the document, add it to our history.
-        history.AddFileToHistory(dir);
-        history.Save(*config);
 	}
 }
 
 void StageFrame::OpenDocument(const wxString &inDirPath) {
     mDocument = new Document(std::string(inDirPath.mb_str()), Document::OPEN);
+    FinishOpeningDocument(inDirPath);
+}
+
+void StageFrame::FinishOpeningDocument(const wxString &inDirPath) {
     SetObject(mDocument->GetHalyardProgram());
     mProgramTree->RegisterDocument(mDocument);
     CrashReporter::GetInstance()->RegisterDocument(mDocument);
     CheckForUpdateLockFile(); // Needs to come after CrashReporter setup.
     mStage->MaybeShowSplashScreen();
     mStage->Show();
+
+    // If we're in editing mode, remember the project we opened.
+    if (TInterpreterManager::IsInAuthoringMode()) {
+        wxFileHistory history;
+        shared_ptr<wxConfigBase> config(new wxConfig);
+        config->SetPath(wxT("/Recent"));
+        history.Load(*config);
+        history.AddFileToHistory(inDirPath);
+        history.Save(*config);        
+    }
 }
 
 void StageFrame::CheckForUpdateLockFile() {

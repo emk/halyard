@@ -212,6 +212,12 @@ class StageFrame : public SashFrame,
     void UseTemplate(const wxString &inDir, const wxString &inTemplateName);
 
     //////////
+    /// Call this function to everything up after a value has been assigned
+    /// to mDocument.
+    ///
+    void FinishOpeningDocument(const wxString &inDirPath);
+
+    //////////
     /// Try to load an icon with the specified name into our bundle. If
     /// we succeed, set ioHaveIcon to true.
     ///

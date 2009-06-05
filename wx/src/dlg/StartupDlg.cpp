@@ -82,12 +82,6 @@ void StartupDlg::OnOK(wxCommandEvent &inEvent)
         } else {
             // Open the program in dir.
             wxGetApp().GetStageFrame()->OpenDocument(dir);
-
-            // Add dir to our recent files list.
-            mRecentFiles.AddFileToHistory(dir);
-            shared_ptr<wxConfigBase> config(new wxConfig);
-            config->SetPath(wxT("/Recent"));
-            mRecentFiles.Save(*config);
         }
     }
 
