@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleIdentifier</key>
+	<string>edu.dartmouth.iml.halyard</string>
+	<key>CFBundleIconFile</key>
+	<string>Halyard.icns</string>
+	<key>CFBundleExecutable</key>
+	<string>halyard</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleTypeName</key>
+			<string>Halyard program</string>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>halyard</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
