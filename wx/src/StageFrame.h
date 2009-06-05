@@ -275,6 +275,11 @@ public:
     ///
     virtual void Iconize(bool iconize = TRUE);
 
+    //////////
+    /// If we're in authoring mode, add inDirPath to our wxFileHistory.
+    ///
+    static void MaybeAddToRecentProgramList(const wxString &inDirPath);
+
 	//////////
 	/// Create a new document in the current frame.
 	///

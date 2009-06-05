@@ -430,18 +430,12 @@ bool HalyardApp::OnInit() {
                                         "application.halyard");
         if (candidate_path.DoesExist()) {
             FileSystem::SetBaseDirectory(candidate_directory);
-            if (TInterpreterManager::IsInAuthoringMode()) {
-                // If we're in authoring mode, artificially add this
-                // directory to our our recent files list, so that it
-                // appears in StartupDlg.
-                wxFileHistory history;
-                shared_ptr<wxConfigBase> config(new wxConfig);
-                config->SetPath(wxT("/Recent"));
-                history.Load(*config);
-                std::string dir(candidate_directory.ToNativePathString());
-                history.AddFileToHistory(ToWxString(dir));
-                history.Save(*config);
-            }
+
+            // If we're in authoring mode, artificially add this directory
+            // to our our recent files list, so that it appears in
+            // StartupDlg.
+            std::string dir(candidate_directory.ToNativePathString());
+            StageFrame::MaybeAddToRecentProgramList(ToWxString(dir));
             break;
         }
     } while (candidate_directory.MaybeGetParentDirectory(candidate_directory));

@@ -690,7 +690,7 @@ void StageFrame::OpenDocument()
     }
 
     // Destroy our wxConfig object before we call OpenDocument, so that we
-    // don't clobber the changes made by FinishOpeningDocument.
+    // don't clobber the changes made by MaybeAddToRecentProgramList.
     config.reset();
 
 	if (dlg.ShowModal() == wxID_OK) {
@@ -714,8 +714,10 @@ void StageFrame::FinishOpeningDocument(const wxString &inDirPath) {
     CheckForUpdateLockFile(); // Needs to come after CrashReporter setup.
     mStage->MaybeShowSplashScreen();
     mStage->Show();
+    MaybeAddToRecentProgramList(inDirPath);
+}
 
-    // If we're in editing mode, remember the project we opened.
+void StageFrame::MaybeAddToRecentProgramList(const wxString &inDirPath) {
     if (TInterpreterManager::IsInAuthoringMode()) {
         wxFileHistory history;
         shared_ptr<wxConfigBase> config(new wxConfig);
