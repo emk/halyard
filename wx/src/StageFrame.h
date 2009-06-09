@@ -26,7 +26,7 @@
 #include "TInterpreter.h"
 #include <wx/display.h>
 #include "ModelView.h"
-#include "SashFrame.h"
+#include "AuiFrame.h"
 
 BEGIN_NAMESPACE_HALYARD
 class Document;
@@ -37,7 +37,6 @@ class LocationBox;
 class ProgramTree;
 class ToolWindow;
 class StageBackground;
-class wxAuiManager;
 
 // See ToolWindow.h.
 enum ToolWindowID {
@@ -53,15 +52,10 @@ enum ToolWindowID {
 //////////
 /// Our main window--the "frame" around our stage.
 ///
-class StageFrame : public wxFrame,
+class StageFrame : public AuiFrame,
                    public Halyard::TReloadNotified,
                    public model::View
 {
-    //////////
-    /// Our wxAuiManager is in charge of laying out our window.
-    ///
-    scoped_ptr<wxAuiManager> mAuiManager;
-
 	//////////
 	/// Our associated document object.
 	///
@@ -157,29 +151,9 @@ class StageFrame : public wxFrame,
 	bool mIsUpdatingVideoMode;
 
     //////////
-    /// Have we loaded our saved frame perspective yet?
-    ///
-    bool mHaveLoadedFramePerspective;
-
-    //////////
     /// When we switch to full screen mode, we save our wxAui perspective.
     ///
     wxString mLastPerspectiveBeforeFullScreenMode;
-
-    //////////
-    /// Recalculate the current frame's size.
-    ///
-    void UpdateMinimumFrameSize();
-
-    //////////
-    /// Load the perspective for the current frame.
-    ///
-    void LoadFramePerspective();
-
-    //////////
-    /// Save the perspective for the current frame if it's safe to do so.
-    ///
-    void MaybeSaveFramePerspective();
 
 	//////////
 	/// Calculate the best video mode to use for full-screen displays.
@@ -284,12 +258,6 @@ public:
 	/// itself.
 	///
 	void DetachToolWindow(ToolWindowID inTool) { mToolWindows[inTool] = NULL; }
-
-    //////////
-    /// Lay out the child elements of this window.  Overridden so that we can
-    /// update our window size after mAuiManager has laid out the window.
-    ///
-    virtual bool Layout();
 
 	//////////
 	/// Override wxFrame's ShowFullScreen method so we can hide some

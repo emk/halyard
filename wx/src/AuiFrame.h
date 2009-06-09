@@ -20,15 +20,21 @@
 //
 // @END_LICENSE
 
-#ifndef SashFrame_H
-#define SashFrame_H
+#ifndef AuiFrame_H
+#define AuiFrame_H
 
-class wxSashEvent;
 class wxConfigBase;
+class wxAuiManager;
 
 /// A regular window frame with some helpful support code for sash windows.
-class SashFrame : public wxFrame {
-    bool mHaveLoadedFrameLayout;
+class AuiFrame : public wxFrame {
+    DECLARE_EVENT_TABLE();
+
+    /// Our wxAuiManager is in charge of laying out our window.
+    scoped_ptr<wxAuiManager> mAuiManager;
+
+    /// Have we loaded the perspective for this frame yet?
+    bool mHaveLoadedFramePerspective;
 
     /// The name of this frame (used to store wxConfig data).
     wxString mFrameName;
@@ -37,14 +43,19 @@ class SashFrame : public wxFrame {
     wxWindow *mMainWindow;
 
 public:
-    /// Create a new SashFrame.  Parameters are the same as wxFrame.
-    SashFrame(wxWindow *inParent,
+    /// Create a new AuiFrame.  Parameters are the same as wxFrame, except
+    /// for inFrameName, which contains
+    AuiFrame(wxWindow *inParent,
               wxWindowID inId,
               const wxString &inTitle,
               const wxString &inFrameName,
               const wxSize &inSize = wxDefaultSize,
               long inStyle = wxDEFAULT_FRAME_STYLE,
               const wxString &inName = wxFrameNameStr);
+
+    /// Lay out the child elements of this window.  Overridden so that we can
+    /// update our window size after mAuiManager has laid out the window.
+    virtual bool Layout();
 
 private:
     /// Returns true iff inRect is entirely on one of the system's
@@ -53,50 +64,24 @@ private:
     /// reasonably sane thing to do.
     static bool IsRectOnDisplay(const wxRect &inRect);
 
-	/// We need to load this layout information *before* we load anything
+	/// We need to load this information *before* we load anything
 	/// else, because there's no portable way to change it once the window
 	/// is created.
 	static wxPoint LoadFramePosition(const wxString &inFrameName);
+
+    /// Recalculate the current frame's size.
+    void UpdateMinimumFrameSize();
 
 protected:
     /// Get a configuration object with its path set to the appropriate
     /// value for this frame.
     shared_ptr<wxConfigBase> GetConfigForFrame();
 
-	/// Load the layout for the current frame.
-	void LoadFrameLayout();
+	/// Load the perspective for the current frame.
+	void LoadFramePerspective();
 
-    /// Load the layout information for any sash windows.
-    virtual void LoadSashLayout(shared_ptr<wxConfigBase> inConfig) {}
-
-	/// Save the layout for the current frame if it's safe to do so.
-	void MaybeSaveFrameLayout();
-
-    /// Save the layout information for any sash windows.
-    virtual void SaveSashLayout(shared_ptr<wxConfigBase> inConfig) {}
-
-    /// Specify which wxSashLayoutWindow should be treated as the
-    /// main window of this frame.
-    void SetMainWindow(wxWindow *inWindow);
-
-    /// Lay out the window.
-    virtual void UpdateSashLayout();
-
-private:
-    //////////
-	/// "Sashes" are narrow bars between subwindows in frame.  When
-	/// a sash in the main window is dragged, it generates an event
-	/// which we process here.
-	///
-	void OnSashDrag(wxSashEvent &inEvent);
-
-    //////////
-	/// We provide an OnSize handler so we can handle window resizing
-	/// gracefully.
-	///
-	void OnSize(wxSizeEvent &inEvent);    
-
-    DECLARE_EVENT_TABLE();
+	/// Save the perspective for the current frame if it's safe to do so.
+	void MaybeSaveFramePerspective();
 };
 
-#endif // SashFrame_H
+#endif // AuiFrame_H

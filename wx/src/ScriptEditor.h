@@ -25,17 +25,15 @@
 
 #include "TInterpreter.h"
 #include "EventDelegator.h"
-#include "SashFrame.h"
+#include "AuiFrame.h"
 
-class wxSashLayoutWindow;
 class ScriptTree;
 class DocNotebook;
 
-class ScriptEditor : public SashFrame, public Halyard::TReloadNotified  {
+class ScriptEditor : public AuiFrame, public Halyard::TReloadNotified  {
     static ScriptEditor *sFrame;
     static void MaybeCreateFrame();
 
-    wxSashLayoutWindow *mTreeContainer;
     ScriptTree *mTree;
     DocNotebook *mNotebook;
     EventDelegator mDelegator;
@@ -64,8 +62,6 @@ public:
     void ChangeTextSize(int delta);
 
 private:
-    void LoadSashLayout(shared_ptr<wxConfigBase> inConfig);
-    void SaveSashLayout(shared_ptr<wxConfigBase> inConfig);
     bool HaveSavedTabs();
     void LoadTabs();
     void SaveTabs();

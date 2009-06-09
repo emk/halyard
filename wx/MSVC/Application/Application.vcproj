@@ -507,7 +507,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\src\SashFrame.cpp"
+				RelativePath="..\..\src\AuiFrame.cpp"
 				>
 			</File>
 			<File
@@ -804,7 +804,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\SashFrame.h"
+				RelativePath="..\..\src\AuiFrame.h"
 				>
 			</File>
 			<File

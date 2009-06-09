@@ -22,7 +22,6 @@
 
 #include "AppHeaders.h"
 
-#include <wx/laywin.h>
 #include <wx/config.h>
 // For wxFileHistory.
 #include <wx/docview.h>
@@ -148,7 +147,7 @@ void StageBackground::CenterStage(Stage *inStage)
 //  StageFrame Methods
 //=========================================================================
 
-BEGIN_EVENT_TABLE(StageFrame, wxFrame)
+BEGIN_EVENT_TABLE(StageFrame, AuiFrame)
     EVT_MENU(wxID_EXIT, StageFrame::OnExit)
 
     EVT_UPDATE_UI(HALYARD_NEW_PROGRAM, StageFrame::UpdateUiNewProgram)
@@ -203,22 +202,18 @@ BEGIN_EVENT_TABLE(StageFrame, wxFrame)
 END_EVENT_TABLE()
 
 StageFrame::StageFrame(wxSize inSize)
-    : wxFrame((wxFrame*) NULL, -1, wxGetApp().GetAppName(),
-              wxDefaultPosition, wxDefaultSize,
-              // TODO AUI - We use wxCLIP_CHILDREN to try and prevent
-              // unnecessary drawing of the StageFrame under the Stage, but
-              // I'm not sure whether it is either necessary or sufficient.
-              wxDEFAULT_FRAME_STYLE | wxCLIP_CHILDREN),
+    : AuiFrame((wxFrame*) NULL, -1, wxGetApp().GetAppName(),
+               wxT("StageFrame"), wxDefaultSize,
+               // TODO AUI - We use wxCLIP_CHILDREN to try and prevent
+               // unnecessary drawing of the StageFrame under the Stage, but
+               // I'm not sure whether it is either necessary or sufficient.
+               wxDEFAULT_FRAME_STYLE | wxCLIP_CHILDREN),
 	  mDocument(NULL),
       mAreDevToolsAvailableInAllModes(false),
       mAreFullScreenOptionsActive(false),
       mCurrentFullScreenDisplayId(wxNOT_FOUND),
-      mIsUpdatingVideoMode(false),
-      mHaveLoadedFramePerspective(false)
+      mIsUpdatingVideoMode(false)
 {
-    // Create our wxAuiManager.
-    mAuiManager.reset(new wxAuiManager(this));
-
 	// We create our tool windows on demand.
 	for (int i = 0; i < TOOL_COUNT; i++)
 		mToolWindows[i] = NULL;
@@ -366,74 +361,6 @@ StageFrame::StageFrame(wxSize inSize)
 	// Re-load our saved frame perspective.  We can't do this until after
 	// our setup is completed.
 	LoadFramePerspective();
-}
-
-bool StageFrame::Layout() {
-    // After wxAui has finished showing and hiding panes, applying sizers,
-    // and setting up docks, it calls Layout() to run the sizer code.  But
-    // wxAui doesn't implement minimum frame sizes correctly, so we need to
-    // intercept this layout call and try to make sure our frame is big
-    // enough.
-    bool result = wxFrame::Layout();
-    UpdateMinimumFrameSize();
-    return result;
-}
-
-void StageFrame::UpdateMinimumFrameSize() {
-    // The code in this function is loosely based on a commented-out
-    // snippet at the end of wxAuiManager::Update.  The original code was
-    // distributed under the wxWindows Library Licence, Version 3.1, and
-    // copyright 2005-2006 by Kirix Corporation, but we've changed it quite
-    // a bit.  And yes, this code is probably fairly fragile if anyone does
-    // serious work on wxAui.
-
-    // Ask our sizer how much space we need for the contents of our frame.
-    // If we don't have a sizer yet, then we're being called before
-    // wxAuiManager::Update has been called for the first time, so we just
-    // do nothing.
-    wxSizer *sizer(GetSizer());
-    if (!sizer)
-        return;
-    wxSize min_content_size(sizer->GetMinSize());
-
-    // Figure out how much space we need for menu bars, status bars, and
-    // other non-"client" stuff around our frame.
-    wxSize frame_size(GetSize());
-    wxSize min_frame_size(min_content_size + (frame_size - GetClientSize()));
-
-    // Set our minimum size, and possibly update our real size.
-    SetMinSize(min_frame_size);
-    if (frame_size.x < min_frame_size.x || frame_size.y < min_frame_size.y) {
-        wxSize fitting_size(sizer->ComputeFittingWindowSize(this));
-        SetSize(std::max(frame_size.x, fitting_size.x),
-                std::max(frame_size.y, fitting_size.y));
-    }
-}
-
-void StageFrame::LoadFramePerspective() {
-    // Read our perspective from disk.
-    shared_ptr<wxConfigBase> config(new wxConfig);
-    config->SetPath(wxT("/Perspectives/StageFrame"));
-    wxString perspective;
-    if (config->Read(wxT("Perspective"), &perspective))
-        mAuiManager->LoadPerspective(perspective);
-
-    // It's now safe to resave these values.
-    // TODO AUI - Is this necessary?
-    mHaveLoadedFramePerspective = true;
-}
-
-void StageFrame::MaybeSaveFramePerspective() {
-    // Don't save the frame perspective if we haven't loaded it yet, or if we're
-    // in full-screen mode (which has an automatically-chosen perspective).
-    if (!mHaveLoadedFramePerspective || IsFullScreen())
-        return;
-
-    // Write our perspective to disk.
-    shared_ptr<wxConfigBase> config(new wxConfig);
-    config->SetPath(wxT("/Perspectives/StageFrame"));
-    config->Write(wxT("Perspective"),
-                  mAuiManager->SavePerspective());
 }
 
 #if !wxUSE_DISPLAY
@@ -632,7 +559,7 @@ bool StageFrame::ShowFullScreen(bool show, long style)
             mAuiManager->LoadPerspective(mLastPerspectiveBeforeFullScreenMode);
         UpdateVideoMode(show, IsIconized());
     }
-    bool result = wxFrame::ShowFullScreen(show, style);
+    bool result = AuiFrame::ShowFullScreen(show, style);
     if (show) {
         // Set our size hints to exactly the stage size, so we can
         // avoid inappropriate padding in full screen mode.
@@ -646,7 +573,7 @@ bool StageFrame::ShowFullScreen(bool show, long style)
 void StageFrame::Iconize(bool iconize) {
     if (iconize)
         UpdateVideoMode(IsFullScreen(), iconize);
-    wxFrame::Iconize(iconize);
+    AuiFrame::Iconize(iconize);
     if (!iconize)
         UpdateVideoMode(IsFullScreen(), iconize);
 }
@@ -909,7 +836,7 @@ bool StageFrame::MSWTranslateMessage(WXMSG* pMsg) {
     // assertion failures.
     if (TInterpreterManager::IsInRuntimeMode())
         UpdateWindowUI();
-    return wxFrame::MSWTranslateMessage(pMsg);
+    return AuiFrame::MSWTranslateMessage(pMsg);
 }
 
 WXLRESULT StageFrame::MSWWindowProc(WXUINT message, WXWPARAM wParam,
@@ -929,7 +856,7 @@ WXLRESULT StageFrame::MSWWindowProc(WXUINT message, WXWPARAM wParam,
         if (ShouldDisableScreenSaver())
             return -1;
     }
-    return wxFrame::MSWWindowProc(message, wParam, lParam);
+    return AuiFrame::MSWWindowProc(message, wParam, lParam);
 }
 
 #endif // __WXMSW__
