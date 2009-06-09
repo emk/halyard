@@ -61,7 +61,7 @@ AX_LIB_MZSCHEME(3m, 371)
 LIBRARY_MISSING_IF([test x"$HAVE_MZSCHEME" != xyes], [mzscheme])
 
 # Check for wxWidgets.
-AM_PATH_WXCONFIG(2.8.7, [HAVE_WXWIDGETS=yes], [HAVE_WXWIDGETS=no], [stc])
+AM_PATH_WXCONFIG(2.8.10, [HAVE_WXWIDGETS=yes], [HAVE_WXWIDGETS=no], [stc])
 LIBRARY_MISSING_IF([test x"$HAVE_WXWIDGETS" != xyes], [wxWidgets])
 AM_PATH_WXRC([HAVE_WXRC=yes], [HAVE_WXRC=no])
 LIBRARY_MISSING_IF([test x"$HAVE_WXRC" != xyes], [wxrc])

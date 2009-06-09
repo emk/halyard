@@ -27,6 +27,7 @@
 // For wxFileHistory.
 #include <wx/docview.h>
 #include <wx/dir.h>
+#include <wx/aui/framemanager.h>
 
 #include "TVersion.h"
 #include "TInterpreter.h"
@@ -64,7 +65,7 @@ using namespace Halyard;
 
 ///  This class implements the wxWindow *behind* the stage.  It has few
 ///  duties other than (1) being black and (2) keeping the stage centered.
-class StageBackground : public wxSashLayoutWindow
+class StageBackground : public wxWindow
 {
 	DECLARE_EVENT_TABLE();
 
@@ -81,13 +82,13 @@ public:
 	void UpdateStagePosition();
 };
 
-BEGIN_EVENT_TABLE(StageBackground, wxSashLayoutWindow)
+BEGIN_EVENT_TABLE(StageBackground, wxWindow)
     EVT_SIZE(StageBackground::OnSize)
 END_EVENT_TABLE()
 
 StageBackground::StageBackground(StageFrame *inStageFrame)
-	: wxSashLayoutWindow(inStageFrame, -1, wxDefaultPosition, wxDefaultSize,
-						 wxNO_BORDER | wxCLIP_CHILDREN),
+	: wxWindow(inStageFrame, -1, wxDefaultPosition, wxDefaultSize,
+               wxNO_BORDER | wxCLIP_CHILDREN),
 	  mStageFrame(inStageFrame), mStage(NULL)
 {
     // PORTABILITY: We setup wxCLIP_CHILDREN to avoid having our
@@ -147,7 +148,7 @@ void StageBackground::CenterStage(Stage *inStage)
 //  StageFrame Methods
 //=========================================================================
 
-BEGIN_EVENT_TABLE(StageFrame, SashFrame)
+BEGIN_EVENT_TABLE(StageFrame, wxFrame)
     EVT_MENU(wxID_EXIT, StageFrame::OnExit)
 
     EVT_UPDATE_UI(HALYARD_NEW_PROGRAM, StageFrame::UpdateUiNewProgram)
@@ -198,20 +199,26 @@ BEGIN_EVENT_TABLE(StageFrame, SashFrame)
     EVT_MENU(HALYARD_STOP_MOVIES, StageFrame::OnStopMovies)
 
     EVT_ACTIVATE(StageFrame::OnActivate)
-	EVT_SIZE(StageFrame::OnSize)
     EVT_CLOSE(StageFrame::OnClose)
 END_EVENT_TABLE()
 
 StageFrame::StageFrame(wxSize inSize)
-    : SashFrame((wxFrame*) NULL, -1, wxGetApp().GetAppName(),
-                wxT("StageFrame"), wxDefaultSize,
-                wxDEFAULT_FRAME_STYLE),
+    : wxFrame((wxFrame*) NULL, -1, wxGetApp().GetAppName(),
+              wxDefaultPosition, wxDefaultSize,
+              // TODO AUI - We use wxCLIP_CHILDREN to try and prevent
+              // unnecessary drawing of the StageFrame under the Stage, but
+              // I'm not sure whether it is either necessary or sufficient.
+              wxDEFAULT_FRAME_STYLE | wxCLIP_CHILDREN),
 	  mDocument(NULL),
       mAreDevToolsAvailableInAllModes(false),
       mAreFullScreenOptionsActive(false),
       mCurrentFullScreenDisplayId(wxNOT_FOUND),
-	  mIsUpdatingVideoMode(false)
+      mIsUpdatingVideoMode(false),
+      mHaveLoadedFramePerspective(false)
 {
+    // Create our wxAuiManager.
+    mAuiManager.reset(new wxAuiManager(this));
+
 	// We create our tool windows on demand.
 	for (int i = 0; i < TOOL_COUNT; i++)
 		mToolWindows[i] = NULL;
@@ -219,21 +226,25 @@ StageFrame::StageFrame(wxSize inSize)
 	// Get an appropriate icon for this window.
     SetIcon(wxICON(ic_application));
 
-    // Make our background black.  This should theoretically be handled
-    // by 'background->SetBackgroundColour' below, but Windows takes a
-    // fraction of a second to show that object.
-    SetBackgroundColour(STAGE_FRAME_COLOR);
-
 	// Create a sash window holding a tree widget.
 	mProgramTree = new ProgramTree(this, HALYARD_PROGRAM_TREE);
-	mProgramTree->SetOrientation(wxLAYOUT_VERTICAL);
-	mProgramTree->SetAlignment(wxLAYOUT_LEFT);
-	mProgramTree->SetSashVisible(wxSASH_RIGHT, TRUE);
+    wxAuiPaneInfo program_tree_info;
+    program_tree_info.Name(wxT("Cards"));
+    program_tree_info.Caption(wxT("Cards"));
+    program_tree_info.Left();
+    program_tree_info.MinSize(150, 75);
+    program_tree_info.CloseButton(false);
+    program_tree_info.Floatable();
+    mAuiManager->AddPane(mProgramTree, program_tree_info);
 
     // Create a background panel to surround our stage with.  This keeps
     // life simple.
     mBackground = new StageBackground(this);
-    SetMainWindow(mBackground);
+    wxAuiPaneInfo background_info;
+    background_info.Name(wxT("StageBackground"));
+    background_info.CentrePane();
+    background_info.MinSize(inSize);
+    mAuiManager->AddPane(mBackground, background_info);
 
     // Create a stage object to scribble on, and center it.
     mStage = new Stage(mBackground, this, inSize);
@@ -321,8 +332,8 @@ StageFrame::StageFrame(wxSize inSize)
     SetMenuBar(mMenuBar);
 
     // Add a tool bar.
-    CreateToolBar();
-    wxToolBar *tb = GetToolBar();
+    wxToolBar *tb = new wxToolBar(this, -1, wxDefaultPosition, wxDefaultSize,
+                                  wxTB_FLAT | wxTB_NODIVIDER);
     tb->AddTool(HALYARD_RELOAD_SCRIPTS, wxT("Reload"), wxBITMAP(tb_reload),
                 wxT("Reload Scripts"));
 	mLocationBox = new LocationBox(tb);
@@ -341,35 +352,88 @@ StageFrame::StageFrame(wxSize inSize)
                      wxNullBitmap, 
                      wxT("Include Backtrace Information After Reload"));
     tb->Realize();
+    mAuiManager->AddPane(tb, wxAuiPaneInfo().Name(wxT("MainToolbar")).
+                         ToolbarPane().Top().
+                         LeftDockable(false).RightDockable(false).
+                         CloseButton(false));
         
     // Add a status bar.
 	SetStatusBar(new FancyStatusBar(this));
 
-    // Resize the "client area" of the window (the part that's left over
-    // after menus, status bars, etc.) to hold the stage and the program
-	// tree.
-    SetClientSize(wxSize(inSize.GetWidth() + mProgramTree->GetMinimumSizeX(),
-						 inSize.GetHeight()));
+    // Commit the changes to our wxAuiManager.
+    mAuiManager->Update();
 
-	// Don't allow the window to get any smaller.
-	// XXX - This probably isn't a reliable way to do this.
-	mMinimumFrameSize = GetSize();
-	SetSizeHints(mMinimumFrameSize.GetWidth(), mMinimumFrameSize.GetHeight());
-
-	// Re-load our saved frame layout.  We can't do this until after
+	// Re-load our saved frame perspective.  We can't do this until after
 	// our setup is completed.
-	LoadFrameLayout();
+	LoadFramePerspective();
 }
 
-void StageFrame::LoadSashLayout(shared_ptr<wxConfigBase> inConfig) {
-	long program_tree_width = mProgramTree->GetMinimumSizeX();
-	inConfig->Read(wxT("ProgramTreeWidth"), &program_tree_width);
-	mProgramTree->SetDefaultWidth(program_tree_width);
+bool StageFrame::Layout() {
+    // After wxAui has finished showing and hiding panes, applying sizers,
+    // and setting up docks, it calls Layout() to run the sizer code.  But
+    // wxAui doesn't implement minimum frame sizes correctly, so we need to
+    // intercept this layout call and try to make sure our frame is big
+    // enough.
+    bool result = wxFrame::Layout();
+    UpdateMinimumFrameSize();
+    return result;
 }
 
-void StageFrame::SaveSashLayout(shared_ptr<wxConfigBase> inConfig) {
-	inConfig->Write(wxT("ProgramTreeWidth"),
-                    mProgramTree->GetSize().GetWidth());
+void StageFrame::UpdateMinimumFrameSize() {
+    // The code in this function is loosely based on a commented-out
+    // snippet at the end of wxAuiManager::Update.  The original code was
+    // distributed under the wxWindows Library Licence, Version 3.1, and
+    // copyright 2005-2006 by Kirix Corporation, but we've changed it quite
+    // a bit.  And yes, this code is probably fairly fragile if anyone does
+    // serious work on wxAui.
+
+    // Ask our sizer how much space we need for the contents of our frame.
+    // If we don't have a sizer yet, then we're being called before
+    // wxAuiManager::Update has been called for the first time, so we just
+    // do nothing.
+    wxSizer *sizer(GetSizer());
+    if (!sizer)
+        return;
+    wxSize min_content_size(sizer->GetMinSize());
+
+    // Figure out how much space we need for menu bars, status bars, and
+    // other non-"client" stuff around our frame.
+    wxSize frame_size(GetSize());
+    wxSize min_frame_size(min_content_size + (frame_size - GetClientSize()));
+
+    // Set our minimum size, and possibly update our real size.
+    SetMinSize(min_frame_size);
+    if (frame_size.x < min_frame_size.x || frame_size.y < min_frame_size.y) {
+        wxSize fitting_size(sizer->ComputeFittingWindowSize(this));
+        SetSize(std::max(frame_size.x, fitting_size.x),
+                std::max(frame_size.y, fitting_size.y));
+    }
+}
+
+void StageFrame::LoadFramePerspective() {
+    // Read our perspective from disk.
+    shared_ptr<wxConfigBase> config(new wxConfig);
+    config->SetPath(wxT("/Perspectives/StageFrame"));
+    wxString perspective;
+    if (config->Read(wxT("Perspective"), &perspective))
+        mAuiManager->LoadPerspective(perspective);
+
+    // It's now safe to resave these values.
+    // TODO AUI - Is this necessary?
+    mHaveLoadedFramePerspective = true;
+}
+
+void StageFrame::MaybeSaveFramePerspective() {
+    // Don't save the frame perspective if we haven't loaded it yet, or if we're
+    // in full-screen mode (which has an automatically-chosen perspective).
+    if (!mHaveLoadedFramePerspective || IsFullScreen())
+        return;
+
+    // Write our perspective to disk.
+    shared_ptr<wxConfigBase> config(new wxConfig);
+    config->SetPath(wxT("/Perspectives/StageFrame"));
+    config->Write(wxT("Perspective"),
+                  mAuiManager->SavePerspective());
 }
 
 #if !wxUSE_DISPLAY
@@ -549,30 +613,40 @@ bool StageFrame::ConfirmScreenSize() {
 
 bool StageFrame::ShowFullScreen(bool show, long style)
 {
-	mProgramTree->Show(!show);
-	mBackground->UpdateColor();
-	if (!show)
-	{
+    mBackground->UpdateColor();
+    if (show) {
+        // We're going to full-screen mode, so save our current perspective
+        // and hide all panes except the stage background.
+        mLastPerspectiveBeforeFullScreenMode = mAuiManager->SavePerspective();
+        wxWindowList &children(GetChildren());
+        wxWindowList::iterator i(children.begin());
+        for (; i != children.end(); ++i) {
+            wxAuiPaneInfo &pane(mAuiManager->GetPane(*i));
+            if (pane.IsOk() && *i != mBackground)
+                pane.Show(false);
+        }
+        mAuiManager->Update();
+    } else {
+        // Restore our saved perspective and update our video mode.
+        if (mLastPerspectiveBeforeFullScreenMode != wxT(""))
+            mAuiManager->LoadPerspective(mLastPerspectiveBeforeFullScreenMode);
         UpdateVideoMode(show, IsIconized());
-		SetSizeHints(mMinimumFrameSize.GetWidth(),
-					 mMinimumFrameSize.GetHeight());
-	}
-	bool result = SashFrame::ShowFullScreen(show, style);
-	if (show)
-	{
-		// Set our size hints to exactly the stage size, so we can
-		// avoid inappropriate padding in full screen mode.
-		SetSizeHints(mStage->GetSize().GetWidth(),
-					 mStage->GetSize().GetHeight());
+    }
+    bool result = wxFrame::ShowFullScreen(show, style);
+    if (show) {
+        // Set our size hints to exactly the stage size, so we can
+        // avoid inappropriate padding in full screen mode.
+        SetSizeHints(mStage->GetSize().GetWidth(),
+                     mStage->GetSize().GetHeight());
         UpdateVideoMode(show, IsIconized());
-	}
-	return result;
+    }
+    return result;
 }
 
 void StageFrame::Iconize(bool iconize) {
     if (iconize)
         UpdateVideoMode(IsFullScreen(), iconize);
-    SashFrame::Iconize(iconize);
+    wxFrame::Iconize(iconize);
     if (!iconize)
         UpdateVideoMode(IsFullScreen(), iconize);
 }
@@ -835,7 +909,7 @@ bool StageFrame::MSWTranslateMessage(WXMSG* pMsg) {
     // assertion failures.
     if (TInterpreterManager::IsInRuntimeMode())
         UpdateWindowUI();
-    return SashFrame::MSWTranslateMessage(pMsg);
+    return wxFrame::MSWTranslateMessage(pMsg);
 }
 
 WXLRESULT StageFrame::MSWWindowProc(WXUINT message, WXWPARAM wParam,
@@ -855,7 +929,7 @@ WXLRESULT StageFrame::MSWWindowProc(WXUINT message, WXWPARAM wParam,
         if (ShouldDisableScreenSaver())
             return -1;
     }
-    return SashFrame::MSWWindowProc(message, wParam, lParam);
+    return wxFrame::MSWWindowProc(message, wParam, lParam);
 }
 
 #endif // __WXMSW__
@@ -1181,27 +1255,6 @@ void StageFrame::OnActivate(wxActivateEvent &inEvent) {
     inEvent.Skip();
 }
 
-void StageFrame::OnSize(wxSizeEvent &inEvent)
-{
-	// Make sure no sash window can be expanded to obscure parts of our
-	// stage.  We need to do this whenever the window geometry changes.
-	wxSize client_size = GetClientSize();
-	wxSize stage_size = GetStage()->GetStageSize();
-	wxCoord available_space = client_size.GetWidth() - stage_size.GetWidth();
-	if (available_space > 0)
-	{
-		// XXX - If available_space <= 0, then our window still hasn't
-		// been resized to hold the stage, and we shouldn't call
-		// SetDefaultSize unless we want weird things to happen.
-		if (mProgramTree->GetSize().GetWidth() > available_space)
-			mProgramTree->SetDefaultWidth(available_space);
-		mProgramTree->SetMaximumSizeX(available_space);
-	}
-
-    // Let our parent class call the layout algorithm for us.
-    inEvent.Skip();
-}
-
 void StageFrame::OnClose(wxCloseEvent &inEvent)
 {
 	// If we're in full screen mode, leave it, so we don't exit Halyard
@@ -1237,8 +1290,11 @@ void StageFrame::OnClose(wxCloseEvent &inEvent)
 		}
 	}
 
-	// Save our layout one last time.
-	MaybeSaveFrameLayout();
+	// Save our perspective one last time.
+	MaybeSaveFramePerspective();
+
+    // Turn off our wxAuiManager.
+    mAuiManager->UnInit();
 
     // If we've got an interpreter manager, we'll need to ask it to
     // shut down the application.

@@ -37,7 +37,7 @@ class LocationBox;
 class ProgramTree;
 class ToolWindow;
 class StageBackground;
-class wxSashEvent;
+class wxAuiManager;
 
 // See ToolWindow.h.
 enum ToolWindowID {
@@ -53,10 +53,15 @@ enum ToolWindowID {
 //////////
 /// Our main window--the "frame" around our stage.
 ///
-class StageFrame : public SashFrame,
+class StageFrame : public wxFrame,
                    public Halyard::TReloadNotified,
                    public model::View
 {
+    //////////
+    /// Our wxAuiManager is in charge of laying out our window.
+    ///
+    scoped_ptr<wxAuiManager> mAuiManager;
+
 	//////////
 	/// Our associated document object.
 	///
@@ -123,12 +128,6 @@ class StageFrame : public SashFrame,
     ///
     bool mAreFullScreenOptionsActive;
     
-	//////////
-	/// The minimum allowable size of our stage frame.  We save this so
-	/// we can temporarily change it for full-screen mode.
-	///
-	wxSize mMinimumFrameSize;
-
     //////////
     /// The wxDisplay ID number of the screen we intend to use for
     /// full-screen mode.  We update this shortly before switching
@@ -157,8 +156,30 @@ class StageFrame : public SashFrame,
 	///
 	bool mIsUpdatingVideoMode;
 
-    void LoadSashLayout(shared_ptr<wxConfigBase> inConfig);
-    void SaveSashLayout(shared_ptr<wxConfigBase> inConfig);
+    //////////
+    /// Have we loaded our saved frame perspective yet?
+    ///
+    bool mHaveLoadedFramePerspective;
+
+    //////////
+    /// When we switch to full screen mode, we save our wxAui perspective.
+    ///
+    wxString mLastPerspectiveBeforeFullScreenMode;
+
+    //////////
+    /// Recalculate the current frame's size.
+    ///
+    void UpdateMinimumFrameSize();
+
+    //////////
+    /// Load the perspective for the current frame.
+    ///
+    void LoadFramePerspective();
+
+    //////////
+    /// Save the perspective for the current frame if it's safe to do so.
+    ///
+    void MaybeSaveFramePerspective();
 
 	//////////
 	/// Calculate the best video mode to use for full-screen displays.
@@ -263,6 +284,12 @@ public:
 	/// itself.
 	///
 	void DetachToolWindow(ToolWindowID inTool) { mToolWindows[inTool] = NULL; }
+
+    //////////
+    /// Lay out the child elements of this window.  Overridden so that we can
+    /// update our window size after mAuiManager has laid out the window.
+    ///
+    virtual bool Layout();
 
 	//////////
 	/// Override wxFrame's ShowFullScreen method so we can hide some
@@ -399,19 +426,6 @@ private:
     /// UpdateVideoMode has been called properly.
     ///
 	void OnActivate(wxActivateEvent &inEvent);
-
-	//////////
-	/// "Sashes" are narrow bars between subwindows in frame.  When
-	/// a sash in the main window is dragged, it generates an event
-	/// which we process here.
-	///
-	void OnSashDrag(wxSashEvent &inEvent);
-
-    //////////
-	/// We provide an OnSize handler so we can handle window resizing
-	/// gracefully.
-	///
-	void OnSize(wxSizeEvent &inEvent);
 
     //////////
     /// We provide an OnClose event handler so we can notify the application

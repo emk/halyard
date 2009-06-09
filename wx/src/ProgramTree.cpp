@@ -472,19 +472,16 @@ NodeItemData *ProgramTreeCtrl::GetNodeItemData(wxTreeItemId inItemId)  {
 //  ProgramTree Methods
 //=========================================================================
 
-BEGIN_EVENT_TABLE(ProgramTree, wxSashLayoutWindow)
+BEGIN_EVENT_TABLE(ProgramTree, wxWindow)
+    EVT_SIZE(ProgramTree::OnSize)
 END_EVENT_TABLE()
 
 ProgramTree::ProgramTree(StageFrame *inStageFrame, int inID)
-	: wxSashLayoutWindow(inStageFrame, inID),
+	: wxWindow(inStageFrame, inID),
 	  mHaveLastHighlightedItem(false)
 {
 	// Set up our tree control.
 	mTree = new ProgramTreeCtrl(this);
-
-	// Set our minimum sash width.
-	SetMinimumSizeX(MINIMUM_WIDTH);
-    SetDefaultWidth(MINIMUM_WIDTH);
 }
 
 void ProgramTree::RegisterDocument(Document *inDocument)
@@ -624,11 +621,6 @@ void ProgramTree::RegisterGroupMember(const wxString &inName, bool inIsCard,
                                    inIsLoaded);
 }
 
-void ProgramTree::SetDefaultWidth(int inWidth)
-{
-	SetDefaultSize(wxSize(inWidth, 0 /* unused */));
-}
-
 void ProgramTree::NotifyReloadScriptStarting()
 {
     ASSERT(mCardsID.IsOk());
@@ -656,4 +648,8 @@ void ProgramTree::NotifyEnterCard(const wxString &inName)
 	mHaveLastHighlightedItem = true;
 	mLastHighlightedItem = found->second;
 	mTree->EnsureVisible(found->second);
+}
+
+void ProgramTree::OnSize(wxSizeEvent &inEvent) {
+    mTree->SetSize(inEvent.GetSize());
 }

@@ -34,7 +34,7 @@ class StageFrame;
 class ProgramTreeCtrl;
 
 /// Public interface to tree widget describing a Halyard script.
-class ProgramTree : public wxSashLayoutWindow, public Halyard::TReloadNotified
+class ProgramTree : public wxWindow, public Halyard::TReloadNotified
 {
 	DECLARE_EVENT_TABLE()
 
@@ -77,6 +77,9 @@ class ProgramTree : public wxSashLayoutWindow, public Halyard::TReloadNotified
                                          bool inCanUpdateIsLoaded,
                                          bool inIsLoaded);
 
+    /// Resize our child element.
+    void OnSize(wxSizeEvent &inEvent);    
+
 public:
 	ProgramTree(StageFrame *inStageFrame, int inID);
 
@@ -90,11 +93,6 @@ public:
     ///
     void RegisterGroupMember(const wxString &inName, bool inIsCard,
                              bool inIsLoaded);
-
-	//////////
-	/// Set the default width which will be used when laying out this window.
-	///
-	void SetDefaultWidth(int inWidth);
 
 	//////////
 	/// Notify the program tree that script is being reloaded.
