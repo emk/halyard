@@ -31,6 +31,8 @@
 ///
 class Listener : public wxWindow
 {
+    bool mIsFirstLine;
+
 	wxTextCtrl *mHistory;
 	wxTextCtrl *mInput;
 
