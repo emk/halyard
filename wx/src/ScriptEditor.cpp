@@ -2255,9 +2255,12 @@ ScriptEditor::ScriptEditor()
     // TODO AUI - Make our MinSize smaller and default to a "best size" instead.
     mNotebook = new DocNotebook(this);
     mAuiManager->AddPane(mNotebook, wxAuiPaneInfo().Name(wxT("Notebook")).
-                         CentrePane().MinSize(800, 600));
+                         CentrePane().MinSize(200, 200));
     mDelegator.SetDelegate(mNotebook);
     mNotebook->SetFrameToTitle(this);
+
+    // Set a reasonable default window size.
+    SetClientSize(950, 650);
 
     // Finish setting up our mAuiManager.
     mAuiManager->Update();
