@@ -2251,7 +2251,6 @@ ScriptEditor::ScriptEditor()
 
     // Create a document notebook, delegate menu events to it, and put
     // it in charge of our title bar.
-    // TODO AUI - Make our MinSize smaller and default to a "best size" instead.
     mNotebook = new DocNotebook(this);
     mAuiManager->AddPane(mNotebook, wxAuiPaneInfo().Name(wxT("Notebook")).
                          CentrePane().MinSize(200, 200));
