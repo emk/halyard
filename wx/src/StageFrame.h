@@ -41,7 +41,6 @@ class StageBackground;
 // See ToolWindow.h.
 enum ToolWindowID {
 	TOOL_LISTENER,
-	TOOL_TIMECODER,
 
 	// This needs to be last in the list.  It's the total number of tool
 	// windows tracked by the StageFrame.
@@ -367,7 +366,6 @@ private:
     void OnAbout(wxCommandEvent &inEvent);
     void OnShowLog(wxCommandEvent &inEvent);
     void OnShowListener(wxCommandEvent &inEvent);
-    void OnShowTimecoder(wxCommandEvent &inEvent);
     void UpdateUiFullScreen(wxUpdateUIEvent &inEvent);
     void OnFullScreen(wxCommandEvent &inEvent);
     void UpdateUiDisplayXy(wxUpdateUIEvent &inEvent);

@@ -535,10 +535,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\Timecoder.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\ToolWindow.cpp"
 				>
 			</File>
@@ -829,10 +825,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\TestHarness.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\Timecoder.h"
 				>
 			</File>
 			<File

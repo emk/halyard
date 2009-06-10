@@ -46,7 +46,6 @@
 #include "CommonWxConv.h"
 #include "TestHarness.h"
 #include "Listener.h"
-#include "Timecoder.h"
 #if CONFIG_HAVE_SCRIPTEDITOR
 #   include "ScriptEditor.h"
 #endif // CONFIG_HAVE_SCRIPTEDITOR
@@ -170,8 +169,6 @@ BEGIN_EVENT_TABLE(StageFrame, AuiFrame)
     EVT_UPDATE_UI(HALYARD_SHOW_LOG, StageFrame::UpdateUiDevTool)
     EVT_UPDATE_UI(HALYARD_SHOW_LISTENER, StageFrame::UpdateUiDevTool)
     EVT_MENU(HALYARD_SHOW_LISTENER, StageFrame::OnShowListener)
-    EVT_UPDATE_UI(HALYARD_SHOW_TIMECODER, StageFrame::UpdateUiDevTool)
-    EVT_MENU(HALYARD_SHOW_TIMECODER, StageFrame::OnShowTimecoder)
     EVT_UPDATE_UI(HALYARD_FULL_SCREEN, StageFrame::UpdateUiFullScreen)
     EVT_MENU(HALYARD_FULL_SCREEN, StageFrame::OnFullScreen)
     EVT_UPDATE_UI(HALYARD_DISPLAY_XY, StageFrame::UpdateUiDisplayXy)
@@ -309,8 +306,6 @@ StageFrame::StageFrame(wxSize inSize)
     mWindowMenu = new wxMenu();
     mWindowMenu->Append(HALYARD_SHOW_LISTENER, wxT("Show &Listener\tCtrl+L"),
                         wxT("Show interactive script listener."));
-    mWindowMenu->Append(HALYARD_SHOW_TIMECODER, wxT("Show &Timecoder\tCtrl+T"),
-                        wxT("Show the movie timecoding utility."));
 
     // Set up our Help menu.
     mHelpMenu = new wxMenu();
@@ -1016,15 +1011,6 @@ void StageFrame::OnShowListener(wxCommandEvent &inEvent)
 	if (!mToolWindows[TOOL_LISTENER]->IsShown())
 		mToolWindows[TOOL_LISTENER]->Show();
 	mToolWindows[TOOL_LISTENER]->Raise();
-}
-
-void StageFrame::OnShowTimecoder(wxCommandEvent &inEvent)
-{
-	if (!mToolWindows[TOOL_TIMECODER])
-		mToolWindows[TOOL_TIMECODER] = new Timecoder(this);
-	if (!mToolWindows[TOOL_TIMECODER]->IsShown())
-		mToolWindows[TOOL_TIMECODER]->Show();
-	mToolWindows[TOOL_TIMECODER]->Raise();	
 }
 
 void StageFrame::UpdateUiFullScreen(wxUpdateUIEvent &inEvent)
