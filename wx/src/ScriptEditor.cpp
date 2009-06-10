@@ -2205,7 +2205,6 @@ ScriptEditor::ScriptEditor()
     menu_bar->EnableTop(4, false);
 
     // Create a tool bar.
-    CreateToolBar();
     wxToolBar *tb = new wxToolBar(this, -1, wxDefaultPosition, wxDefaultSize,
                                   wxTB_FLAT | wxTB_NODIVIDER);
     tb->AddTool(HALYARD_RELOAD_SCRIPTS, wxT("Reload"), wxBITMAP(tb_reload),
