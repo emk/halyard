@@ -26,20 +26,20 @@
 #include "AppGlobals.h"
 #include "AppGraphics.h"
 #include "Stage.h"
+#include "StageFrame.h"
 #include "HistoryText.h"
 #include "Listener.h"
 
 using namespace Halyard;
 
-BEGIN_EVENT_TABLE(Listener, ToolWindow)
-    EVT_ACTIVATE(Listener::OnActivate)
+BEGIN_EVENT_TABLE(Listener, wxWindow)
     EVT_UPDATE_UI(HALYARD_LISTENER_TEXT_ENTRY, Listener::UpdateUiInput)
     EVT_TEXT_ENTER(HALYARD_LISTENER_TEXT_ENTRY, Listener::OnTextEnter)
+    EVT_SIZE(Listener::OnSize)
 END_EVENT_TABLE()
 
 Listener::Listener(StageFrame *inStageFrame)
-    : ToolWindow(inStageFrame, TOOL_LISTENER, wxT("Listener"),
-                 wxICON(ic_listener))
+    : wxWindow(inStageFrame, wxID_ANY)
 {
     mHistory = new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
 							  wxDefaultSize,
@@ -66,19 +66,11 @@ Listener::Listener(StageFrame *inStageFrame)
 					   wxBOLD, f.GetUnderlined(), f.GetFaceName(),
 					   f.GetDefaultEncoding());
 
-    SetClientSize(640, 240);
     mInput->SetFocus();
 }
 
-void Listener::OnActivate(wxActivateEvent &inEvent)
-{
-    // When we're raised to be the top-most window, assume it's because
-    // the user wanted to type something into the input box.
-    // TODO - This doesn't work if the user raises the window by clicking
-    // in the history, because we get the activate event and then the
-    // click.
+void Listener::FocusInput() {
     mInput->SetFocus();
-    inEvent.Skip();
 }
 
 void Listener::UpdateUiInput(wxUpdateUIEvent &inEvent)
@@ -123,8 +115,15 @@ void Listener::OnTextEnter(wxCommandEvent &inEvent)
                                  wxString(result.c_str(), wxConvLocal) +
 								 wxT("\n\n"));
 		}
+
+        // Show the recently-appended text.
+        mHistory->ShowPosition(mHistory->GetLastPosition());
 		
 		// Clear our input field.
 		mInput->SetValue(wxT(""));
     }
+}
+
+void Listener::OnSize(wxSizeEvent &inEvent) {
+    Layout();
 }

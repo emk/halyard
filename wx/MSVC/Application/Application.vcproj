@@ -535,10 +535,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\ToolWindow.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\TQTMovie.cpp"
 				>
 				<FileConfiguration
@@ -825,10 +821,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\TestHarness.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\ToolWindow.h"
 				>
 			</File>
 			<File

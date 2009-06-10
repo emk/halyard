@@ -35,17 +35,8 @@ END_NAMESPACE_HALYARD
 class Stage;
 class LocationBox;
 class ProgramTree;
-class ToolWindow;
 class StageBackground;
-
-// See ToolWindow.h.
-enum ToolWindowID {
-	TOOL_LISTENER,
-
-	// This needs to be last in the list.  It's the total number of tool
-	// windows tracked by the StageFrame.
-	TOOL_COUNT
-};
+class Listener;
 
 
 //////////
@@ -65,11 +56,6 @@ class StageFrame : public AuiFrame,
     /// events.
     ///
     wxLogWindow *mLogWindow;
-
-    //////////
-    /// An interactive listener window.
-    ///
-    ToolWindow *mToolWindows[TOOL_COUNT];
 
     //////////
     /// Our most important child--the actual "stage" itself on which our
@@ -92,6 +78,11 @@ class StageFrame : public AuiFrame,
 	/// The drop-down box which allows us to jump between cards.
 	///
 	LocationBox *mLocationBox;
+
+    //////////
+    /// Our "listener", which allows users to execute small code snippets.
+    ///
+    Listener *mListener;
 
     // Menus, etc.
     wxMenuBar *mMenuBar;
@@ -250,13 +241,6 @@ public:
     /// Get the program tree attached to this frame.
     ///
     ProgramTree *GetProgramTree() { return mProgramTree; }
-
-	//////////
-	/// Notify the StageFrame that the specified tool window is being
-	/// destroyed.  This should only be called by the tool window
-	/// itself.
-	///
-	void DetachToolWindow(ToolWindowID inTool) { mToolWindows[inTool] = NULL; }
 
 	//////////
 	/// Override wxFrame's ShowFullScreen method so we can hide some

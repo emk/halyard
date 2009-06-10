@@ -106,7 +106,6 @@ halyard_SOURCES = \
 	StageAccessible.cpp StageAccessible.h \
 	StageFrame.cpp StageFrame.h \
 	TestHarness.cpp TestHarness.h \
-	ToolWindow.cpp ToolWindow.h \
 	TQTMovie.cpp TQTMovie.h \
 	Transition.h TransitionOpt.cpp \
 	TWxPrimitives.cpp TWxPrimitives.h \

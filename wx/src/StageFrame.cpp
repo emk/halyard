@@ -211,37 +211,33 @@ StageFrame::StageFrame(wxSize inSize)
       mCurrentFullScreenDisplayId(wxNOT_FOUND),
       mIsUpdatingVideoMode(false)
 {
-	// We create our tool windows on demand.
-	for (int i = 0; i < TOOL_COUNT; i++)
-		mToolWindows[i] = NULL;
-
 	// Get an appropriate icon for this window.
     SetIcon(wxICON(ic_application));
 
 	// Create a sash window holding a tree widget.
 	mProgramTree = new ProgramTree(this, HALYARD_PROGRAM_TREE);
-    wxAuiPaneInfo program_tree_info;
-    program_tree_info.Name(wxT("Cards"));
-    program_tree_info.Caption(wxT("Cards"));
-    program_tree_info.Left();
-    program_tree_info.MinSize(150, 75);
-    program_tree_info.CloseButton(false);
-    program_tree_info.Floatable();
-    mAuiManager->AddPane(mProgramTree, program_tree_info);
+    mAuiManager->AddPane(mProgramTree, wxAuiPaneInfo().Name(wxT("Cards")).
+                         Caption(wxT("Cards")).Left().MinSize(150, 75).
+                         CloseButton(false).Layer(1).Floatable());
 
     // Create a background panel to surround our stage with.  This keeps
     // life simple.
     mBackground = new StageBackground(this);
-    wxAuiPaneInfo background_info;
-    background_info.Name(wxT("StageBackground"));
-    background_info.CentrePane();
-    background_info.MinSize(inSize);
-    mAuiManager->AddPane(mBackground, background_info);
+    mAuiManager->AddPane(mBackground, wxAuiPaneInfo().
+                         Name(wxT("StageBackground")).CentrePane().
+                         MinSize(inSize));
 
     // Create a stage object to scribble on, and center it.
     mStage = new Stage(mBackground, this, inSize);
 	mBackground->CenterStage(mStage);
 	mStage->Hide();
+
+    // Attach our listener to the bottom of the window.
+    mListener = new Listener(this);
+    mAuiManager->AddPane(mListener, wxAuiPaneInfo().Name(wxT("Listener")).
+                         Caption(wxT("Listener")).Bottom().MinSize(200, 75).
+                         Floatable().FloatingPosition(100, 100).
+                         FloatingSize(400, 150).Float().Show(false));
 
     // Set up our File menu.
     mFileMenu = new wxMenu();
@@ -1006,11 +1002,9 @@ void StageFrame::OnAbout(wxCommandEvent &inEvent)
 
 void StageFrame::OnShowListener(wxCommandEvent &inEvent)
 {
-	if (!mToolWindows[TOOL_LISTENER])
-		mToolWindows[TOOL_LISTENER] = new Listener(this);
-	if (!mToolWindows[TOOL_LISTENER]->IsShown())
-		mToolWindows[TOOL_LISTENER]->Show();
-	mToolWindows[TOOL_LISTENER]->Raise();
+    mAuiManager->GetPane(mListener).Show();
+    mAuiManager->Update();
+    mListener->FocusInput();
 }
 
 void StageFrame::UpdateUiFullScreen(wxUpdateUIEvent &inEvent)
