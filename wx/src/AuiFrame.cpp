@@ -93,8 +93,15 @@ shared_ptr<wxConfigBase> AuiFrame::GetConfigForFrame() {
 }
 
 void AuiFrame::LoadFramePerspective() {
-    // Load our perspective.
+    // Load our window size.
     shared_ptr<wxConfigBase> config(GetConfigForFrame());
+    long sz_client_width = GetClientSize().GetWidth();
+    long sz_client_height = GetClientSize().GetHeight();
+    config->Read(wxT("ClientWidth"), &sz_client_width);
+    config->Read(wxT("ClientHeight"), &sz_client_height);
+    SetClientSize(sz_client_width, sz_client_height);
+
+    // Load our perspective.
     wxString perspective;
     if (config->Read(wxT("Perspective"), &perspective))
         mAuiManager->LoadPerspective(perspective);
@@ -130,6 +137,8 @@ void AuiFrame::MaybeSaveFramePerspective()
         wxSize sz = GetClientSize();
         config->Write(wxT("Left"), pos.x);
         config->Write(wxT("Top"), pos.y);
+        config->Write(wxT("ClientWidth"), sz.GetWidth());
+        config->Write(wxT("ClientHeight"), sz.GetHeight());
     }
 }
 
