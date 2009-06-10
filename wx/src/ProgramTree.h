@@ -41,11 +41,7 @@ class ProgramTree : public wxWindow, public Halyard::TReloadNotified
 	typedef std::map<std::string,wxTreeItemId> ItemMap;
 
 	ProgramTreeCtrl *mTree;
-
 	wxTreeItemId mRootID;
-	wxTreeItemId mCardsID;
-	wxTreeItemId mBackgroundsID;
-
 	ItemMap mGroupMemberMap;
 
 	bool mHaveLastHighlightedItem;
