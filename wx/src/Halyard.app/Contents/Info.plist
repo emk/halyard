@@ -11,7 +11,7 @@
 	<key>CFBundleIconFile</key>
 	<string>Halyard.icns</string>
 	<key>CFBundleExecutable</key>
-	<string>halyard</string>
+	<string>Halyard</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDocumentTypes</key>

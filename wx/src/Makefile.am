@@ -13,7 +13,7 @@ if NEED_BUNDLE
 # a proper *.app bundle directory.  This can be run using "open
 # ./Halyard.app" from the command-line.
 HALYARD_APP = Halyard.app
-BUNDLED_HALYARD = $(HALYARD_APP)/Contents/MacOS/halyard
+BUNDLED_HALYARD = $(HALYARD_APP)/Contents/MacOS/Halyard
 BUNDLED_RUNTIME = $(HALYARD_APP)/Contents/SharedSupport
 
 all: $(BUNDLED_HALYARD) $(BUNDLED_RUNTIME)
