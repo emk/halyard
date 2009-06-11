@@ -294,6 +294,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\AuiFrame.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\BinMsgConv.cpp"
 				>
 			</File>
@@ -447,6 +451,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\MediaInfoPane.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\dlg\MetaDotDlg.cpp"
 				>
 			</File>
@@ -505,10 +513,6 @@
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\src\AuiFrame.cpp"
-				>
 			</File>
 			<File
 				RelativePath="..\..\src\ScriptEditor.cpp"
@@ -613,6 +617,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\AudioStreamElement.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\AuiFrame.h"
 				>
 			</File>
 			<File
@@ -748,6 +756,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\MediaInfoPane.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\dlg\MetaDotDlg.h"
 				>
 			</File>
@@ -793,10 +805,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\resource1.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\AuiFrame.h"
 				>
 			</File>
 			<File

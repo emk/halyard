@@ -24,6 +24,7 @@
 #include "CaptionList.h"
 #include "Element.h"
 #include "MediaElement.h"
+#include "MediaInfoPane.h"
 
 using namespace Halyard;
 
@@ -119,4 +120,30 @@ void MediaElement::SetPlaybackTimer(MovieFrame inFrame) {
 
 void MediaElement::ClearPlaybackTimer() {
     mHasPlaybackTimer = false;
+}
+
+void MediaElement::WriteInfoTo(MediaInfoPane *inMediaInfoPane) {
+
+    wxString info;
+    info += GetThisAsElement()->GetName();
+
+    wxString location(GetLocationInfo());
+    if (!location.empty())
+        info += wxT("\n") + location;
+
+    if (!IsDone()) {
+        MovieFrame frames = (int) CurrentFrame(); // May overflow (in theory).
+        int seconds = frames / FRAMES_PER_SECOND;
+        frames %= FRAMES_PER_SECOND;
+        int minutes = seconds / 60;
+        seconds %= 60;
+        int hours = minutes / 60;
+        minutes %= 60;
+        wxString timecode;
+        timecode.Printf(wxT("%d:%02d:%02d:%02d"), hours, minutes, seconds,
+                        frames);
+        info += wxT("\n") + timecode;
+    }
+
+    inMediaInfoPane->SetText(info);    
 }

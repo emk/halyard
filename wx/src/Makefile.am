@@ -95,6 +95,7 @@ halyard_SOURCES = \
 	Listener.cpp Listener.h \
 	LocationBox.cpp LocationBox.h \
 	MediaElement.cpp MediaElement.h \
+	MediaInfoPane.cpp MediaInfoPane.h \
 	MovieElement.cpp MovieElement.h \
 	MovieWindow.cpp MovieWindow.h \
 	MovieWindowQT.cpp MovieWindowQT.h \

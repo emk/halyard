@@ -42,6 +42,7 @@
 #include "StageAccessible.h"
 #include "StageFrame.h"
 #include "ProgramTree.h"
+#include "MediaInfoPane.h"
 #include "Element.h"
 #include "MovieElement.h"
 #include "LocationBox.h"
@@ -655,6 +656,16 @@ void Stage::OnTimer(wxTimerEvent& inEvent)
     // If we've reached the end of our current WAIT, end it.
 	if (mWaitElement && mWaitElement->HasReachedFrame(mWaitFrame))
 		EndWait();
+
+    // Display information about the currently playing media clip if the
+    // MediaInfo pane is active.
+    MediaInfoPane *media_info(mFrame->GetMediaInfoPane());
+    if (media_info->IsShown()) {
+        if (mWaitElement)
+            mWaitElement->WriteInfoTo(media_info);
+        else
+            media_info->ClearText();
+    }
 
 	// Send an idle event to the Scheme engine occasionally.
 	if (ShouldSendEvents() &&

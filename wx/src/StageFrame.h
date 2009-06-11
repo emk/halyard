@@ -37,6 +37,7 @@ class LocationBox;
 class ProgramTree;
 class StageBackground;
 class Listener;
+class MediaInfoPane;
 
 
 //////////
@@ -83,6 +84,12 @@ class StageFrame : public AuiFrame,
     /// Our "listener", which allows users to execute small code snippets.
     ///
     Listener *mListener;
+
+    //////////
+    /// A dockable pane showing information about the currently playing
+    /// media clip.
+    ///
+    MediaInfoPane *mMediaInfoPane;
 
     // Menus, etc.
     wxMenuBar *mMenuBar;
@@ -242,6 +249,11 @@ public:
     ///
     ProgramTree *GetProgramTree() { return mProgramTree; }
 
+    //////////
+    /// Get the MediaInfoPane attached to this frame.
+    ///
+    MediaInfoPane *GetMediaInfoPane() { return mMediaInfoPane; }
+
 	//////////
 	/// Override wxFrame's ShowFullScreen method so we can hide some
 	/// distracting visual clutter.
@@ -350,6 +362,7 @@ private:
     void OnAbout(wxCommandEvent &inEvent);
     void OnShowLog(wxCommandEvent &inEvent);
     void OnShowListener(wxCommandEvent &inEvent);
+    void OnShowMediaInfo(wxCommandEvent &inEvent);
     void UpdateUiFullScreen(wxUpdateUIEvent &inEvent);
     void OnFullScreen(wxCommandEvent &inEvent);
     void UpdateUiDisplayXy(wxUpdateUIEvent &inEvent);

@@ -29,6 +29,9 @@ BEGIN_NAMESPACE_HALYARD
 class CaptionList;
 END_NAMESPACE_HALYARD
 
+class MediaInfoPane;
+
+
 //////////
 /// An interface for elements which play media streams.  This is used as a
 /// mixin class.
@@ -141,6 +144,18 @@ public:
     /// element.  Does nothing if no playback timer is active.
     ///
     virtual void ClearPlaybackTimer();
+
+    //////////
+    /// Return some sort of path or location information for this media
+    /// clip (for display purposes only).  If none is available, return "".
+    /// It's acceptable to return relative or abstract paths.
+    ///
+    virtual wxString GetLocationInfo() { return wxT(""); }
+
+    //////////
+    /// Write information about this clip to inMediaInfoPane.
+    ///
+    virtual void WriteInfoTo(MediaInfoPane *inMediaInfoPane);
 };
 
 #endif // MediaElement_H

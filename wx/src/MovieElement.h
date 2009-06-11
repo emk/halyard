@@ -34,6 +34,7 @@
 ///
 class MovieElement : public Widget, public MediaElement
 {
+    wxString mLocationInfo;
     MovieWindow *mMovieWindow;
 	bool mEndPlaybackWasCalled;
     bool mHaveSentMediaErrorEvent;
@@ -64,6 +65,7 @@ public:
 	virtual void Resume();
 	virtual void SetVolume(const std::string &inChannel, double inVolume);
 	virtual void SetTimeout(unsigned int timeout);
+    virtual wxString GetLocationInfo() { return mLocationInfo; }
 };
 
 #endif // MovieElement_H

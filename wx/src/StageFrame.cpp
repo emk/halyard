@@ -46,6 +46,7 @@
 #include "CommonWxConv.h"
 #include "TestHarness.h"
 #include "Listener.h"
+#include "MediaInfoPane.h"
 #if CONFIG_HAVE_SCRIPTEDITOR
 #   include "ScriptEditor.h"
 #endif // CONFIG_HAVE_SCRIPTEDITOR
@@ -170,6 +171,8 @@ BEGIN_EVENT_TABLE(StageFrame, AuiFrame)
     // EVT_MENU(HALYARD_RESET_PERSPECTIVE, ...) installed in AuiFrame.
     EVT_UPDATE_UI(HALYARD_SHOW_LISTENER, StageFrame::UpdateUiDevTool)
     EVT_MENU(HALYARD_SHOW_LISTENER, StageFrame::OnShowListener)
+    EVT_UPDATE_UI(HALYARD_SHOW_MEDIA_INFO, StageFrame::UpdateUiDevTool)
+    EVT_MENU(HALYARD_SHOW_MEDIA_INFO, StageFrame::OnShowMediaInfo)
     EVT_UPDATE_UI(HALYARD_FULL_SCREEN, StageFrame::UpdateUiFullScreen)
     EVT_MENU(HALYARD_FULL_SCREEN, StageFrame::OnFullScreen)
     EVT_UPDATE_UI(HALYARD_DISPLAY_XY, StageFrame::UpdateUiDisplayXy)
@@ -233,12 +236,19 @@ StageFrame::StageFrame(wxSize inSize)
 	mBackground->CenterStage(mStage);
 	mStage->Hide();
 
-    // Attach our listener to the bottom of the window.
+    // Create a Listener pane.
     mListener = new Listener(this);
     mAuiManager->AddPane(mListener, wxAuiPaneInfo().Name(wxT("Listener")).
                          Caption(wxT("Listener")).Bottom().MinSize(200, 75).
                          Floatable().FloatingPosition(100, 100).
                          FloatingSize(400, 150).Float().Show(false));
+
+    // Create a MediaInfoPane.
+    mMediaInfoPane = new MediaInfoPane(this);
+    mAuiManager->AddPane(mMediaInfoPane, wxAuiPaneInfo().Name(wxT("MediaInfo")).
+                         Caption(wxT("Media Info")).Bottom().MinSize(200, 75).
+                         Floatable().FloatingPosition(110, 110).
+                         FloatingSize(600, 75).Float().Show(false));
 
     // Set up our File menu.
     mFileMenu = new wxMenu();
@@ -308,6 +318,9 @@ StageFrame::StageFrame(wxSize inSize)
     mWindowMenu->AppendSeparator();
     mWindowMenu->Append(HALYARD_SHOW_LISTENER, wxT("Show &Listener\tCtrl+L"),
                         wxT("Show interactive script listener."));
+    mWindowMenu->Append(HALYARD_SHOW_MEDIA_INFO, wxT("Show &Media Info"),
+                        wxT("Show information on currently playing media."));
+
 
     // Set up our Help menu.
     mHelpMenu = new wxMenu();
@@ -1005,6 +1018,13 @@ void StageFrame::OnAbout(wxCommandEvent &inEvent)
 void StageFrame::OnShowListener(wxCommandEvent &inEvent)
 {
     mAuiManager->GetPane(mListener).Show();
+    mAuiManager->Update();
+    mListener->FocusInput();
+}
+
+void StageFrame::OnShowMediaInfo(wxCommandEvent &inEvent)
+{
+    mAuiManager->GetPane(mMediaInfoPane).Show();
     mAuiManager->Update();
     mListener->FocusInput();
 }
