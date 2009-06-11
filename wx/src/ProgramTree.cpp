@@ -61,19 +61,6 @@ public:
 
 
 //=========================================================================
-//  ViewItemData
-//=========================================================================
-
-/// An object in our ProgramTreeCtrl which listens to our Document model.
-class ViewItemData : public CustomTreeItemData, public model::View
-{
-public:
-	ViewItemData(ProgramTreeCtrl *inTreeCtrl)
-		: CustomTreeItemData(inTreeCtrl) {}	
-};
-
-
-//=========================================================================
 //  NodeItemData
 //=========================================================================
 
@@ -119,11 +106,12 @@ NodeItemData::NodeItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
     // won't appear even when the node clearly has children.  So we handle
     // this ourselves.
     wxTreeItemId parent_id(GetTree()->GetItemParent(GetId()));
-    ASSERT(parent_id.IsOk());
-    NodeItemData *data =
-        dynamic_cast<NodeItemData*>(GetTree()->GetItemData(parent_id));
-    if (data)
-        data->UpdateChildrenState();
+    if (parent_id.IsOk()) {
+        NodeItemData *data =
+            dynamic_cast<NodeItemData*>(GetTree()->GetItemData(parent_id));
+        if (data)
+            data->UpdateChildrenState();
+    }
 }
 
 void NodeItemData::UpdateIsLoaded(bool inNewValue) {
@@ -417,11 +405,11 @@ void HalyardProgramMenu::OnProperties(wxCommandEvent &inEvent)
 //=========================================================================
 
 /// Representation of the entire Halyard script in our ProgramTreeCtrl.
-class HalyardProgramItemData : public ViewItemData
+class HalyardProgramItemData : public GroupItemData, public model::View
 {
 public:
-	HalyardProgramItemData(ProgramTreeCtrl *inTreeCtrl)
-		: ViewItemData(inTreeCtrl) {}
+	HalyardProgramItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId)
+		: GroupItemData(inTreeCtrl, inItemId, wxT("/"), true) {}
 
 	virtual void OnRightDown(wxMouseEvent& event);
 
@@ -472,41 +460,31 @@ NodeItemData *ProgramTreeCtrl::GetNodeItemData(wxTreeItemId inItemId)  {
 //  ProgramTree Methods
 //=========================================================================
 
-BEGIN_EVENT_TABLE(ProgramTree, wxSashLayoutWindow)
+BEGIN_EVENT_TABLE(ProgramTree, wxWindow)
+    EVT_SIZE(ProgramTree::OnSize)
 END_EVENT_TABLE()
 
 ProgramTree::ProgramTree(StageFrame *inStageFrame, int inID)
-	: wxSashLayoutWindow(inStageFrame, inID),
+	: wxWindow(inStageFrame, inID),
 	  mHaveLastHighlightedItem(false)
 {
 	// Set up our tree control.
 	mTree = new ProgramTreeCtrl(this);
-
-	// Set our minimum sash width.
-	SetMinimumSizeX(MINIMUM_WIDTH);
-    SetDefaultWidth(MINIMUM_WIDTH);
 }
 
 void ProgramTree::RegisterDocument(Document *inDocument)
 {
-	// Set up our root node.
+	// Set up our root node, but which also represents the root node named
+	// "/".  Note that this persists even when we're in the middle of
+	// reloading the script, which isn't (currently) a problem since loaded
+	// GroupItemData objects don't actually do anything.
 	mRootID = mTree->AddRoot(wxT("Program"));
 	mTree->SetIcon(mRootID, ProgramTreeCtrl::ICON_DOCUMENT,
 				   ProgramTreeCtrl::ICON_DOCUMENT);
-	HalyardProgramItemData *item_data = new HalyardProgramItemData(mTree);
+	HalyardProgramItemData *item_data =
+        new HalyardProgramItemData(mTree, mRootID);
 	mTree->SetItemData(mRootID, item_data);
 	item_data->SetObject(inDocument->GetRoot());
-
-	// Set up our mCardsID node, which is named "Cards", but which also
-	// represents the root node named "/".  Note that this persists even
-	// when we're in the middle of reloading the script, which isn't
-	// (currently) a problem since loaded GroupItemData objects don't
-	// actually do anything.
-	mCardsID = mTree->AppendItem(mRootID, wxT("Cards"));
-	mTree->SetIcon(mCardsID, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
-				   ProgramTreeCtrl::ICON_FOLDER_OPEN);
-    mTree->SetItemData(mCardsID,
-                       new GroupItemData(mTree, mCardsID, wxT("/"), true));
 }
 
 bool ProgramTree::IsCardItem(wxTreeItemId inItemId) {
@@ -560,7 +538,7 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
                                                   bool inCanUpdateIsLoaded,
                                                   bool inIsLoaded)
 {
-    ASSERT(mCardsID.IsOk());
+    ASSERT(mRootID.IsOk());
 
     wxTreeItemId result;
     ItemMap::iterator found = mGroupMemberMap.find(inName);
@@ -624,21 +602,16 @@ void ProgramTree::RegisterGroupMember(const wxString &inName, bool inIsCard,
                                    inIsLoaded);
 }
 
-void ProgramTree::SetDefaultWidth(int inWidth)
-{
-	SetDefaultSize(wxSize(inWidth, 0 /* unused */));
-}
-
 void ProgramTree::NotifyReloadScriptStarting()
 {
-    ASSERT(mCardsID.IsOk());
+    ASSERT(mRootID.IsOk());
 	mGroupMemberMap.clear();
     mHaveLastHighlightedItem = false;
-	mTree->CollapseAndReset(mCardsID);
+	mTree->CollapseAndReset(mRootID);
 
     // Register our root node in mGroupMemberMap so that FindGroupMember
     // is guaranteed to have a recursive base case.
-    mGroupMemberMap.insert(ItemMap::value_type("/", mCardsID));
+    mGroupMemberMap.insert(ItemMap::value_type("/", mRootID));
 }
 
 void ProgramTree::NotifyEnterCard(const wxString &inName)
@@ -656,4 +629,8 @@ void ProgramTree::NotifyEnterCard(const wxString &inName)
 	mHaveLastHighlightedItem = true;
 	mLastHighlightedItem = found->second;
 	mTree->EnsureVisible(found->second);
+}
+
+void ProgramTree::OnSize(wxSizeEvent &inEvent) {
+    mTree->SetSize(inEvent.GetSize());
 }

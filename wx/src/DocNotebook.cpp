@@ -246,6 +246,11 @@ bool DocNotebook::ProcessEvent(wxEvent& event) {
 
 void DocNotebook::OnSize(wxSizeEvent &event) {
     /// \todo Use auto-layout for this instead.
+    ///
+    /// \todo This code is probably somehow related to a DocNotebookTab
+    /// resizing bug on the Mac.  To repro: Make the ScriptEditor window
+    /// wider, then make it narrower.  What happens: The DocNotebookTab
+    /// controls on the upper right disappear.
     Layout();
 }
 

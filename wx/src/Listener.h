@@ -23,16 +23,16 @@
 #ifndef Listener_H
 #define Listener_H
 
-#include "ToolWindow.h"
-
 //////////
 /// A Listener allows you type in commands, and see their results in a
 /// history window.  It's the traditional LISP term for any sort of
 /// interactive command line for a running application.  In other systems,
 /// it's also known as an "interactor" or "message box".
 ///
-class Listener : public ToolWindow
+class Listener : public wxWindow
 {
+    bool mIsFirstLine;
+
 	wxTextCtrl *mHistory;
 	wxTextCtrl *mInput;
 
@@ -42,9 +42,12 @@ class Listener : public ToolWindow
 public:
 	Listener(StageFrame *inStageFrame);
 
-	void OnActivate(wxActivateEvent &inEvent);
+    /// Focus the listener's text input area.
+    void FocusInput();
+
 	void UpdateUiInput(wxUpdateUIEvent &inEvent);
 	void OnTextEnter(wxCommandEvent &inEvent);
+    void OnSize(wxSizeEvent &inEvent);
 
     DECLARE_EVENT_TABLE();
 };

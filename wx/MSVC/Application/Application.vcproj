@@ -507,7 +507,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\src\SashFrame.cpp"
+				RelativePath="..\..\src\AuiFrame.cpp"
 				>
 			</File>
 			<File
@@ -532,14 +532,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\TestHarness.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\Timecoder.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\ToolWindow.cpp"
 				>
 			</File>
 			<File
@@ -804,7 +796,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\SashFrame.h"
+				RelativePath="..\..\src\AuiFrame.h"
 				>
 			</File>
 			<File
@@ -829,14 +821,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\TestHarness.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\Timecoder.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\ToolWindow.h"
 				>
 			</File>
 			<File

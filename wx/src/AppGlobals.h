@@ -45,7 +45,6 @@ enum {
 
     HALYARD_SHOW_LOG = 300,
 	HALYARD_SHOW_LISTENER,
-	HALYARD_SHOW_TIMECODER,
     HALYARD_FULL_SCREEN,
     HALYARD_DISPLAY_XY,
 	HALYARD_DISPLAY_GRID,
@@ -106,13 +105,11 @@ enum {
 
 // Choose an appropriate set of window colors.
 #if HALYARD_USE_UGLY_WINDOW_COLORS
-#  define STAGE_FRAME_COLOR      (*wxRED)
 #  define STAGE_BACKGROUND_COLOR (*wxCYAN)
 #  define STAGE_BACKGROUND_COLOR_NEUTRAL (wxColour(128, 128, 128))
 #  define STAGE_COLOR            (*wxGREEN)
 #  define MOVIE_WINDOW_COLOR     (wxColour(0, 255, 255))
 #else // !HALYARD_USE_UGLY_WINDOW_COLORS
-#  define STAGE_FRAME_COLOR      (*wxBLACK)
 #  define STAGE_BACKGROUND_COLOR (*wxBLACK)
 #  define STAGE_BACKGROUND_COLOR_NEUTRAL (wxColour(128, 128, 128))
 #  define STAGE_COLOR            (*wxBLACK)

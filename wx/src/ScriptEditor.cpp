@@ -24,7 +24,7 @@
 #include <wx/file.h>
 #include <wx/stc/stc.h>
 #include <wx/config.h>
-#include <wx/laywin.h>
+#include <wx/aui/framemanager.h>
 #include "TTemplateUtils.h"
 #include "FileSystem.h"
 #include "ScriptEditorDB.h"
@@ -1991,7 +1991,7 @@ wxTreeItemId ScriptTree::InsertItemAlphabetically(wxTreeItemId parent,
 
 ScriptEditor *ScriptEditor::sFrame = NULL;
 
-BEGIN_EVENT_TABLE(ScriptEditor, SashFrame)
+BEGIN_EVENT_TABLE(ScriptEditor, AuiFrame)
     EVT_ACTIVATE(ScriptEditor::OnActivate)
     EVT_CLOSE(ScriptEditor::OnClose)
 
@@ -2083,10 +2083,10 @@ void ScriptEditor::SaveEditorTabs() {
 }
 
 ScriptEditor::ScriptEditor()
-    : SashFrame(wxGetApp().GetStageFrame(), -1,
-                wxT("Script Editor - ") + wxGetApp().GetAppName(),
-                wxT("ScriptEditor"), wxDefaultSize, wxDEFAULT_FRAME_STYLE),
-      mTreeContainer(NULL), mTree(NULL), mNotebook(NULL),
+    : AuiFrame(wxGetApp().GetStageFrame(), -1,
+               wxT("Script Editor - ") + wxGetApp().GetAppName(),
+               wxT("ScriptEditor"), wxDefaultSize, wxDEFAULT_FRAME_STYLE),
+      mTree(NULL), mNotebook(NULL),
       mProcessingActivateEvent(false), mDontSaveTabs(false)
 {
     // Set up the static variable pointing to this frame.
@@ -2205,8 +2205,8 @@ ScriptEditor::ScriptEditor()
     menu_bar->EnableTop(4, false);
 
     // Create a tool bar.
-    CreateToolBar();
-    wxToolBar *tb = GetToolBar();
+    wxToolBar *tb = new wxToolBar(this, -1, wxDefaultPosition, wxDefaultSize,
+                                  wxTB_FLAT | wxTB_NODIVIDER);
     tb->AddTool(HALYARD_RELOAD_SCRIPTS, wxT("Reload"), wxBITMAP(tb_reload),
                 wxT("Reload Scripts"));
     tb->AddSeparator();
@@ -2233,32 +2233,36 @@ ScriptEditor::ScriptEditor()
                 wxBITMAP(tb_sizedec),
                 wxT("Decrease Text Size"));
     tb->Realize();
-
-    // Create a wxSashLayoutWindow to hold our tree widget.
-    mTreeContainer = new wxSashLayoutWindow(this, -1);
-	mTreeContainer->SetOrientation(wxLAYOUT_VERTICAL);
-	mTreeContainer->SetAlignment(wxLAYOUT_LEFT);
-	mTreeContainer->SetSashVisible(wxSASH_RIGHT, TRUE);
-    mTreeContainer->SetMinimumSizeX(150);
-	mTreeContainer->SetDefaultSize(wxSize(150, 0 /* unused */));
+    mAuiManager->AddPane(tb, wxAuiPaneInfo().Name(wxT("MainToolbar")).
+                         ToolbarPane().Top().
+                         LeftDockable(false).RightDockable(false).
+                         CloseButton(false));
 
     // Create our tree widget.
-    mTree = new ScriptTree(mTreeContainer);
-
-    // Create a wxSashLayoutWindow to hold our notebook widget.
-    wxSashLayoutWindow *notebook_container =
-        new wxSashLayoutWindow(this, -1);
-    SetMainWindow(notebook_container);
+    mTree = new ScriptTree(this);
+    wxAuiPaneInfo script_tree_info;
+    script_tree_info.Name(wxT("ScriptTree"));
+    script_tree_info.Caption(wxT("Script Files"));
+    script_tree_info.Left();
+    script_tree_info.MinSize(150, 75);
+    script_tree_info.CloseButton(false);
+    script_tree_info.Floatable();
+    mAuiManager->AddPane(mTree, script_tree_info);
 
     // Create a document notebook, delegate menu events to it, and put
     // it in charge of our title bar.
-    mNotebook = new DocNotebook(notebook_container);
+    mNotebook = new DocNotebook(this);
+    mAuiManager->AddPane(mNotebook, wxAuiPaneInfo().Name(wxT("Notebook")).
+                         CentrePane().MinSize(200, 200));
     mDelegator.SetDelegate(mNotebook);
     mNotebook->SetFrameToTitle(this);
 
-    // Set an appropriate default window size and load our frame layout.
-    SetSize(wxSize(950, 650));
-    LoadFrameLayout();
+    // Set a reasonable default window size.
+    SetClientSize(950, 650);
+
+    // Finish setting up our mAuiManager.
+    mAuiManager->Update();
+    LoadFramePerspective();
 
     // Update our identifier database for syntax highlighting and indentation
     UpdateIdentifierInformation();
@@ -2280,19 +2284,6 @@ ScriptEditor::ScriptEditor()
 ScriptEditor::~ScriptEditor() {
     ASSERT(sFrame);
     sFrame = NULL;
-}
-
-void ScriptEditor::LoadSashLayout(shared_ptr<wxConfigBase> inConfig) {
-    long minimum = mTreeContainer->GetMinimumSizeX();
-    long script_tree_width = minimum;
-	inConfig->Read(wxT("ScriptTreeWidth"), &script_tree_width);
-    if (script_tree_width < minimum)
-        script_tree_width = minimum;
-	mTreeContainer->SetDefaultSize(wxSize(script_tree_width, 0 /*unused*/));
-}
-
-void ScriptEditor::SaveSashLayout(shared_ptr<wxConfigBase> inConfig) {
-	inConfig->Write(wxT("ScriptTreeWidth"), mTreeContainer->GetSize().GetWidth());
 }
 
 bool ScriptEditor::HaveSavedTabs() {
@@ -2519,6 +2510,12 @@ void ScriptEditor::OnClose(wxCloseEvent &event) {
         ASSERT(event.CanVeto());
         event.Veto();
     } else {
+        // Save our perspective one last time.
+        MaybeSaveFramePerspective();
+
+        // Turn off our wxAuiManager.
+        mAuiManager->UnInit();
+
         Destroy();
     }
 }

@@ -25,24 +25,25 @@
 #include "TInterpreter.h"
 #include "AppGlobals.h"
 #include "AppGraphics.h"
+#include "CommonWxConv.h"
 #include "Stage.h"
+#include "StageFrame.h"
 #include "HistoryText.h"
 #include "Listener.h"
 
 using namespace Halyard;
 
-BEGIN_EVENT_TABLE(Listener, ToolWindow)
-    EVT_ACTIVATE(Listener::OnActivate)
+BEGIN_EVENT_TABLE(Listener, wxWindow)
     EVT_UPDATE_UI(HALYARD_LISTENER_TEXT_ENTRY, Listener::UpdateUiInput)
     EVT_TEXT_ENTER(HALYARD_LISTENER_TEXT_ENTRY, Listener::OnTextEnter)
+    EVT_SIZE(Listener::OnSize)
 END_EVENT_TABLE()
 
 Listener::Listener(StageFrame *inStageFrame)
-    : ToolWindow(inStageFrame, TOOL_LISTENER, wxT("Listener"),
-                 wxICON(ic_listener))
+    : wxWindow(inStageFrame, wxID_ANY), mIsFirstLine(true)
 {
     mHistory = new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
-							  wxDefaultSize,
+							  wxSize(50, 50), // Also used as a MinSize.
 							  wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
 	// Use a history text control, so we can have a command history
     mInput = new HistoryTextCtrl(this, HALYARD_LISTENER_TEXT_ENTRY, wxT(""),
@@ -66,19 +67,11 @@ Listener::Listener(StageFrame *inStageFrame)
 					   wxBOLD, f.GetUnderlined(), f.GetFaceName(),
 					   f.GetDefaultEncoding());
 
-    SetClientSize(640, 240);
-    mInput->SetFocus();
+    FocusInput();
 }
 
-void Listener::OnActivate(wxActivateEvent &inEvent)
-{
-    // When we're raised to be the top-most window, assume it's because
-    // the user wanted to type something into the input box.
-    // TODO - This doesn't work if the user raises the window by clicking
-    // in the history, because we get the activate event and then the
-    // click.
+void Listener::FocusInput() {
     mInput->SetFocus();
-    inEvent.Skip();
 }
 
 void Listener::UpdateUiInput(wxUpdateUIEvent &inEvent)
@@ -94,11 +87,17 @@ void Listener::OnTextEnter(wxCommandEvent &inEvent)
     {
 		ASSERT(TInterpreter::HaveInstance());
 
+        // Add some spacing in between consecutive output blocks.
+        if (mIsFirstLine)
+            mIsFirstLine = false;
+        else
+            mHistory->AppendText(wxT("\n\n"));
+
 		// Print the user's input.
 		wxString input = inEvent.GetString();
 		mHistory->SetDefaultStyle(wxTextAttr(*wxBLACK, wxNullColour,
 											 mBoldFont));
-		mHistory->AppendText(input + wxT("\n"));
+		mHistory->AppendText(input);
 	
 		// Talk to the interpreter.
 		std::string result;
@@ -111,20 +110,23 @@ void Listener::OnTextEnter(wxCommandEvent &inEvent)
 		{
 			mHistory->SetDefaultStyle(wxTextAttr(*wxBLUE, wxNullColour,
 												 mNormalFont));
-			mHistory->AppendText(wxT("==> ") +
-                                 wxString(result.c_str(), wxConvLocal) +
-                                 wxT("\n\n"));
+			mHistory->AppendText(wxT("\n==> ") + ToWxString(result));
 		}
 		else
 		{
 			mHistory->SetDefaultStyle(wxTextAttr(*wxRED, wxNullColour,
 												 mNormalFont));
-			mHistory->AppendText(wxT("ERROR: ") +
-                                 wxString(result.c_str(), wxConvLocal) +
-								 wxT("\n\n"));
+			mHistory->AppendText(wxT("\nERROR: ") + ToWxString(result));
 		}
+
+        // Show the recently-appended text.
+        mHistory->ShowPosition(mHistory->GetLastPosition());
 		
 		// Clear our input field.
 		mInput->SetValue(wxT(""));
     }
+}
+
+void Listener::OnSize(wxSizeEvent &inEvent) {
+    Layout();
 }

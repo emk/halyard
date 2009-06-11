@@ -55,6 +55,7 @@ halyard_SOURCES = \
 	AppGlobals.h \
 	AppGraphics.cpp AppGraphics.h \
 	AppLog.cpp AppLog.h \
+	AuiFrame.cpp AuiFrame.h \
 	BrowserElement.cpp BrowserElement.h \
 	BrowserElementWx.cpp BrowserElementWx.h \
 	BufferSpan.cpp BufferSpan.h \
@@ -100,14 +101,11 @@ halyard_SOURCES = \
 	Overlay.cpp Overlay.h \
 	ProgramTree.cpp ProgramTree.h \
 	resources.cpp \
-	SashFrame.cpp SashFrame.h \
 	ScriptEditor.cpp ScriptEditor.h \
 	Stage.cpp Stage.h \
 	StageAccessible.cpp StageAccessible.h \
 	StageFrame.cpp StageFrame.h \
 	TestHarness.cpp TestHarness.h \
-	Timecoder.cpp Timecoder.h \
-	ToolWindow.cpp ToolWindow.h \
 	TQTMovie.cpp TQTMovie.h \
 	Transition.h TransitionOpt.cpp \
 	TWxPrimitives.cpp TWxPrimitives.h \
