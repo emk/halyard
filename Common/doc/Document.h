@@ -44,23 +44,17 @@ class Document : public model::Model, boost::noncopyable {
 public:
     enum Flag { OPEN };
 
-    //////////
     /// Create a new document in the specified directory, and make
     /// sure that all the appropriate support files are already in place.
     /// This should eventually create all the support files, but we're
     /// not that clever yet.
-    ///
     Document(const std::string &inDirectory);
 
-    //////////
     /// Open the document in the specified directory.
-    ///
     Document(const std::string &inDirectory, Flag inOpen);
     ~Document();
 
-    //////////
     /// A more-precisely-typed version of GetRoot.
-    ///
     Halyard::HalyardProgram *GetHalyardProgram();
 };
 

@@ -216,13 +216,11 @@ class ITestProgressMeter {
 public:
     virtual ~ITestProgressMeter() {}
 
-    //////////
     /// Override this method to report status.
     ///
     /// \param inTestIndex  The zero-based index of the test just run.
     /// \param inTestCount  The total number of tests to run.
     /// \param inReport  The results of running the test.
-    ///
     virtual void UpdateTestProgress(int inTestIndex, int inTestCount,
                                     const TestCaseReport &inReport) = 0;
 };

@@ -35,7 +35,6 @@ class AppLog : public wxLog
 public:
     AppLog();
 
-    //////////
     /// Call this function to prevent the display of any further wxWidgets
     /// errors to the user.  This is needed when processing crash reports,
     /// because if the wxWidgets crash reporter encounters any non-fatal
@@ -47,7 +46,6 @@ public:
     /// Errors which were displayed to the user (and which were potentially
     /// fatal if we were in runtime mode), are just silently logged after
     /// this function is called.
-    ///
     void SilentlyLogNonFatalErrors();
     
     virtual void DoLog(wxLogLevel inLevel, const wxChar *inMsg,

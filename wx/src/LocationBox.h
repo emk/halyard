@@ -56,10 +56,8 @@ public:
     void OnComboBoxSelected(wxCommandEvent &inEvent);
 #endif
 
-    //////////
     /// Call this function to focus the location box and prepare for the
     /// user to enter a card name.
-    ///
     void Prompt();
 
     DECLARE_EVENT_TABLE();

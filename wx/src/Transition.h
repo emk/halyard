@@ -39,7 +39,6 @@ class TransitionResources
     wxRect &mDirtyRect;
 
 public:
-    //////////
     /// Create a new set of TransitionResources.
     ///
     /// \param inOutputDC  The DC to which we should draw our output.
@@ -74,9 +73,7 @@ class TransitionManager
 
     TransitionMap mTransitions;
 
-    //////////
     /// Register a transition with the transition manager.
-    ///
     void RegisterTransition(const std::string &inName,
                             Transition *inTransition);
 
@@ -84,7 +81,6 @@ public:
     TransitionManager();
     ~TransitionManager();
 
-    //////////
     /// Draw the intermediate steps of the specified transition.  Do
     /// not display the first or last step; assume these are handled for
     /// us by our caller.
@@ -94,7 +90,6 @@ public:
     ///        ideally take.  The transition may take slightly more or
     ///        less time.
     /// \param inResources  Resources to use for the transition.
-    ///
     void RunTransition(const std::string &inName, int inMilliseconds,
                        TransitionResources &inResources);
 };

@@ -30,11 +30,9 @@ BEGIN_NAMESPACE_HALYARD
 ///
 class TSchemeCallback : public TCallback
 {
-    //////////
     /// Our callback object.  Note that we need to use a TSchemePtr to
     /// prevent mCallback from being garbage-collected, because we're
     /// a heap-based object.
-    ///
     TSchemePtr<Scheme_Object> mCallback;
 
 public:

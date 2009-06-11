@@ -36,15 +36,11 @@ class DrawingArea;
 class DrawingContextStack {
     typedef std::vector<ElementPtr> ElementStack;
 
-    //////////
     /// The stage we're associated with.  This provides our default
     /// DrawingArea when we have nothing else.
-    ///
     Stage *mStage;
 
-    //////////
     /// A stack of currently-active drawing contexts.
-    ///
     ElementStack mDrawingContextStack;
 
 public:

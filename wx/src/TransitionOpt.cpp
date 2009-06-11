@@ -52,21 +52,17 @@ class Transition
     double EstimateMillisecondsPerBlock() const;
 
 protected:
-    //////////
     /// Returns true if this transition only needs to update the dirty
     /// rectangle.  This is most useful for transitions like crossfades,
     /// where the value of a given pixel is not affected by surrounding
     /// pixels.
-    ///
     virtual bool AffectsOnlyDirtyRect() const { return false; }
 
-    //////////
     /// Show a single step of the transition.
     ///
     /// \param inStep  A number > 0.0 and < 1.0, corresponding to the step
     ///          to show.
     /// \param inResources  The resources to use.
-    ///
     virtual void ShowStep(double inStep, TransitionResources &inResources) = 0;
 
 public:

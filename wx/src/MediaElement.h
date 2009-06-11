@@ -48,75 +48,56 @@ class MediaElement
     Element *GetThisAsElement();
 
 protected:
-    //////////
     /// Do any idle-time processing needed by a media element, and send any
     /// events that we need to send.
     ///
     /// If the media is finished, send a media-finished event to this
     /// element.  This will need to be called by the element's Idle()
     /// method.
-    ///
     virtual void MediaElementIdle();
 
-    //////////
     /// Return true if playback has finished, according to the underlying
     /// media layer.  Note that this function is only intended to be
     /// called by MediaElement methods, and then only after they've
     /// checked mEndPlaybackWasCalled.
-    ///
     virtual bool IsDone() = 0;
     
-    //////////
     /// Return the current frame of the MediaElement.  May return
     /// LAST_FRAME if the movie is done (or broken) and we can't calculate
     /// a more specific end value.  You generally shouldn't bother calling
     /// this if IsDone returns true.
-    ///
     virtual MovieFrame CurrentFrame() = 0;
 
 public:
     MediaElement();
     virtual ~MediaElement() {}
 
-    //////////
     /// Attach a caption file to this movie.
-    ///
     void AttachCaptionFile(const std::string &inCaptionFile);
 
-    //////////
     /// Return true if the movie has reached the specified frame (or the
     /// movie is done).  If inFrame is LAST_FRAME, then return true only
     /// when the movie reaches the end.
-    ///
     bool HasReachedFrame(MovieFrame inFrame);
 
-    //////////
     /// Returns true if the media is looping.
-    ///
     virtual bool IsLooping() = 0;
 
-    //////////
     /// Cease playback, and make sure all future calls to HasReachedFrame()
     /// return true.  If you override this, be sure /// to call
     /// MediaElement::EndPlayback().
-    ///
     virtual void EndPlayback();
 
-    //////////
     /// Pause the media stream.
     ///
     /// Note: This method may not be happy if the underlying movie layer
     /// doesn't like to be paused.  In particular, streaming network
     /// QuickTime is chancy.
-    ///
     virtual void Pause() = 0;
 
-    //////////
     /// Resume playing the media stream after a pause.
-    ///
     virtual void Resume() = 0;
 
-    //////////
     /// Set the volume of this media element.
     ///
     /// \param inChannel  The channel to change.  Typical values include
@@ -124,11 +105,9 @@ public:
     ///                  frameworks may define more channels.
     /// \param inVolume  The volume.  0.0 is silent, 1.0 is the media's
     ///                 normal volume.
-    ///
     virtual void SetVolume(const std::string &inChannel, double inVolume) = 0;
 
 
-    //////////
     /// Set up a playback timer which we be triggered at the specified
     /// time.  LAST_FRAME may be used here.  When the timer is triggered,
     /// it will send an event to the EventDispatcher for this element.
@@ -136,25 +115,18 @@ public:
     /// set to trigger at an invalid frame).
     ///
     /// It is an error to overwrite an existing playback timer.
-    ///
     virtual void SetPlaybackTimer(MovieFrame inFrame);
 
-    //////////
     /// Clear any playback timer which may have been installed for this
     /// element.  Does nothing if no playback timer is active.
-    ///
     virtual void ClearPlaybackTimer();
 
-    //////////
     /// Return some sort of path or location information for this media
     /// clip (for display purposes only).  If none is available, return "".
     /// It's acceptable to return relative or abstract paths.
-    ///
     virtual wxString GetLocationInfo() { return wxT(""); }
 
-    //////////
     /// Write information about this clip to inMediaInfoPane.
-    ///
     virtual void WriteInfoTo(MediaInfoPane *inMediaInfoPane);
 };
 

@@ -44,28 +44,22 @@ BEGIN_NAMESPACE_HALYARD
 ///
 namespace TTextTransform
 {
-    //////////
     /// Transform double hyphens into m-dash entities (a dash the
     /// width of the capital letter 'M'), and '...' sequences into
     /// horizontal ellipsis entities.
     ///
     /// \param inString  The string to transform.
     /// \return  The transformed string.
-    ///
     utf8_string FixSpecials(const utf8_string& inString);
 
-    //////////
     /// Transform \' and \" characters into appropriate left and right
     /// quote entities.
     ///
     /// \param inString  The string to transform.
     /// \return  The transformed string.
-    ///
     utf8_string FixQuotes(const utf8_string& inString);
 
-    //////////
     /// Apply all transformations to a string.
-    ///
     utf8_string TransformString(const utf8_string& inString);
 };
 

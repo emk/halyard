@@ -54,10 +54,8 @@ typedef shared_ptr<TStateListener> TStateListenerPtr;
 class TStateDB {     
     friend class TStateListener;
         
-    //////////
     /// Represents the value of an event and all the Listerners
     /// to that event.
-    /// 
     struct Datum {
         TValue mValue;
         typedef std::vector<TStateListener *>  ListenerList;
@@ -80,11 +78,9 @@ class TStateDB {
     DatumMap mDB;
     int mNotifyCount;
     
-    //////////
     /// Accept only keys of the form "/pathname". Should not
     /// end with a forward slash and should not contain more
     /// than one sequence of forward slashes.
-    /// 
     void CheckForLegalKey(const std::string &inKey);
     
     void UnregisterListener(TStateListener *inListener,
@@ -95,9 +91,7 @@ public:
     void Set(const std::string &inKey, TValue inValue);     
     TValue Get(TStateListener *inListener, const std::string &inKey);
 
-    //////////
     /// Attempt to remove all entries from the database.
-    ///
     void Clear();
 };
 

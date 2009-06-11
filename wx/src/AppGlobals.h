@@ -85,18 +85,14 @@ enum {
 typedef long MovieFrame;
 
 enum /* MovieFrame */ {
-    //////////
     /// A constant representing the last frame of a movie.
-    ///
     LAST_FRAME = -1
 };
 
 enum {
-    //////////
     /// The nominal number of frames/second in a movie.  The real number of
     /// frames/second might be higher or lower, but we try to insulate
     /// scripts from this fact.
-    ///
     FRAMES_PER_SECOND = 30
 };
 

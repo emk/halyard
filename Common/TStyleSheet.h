@@ -52,46 +52,33 @@ class TStyleSheet {
     GraphicsTools::Color mShadowColor;
     GraphicsTools::Color mHighlightShadowColor;
 
-    //////////
     /// Get a Typography::Style object corresponding to unhighlighted
     /// text.
-    ///
     Typography::Style GetBaseStyle();
 
-    //////////
     /// Convert all the children of an XML node to styled text.
-    ///
     void ProcessNodeChildren(xml_node inNode,
                              std::vector<Typography::Style> &ioStyleStack,
                              Typography::StyledText &outText) const;
 
-    //////////
     /// Convert an XML node to styled text.
-    ///
     void ProcessNode(xml_node inNode,
                      std::vector<Typography::Style> &ioStyleStack,
                      Typography::StyledText &outText) const;
 
 public:
-    //////////
     /// Create a new style sheet from an argument list.
-    ///
     TStyleSheet(TArgumentList &inArgs);
     
-    //////////
     /// Get the name of this style sheet.
-    ///
     std::string GetName() const { return mStyleName; }
 
-    //////////
     /// Convert an XML-formatted string into a StyledText object, using the
     /// data stored in this style.  This is a pretty nasty formatting
     /// system, and it handles a lot of escapes which should be processed
     /// by TStream instead.
-    ///
     Typography::StyledText MakeStyledText(const std::string& inText);
     
-    //////////
     /// Draw text onto the specified image.
     ///
     /// \param inText  The text to draw, with standard XML formatting.
@@ -103,15 +90,12 @@ public:
     ///                     This must not be deallocated until the
     ///                     TextRendering engine is destroyed.  May be
     ///                     NULL if we only want to measure the text.
-    ///
     TRect Draw(const std::string& inText,
                GraphicsTools::Point inPosition,
                GraphicsTools::Distance inLineLength,
                GraphicsTools::Image *inImage);
 
-    //////////
     /// Get the height of a single line of text drawn in this style.
-    ///
     int GetLineHeight();
 };
 
@@ -123,22 +107,15 @@ class TStyleSheetManager
 public:
     virtual ~TStyleSheetManager() { RemoveAll(); }
 
-    //////////
     /// Return the specified stylesheet, or NULL.
-    ///
     TStyleSheet *Find(const std::string &inName);
 
-    //////////
     /// Create a new style sheet using the supplied parameters.
-    ///
     void AddStyleSheet(TArgumentList &inArgs);
 
-    //////////
     /// Remove all the stylesheets from this object.
-    ///
     void RemoveAll();
 
-    //////////
     /// Draw text onto the specified image, using the specified
     /// style sheet.
     ///
@@ -152,17 +129,14 @@ public:
     ///                     This must not be deallocated until the
     ///                     TextRendering engine is destroyed.  May be
     ///                     NULL if we only want to measure the text.
-    ///
     TRect Draw(const std::string &inStyleSheet,
                const std::string &inText,
                GraphicsTools::Point inPosition,
                GraphicsTools::Distance inLineLength,
                GraphicsTools::Image *inImage);
 
-    //////////
     /// Compatibility function.  Get the height of the first line of
     /// the text.
-    ///
     int GetLineHeight(const char *inStyleSheet);
 };
 

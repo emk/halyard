@@ -49,24 +49,18 @@ public:
     Downloader();
     ~Downloader();
 
-    //////////
     /// Download the given URL to the given filename.
     /// 
     /// \param URL  The URL to download from.
     /// \param file  The file to download to. 
     /// \return  False if the download succeeds, true if there are errors. 
-    ///
     bool Get(const std::string &URL, const std::string &file);
 
-    //////////
     /// Get the singleton downloader object.
-    ///
     static Downloader *GetInstance() 
         { ASSERT(s_instance); return s_instance; };
 
-    //////////
     /// Cancel the download in progress. 
-    ///
     void CancelDownload();
 
 protected:

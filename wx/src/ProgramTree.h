@@ -79,25 +79,17 @@ class ProgramTree : public wxWindow, public Halyard::TReloadNotified
 public:
     ProgramTree(StageFrame *inStageFrame, int inID);
 
-    //////////
     /// Notify the tree that a document has been loaded.
-    ///
     void RegisterDocument(Halyard::Document *inDocument);
 
-    //////////
     /// Register a newly-loaded card with the program tree.
-    ///
     void RegisterGroupMember(const wxString &inName, bool inIsCard,
                              bool inIsLoaded);
 
-    //////////
     /// Notify the program tree that script is being reloaded.
-    ///
     void NotifyReloadScriptStarting();
 
-    //////////
     /// Notify the program tree that the interpreter has moved to a new card.
-    ///
     void NotifyEnterCard(const wxString &inName);
 };
 

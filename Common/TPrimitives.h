@@ -69,47 +69,35 @@ class ValueOrPercent;
 ///
 class TArgumentList
 {
-    //////////
     /// The arguments passed to a primitive will be stored as TValues
     /// in a TValueList.
-    ///
     TValueList mArgList;
 
-    //////////
     /// A pointer to the current TValue object in mArgList
-    ///
     TValueList::iterator mArgPtr;
 
 protected:
-    //////////
     /// Fetch the next argument.
-    ///
     virtual TValue GetNextArg() {
         if(!HasMoreArguments())
             THROW("Not enough arguments");
         return *mArgPtr++;
     }
 
-    //////////
     /// Return the next argument as a symbol.  Symbols are basically the
     /// same as strings, but they're typically used to name options in APIs,
     /// and some languages (such as Scheme) want to make a distinction.  If
     /// your language doesn't support symbols, make strings and symbols
     /// equivalent.
-    ///
     virtual std::string GetSymbolArg();
 
-    //////////
     /// Return the next argument as either a value or a percentage.
-    ///
     virtual void GetValueOrPercentArg(bool &outIsPercent,
                                       int32 &outValue);
 
-    //////////
     /// Return the next argument as a callback.  This object
     /// is allocated on the heap, and must be destroyed by the
     /// caller (typically the primitive function) using delete.
-    ///
     virtual TCallbackPtr GetCallbackArg();
 
 public:
@@ -117,9 +105,7 @@ public:
     TArgumentList(TValueList inVal);
     virtual ~TArgumentList() {}
         
-    //////////
     /// Are there any more arguments left?
-    /// 
     virtual bool HasMoreArguments() { 
         return (mArgPtr != mArgList.end());
     }
@@ -140,10 +126,8 @@ public:
     friend TArgumentList &operator>>(TArgumentList &inArgs,
                                      const ValueOrPercent &inVoP);
 
-    //////////
     /// Print this argument list to an output stream, for debugging
     /// purposes.
-    /// 
     friend std::ostream &operator<<(std::ostream &out, 
                                     TArgumentList &args);
 };
@@ -193,37 +177,28 @@ public:
 class TPrimitiveManager
 {
 public:
-    //////////
     /// A PrimitiveFunc implements a single primitive.
     ///
     /// \param inArgs  The arguments to the primitive.
-    ///
     typedef void (*PrimitiveFunc)(TArgumentList &inArgs);
 
 private:
-    //////////
     /// The big table of all our primitive functions.
-    ///
     std::map<std::string,PrimitiveFunc> mPrimitiveMap;
 
 public:
-    //////////
     /// Register a primitive with the primitive manager.
     ///
     /// \param inName  The name of the primitive, in lowercase.
     /// \param inFunc  The function which implements this primitive.
-    ///
     void RegisterPrimitive(const std::string &inName, PrimitiveFunc inFunc);
 
-    //////////
     /// Does a primitive with the given name exist?
     ///
     /// \param inName  The name of the primitive, in lowercase.
     /// \return  Whether the given primitive exists.
-    ///
     bool DoesPrimitiveExist(const std::string &inName);
 
-    //////////
     /// Call the specified primitive.  This function throws
     /// all sorts of exciting exceptions, so you should probably
     /// wrap it in a try/catch block and deal with any problems
@@ -231,7 +206,6 @@ public:
     ///
     /// \param inName  The name of the primitive, in lowercase.
     /// \param inArgs  The arguments to the primitive.
-    ///
     void CallPrimitive(const std::string &inName, TArgumentList &inArgs);
 };
 

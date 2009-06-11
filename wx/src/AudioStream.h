@@ -117,16 +117,13 @@ private:
     void ApplyChannelVolumes(void *ioOutputBuffer,
                              unsigned long inFramesPerBuffer);
 
-    //////////
     /// An internal version of the Start() function, called by Start()
     /// and StartIfStartDelayedByPreload().
     ///
     /// Make sure you're holding sCriticalSection before you enter this
     /// function!
-    ///
     void StartInternal(bool isInBackground);
 
-    //////////
     /// If a previous call to Start() was supposed to start audio
     /// playing, but was unable to do so because the stream was
     /// PRELOADING, then perform the actual start.  Called at the
@@ -134,120 +131,86 @@ private:
     ///
     /// Make sure you're holding sCriticalSection before you enter this
     /// function!
-    ///
     void StartIfStartDelayedByPreload();
 
 public:
-    //////////
     /// Create a new AudioStream.  You must call Start() afterwards if
     /// you want to play any audio.
-    ///
     AudioStream(Format inFormat, float inVolume = 1.0f);
 
-    //////////
     /// Destroy an AudioStream.  The stream must be stopped before
     /// destroying it.
-    ///
     void Delete();
 
-    //////////
     /// How many audio channels does this stream have?
-    ///
     int GetChannelCount() { return MAX_CHANNELS; }
 
-    //////////
     /// Set the volume of all channels.
-    ///
     void SetVolume(float inVolume);
 
-    //////////
     /// Set the volume of the specified channel.
-    ///
     void SetChannelVolume(int inChannel, float inVolume);
 
-    //////////
     /// Set the volume of the specified channel.
-    ///
     void SetChannelVolume(const std::string &inChannel, float inVolume);
 
-    //////////
     /// Is this stream done playing?  Never returns true for a looping
     /// stream.
-    ///
     virtual bool IsDone() const;
 
-    //////////
     /// How many seconds of audio have been played?  For some more
     /// advanced stream types, this will generally try not to count
     /// buffer underrun time, although this may make the result
     /// occasionally jump backwards in time by a small fraction of a
     /// second.
-    ///
     double GetTime() const;
 
-    //////////
     /// Is the stream currently running?
-    ///
     bool IsRunning() { return mIsRunning; }
 
-    //////////
     /// Returns true if the audio stream is looping (or some other form
     /// of infinitely long, repetitive stream).
-    ///
     virtual bool IsLooping() = 0;
 
-    //////////
     /// Start the stream running.  It's OK to call this if the stream
     /// is already running.
     ///
     /// This must be separate from the constructor because it indirectly
     /// relies upon a virtual function.
-    ///
     void Start();
 
-    //////////
     /// Stop the stream.  It's OK to call this if the stream is already
     /// stopped.
     ///
     /// This must be separate from the destructor because it indirectly
     /// relies upon a virtual function.
-    ///
     void Stop();
 
 protected:
-    //////////
     /// This destructor SHOULD NOT BE CALLED DIRECTLY.  Use Delete()
     /// instead.
     ///
     /// Destructors are now called from the foreground thread.  We used
     /// to call them from the background thread, but it lead to too many
     /// thread-safety headaches.
-    ///
     virtual ~AudioStream();
 
-    //////////
     /// Change thread state from INITIALIZING to PRELOADING.  This must be
     /// called at the end of each subclass's constructor, and will cause
     /// the background thread to start sending Preload() and Idle()
     /// messages.
-    /// 
     void InitializationDone();
 
-    //////////
     /// Makes the first call to Idle(), and changes state from INITIALIZING
     /// to PRELOADING.  Called automatically from the background thread.
-    ///
     void Preload();
 
-    //////////
     /// Get the number of samples played.  The default implementation
     /// reports solely the number of raw samples actually played, but
     /// subclasses may attempt to fudge this number to account for
     /// underruns.
-    ///
     virtual double GetSamplesPlayed() const;
 
-    //////////
     /// Our callback function.  This code runs in a separate PortAudio
     /// thread (or perhaps at interrupt level), and isn't allowed to do
     /// much of anything besides filling the buffer.
@@ -263,11 +226,9 @@ protected:
     /// \param inTime  The number of frames already played through
     ///                   this channel.
     /// \return  Should we stop this stream now?
-    ///
     virtual bool FillBuffer(void *outBuffer, unsigned long inFrames,
                             PaTimestamp inTime) = 0;
 
-    //////////
     /// Give some non-interrupt processing time to the stream.  This
     /// gets called automatically.  Don't spend *too* long in this method;
     /// there may be other media streams playing, and they need time, too.
@@ -277,14 +238,11 @@ protected:
     /// Delete().  This means you can do disk I/O and other things not
     /// allowed in FillBuffer, but you still have to think about thread
     /// safety a bit.
-    ///
     virtual void Idle() {}
 
-    //////////
     /// Log any useful information about this stream.  This is called once,
     /// after the last call to FillBuffer() but possibly before (or during)
     /// the last call to Idle().
-    ///
     virtual void LogFinalStreamInfo() {}
 
 private: // static stuff
@@ -307,30 +265,22 @@ private: // static stuff
     static void RegisterStream(AudioStream *inStream);
     static void UnregisterStream(AudioStream *inStream);
 
-    //////////
     /// Called from the foreground thread: Wait() for the background thread
     /// to call UnregistrationFinished().  The call to Wait() automically
     /// unlocks mUnregisterMutex *while* waiting, and locks it afterwards.
     /// You must lock sUnregisterMutex before calling this function!
-    ///
     static void WaitUntilUnregistrationFinished();
 
-    //////////
     /// Called from this thread: Wait until the foreground thread calls
     /// WaitUntilUnregistrationFinished(), if it hasn't already, and wake
     /// it up.
-    ///
     static void UnregistrationFinished();
 
 public: // static stuff
-    //////////
     /// Initialize the audio synthesis subsystem.
-    ///
     static void InitializeStreams();
 
-    //////////
     /// Shut down the audio synthesis subsystem.
-    ///
     static void ShutDownStreams();
 };
 

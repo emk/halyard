@@ -44,14 +44,10 @@ class DrawingArea : public GraphicsTools::Image {
     shared_ptr<wxQuake2Overlay> mQuake2Overlay;
 #endif // CONFIG_HAVE_QUAKE2
 
-    //////////
     /// Returns true if this DrawingArea has an area of zero.
-    ///
     bool HasAreaOfZero() const;
 
-    //////////
     /// Initialize our underlying Cairo surface.
-    ///
     void InitializeSurface();
 
     /// If we have a copy wxQuake2, and it's running, then initialize
@@ -70,7 +66,6 @@ class DrawingArea : public GraphicsTools::Image {
     /// If we have a game overlay, move it to the specified location.
     void GameOverlayMoveTo(const wxPoint &inPoint);
 
-    //////////
     /// Invalidate the specified rectangle.
     ///
     /// \param inRect  The rectangle to invalidate.
@@ -81,13 +76,10 @@ class DrawingArea : public GraphicsTools::Image {
     ///               region.  If we're relying on game engine for real-time
     ///               compositing, it doesn't need to reconvert the data in
     ///               this rectangle.
-    /// 
     void InvalidateRect(const wxRect &inRect, int inInflate = 0,
                         bool inHasSurfaceChanged = true);
 
-    //////////
     /// Invalidate everything associated with this drawing area.
-    ///
     void InvalidateDrawingArea(bool inHasSurfaceChanged = true);
 
 public:
@@ -101,95 +93,68 @@ public:
     wxRect GetBounds() { return mBounds; }
     bool HasAlpha() { return mHasAlpha; }
 
-    //////////
     /// Show or hide this drawing area.
-    ///
     void Show(bool inShow);
 
-    //////////
     /// Relocate this drawing area to the specified location.
-    ///
     void MoveTo(const wxPoint &inPoint);
 
-    //////////
     /// Add this drawing area's bounding box to the dirty list.
-    ///
     void InvalidateCompositing() { InvalidateDrawingArea(false); }
 
-    //////////
     /// Clear the drawing area to the default color.
-    ///
     void Clear();
 
-    //////////
     /// Clear the drawing area to the specified color.
-    ///
     void Clear(const GraphicsTools::Color &inColor);
 
-    //////////
     /// Draw a line in the specified color.
-    ///
     void DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
                   const GraphicsTools::Color &inColor, int inWidth);
 
-    //////////
     /// Fill in the specified box with the specified color.
-    ///
     void FillBox(const wxRect &inBounds, 
                  const GraphicsTools::Color &inColor);
 
-    //////////
     /// Outline the specified box with the specified color.
-    ///
     void OutlineBox(const wxRect &inBounds,
                     const GraphicsTools::Color &inColor,
                     int inWidth);
 
-    //////////
     /// Fill in the specified oval with the specified color.
-    ///
     void FillOval(const wxRect &inBounds, 
                   const GraphicsTools::Color &inColor);
 
-    //////////
     /// Outline the specified oval with the specified color.
-    ///
     void OutlineOval(const wxRect &inBounds,
                      const GraphicsTools::Color &inColor,
                      int inWidth);
 
-    //////////
     /// Draw a portable PixMap to the screen, blending alpha
     /// values appropriately.
     ///
     /// \param inPoint    The location at which to draw the greymap.
     /// \param inGreyMap  The greymap to draw.
     /// \param inColor    The color to draw with.
-    ///
     void DrawGreyMap(GraphicsTools::Point inPoint,
                      const GraphicsTools::GreyMap *inGreyMap,
                      GraphicsTools::Color inColor);
 
-    //////////
     /// Return the size of inSurface, optionally scaled.  Note that the
     /// right and bottom edges are rounded upward to the nearest pixel if
     /// inScaleX and inScaleY results in a non-integral size.  Only works
     /// for cairo_image_surface objects.
-    ///
     static wxSize MeasureImage(CairoSurfacePtr inImage,
                                double inScaleX = 1.0, double inScaleY = 1.0);
 
-    //////////
     /// Draw a surface on the stage at the specified location, with
     /// optional scaling and clipping.  The inClipRect, if specified, is in
     /// co-ordinates relative to inSurface.  Only works for
     /// cairo_image_surface objects.
-    ///
     wxRect DrawImage(CairoSurfacePtr inImage, wxCoord inX, wxCoord inY,
                      double inScaleX = 1.0, double inScaleY = 1.0,
                      wxRect *inClipRect = NULL);
 
-    //////////
     /// Use the alpha channel of a bitmap to selectively mask parts of the
     /// DrawingArea.  Completely opaque parts of the "mask" bitmap will be
     /// left unchanged in the DrawingArea, while completely transparent
@@ -199,38 +164,29 @@ public:
     /// \param inMask  The bitmap to use a mask.
     /// \param inX The X coordinate to erase at.
     /// \param inY The Y coordinate to erase at.
-    ///
     void Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY);
 
-    //////////
     /// Blit the contents of the specified DC to our offscreen buffer.
     /// If the blit fails, fill the offscreen buffer with black.
     /// (This is currently used for synchronizing our display with
     /// whatever Quake 2 left on the screen.)
     /// 
     /// \param inDC  a DC the same size as the stage
-    ///
     void DrawDCContents(wxDC &inDC);
 
-    //////////
     /// Draw a 12-point string of text at the specified location.  This is
     /// used for drawing copyright notices on the splash screen before
     /// we've set up a real typography engine.  Note that we make no
     /// guarantees about what font we use or whether we anti-alias the
     /// text.
-    ///
     void DrawSimpleText(GraphicsTools::Point inAt, wxString inText,
                         GraphicsTools::Color inColor);
 
-    //////////
     /// Get the color at the specified location (specified in DrawingArea
     /// co-ordinates).
-    ///
     GraphicsTools::Color GetPixel(wxCoord inX, wxCoord inY);
 
-    //////////
     /// Composite our data into the specified CairoContext.
-    ///
     void CompositeInto(CairoContext &inCr);
 };
 

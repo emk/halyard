@@ -50,42 +50,32 @@ class TException : public std::runtime_error
     std::string mWhatCache;
     
 protected:
-    //////////
     /// Constructor for use by subclasses.  You can call this, then set up
     /// the member variables with SetErrorCode and SetErrorMessage.
-    ///
     TException(const char *inErrorFile, int inErrorLine)
         : std::runtime_error(""),
           mErrorFile(inErrorFile),
           mErrorLine(inErrorLine),
           mErrorCode(kNoErrorCode) {}
 
-    //////////
     /// Set the error code associated with this exception.
-    ///
     void SetErrorCode(int inErrorCode) { mErrorCode = inErrorCode; }
 
-    //////////
     /// Set the error message associated with this exception.
-    ///
     void SetErrorMessage(const std::string &inErrorMessage)
         { mErrorMessage = inErrorMessage; }
 
 public:
     enum {
-        //////////
         /// Not all errors have error codes.  Use this if you don't
         /// have anything better.
-        ///
         kNoErrorCode = 0
     };
 
-    //////////
     /// Create a new TException object.
     ///
     /// \param inErrorMessage  The error message to display.
     /// \param inErrorCode  The code associated with this error, if any.
-    ///
     TException(const char *inErrorFile, int inErrorLine,
                const std::string &inErrorMessage,
                int inErrorCode = kNoErrorCode)
@@ -95,33 +85,24 @@ public:
           mErrorMessage(inErrorMessage),
           mErrorCode(inErrorCode) {}
 
-    //////////
     /// Destroy a TException object.
-    ///
     virtual ~TException() throw () {}
 
-    //////////
     /// Return the name of this exception class.  Subclasses must
     /// override this to provide their own name.
-    ///
     virtual const char *GetClassName() const { return "TException"; }
 
-    //////////
     /// Return the error code associated with this exception, or
     /// kNoErrorCode if there is none.
-    ///
     int GetErrorCode() const { return mErrorCode; }
     
-    //////////
     /// Return the error message associated with this exception.  You
     /// don't usually wish to call this; call what() instead.
-    ///
     std::string GetErrorMessage() const { return mErrorMessage; }
 
     std::string GetErrorFile() const { return mErrorFile; }
     int GetErrorLine() const { return mErrorLine; }
     
-    //////////
     /// Return a formatted error string for this error.  This method is
     /// available on all instances of std::exception.
     ///
@@ -135,29 +116,20 @@ public:
     ///                is good until the TException is destroyed,
     ///                or what() is called a second time, whichever
     ///                comes sooner.
-    ///
     virtual const char* what () const throw ();
 
-    //////////
     /// Report an exception to the user.  Since these tend to be well-behaved
     /// C++ exceptions, this function is non-fatal.
-    ///
     static void ReportException(std::exception &e);
 
-    //////////
     /// Report an unknown exception to the user.  Since these tend to be
     /// Win32 protection violations, this function is fatal.
-    ///
     static void ReportException();
 
-    //////////
     /// Report an exception, and always trigger a fatal error.
-    ///
     static void ReportFatalException(std::exception &e);
 
-    //////////
     /// Report an unknown exception, and always trigger a fatal error.
-    ///
     static void ReportFatalException();
 };
 
