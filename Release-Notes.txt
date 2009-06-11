@@ -1,3 +1,80 @@
+0.5.34 - 12 June 2009
+
+This release significantly improves the Halyard developer GUI in a number
+of long-overdue ways:
+
+ 1) We now support creating new Halyard-based programs from the GUI.
+ 2) The "Recent Programs" list finally works.
+ 3) We have an icon on the Macintosh.
+ 4) Halyard's old SashFrame class has been replaced by a new AUI-based
+    GUI, complete with dockable palettes.
+ 5) The listener's focus and scrolling behavior has been improved
+    significantly.
+ 6) We now have a "Media Info" palette which shows the path and timecode
+    of whatever element the script is waiting on.  This is experimental,
+    and will be refined further in future releases.
+
+This release also includes a few compilation fixes for recent Ubuntu
+versions of GCC.  It probably wouldn't be too hard to get a very primitive
+Linux port of Halyard running if anybody is interested.
+
+This release introduces a new function in the unit test API,
+RUNNING-ALL-TESTS?, which specifies if we are currently running
+through our unit test sequence.
+
+Brian Campbell (3):
+      Cairo: Remove warning for drawing 0-area rectangle outline
+      Merge branch 'autogen-update' of git@github.com:lambda/halyard
+      Halyard.sln: Don't build unnecessary projects in Libraries phase
+
+Christian Persch (2):
+      autogen: Add -Wno-portability to automake invocation. Bug #529120...
+      autogen: Support for automake 1.11
+
+Eric Kidd (26):
+      StartupDlg: Implement "recent files" list
+      ScriptEditor: Only scan for identifiers in source directories
+      StartupDlg: Implement "new program" radio button
+      Stage: Factor common code out of OpenDocument, NewDocument
+      StartupDlg: Rename mRecentFiles -> mHistory
+      Stage: Factor out AddFileToHistory calls
+      Reorganize .gitignore and add .DS_Store
+      Mac: Add application icon and Info.plist
+      wxAui: Convert StageFrame to use wxAui
+      wxAui: Convert ScriptEditor to use wxAui
+      wxAui: Reduce minimum window size for ScriptEditor
+      wxAui: Bug fix: Remove extra CreateToolBar call
+      wxAui: Save and restore frame sizes
+      DocNotebook: Make a note of a long-standing Mac bug
+      wxAui: Remove obsolete "TODO AUI" comment
+      Mac: Make CFBundleExecutable name uppercase
+      Remove ancient timecoder demo
+      wxAui: Convert Listener to use wxAui
+      wxAui: Tweak Listener behavior on Windows
+      ProgramTree: Get rid of useless "Cards" node
+      Merge branch 'aui' of git@github.com:emk/halyard
+      wxAui: Allow user to reset frame perspective to default
+      Bug fix: Cairo: Fix TransformRectToUnitSquare regressions
+      wxAui: Add a "Media Info" pane with paths & timecodes
+      Revert "HalyardCheckAssertion: Correct type of inTest to bool"
+      wxAui: Fine-tune spacing of "Media Info" palette
+
+Robinson Tryon (11):
+      HACKING.txt: Clarify win32 build instructions
+      Remove unneeded declaration of Halyard::TStateDB
+      HalyardCheckAssertion: Correct type of inTest to bool
+      Include string.h explicitly when using strncpy
+      Remove extra specifier from ~StyleRep()
+      Make #endif lines use proper syntax
+      Change default values to have correct wxString type
+      Unit tests: Create/provide function running-all-tests?
+      /bugs: Add card /bugs/bug-f12767-measure-text-space-before-newline
+      /m4: Update ax_boost_unit_test_framework.m4 to the latest version
+      /m4: Update ax_boost_test_exec_monitor.m4 to the latest version
+
+Rodney Dawes (1):
+      autogen: Only pass --enable-maintainer-mode when AM_MAINTAINER_MODE is...
+
 0.5.33 - 4 June 2009
 
 This release introduces a few more performance optimizations.  At this
