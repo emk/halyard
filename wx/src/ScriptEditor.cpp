@@ -2191,8 +2191,13 @@ ScriptEditor::ScriptEditor()
     search_menu->Append(HALYARD_GOTO_DEFINITION, 
                         wxT("Go to &Definition\tAlt+."),
                         wxT("Look up the identifier under the cursor."));
+
     // Set up our Window menu.
     wxMenu *window_menu = new wxMenu();
+    window_menu->Append(HALYARD_RESET_PERSPECTIVE,
+                        wxT("Reset to Default &Perspective"),
+                        wxT("Reset all palettes to their default ")
+                        wxT("configuration."));
 
     // Set up our menu bar.
     wxMenuBar *menu_bar = new wxMenuBar();
@@ -2260,9 +2265,7 @@ ScriptEditor::ScriptEditor()
     // Set a reasonable default window size.
     SetClientSize(950, 650);
 
-    // Finish setting up our mAuiManager.
-    mAuiManager->Update();
-    LoadFramePerspective();
+    FinishSettingUpAuiManager();
 
     // Update our identifier database for syntax highlighting and indentation
     UpdateIdentifierInformation();
@@ -2510,12 +2513,7 @@ void ScriptEditor::OnClose(wxCloseEvent &event) {
         ASSERT(event.CanVeto());
         event.Veto();
     } else {
-        // Save our perspective one last time.
-        MaybeSaveFramePerspective();
-
-        // Turn off our wxAuiManager.
-        mAuiManager->UnInit();
-
+        ShutDownAuiManager();
         Destroy();
     }
 }

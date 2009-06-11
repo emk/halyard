@@ -25,6 +25,7 @@
 #include <wx/aui/framemanager.h>
 #include <wx/display.h>
 #include <wx/config.h>
+#include "AppGlobals.h"
 #include "AuiFrame.h"
 
 //=========================================================================
@@ -32,6 +33,7 @@
 //=========================================================================
 
 BEGIN_EVENT_TABLE(AuiFrame, wxFrame)
+    EVT_MENU(HALYARD_RESET_PERSPECTIVE, AuiFrame::OnResetPerspective)
 END_EVENT_TABLE()
 
 AuiFrame::AuiFrame(wxWindow *inParent,
@@ -184,3 +186,26 @@ void AuiFrame::UpdateMinimumFrameSize() {
     }
 }
 
+void AuiFrame::FinishSettingUpAuiManager() {
+    // Commit the changes to our wxAuiManager.
+    mAuiManager->Update();
+
+    // Record our default perspective so we can reset it later if asked.
+    mDefaultPerspective = mAuiManager->SavePerspective();
+
+	// Re-load our saved frame perspective.  We can't do this until after
+	// our setup is completed.
+	LoadFramePerspective();
+}
+
+void AuiFrame::ShutDownAuiManager() {
+    // Save our perspective one last time.
+	MaybeSaveFramePerspective();
+
+    // Turn off our wxAuiManager.
+    mAuiManager->UnInit();
+}
+
+void AuiFrame::OnResetPerspective(wxCommandEvent &inEvent) {
+    mAuiManager->LoadPerspective(mDefaultPerspective);
+}

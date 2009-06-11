@@ -39,8 +39,9 @@ class AuiFrame : public wxFrame {
     /// The name of this frame (used to store wxConfig data).
     wxString mFrameName;
 
-    /// The main subwindow of this frame.
-    wxWindow *mMainWindow;
+    /// The origin perspective we used when setting up this frame.  This
+    /// allows users to reset their perspective back to the default.
+    wxString mDefaultPerspective;
 
 public:
     /// Create a new AuiFrame.  Parameters are the same as wxFrame, except
@@ -72,6 +73,9 @@ private:
     /// Recalculate the current frame's size.
     void UpdateMinimumFrameSize();
 
+    /// Load mDefaultPerspective.
+    void OnResetPerspective(wxCommandEvent &inEvent);
+
 protected:
     /// Get a configuration object with its path set to the appropriate
     /// value for this frame.
@@ -82,6 +86,18 @@ protected:
 
 	/// Save the perspective for the current frame if it's safe to do so.
 	void MaybeSaveFramePerspective();
+
+    /// Call mAuiManager->Update() to lay out the frame, record
+    /// mDefaultPerspective, and load any saved perspective.  Must be
+    /// called by all subclasses after all panes have been configured in
+    /// the constructor.
+    void FinishSettingUpAuiManager();
+
+    /// Save our current perspective, and uninitialize mAuiManager.  Must
+    /// be called by all subclasses before calling Destroy, typically in an
+    /// OnClose event handler after the decision has been made to close the
+    /// frame.
+    void ShutDownAuiManager();
 };
 
 #endif // AuiFrame_H

@@ -166,7 +166,8 @@ BEGIN_EVENT_TABLE(StageFrame, AuiFrame)
 
     EVT_UPDATE_UI(wxID_ABOUT, StageFrame::UpdateUiDevTool)
     EVT_MENU(wxID_ABOUT, StageFrame::OnAbout)
-    EVT_UPDATE_UI(HALYARD_SHOW_LOG, StageFrame::UpdateUiDevTool)
+    EVT_UPDATE_UI(HALYARD_RESET_PERSPECTIVE, StageFrame::UpdateUiDevTool)
+    // EVT_MENU(HALYARD_RESET_PERSPECTIVE, ...) installed in AuiFrame.
     EVT_UPDATE_UI(HALYARD_SHOW_LISTENER, StageFrame::UpdateUiDevTool)
     EVT_MENU(HALYARD_SHOW_LISTENER, StageFrame::OnShowListener)
     EVT_UPDATE_UI(HALYARD_FULL_SCREEN, StageFrame::UpdateUiFullScreen)
@@ -300,6 +301,11 @@ StageFrame::StageFrame(wxSize inSize)
 
     // Set up our Window menu.
     mWindowMenu = new wxMenu();
+    mWindowMenu->Append(HALYARD_RESET_PERSPECTIVE,
+                        wxT("Reset to Default &Perspective"),
+                        wxT("Reset all palettes to their default ")
+                        wxT("configuration."));
+    mWindowMenu->AppendSeparator();
     mWindowMenu->Append(HALYARD_SHOW_LISTENER, wxT("Show &Listener\tCtrl+L"),
                         wxT("Show interactive script listener."));
 
@@ -346,12 +352,8 @@ StageFrame::StageFrame(wxSize inSize)
     // Add a status bar.
 	SetStatusBar(new FancyStatusBar(this));
 
-    // Commit the changes to our wxAuiManager.
-    mAuiManager->Update();
-
-	// Re-load our saved frame perspective.  We can't do this until after
-	// our setup is completed.
-	LoadFramePerspective();
+    // Lay out our frame.
+    FinishSettingUpAuiManager();
 }
 
 #if !wxUSE_DISPLAY
@@ -1197,11 +1199,7 @@ void StageFrame::OnClose(wxCloseEvent &inEvent)
 		}
 	}
 
-	// Save our perspective one last time.
-	MaybeSaveFramePerspective();
-
-    // Turn off our wxAuiManager.
-    mAuiManager->UnInit();
+    ShutDownAuiManager();
 
     // If we've got an interpreter manager, we'll need to ask it to
     // shut down the application.
