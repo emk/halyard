@@ -1,7 +1,8 @@
 #!/usr/bin/perl
 #
-# This is pretty much a one-time script to convert our comments to Doxygen
-# format.  Use at your own risk.
+# This is pretty much a one-time script to strip useless lines from our
+# comments.  (An earlier version converted old-style comments to Doxygen
+# format.)  Use at your own risk.
 
 # For each file on the command line.
 foreach my $filename (@ARGV) {
@@ -20,22 +21,26 @@ foreach my $filename (@ARGV) {
 
     # Clean up the comments.
     my $in_comment = 0;
+    my @lines;
     while (<INPUT>) {
-        chomp;
-        if (m,^\s*////+\s*$,) {
+        if (m,^\s+////+\s*\n?$,) {
             $in_comment = 1;
-        } elsif (m,^\s*//[ \t], or m,^\s*//$,) {
+        } elsif (m,^\s*///,) {
             if ($in_comment) {
-                s,^(\s*)//,\1///,;
-                s,\[out\]\s*return\s*-\s*,\\return  ,;
-                s,\[in\]\s*(\w+)\s*-\s*,\\param \1  ,;
-                s,\[out\]\s*(\w+)\s*-\s*,\\param \1  (out) ,;
-                s,\[in/out\]\s*(\w+)\s*-\s*,\\param \1  (in/out) ,;
+                push @lines, $_;
+            } else {
+                print OUTPUT $_;
             }
         } else {
             $in_comment = 0;
+            my $last = pop @lines;
+            print OUTPUT join('', @lines);
+            if ($last =~ m,[^ \t\n/],) {
+                print OUTPUT $last;
+            }
+            print OUTPUT $_;
+            @lines = ();
         }
-        print OUTPUT "$_\n";
     }
 
     # Close the files.
