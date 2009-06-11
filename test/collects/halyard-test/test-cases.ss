@@ -52,9 +52,35 @@
          (move-rect-left-top-to (measure-graphic "lens.png") (point 10 20)))))
     )
 
+  (define-class %drawing-warnings-test% (%element-test-case%)
+    (test "Drawing into a 0-area overlay should not error or warn"
+      (foreach [bounds (list (rect 0 0 0 0) (rect 0 0 10 0) (rect 0 0 0 15))]
+        (define e (%custom-element% .new :bounds bounds))
+        (with-dc e
+          (draw-rectangle (rect 0 10 20 30) $color-black)
+          (draw-rectangle-outline (rect 10 15 20 25) $color-white 20)
+          (draw-graphic (point 0 0) "lens.png"))
+        (delete-element e)))
+    
+    ;; This is not actually a behavior we are trying to preserve; it just
+    ;; happens that we don't support this case right now, and we want
+    ;; to make sure that we get a warning about it in case scripters
+    ;; run across it.
+    (test "Drawing a rectangle outline wider than the rectangle should warn"
+      (define e (%custom-element% .new :name 'dc :bounds (rect 0 0 10 10)))
+      (with-dc e
+        (assert-warns 
+         (draw-rectangle-outline (rect 0 0 10 10) $color-black 20))))
+
+    (test "Drawing a rectangle outline should not warn if rectangle area is 0"
+      (define e (%custom-element% .new :name 'dc :bounds (rect 0 0 10 10)))
+      (with-dc e
+        (draw-rectangle-outline (rect 0 0 0 10) $color-black 20))))
+
   (card /tests/drawing-test
       (%element-test-suite%
-       :tests (list %drawing-test%)))
+       :tests (list %drawing-test%
+                    %drawing-warnings-test%)))
 
 
   ;;=======================================================================
