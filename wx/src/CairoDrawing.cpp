@@ -206,7 +206,7 @@ bool CairoContext::TransformRectToUnitSquare(const wxRect &inRect,
 
     // TODO - I don't know whether our old drawing layer handled this case,
     // but we should eventually try to do something reasonable.
-    if (inStrokeWidth > width || inStrokeWidth > width)
+    if (inStrokeWidth > width || inStrokeWidth > height)
         gLog.Warn("halyard.cairo",
                   "Not implemented: %d pixel border on a %dx%d shape",
                   inStrokeWidth, width, height);
