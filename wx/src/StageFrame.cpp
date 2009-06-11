@@ -246,9 +246,9 @@ StageFrame::StageFrame(wxSize inSize)
     // Create a MediaInfoPane.
     mMediaInfoPane = new MediaInfoPane(this);
     mAuiManager->AddPane(mMediaInfoPane, wxAuiPaneInfo().Name(wxT("MediaInfo")).
-                         Caption(wxT("Media Info")).Bottom().MinSize(200, 75).
+                         Caption(wxT("Media Info")).Bottom().MinSize(200, 60).
                          Floatable().FloatingPosition(110, 110).
-                         FloatingSize(600, 75).Float().Show(false));
+                         FloatingSize(600, 60).Float().Show(false));
 
     // Set up our File menu.
     mFileMenu = new wxMenu();

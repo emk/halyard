@@ -26,7 +26,7 @@
 
 using namespace Halyard;
 
-enum { TEXT_INSET = 10 };
+enum { TEXT_INSET = 4 };
 
 BEGIN_EVENT_TABLE(MediaInfoPane, wxPanel)
     EVT_SIZE(MediaInfoPane::OnSize)
