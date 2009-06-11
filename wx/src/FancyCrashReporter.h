@@ -51,7 +51,7 @@ class FancyCrashReporter : public Halyard::CrashReporter, public model::View {
 public:
     FancyCrashReporter() : mIsProcessingCrash(false) {}
     void BeginInterceptingCrashes();
-	void RegisterDocument(Halyard::Document *inDocument);
+    void RegisterDocument(Halyard::Document *inDocument);
     void ObjectChanged();
     void ObjectDeleted();
     void AddDiagnosticFile(const std::string &inFileName,

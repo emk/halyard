@@ -37,14 +37,14 @@ TestRegistry *TestRegistry::sGlobalRegistry = NULL;
 //=========================================================================
 
 void TestCase::Run() {
-	SetUp();
-	try {
-		Test();
-	} catch (...) {
-		TearDown();
-		throw;
-	}
-	TearDown();
+    SetUp();
+    try {
+        Test();
+    } catch (...) {
+        TearDown();
+        throw;
+    }
+    TearDown();
 }
 
 
@@ -53,9 +53,9 @@ void TestCase::Run() {
 //=========================================================================
 
 TestCaseFactory::TestCaseFactory(const char *inName, TestRegistry *inRegistry)
-	: mName(inName)
+    : mName(inName)
 {
-	inRegistry->RegisterTestCaseFactory(this);
+    inRegistry->RegisterTestCaseFactory(this);
 }
 
 
@@ -64,24 +64,24 @@ TestCaseFactory::TestCaseFactory(const char *inName, TestRegistry *inRegistry)
 //=========================================================================
 
 TestCaseReport::TestCaseReport(TestRunReport *inReport,
-							   std::string inName, TestResult inTestResult,
-							   const std::string &inErrorMessage,
-							   const std::string &inErrorFile,
-							   int inErrorLine)
-	: mName(inName), mTestResult(inTestResult),
-	  mErrorMessage(inErrorMessage), mErrorFile(inErrorFile),
-	  mErrorLine(inErrorLine)
+                               std::string inName, TestResult inTestResult,
+                               const std::string &inErrorMessage,
+                               const std::string &inErrorFile,
+                               int inErrorLine)
+    : mName(inName), mTestResult(inTestResult),
+      mErrorMessage(inErrorMessage), mErrorFile(inErrorFile),
+      mErrorLine(inErrorLine)
 {
-	inReport->AddTestCaseReport(TestCaseReport::ptr(this));
+    inReport->AddTestCaseReport(TestCaseReport::ptr(this));
 }
 
 std::string TestCaseReport::GetSummaryIfInteresting() const {
-	std::ostringstream out;
-	if (GetTestResult() == TEST_FAILED) {
-		out << GetErrorFile() << ":" << GetErrorLine() << ": "
-			<< GetName() << ": " << GetErrorMessage() << std::endl;
-	}
-	return out.str();
+    std::ostringstream out;
+    if (GetTestResult() == TEST_FAILED) {
+        out << GetErrorFile() << ":" << GetErrorLine() << ": "
+            << GetName() << ": " << GetErrorMessage() << std::endl;
+    }
+    return out.str();
 }
 
 
@@ -90,19 +90,19 @@ std::string TestCaseReport::GetSummaryIfInteresting() const {
 //=========================================================================
 
 void TestRunReport::AddTestCaseReport(TestCaseReport::ptr inTestCaseReport) {
-	mResultCount[inTestCaseReport->GetTestResult()]++;
-	mTestCaseReports.push_back(inTestCaseReport);
+    mResultCount[inTestCaseReport->GetTestResult()]++;
+    mTestCaseReports.push_back(inTestCaseReport);
 }
 
 std::string TestRunReport::GetSummary() {
-	std::ostringstream out;
-	if (AnyTestFailed())
-		out << "FAIL: " << GetNumTestsFailed() << " failed, ";
-	else
-		out << "OK: ";
-	out << GetNumTestsPassed() << " passed, "
-		<< GetNumTestsSkipped() << " skipped";
-	return out.str();
+    std::ostringstream out;
+    if (AnyTestFailed())
+        out << "FAIL: " << GetNumTestsFailed() << " failed, ";
+    else
+        out << "OK: ";
+    out << GetNumTestsPassed() << " passed, "
+        << GetNumTestsSkipped() << " skipped";
+    return out.str();
 }
 
 
@@ -111,39 +111,39 @@ std::string TestRunReport::GetSummary() {
 //=========================================================================
 
 TestRegistry *TestRegistry::GetGlobalRegistry() {
-	if (sGlobalRegistry == NULL)
-		sGlobalRegistry = new TestRegistry;
-	return sGlobalRegistry;
+    if (sGlobalRegistry == NULL)
+        sGlobalRegistry = new TestRegistry;
+    return sGlobalRegistry;
 }
 
 void TestRegistry::RegisterTestCaseFactory(TestCaseFactory *inFactory) {
-	mTestCaseFactories.push_back(inFactory);
+    mTestCaseFactories.push_back(inFactory);
 }
 
 TestRunReport::ptr TestRegistry::RunAllTests(ITestProgressMeter *inMeter) {
-	TestRunReport::ptr report(new TestRunReport);
-	int index = 0;
-	for (iterator i = begin(); i != end(); ++i) {
-		std::string name = (*i)->GetName();
-		try {
-			(*i)->Create()->Run();
-			new TestCaseReport(report.get(), name, TEST_PASSED);
-		} catch (Halyard::TException &e) {
-			new TestCaseReport(report.get(), name, TEST_FAILED,
-							   e.GetErrorMessage(),
-							   e.GetErrorFile(), e.GetErrorLine());
-		} catch (std::exception &e) {
-			new TestCaseReport(report.get(), name, TEST_FAILED,
-							   e.what());
-		} catch (...) {
-			new TestCaseReport(report.get(), name, TEST_FAILED,
-							   "unknown exception (maybe segfault?)");
-		}
-		if (inMeter)
-			inMeter->UpdateTestProgress(index++, end() - begin(),
-										**(report->end() - 1));
-	}
-	return report;
+    TestRunReport::ptr report(new TestRunReport);
+    int index = 0;
+    for (iterator i = begin(); i != end(); ++i) {
+        std::string name = (*i)->GetName();
+        try {
+            (*i)->Create()->Run();
+            new TestCaseReport(report.get(), name, TEST_PASSED);
+        } catch (Halyard::TException &e) {
+            new TestCaseReport(report.get(), name, TEST_FAILED,
+                               e.GetErrorMessage(),
+                               e.GetErrorFile(), e.GetErrorLine());
+        } catch (std::exception &e) {
+            new TestCaseReport(report.get(), name, TEST_FAILED,
+                               e.what());
+        } catch (...) {
+            new TestCaseReport(report.get(), name, TEST_FAILED,
+                               "unknown exception (maybe segfault?)");
+        }
+        if (inMeter)
+            inMeter->UpdateTestProgress(index++, end() - begin(),
+                                        **(report->end() - 1));
+    }
+    return report;
 }
 
 
@@ -160,21 +160,21 @@ TestRunReport::ptr TestRegistry::RunAllTests(ITestProgressMeter *inMeter) {
 
 class BootstrapTestCase : public TestCase {
 public:
-	bool mTestPassed;
-	BootstrapTestCase() { mTestPassed = false; }
+    bool mTestPassed;
+    BootstrapTestCase() { mTestPassed = false; }
 };
 
 template <class BTC>
 class TestBootstrapTestCase : public TestCase {
-	void Test() {
-		// We need to use assertions, because we haven't yet proved that
-		// the usual failure mechanism is working at this point in the
-		// bootstrap process.
-		BTC test;
-		ASSERT(!test.mTestPassed);
-		test.Run();
-		ASSERT(test.mTestPassed);
-	}
+    void Test() {
+        // We need to use assertions, because we haven't yet proved that
+        // the usual failure mechanism is working at this point in the
+        // bootstrap process.
+        BTC test;
+        ASSERT(!test.mTestPassed);
+        test.Run();
+        ASSERT(test.mTestPassed);
+    }
 };
 
 #define TEST_BOOTSTRAP_TEST_CASE(NAME) \
@@ -184,29 +184,29 @@ class TestBootstrapTestCase : public TestCase {
 template <class FTC, class ExpectedException>
 class TestFailingTestCase : public TestCase {
 public:
-	virtual std::string WantMsg() = 0;
-	void Test() {
-		// We need to use assertions, because we haven't yet proved that
-		// the usual failure mechanism is working at this point in the
-		// bootstrap process.
-		FTC test;
-		bool caught_exception = false;
-		try {
-			test.Run();
-		} catch (ExpectedException &failure) {
-			caught_exception = true;
-			CHECK(failure.GetErrorMessage() == WantMsg(),
-				  "Didn't get the right message.");
-		}
-		CHECK(caught_exception, "Didn't catch exception.");
-	}
+    virtual std::string WantMsg() = 0;
+    void Test() {
+        // We need to use assertions, because we haven't yet proved that
+        // the usual failure mechanism is working at this point in the
+        // bootstrap process.
+        FTC test;
+        bool caught_exception = false;
+        try {
+            test.Run();
+        } catch (ExpectedException &failure) {
+            caught_exception = true;
+            CHECK(failure.GetErrorMessage() == WantMsg(),
+                  "Didn't get the right message.");
+        }
+        CHECK(caught_exception, "Didn't catch exception.");
+    }
 };
 
 #define TEST_FAILING_TEST_CASE(NAME, EXCEPTION, WANT_MSG) \
     class Test##NAME \
-		: public TestFailingTestCase<NAME, EXCEPTION> { \
-			std::string WantMsg() { return WANT_MSG; } \
-	}; \
+        : public TestFailingTestCase<NAME, EXCEPTION> { \
+            std::string WantMsg() { return WANT_MSG; } \
+    }; \
     REGISTER_TEST_CASE(Test##NAME)
 
 // A simple function which is guaranteed to never throw an exception.
@@ -215,29 +215,29 @@ static void do_nothing() {
 
 // *** Make sure tests actually get run.
 BEGIN_UNREGISTERED_TEST_CASE(WasRunTest, BootstrapTestCase) {
-	mTestPassed = true;
+    mTestPassed = true;
 } END_UNREGISTERED_TEST_CASE(WasRunTest);
 TEST_BOOTSTRAP_TEST_CASE(WasRunTest);
 
 // *** Make sure FAIL_TEST throws an exception.
 BEGIN_UNREGISTERED_TEST_CASE(FailThrowsExceptionTest, TestCase) {
-	FAIL_TEST("my message");
+    FAIL_TEST("my message");
 } END_UNREGISTERED_TEST_CASE(WasRunTest);
 TEST_FAILING_TEST_CASE(FailThrowsExceptionTest, TestFailed, "my message");
 
 // *** Make sure CHECK_THROWN blocks exceptions.
 BEGIN_UNREGISTERED_TEST_CASE(PassCheckThrownTest, BootstrapTestCase) {
-	CHECK_THROWN(TException, THROW("Random exception"));
-	mTestPassed = true;
+    CHECK_THROWN(TException, THROW("Random exception"));
+    mTestPassed = true;
 } END_UNREGISTERED_TEST_CASE(PassCheckThrownTest);
 TEST_BOOTSTRAP_TEST_CASE(PassCheckThrownTest);
 
 // *** Make sure CHECK_THROWN fails if no exception occurs.
 BEGIN_UNREGISTERED_TEST_CASE(FailCheckThrownTest, TestCase) {
-	CHECK_THROWN(TestFailed, do_nothing());
+    CHECK_THROWN(TestFailed, do_nothing());
 } END_UNREGISTERED_TEST_CASE(FailCheckThrownTest);
 TEST_FAILING_TEST_CASE(FailCheckThrownTest, TestFailed,
-					   "Expected an exception: do_nothing()");
+                       "Expected an exception: do_nothing()");
 
 // *** Make sure CHECK_THROWN_MESSAGE blocks exceptions.
 BEGIN_UNREGISTERED_TEST_CASE(PassCheckThrownMessageTest, BootstrapTestCase) {
@@ -253,78 +253,78 @@ BEGIN_UNREGISTERED_TEST_CASE(FailCheckThrownMessageValueTest, TestCase) {
                          throw std::runtime_error("Other message"));
 } END_UNREGISTERED_TEST_CASE(FailCheckThrownMessageValueTest);
 TEST_FAILING_TEST_CASE(FailCheckThrownMessageValueTest, TestFailed,
-					   "Expected exception message to contain "
+                       "Expected exception message to contain "
                        "<substring>, but got <Other message>");
 
 // *** Make sure CHECK_THROWN_MESSAGE fails if no exception occurs.
 BEGIN_UNREGISTERED_TEST_CASE(FailCheckThrownMessageTest, TestCase) {
-	CHECK_THROWN_MESSAGE(std::exception, "", do_nothing());
+    CHECK_THROWN_MESSAGE(std::exception, "", do_nothing());
 } END_UNREGISTERED_TEST_CASE(FailCheckThrownMessageTest);
 TEST_FAILING_TEST_CASE(FailCheckThrownMessageTest, TestFailed,
-					   "Expected an exception: do_nothing()");
+                       "Expected an exception: do_nothing()");
 
 // *** Make sure CHECK_THROWN fails if the wrong exception occurs.
 BEGIN_UNREGISTERED_TEST_CASE(CheckThrownChecksTypeTest, TestCase) {
-	CHECK_THROWN(TestFailed, THROW("unexpected exception type"));
+    CHECK_THROWN(TestFailed, THROW("unexpected exception type"));
 } END_UNREGISTERED_TEST_CASE(CheckThrownChecksTypeTest);
 TEST_FAILING_TEST_CASE(CheckThrownChecksTypeTest, TException,
-					   "unexpected exception type");
+                       "unexpected exception type");
 
 BEGIN_UNREGISTERED_TEST_CASE(PassCheckEqualTest, BootstrapTestCase) {
-	CHECK_EQ(2, 1 + 1);
-	mTestPassed = true;
+    CHECK_EQ(2, 1 + 1);
+    mTestPassed = true;
 } END_UNREGISTERED_TEST_CASE(PassCheckEqualTest);
 TEST_BOOTSTRAP_TEST_CASE(PassCheckEqualTest);
 
 BEGIN_UNREGISTERED_TEST_CASE(FailCheckEqualTest, BootstrapTestCase) {
-	CHECK_EQ(1, 1 + 1);
+    CHECK_EQ(1, 1 + 1);
 } END_UNREGISTERED_TEST_CASE(FailCheckEqualTest);
 TEST_FAILING_TEST_CASE(FailCheckEqualTest, TestFailed,
-					   "expected 1 == 1 + 1, got: 1, 2");
+                       "expected 1 == 1 + 1, got: 1, 2");
 
 BEGIN_UNREGISTERED_TEST_CASE(FailStringCheckEqualTest, BootstrapTestCase) {
-	CHECK_EQ(std::string("foo"), "bar");
+    CHECK_EQ(std::string("foo"), "bar");
 } END_UNREGISTERED_TEST_CASE(FailStringCheckEqualTest);
 TEST_FAILING_TEST_CASE(FailStringCheckEqualTest, TestFailed,
-					   "expected std::string(\"foo\") == \"bar\", "
-					   "got: foo, bar");
+                       "expected std::string(\"foo\") == \"bar\", "
+                       "got: foo, bar");
 
 BEGIN_UNREGISTERED_TEST_CASE(PassCheckNotEqualTest, BootstrapTestCase) {
-	CHECK_NE(1, 1 + 1);
-	mTestPassed = true;
+    CHECK_NE(1, 1 + 1);
+    mTestPassed = true;
 } END_UNREGISTERED_TEST_CASE(PassCheckNotEqualTest);
 TEST_BOOTSTRAP_TEST_CASE(PassCheckNotEqualTest);
 
 BEGIN_UNREGISTERED_TEST_CASE(FailCheckNotEqualTest, BootstrapTestCase) {
-	CHECK_NE(2, 1 + 1);
+    CHECK_NE(2, 1 + 1);
 } END_UNREGISTERED_TEST_CASE(FailCheckNotEqualTest);
 TEST_FAILING_TEST_CASE(FailCheckNotEqualTest, TestFailed,
-					   "expected 2 != 1 + 1, got: 2, 2");
+                       "expected 2 != 1 + 1, got: 2, 2");
 
 class WasSetUpTest : public BootstrapTestCase {
 public:
-	void SetUp()    { mTestPassed = true; };
-	void Test()     { CHECK_EQ(mTestPassed, true); }
+    void SetUp()    { mTestPassed = true; };
+    void Test()     { CHECK_EQ(mTestPassed, true); }
 };
 TEST_BOOTSTRAP_TEST_CASE(WasSetUpTest);
 
 class TearDownTestCase : public BootstrapTestCase {
 public:
-	void TearDown() { mTestPassed = true; }	
+    void TearDown() { mTestPassed = true; } 
 };
 
 BEGIN_UNREGISTERED_TEST_CASE(WasTornDownTest, TearDownTestCase) {
-	CHECK_EQ(mTestPassed, false);
+    CHECK_EQ(mTestPassed, false);
 } END_UNREGISTERED_TEST_CASE(WasTornDownTest);
 TEST_BOOTSTRAP_TEST_CASE(WasTornDownTest);
 
 BEGIN_UNREGISTERED_TEST_CASE(WasTornDownAfterFailingTest, TearDownTestCase) {
-	FAIL_TEST("test failed");
+    FAIL_TEST("test failed");
 } END_UNREGISTERED_TEST_CASE(WasTornDownAfterFailingTest);
 BEGIN_TEST_CASE(TestWasTornDownAfterFailingTest, TestCase) {
-	WasTornDownAfterFailingTest test;
-	CHECK_THROWN(TestFailed, test.Run());
-	CHECK_EQ(test.mTestPassed, true);
+    WasTornDownAfterFailingTest test;
+    CHECK_THROWN(TestFailed, test.Run());
+    CHECK_EQ(test.mTestPassed, true);
 } END_TEST_CASE(TestWasTornDownAfterFailingTest);
 
 
@@ -333,88 +333,88 @@ BEGIN_TEST_CASE(TestWasTornDownAfterFailingTest, TestCase) {
 //-------------------------------------------------------------------------
 
 BEGIN_UNREGISTERED_TEST_CASE(SimplePassingTestCase, TestCase) {
-	CHECK_EQ(2, 2);
+    CHECK_EQ(2, 2);
 } END_UNREGISTERED_TEST_CASE(SimplePassingTestCase);
 
 BEGIN_UNREGISTERED_TEST_CASE(SimpleFailingTestCase, TestCase) {
-	CHECK_EQ(1, 1 + 1);
+    CHECK_EQ(1, 1 + 1);
 } END_UNREGISTERED_TEST_CASE(SimpleFailingTestCase);
 
 BEGIN_TEST_CASE(TestRegistryRegisterTest, TestCase) {
-	TestRegistry registry;
-	CHECK_EQ(registry.begin(), registry.end());
-	TestCaseFactoryImpl<SimplePassingTestCase>
-		created_factory("SimplePassingTestCase", &registry);
+    TestRegistry registry;
+    CHECK_EQ(registry.begin(), registry.end());
+    TestCaseFactoryImpl<SimplePassingTestCase>
+        created_factory("SimplePassingTestCase", &registry);
     CHECK_NE(registry.begin(), registry.end());
-	TestCaseFactory *registered_factory = *registry.begin();
-	CHECK_EQ(&created_factory, registered_factory);
-	CHECK_EQ(registered_factory->GetName(), "SimplePassingTestCase");
-	shared_ptr<TestCase> test(registered_factory->Create());
-	test->Run();
+    TestCaseFactory *registered_factory = *registry.begin();
+    CHECK_EQ(&created_factory, registered_factory);
+    CHECK_EQ(registered_factory->GetName(), "SimplePassingTestCase");
+    shared_ptr<TestCase> test(registered_factory->Create());
+    test->Run();
 } END_TEST_CASE(TestRegistryRegisterTest);
 
 BEGIN_TEST_CASE(TestRegistryRunAllTest, TestCase) {
-	TestRegistry registry;
-	TestCaseFactoryImpl<SimplePassingTestCase>
-		factory1("SimplePassingTestCase", &registry);
-	TestCaseFactoryImpl<SimpleFailingTestCase>
-		factory2("SimpleFailingTestCase", &registry);
-	TestRunReport::ptr report = registry.RunAllTests();
-	CHECK_EQ(report->GetNumTestsPassed(), 1);
-	CHECK_EQ(report->GetNumTestsFailed(), 1);
-	CHECK_EQ(report->GetNumTestsSkipped(), 0);
-	CHECK_EQ(report->GetSummary(), "FAIL: 1 failed, 1 passed, 0 skipped"); 
-	TestRunReport::iterator i = report->begin();
-	CHECK_EQ((*i)->GetTestResult(), TEST_PASSED);
-	CHECK_EQ((*i++)->GetName(), "SimplePassingTestCase");
-	CHECK_EQ((*i)->GetTestResult(), TEST_FAILED);
-	CHECK_EQ((*i)->GetName(), "SimpleFailingTestCase");
-	CHECK_EQ((*i++)->GetErrorMessage(), "expected 1 == 1 + 1, got: 1, 2");
-	CHECK_EQ(i, report->end());
+    TestRegistry registry;
+    TestCaseFactoryImpl<SimplePassingTestCase>
+        factory1("SimplePassingTestCase", &registry);
+    TestCaseFactoryImpl<SimpleFailingTestCase>
+        factory2("SimpleFailingTestCase", &registry);
+    TestRunReport::ptr report = registry.RunAllTests();
+    CHECK_EQ(report->GetNumTestsPassed(), 1);
+    CHECK_EQ(report->GetNumTestsFailed(), 1);
+    CHECK_EQ(report->GetNumTestsSkipped(), 0);
+    CHECK_EQ(report->GetSummary(), "FAIL: 1 failed, 1 passed, 0 skipped"); 
+    TestRunReport::iterator i = report->begin();
+    CHECK_EQ((*i)->GetTestResult(), TEST_PASSED);
+    CHECK_EQ((*i++)->GetName(), "SimplePassingTestCase");
+    CHECK_EQ((*i)->GetTestResult(), TEST_FAILED);
+    CHECK_EQ((*i)->GetName(), "SimpleFailingTestCase");
+    CHECK_EQ((*i++)->GetErrorMessage(), "expected 1 == 1 + 1, got: 1, 2");
+    CHECK_EQ(i, report->end());
 } END_TEST_CASE(TestRegistryRunAllTest);
 
 BEGIN_TEST_CASE(TestRegistryRunAllOk, TestCase) {
-	TestRegistry registry;
-	TestCaseFactoryImpl<SimplePassingTestCase>
-		factory1("SimplePassingTestCase", &registry);
-	TestRunReport::ptr report = registry.RunAllTests();
-	CHECK_EQ(report->GetSummary(), "OK: 1 passed, 0 skipped"); 
+    TestRegistry registry;
+    TestCaseFactoryImpl<SimplePassingTestCase>
+        factory1("SimplePassingTestCase", &registry);
+    TestRunReport::ptr report = registry.RunAllTests();
+    CHECK_EQ(report->GetSummary(), "OK: 1 passed, 0 skipped"); 
 } END_TEST_CASE(TestRegistryRunAllOk);
 
 class DummyTestProgressMeter : public ITestProgressMeter {
-	int mNextTestIndex;
+    int mNextTestIndex;
 
 public:
-	DummyTestProgressMeter() : mNextTestIndex(0) {}
+    DummyTestProgressMeter() : mNextTestIndex(0) {}
 
-	int GetTestsSeenCount() { return mNextTestIndex; }
+    int GetTestsSeenCount() { return mNextTestIndex; }
 
-	void UpdateTestProgress(int inTestIndex, int inTestCount,
-							const TestCaseReport &inReport)
-	{
-		ASSERT(0 <= inTestIndex && inTestIndex < inTestCount);
-		CHECK_EQ(inTestIndex, mNextTestIndex++);
-		CHECK_EQ(inTestCount, 3);
-		if (inTestIndex == 1)
-			CHECK_EQ(inReport.GetTestResult(),
-					 TEST_FAILED);
-		else
-			CHECK_EQ(inReport.GetTestResult(),
-					 TEST_PASSED);
-	}
+    void UpdateTestProgress(int inTestIndex, int inTestCount,
+                            const TestCaseReport &inReport)
+    {
+        ASSERT(0 <= inTestIndex && inTestIndex < inTestCount);
+        CHECK_EQ(inTestIndex, mNextTestIndex++);
+        CHECK_EQ(inTestCount, 3);
+        if (inTestIndex == 1)
+            CHECK_EQ(inReport.GetTestResult(),
+                     TEST_FAILED);
+        else
+            CHECK_EQ(inReport.GetTestResult(),
+                     TEST_PASSED);
+    }
 };
 
 BEGIN_TEST_CASE(TestRegistryProgressMeterTest, TestCase) {
-	TestRegistry registry;
-	TestCaseFactoryImpl<SimplePassingTestCase>
-		factory1("SimplePassingTestCase", &registry);
-	TestCaseFactoryImpl<SimpleFailingTestCase>
-		factory2("SimpleFailingTestCase", &registry);
-	TestCaseFactoryImpl<SimplePassingTestCase>
-		factory3("SimplePassingTestCase", &registry);
-	DummyTestProgressMeter meter;
-	registry.RunAllTests(&meter);
-	CHECK_EQ(meter.GetTestsSeenCount(), 3);
+    TestRegistry registry;
+    TestCaseFactoryImpl<SimplePassingTestCase>
+        factory1("SimplePassingTestCase", &registry);
+    TestCaseFactoryImpl<SimpleFailingTestCase>
+        factory2("SimpleFailingTestCase", &registry);
+    TestCaseFactoryImpl<SimplePassingTestCase>
+        factory3("SimplePassingTestCase", &registry);
+    DummyTestProgressMeter meter;
+    registry.RunAllTests(&meter);
+    CHECK_EQ(meter.GetTestsSeenCount(), 3);
 } END_TEST_CASE(TestRegistryProgressMeterTest);
 
 #endif // BUILD_TEST_CASES

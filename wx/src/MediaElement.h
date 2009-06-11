@@ -76,7 +76,7 @@ protected:
 
 public:
     MediaElement();
-	virtual ~MediaElement() {}
+    virtual ~MediaElement() {}
 
     //////////
     /// Attach a caption file to this movie.
@@ -95,12 +95,12 @@ public:
     ///
     virtual bool IsLooping() = 0;
 
-	//////////
-	/// Cease playback, and make sure all future calls to HasReachedFrame()
-	/// return true.  If you override this, be sure /// to call
-	/// MediaElement::EndPlayback().
-	///
-	virtual void EndPlayback();
+    //////////
+    /// Cease playback, and make sure all future calls to HasReachedFrame()
+    /// return true.  If you override this, be sure /// to call
+    /// MediaElement::EndPlayback().
+    ///
+    virtual void EndPlayback();
 
     //////////
     /// Pause the media stream.
@@ -125,7 +125,7 @@ public:
     /// \param inVolume  The volume.  0.0 is silent, 1.0 is the media's
     ///                 normal volume.
     ///
-	virtual void SetVolume(const std::string &inChannel, double inVolume) = 0;
+    virtual void SetVolume(const std::string &inChannel, double inVolume) = 0;
 
 
     //////////

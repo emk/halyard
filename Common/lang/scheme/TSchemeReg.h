@@ -70,7 +70,7 @@ class TSchemeReg : boost::noncopyable {
 
 public:
     /// Equivalent to MZ_GC_DECL_REG.
-	TSchemeReg() throw () {
+    TSchemeReg() throw () {
         mReg[0] = NULL;
         mReg[1] = reinterpret_cast<void*>(VARS + 3*ARRAYS);
         mOffset = 2;

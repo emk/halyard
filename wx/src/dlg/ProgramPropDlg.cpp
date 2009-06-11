@@ -28,15 +28,15 @@ BEGIN_EVENT_TABLE(ProgramPropDlg, PropertyDlg)
 END_EVENT_TABLE()
 
 BEGIN_PROPERTY_DIALOG(ProgramPropDlg, "Program Properties")
-	PROPERTY_FIELD("name", "&Name:", 0)
-	PROPERTY_FIELD("version", "&Version:", 0)
-	PROPERTY_FIELD("copyright", "Copy&right:", 0)
-	PROPERTY_FIELD("datadirname", "&Data Directory Name (optional):", 0)
-	PROPERTY_FIELD("dbgreporturl", "Debug Report &URL:", 0)
-	PROPERTY_FIELD("comments", "&Comments:", PropertyDlg::MULTILINE)
+    PROPERTY_FIELD("name", "&Name:", 0)
+    PROPERTY_FIELD("version", "&Version:", 0)
+    PROPERTY_FIELD("copyright", "Copy&right:", 0)
+    PROPERTY_FIELD("datadirname", "&Data Directory Name (optional):", 0)
+    PROPERTY_FIELD("dbgreporturl", "Debug Report &URL:", 0)
+    PROPERTY_FIELD("comments", "&Comments:", PropertyDlg::MULTILINE)
 END_PROPERTY_DIALOG()
 
 ProgramPropDlg::ProgramPropDlg(wxWindow *inParent, model::Object *inObject)
-	: PropertyDlg(inParent, GetDialogDescription(), inObject)
+    : PropertyDlg(inParent, GetDialogDescription(), inObject)
 {
 }

@@ -43,7 +43,7 @@ namespace {
 
 
 //=========================================================================
-//	TSchemeInterpreterManager Methods
+//  TSchemeInterpreterManager Methods
 //=========================================================================
 
 TSchemeInterpreterManager::TSchemeInterpreterManager(SystemIdleProc inIdleProc)
@@ -71,36 +71,36 @@ void TSchemeInterpreterManager::InitialSetup() {
     reg.local(call_prim);
     reg.done();
 
-	// Initialize the Scheme interpreter.
-	mGlobalEnv = scheme_basic_env();
+    // Initialize the Scheme interpreter.
+    mGlobalEnv = scheme_basic_env();
 
-	// Make a module to hold functions exported by the engine.
-	modname = scheme_intern_symbol("#%engine-primitives");
-	engine_mod = scheme_primitive_module(modname, mGlobalEnv);
+    // Make a module to hold functions exported by the engine.
+    modname = scheme_intern_symbol("#%engine-primitives");
+    engine_mod = scheme_primitive_module(modname, mGlobalEnv);
 
-	// Provide a way for Scheme code to set the collections path.  I don't
+    // Provide a way for Scheme code to set the collections path.  I don't
     // know why this isn't listed in the standard PLT API.  We can't use a
     // regular DEFINE_PRIMITIVE for this, because the interpreter won't yet
     // be set up when we're trying to call it.
-	set_collects_path =
+    set_collects_path =
         scheme_make_prim_w_arity(&TSchemeInterpreterManager::SetCollectsPath,
                                  SET_COLLECTS_PATH, 1, 1);
-	scheme_add_global(SET_COLLECTS_PATH, set_collects_path, engine_mod);
+    scheme_add_global(SET_COLLECTS_PATH, set_collects_path, engine_mod);
 
     // Provide a way for Scheme to find the runtime directory.
     get_runtime_directory =
         scheme_make_prim_w_arity(
             &TSchemeInterpreterManager::GetRuntimeDirectory,
             GET_RUNTIME_DIRECTORY, 0, 0);
-	scheme_add_global(GET_RUNTIME_DIRECTORY, get_runtime_directory, engine_mod);
+    scheme_add_global(GET_RUNTIME_DIRECTORY, get_runtime_directory, engine_mod);
 
-	// Provide a way for Scheme code to call primitives.
-	call_prim = scheme_make_prim_w_arity(&TSchemeInterpreter::CallPrim,
+    // Provide a way for Scheme code to call primitives.
+    call_prim = scheme_make_prim_w_arity(&TSchemeInterpreter::CallPrim,
                                          CALL_PRIM, 1, -1);
-	scheme_add_global(CALL_PRIM, call_prim, engine_mod);
+    scheme_add_global(CALL_PRIM, call_prim, engine_mod);
 
-	// Finish creating our engine module.
-	scheme_finish_primitive_module(engine_mod);
+    // Finish creating our engine module.
+    scheme_finish_primitive_module(engine_mod);
 }
 
 ScriptEditorDB *TSchemeInterpreterManager::GetScriptEditorDBInternal() {
@@ -138,7 +138,7 @@ TSchemeInterpreterManager::SetCollectsPath(int inArgc, Scheme_Object **inArgv) {
     // MANUAL GC PROOF REQUIRED - Passing this value straight through is
     // safe because we do not cons.
     scheme_set_collects_path(inArgv[0]);
-	return scheme_null;
+    return scheme_null;
 }
 
 void TSchemeInterpreterManager::InitializeScheme()
@@ -154,40 +154,40 @@ void TSchemeInterpreterManager::InitializeScheme()
     // We only need to run this function once.
     mHaveInitializedScheme = true;
 
-	// Set the current Scheme directory.  This must be an absolute path,
-	// so we check for ".", which is the only non-absolute path we
-	// expect to receive from GetBaseDirectory.
-	std::string base = FileSystem::GetBaseDirectory().ToNativePathString();
-	ASSERT(base != ".");
+    // Set the current Scheme directory.  This must be an absolute path,
+    // so we check for ".", which is the only non-absolute path we
+    // expect to receive from GetBaseDirectory.
+    std::string base = FileSystem::GetBaseDirectory().ToNativePathString();
+    ASSERT(base != ".");
     current_config = scheme_current_config();
     current_directory = scheme_make_path(base.c_str());
-	scheme_set_param(current_config, MZCONFIG_CURRENT_DIRECTORY,
-					 current_directory);
+    scheme_set_param(current_config, MZCONFIG_CURRENT_DIRECTORY,
+                     current_directory);
 
-	// Set up our collection paths and loader.ss.
-	FileSystem::Path halyard_dir =
-		FileSystem::GetRuntimeCollectsDirectory().AddComponent("halyard");
-	LoadFile(halyard_dir.AddComponent("loader").AddComponent("stage1.ss"));
+    // Set up our collection paths and loader.ss.
+    FileSystem::Path halyard_dir =
+        FileSystem::GetRuntimeCollectsDirectory().AddComponent("halyard");
+    LoadFile(halyard_dir.AddComponent("loader").AddComponent("stage1.ss"));
 }
 
 void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
 {
-	// Make sure the file exists.
-	std::string name = inFile.ToNativePathString();
-	if (!inFile.DoesExist())
-		gLog.Fatal("halyard", "Cannot open required support file <%s>.",
-						name.c_str());
+    // Make sure the file exists.
+    std::string name = inFile.ToNativePathString();
+    if (!inFile.DoesExist())
+        gLog.Fatal("halyard", "Cannot open required support file <%s>.",
+                        name.c_str());
 
-	// Load the file.
-	if (!scheme_load(name.c_str()))
-	{
-		// An error occurred in the code below, so give an error message.
-		// Note that this error message isn't very helpful, so we shouldn't
-		// use this routine to load ordinary user code--just the kernel
-		// and its support files.
-		std::string error_msg = "Error loading file <" + name + ">";
-		THROW(error_msg.c_str());
-	}
+    // Load the file.
+    if (!scheme_load(name.c_str()))
+    {
+        // An error occurred in the code below, so give an error message.
+        // Note that this error message isn't very helpful, so we shouldn't
+        // use this routine to load ordinary user code--just the kernel
+        // and its support files.
+        std::string error_msg = "Error loading file <" + name + ">";
+        THROW(error_msg.c_str());
+    }
 }
 
 void TSchemeInterpreterManager::MakeInterpreter()
@@ -220,12 +220,12 @@ void TSchemeInterpreterManager::MakeInterpreter()
     //
     // MANUAL GC PROOF REQUIRED - mGlobalEnv can't be GC'd while it is live
     // in this function.
-	new TSchemeInterpreter(mGlobalEnv);
+    new TSchemeInterpreter(mGlobalEnv);
 }
 
 
 //=========================================================================
-//	TSchemeInterpreter Methods
+//  TSchemeInterpreter Methods
 //=========================================================================
 
 TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
@@ -248,27 +248,27 @@ TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
     reg.local(raw_str);
     reg.done();
 
-	// Remember our global environment.
-	mGlobalEnv = inGlobalEnv;
+    // Remember our global environment.
+    mGlobalEnv = inGlobalEnv;
 
-	InitializeModuleNames();
+    InitializeModuleNames();
 
-	// Create a new script environment, and store it where we can find it.
+    // Create a new script environment, and store it where we can find it.
     script_env_obj = CallSchemeEx(mGlobalEnv, mLoaderModule,
                                   "new-script-environment", 0, NULL);
-	mScriptEnv = reinterpret_cast<Scheme_Env*>(script_env_obj);
+    mScriptEnv = reinterpret_cast<Scheme_Env*>(script_env_obj);
 
-	// Load our kernel and script.
-	result = LoadScript();
-	if (!SCHEME_FALSEP(result))
-	{
-		ASSERT(SCHEME_CHAR_STRINGP(result));
-		byte_str = scheme_char_string_to_byte_string(result);
+    // Load our kernel and script.
+    result = LoadScript();
+    if (!SCHEME_FALSEP(result))
+    {
+        ASSERT(SCHEME_CHAR_STRINGP(result));
+        byte_str = scheme_char_string_to_byte_string(result);
         raw_str = SCHEME_BYTE_STR_VAL(byte_str);
         // Use a std::runtime_error so we don't get a lot of useless
         // TException-related information in our error messages.
-		throw std::runtime_error(raw_str);
-	}
+        throw std::runtime_error(raw_str);
+    }
 
     // OK, we're open for business.
     mScriptIsLoaded = true;
@@ -278,8 +278,8 @@ TSchemeInterpreter::~TSchemeInterpreter()
 {
     ASSERT(TInterpreterManager::GetInstance()->IsInsideStackBase());
 
-	// We don't actually shut down the Scheme interpreter.  But we'll
-	// reinitialize it later if we need to.
+    // We don't actually shut down the Scheme interpreter.  But we'll
+    // reinitialize it later if we need to.
 }
 
 TSchemeInterpreter *TSchemeInterpreter::GetSchemeInterpreter() {
@@ -305,14 +305,14 @@ void TSchemeInterpreter::InitializeModuleNames()
     reg.local(tail2);
     reg.done();
 
-	mLoaderModule = scheme_intern_symbol("stage1");
+    mLoaderModule = scheme_intern_symbol("stage1");
 
     halyard_string   = scheme_make_utf8_string("halyard/private");
-	tail1            = scheme_make_pair(halyard_string, scheme_null);
+    tail1            = scheme_make_pair(halyard_string, scheme_null);
     lib_symbol       = scheme_intern_symbol("lib");
     kernel_ss_string = scheme_make_utf8_string("kernel.ss");
     tail2            = scheme_make_pair(kernel_ss_string, tail1);
-	mKernelModule    = scheme_make_pair(lib_symbol, tail2);
+    mKernelModule    = scheme_make_pair(lib_symbol, tail2);
 }
 
 Scheme_Bucket *
@@ -365,7 +365,7 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
         return found->second;
     else {
         sym = scheme_intern_symbol(inFuncName);
-		bucket = scheme_module_bucket(inModule, sym, -1, inEnv);
+        bucket = scheme_module_bucket(inModule, sym, -1, inEnv);
         if (bucket == NULL)
             THROW("Scheme module bucket not found");
         mBucketMap.insert(BucketMap::value_type(key, bucket));
@@ -416,11 +416,11 @@ Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc, Scheme_Object **inArgv)
     MZ_GC_VAR_IN_REG(6, prim_name);
     MZ_GC_REG();
 
-	// The interpreter checks the arity for us, but we need to check the
-	// argument types.
-	ASSERT(inArgc >= 1);
-	if (!SCHEME_SYMBOLP(inArgv[0]))
-		scheme_wrong_type(CALL_PRIM, "symbol", 0, inArgc, inArgv);
+    // The interpreter checks the arity for us, but we need to check the
+    // argument types.
+    ASSERT(inArgc >= 1);
+    if (!SCHEME_SYMBOLP(inArgv[0]))
+        scheme_wrong_type(CALL_PRIM, "symbol", 0, inArgc, inArgv);
 
     // MANUAL GC PROOF REQUIRED - Here, we need to get a GC-safe pointer to
     // the string contained in argv[0].  This is trickier than it looks,
@@ -491,7 +491,7 @@ bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName, // Scheme heap
     // This function may *not* call scheme_signal_error, scheme_wrong_type,
     // or anything else which causes a non-local PLT exit.  See CallPrim
     // for more details.
-	try {
+    try {
         ASSERT(mScriptEnv != NULL);
         ASSERT(TInterpreterManager::GetInstance()->IsInsideStackBase());
 
@@ -500,20 +500,20 @@ bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName, // Scheme heap
         // primitive from anywhere but inside the sandbox.
         ASSERT(mCurrentThread == SANDBOX_THREAD);
 
-		// Marshal our argument list and call the primitive.
-		TValueList inList;
-		for (int i=0; i < inArgc; i++)
-			inList.push_back(SchemeToTValue(inArgv[i]));
-		TArgumentList arg_list(inList);
-		gPrimitiveManager.CallPrimitive(inPrimName, arg_list);
+        // Marshal our argument list and call the primitive.
+        TValueList inList;
+        for (int i=0; i < inArgc; i++)
+            inList.push_back(SchemeToTValue(inArgv[i]));
+        TArgumentList arg_list(inList);
+        gPrimitiveManager.CallPrimitive(inPrimName, arg_list);
 
         // Get our result, and return it.
         *outResult = TValueToScheme(gVariableManager.Get("_result"));
         return true;
-	} catch (std::exception &e) {
+    } catch (std::exception &e) {
         strncpy_terminated(outErrorMessage, e.what(), inErrorMessageMaxLength);
         return false;
-	} catch (...) {
+    } catch (...) {
         // This shouldn't happen--we shouldn't be throwing any exceptions
         // which aren't a subclass of std::exception, and Win32 structured
         // exceptions (e.g., segfaults) should be caught by the crash
@@ -521,14 +521,14 @@ bool TSchemeInterpreter::CallPrimInternal(const char *inPrimName, // Scheme heap
         strncpy_terminated(outErrorMessage, "Unknown engine error",
                            inErrorMessageMaxLength);
         return false;
-	}
+    }
 }
 
 Scheme_Object *TSchemeInterpreter::CallSchemeEx(Scheme_Env *inEnv,
-												Scheme_Object *inModule,
-												const char *inFuncName,
-												int inArgc,
-												Scheme_Object **inArgv)
+                                                Scheme_Object *inModule,
+                                                const char *inFuncName,
+                                                int inArgc,
+                                                Scheme_Object **inArgv)
 {
     // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
     Scheme_Bucket *bucket = NULL;
@@ -579,7 +579,7 @@ Scheme_Object *TSchemeInterpreter::CallSchemeExHelper(Scheme_Object *inFunc,
     // GC stack properly.  But this also implies that we can't use C++
     // exceptions, or local variables with destructors.
 
-	Scheme_Object *result = NULL;
+    Scheme_Object *result = NULL;
 
     // MANUAL GC PROOF REQUIRED - Double-check these indices and make sure
     // we're obeying the standard PLT garbage-collection protocol.
@@ -589,46 +589,46 @@ Scheme_Object *TSchemeInterpreter::CallSchemeExHelper(Scheme_Object *inFunc,
     MZ_GC_VAR_IN_REG(4, result);  // Skip two for array
     MZ_GC_REG();
 
-	// Save our jump buffer.
-	mz_jmp_buf save;
-	memcpy(&save, &scheme_error_buf, sizeof(mz_jmp_buf));
-	
-	// Install a Scheme exception handler.  See the MzScheme internals
-	// manual for more information on how this works; it appears to be
-	// built around the arcane setjmp and longjmp functions in C.
-	if (scheme_setjmp(scheme_error_buf)) {
-		// Scheme tried to throw an exception out of inFuncName, which
-		// is forbidden.  So we want to die with a fatal error.  (Note
-		// that we can't get the error message from C; this exception
-		// should have been caught and handled by Scheme.)
-		gLog.Fatal("halyard", "Scheme kernel threw unexpected exception");
-	} else {
-		// Call the function.  
+    // Save our jump buffer.
+    mz_jmp_buf save;
+    memcpy(&save, &scheme_error_buf, sizeof(mz_jmp_buf));
+    
+    // Install a Scheme exception handler.  See the MzScheme internals
+    // manual for more information on how this works; it appears to be
+    // built around the arcane setjmp and longjmp functions in C.
+    if (scheme_setjmp(scheme_error_buf)) {
+        // Scheme tried to throw an exception out of inFuncName, which
+        // is forbidden.  So we want to die with a fatal error.  (Note
+        // that we can't get the error message from C; this exception
+        // should have been caught and handled by Scheme.)
+        gLog.Fatal("halyard", "Scheme kernel threw unexpected exception");
+    } else {
+        // Call the function.  
         result = scheme_apply(inFunc, inArgc, inArgv);
-	}
+    }
 
-	// Restore our jump buffer and exit.
-	memcpy(&scheme_error_buf, &save, sizeof(mz_jmp_buf));
+    // Restore our jump buffer and exit.
+    memcpy(&scheme_error_buf, &save, sizeof(mz_jmp_buf));
     MZ_GC_UNREG();
-	return result;
+    return result;
 }
 
 Scheme_Object *TSchemeInterpreter::CallScheme(const char *inFuncName,
-											  int inArgc,
-											  Scheme_Object **inArgv)
+                                              int inArgc,
+                                              Scheme_Object **inArgv)
 {
-	// Under normal circumstances, we only want to call functions defined
-	// in the kernel, which is running in the script's namespace.
+    // Under normal circumstances, we only want to call functions defined
+    // in the kernel, which is running in the script's namespace.
     //
     // MANUAL GC PROOF REQUIRED - It's safe to pass these variables
     // straight through, because we don't do any allocations.
-	return CallSchemeEx(mScriptEnv, mKernelModule, inFuncName, inArgc, inArgv);
+    return CallSchemeEx(mScriptEnv, mKernelModule, inFuncName, inArgc, inArgv);
 }
 
 Scheme_Object *TSchemeInterpreter::CallSchemeSimple(const char *inFuncName)
 {
-	// Call a function with no arguments.
-	return CallScheme(inFuncName, 0, NULL);
+    // Call a function with no arguments.
+    return CallScheme(inFuncName, 0, NULL);
 }
 
 Scheme_Object *TSchemeInterpreter::CallSchemeStatic(const char *inFuncName,
@@ -679,12 +679,12 @@ void TSchemeInterpreter::Run() {
 
 void TSchemeInterpreter::KillInterpreter(void)
 {
-	(void) CallSchemeSimple("%kernel-kill-interpreter");
+    (void) CallSchemeSimple("%kernel-kill-interpreter");
 }
 
 void TSchemeInterpreter::Stop()
 {
-	ASSERT(!IsStopped());
+    ASSERT(!IsStopped());
     (void) CallSchemeSimple("%kernel-stop");
 }
 
@@ -692,23 +692,23 @@ bool TSchemeInterpreter::IsStopped()
 {
     // MANUAL GC PROOF REQUIRED - We do no allocation after the call to
     // CallSchemeSimple, so don't need a TSchemeReg here.
-	Scheme_Object *o = CallSchemeSimple("%kernel-stopped?");
-	return SCHEME_FALSEP(o) ? false : true;
+    Scheme_Object *o = CallSchemeSimple("%kernel-stopped?");
+    return SCHEME_FALSEP(o) ? false : true;
 }
 
 void TSchemeInterpreter::Go(const char *card)
 {
-	ASSERT(IsStopped());
+    ASSERT(IsStopped());
     (void) CallSchemeSimple("%kernel-go");
-	JumpToCardByName(card);
+    JumpToCardByName(card);
 }
 
 bool TSchemeInterpreter::CanSuspend()
 {
     // MANUAL GC PROOF REQUIRED - We do no allocation after the call to
     // CallSchemeSimple, so don't need a TSchemeReg here.
-	Scheme_Object *o = CallSchemeSimple("%kernel-can-suspend?");
-	return SCHEME_FALSEP(o) ? false : true;
+    Scheme_Object *o = CallSchemeSimple("%kernel-can-suspend?");
+    return SCHEME_FALSEP(o) ? false : true;
 }
 
 void TSchemeInterpreter::Pause(void)
@@ -730,8 +730,8 @@ bool TSchemeInterpreter::Paused(void)
 {
     // MANUAL GC PROOF REQUIRED - We do no allocation after the call to
     // CallSchemeSimple, so don't need a TSchemeReg here.
-	Scheme_Object *o = CallSchemeSimple("%kernel-paused?");
-	return SCHEME_FALSEP(o) ? false : true;
+    Scheme_Object *o = CallSchemeSimple("%kernel-paused?");
+    return SCHEME_FALSEP(o) ? false : true;
 }
 
 void TSchemeInterpreter::KillCurrentCard(void)
@@ -746,10 +746,10 @@ void TSchemeInterpreter::JumpToCardByName(const char *inName)
     reg.args(args);
     reg.done();
 
-	ASSERT(!IsStopped()); // Stopped cards must be resumed by Go().
+    ASSERT(!IsStopped()); // Stopped cards must be resumed by Go().
 
-	args[0] = scheme_make_utf8_string(inName);
-	(void) CallScheme("%kernel-jump-to-card-by-name", args.size(), args.get());
+    args[0] = scheme_make_utf8_string(inName);
+    (void) CallScheme("%kernel-jump-to-card-by-name", args.size(), args.get());
 }
 
 void TSchemeInterpreter::LoadGroup(const char *inName) {
@@ -758,12 +758,12 @@ void TSchemeInterpreter::LoadGroup(const char *inName) {
     reg.args(args);
     reg.done();
 
-	// In theory, there's no reason we can't load groups while stopped,
+    // In theory, there's no reason we can't load groups while stopped,
     // but that would require reviewing the kernel's code.
     ASSERT(!IsStopped());
 
-	args[0] = scheme_make_utf8_string(inName);
-	(void) CallScheme("%kernel-load-group", args.size(), args.get());
+    args[0] = scheme_make_utf8_string(inName);
+    (void) CallScheme("%kernel-load-group", args.size(), args.get());
 }
 
 std::string TSchemeInterpreter::CurCardName(void)
@@ -777,12 +777,12 @@ std::string TSchemeInterpreter::CurCardName(void)
     reg.local(name);
     reg.done();
 
-	name_obj = CallSchemeSimple("%kernel-current-card-name");
-	if (!SCHEME_CHAR_STRINGP(name_obj))
-		gLog.Fatal("halyard", "Current card name must be string");
+    name_obj = CallSchemeSimple("%kernel-current-card-name");
+    if (!SCHEME_CHAR_STRINGP(name_obj))
+        gLog.Fatal("halyard", "Current card name must be string");
     name_byte_str = scheme_char_string_to_byte_string(name_obj);
     name = SCHEME_BYTE_STR_VAL(name_byte_str);
-	return std::string(name);
+    return std::string(name);
 }
 
 bool TSchemeInterpreter::IsValidCard(const char *inCardName)
@@ -795,13 +795,13 @@ bool TSchemeInterpreter::IsValidCard(const char *inCardName)
     reg.args(args);
     reg.done();
 
-	args[0] = scheme_make_utf8_string(inCardName);
-	b = CallScheme("%kernel-valid-card?", args.size(), args.get());
-	return SCHEME_FALSEP(b) ? false : true;
+    args[0] = scheme_make_utf8_string(inCardName);
+    b = CallScheme("%kernel-valid-card?", args.size(), args.get());
+    return SCHEME_FALSEP(b) ? false : true;
 }
 
 bool TSchemeInterpreter::Eval(const std::string &inExpression,
-							  std::string &outResultText)
+                              std::string &outResultText)
 {
     Scheme_Object *o = NULL, *car = NULL, *cdr = NULL, *byte_str = NULL;
     TSchemeArgs<1> args;
@@ -814,19 +814,19 @@ bool TSchemeInterpreter::Eval(const std::string &inExpression,
     reg.args(args);
     reg.done();
     
-	args[0] = scheme_make_utf8_string(inExpression.c_str());
-	o = CallScheme("%kernel-eval", args.size(), args.get());
+    args[0] = scheme_make_utf8_string(inExpression.c_str());
+    o = CallScheme("%kernel-eval", args.size(), args.get());
 
-	if (!SCHEME_PAIRP(o))
-		gLog.Fatal("halyard", "Unexpected result from %kernel-eval");
+    if (!SCHEME_PAIRP(o))
+        gLog.Fatal("halyard", "Unexpected result from %kernel-eval");
     car = SCHEME_CAR(o);
     cdr = SCHEME_CDR(o);
     if (!SCHEME_BOOLP(car) || !SCHEME_CHAR_STRINGP(cdr))
-		gLog.Fatal("halyard", "Unexpected result from %kernel-eval");
+        gLog.Fatal("halyard", "Unexpected result from %kernel-eval");
 
-	byte_str = scheme_char_string_to_byte_string(cdr);
-	outResultText = std::string(SCHEME_BYTE_STR_VAL(byte_str));
-	return SCHEME_FALSEP(car) ? false : true;
+    byte_str = scheme_char_string_to_byte_string(cdr);
+    outResultText = std::string(SCHEME_BYTE_STR_VAL(byte_str));
+    return SCHEME_FALSEP(car) ? false : true;
 }
 
 bool TSchemeInterpreter::MaybeHandleLogMessage(const std::string &inLevel,
@@ -848,9 +848,9 @@ bool TSchemeInterpreter::MaybeHandleLogMessage(const std::string &inLevel,
 
     args[0] = scheme_intern_symbol(inLevel.c_str());
     args[1] = scheme_make_utf8_string(inCategory.c_str());
-	args[2] = scheme_make_utf8_string(inMessage.c_str());
-	b = CallScheme("%kernel-maybe-handle-log-message", args.size(), args.get());
-	return SCHEME_FALSEP(b) ? false : true;    
+    args[2] = scheme_make_utf8_string(inMessage.c_str());
+    b = CallScheme("%kernel-maybe-handle-log-message", args.size(), args.get());
+    return SCHEME_FALSEP(b) ? false : true;    
 }
 
 IdentifierList TSchemeInterpreter::GetBuiltInIdentifiers() {
@@ -864,7 +864,7 @@ IdentifierList TSchemeInterpreter::GetBuiltInIdentifiers() {
     raw_ids = CallSchemeSimple("%kernel-get-built-in-identifiers");
 
     // Convert this list into C++ objects.
-	std::vector<TScriptIdentifier> ids;
+    std::vector<TScriptIdentifier> ids;
     while (SCHEME_PAIRP(raw_ids)) {
         Scheme_Object *raw_id = NULL, *cdr = NULL;
         Scheme_Object *raw_name = NULL, *raw_type = NULL;
@@ -887,8 +887,8 @@ IdentifierList TSchemeInterpreter::GetBuiltInIdentifiers() {
         raw_type = SCHEME_CAR(cdr);
         if (!SCHEME_SYMBOLP(raw_name) || !SCHEME_SYMBOLP(raw_type))
             gLog.Fatal("halyard", "Malformed result from %kernel-get-identifiers");
-		std::string type_str(SCHEME_SYM_VAL(raw_type));
-		TScriptIdentifier::Type type = IdentifierType(type_str);
+        std::string type_str(SCHEME_SYM_VAL(raw_type));
+        TScriptIdentifier::Type type = IdentifierType(type_str);
         ids.push_back(TScriptIdentifier(SCHEME_SYM_VAL(raw_name), type));
         raw_ids = SCHEME_CDR(raw_ids);
     }

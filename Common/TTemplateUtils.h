@@ -40,7 +40,7 @@ extern void StringLTrim(std::string &ioStr);
 /// comparison by default.
 ///
 extern bool StringStartsWith(const std::string &inStr1, 
-							 const std::string &inStr2);
+                             const std::string &inStr2);
 
 //////////
 /// Convert an STL string to lowercase.
@@ -69,11 +69,11 @@ extern std::string MakeQuotedString(const std::string &inString);
 /// to use the appropriate boost deletion operators.
 ///
 struct DeletePointer {
-	template <typename T>
-	void operator() (T* ptr) const
-	{
-		boost::checked_delete<T>(ptr);
-	}
+    template <typename T>
+    void operator() (T* ptr) const
+    {
+        boost::checked_delete<T>(ptr);
+    }
 };
 
 //////////
@@ -81,11 +81,11 @@ struct DeletePointer {
 /// TO ARRAYS.
 ///
 struct DeleteArray {
-	template <typename T>
-	void operator() (T* ptr) const
-	{
-		boost::checked_array_delete<T>(ptr);
-	}
+    template <typename T>
+    void operator() (T* ptr) const
+    {
+        boost::checked_array_delete<T>(ptr);
+    }
 };
 
 //////////
@@ -100,13 +100,13 @@ struct DeleteArray {
 template<class Type>
 class StValueRestorer : boost::noncopyable
 {
-	Type &mLocation;
-	Type mSaved;
+    Type &mLocation;
+    Type mSaved;
 
 public:
-	explicit StValueRestorer(Type &inVariable)
-		: mLocation(inVariable), mSaved(inVariable) { }
-	~StValueRestorer() { mLocation = mSaved; }
+    explicit StValueRestorer(Type &inVariable)
+        : mLocation(inVariable), mSaved(inVariable) { }
+    ~StValueRestorer() { mLocation = mSaved; }
 };
 
 END_NAMESPACE_HALYARD

@@ -31,28 +31,28 @@
 ///
 class HistoryTextCtrl : public wxTextCtrl
 {
-	std::vector<wxString> mHistoryItems;
-	size_t mHistoryCurrent;
+    std::vector<wxString> mHistoryItems;
+    size_t mHistoryCurrent;
 
 public:
-	HistoryTextCtrl(wxWindow* parent, 
-					wxWindowID id, 
-					const wxString& value = wxT(""), 
-					const wxPoint& pos = wxDefaultPosition, 
-					const wxSize& size = wxDefaultSize, 
-					long style = 0, 
-					const wxValidator& validator = wxDefaultValidator,
-					const wxString& name = wxTextCtrlNameStr);
-		
-	void OnKeyDown(wxKeyEvent &inEvent);
-	void OnTextEnter(wxCommandEvent &inEvent);
+    HistoryTextCtrl(wxWindow* parent, 
+                    wxWindowID id, 
+                    const wxString& value = wxT(""), 
+                    const wxPoint& pos = wxDefaultPosition, 
+                    const wxSize& size = wxDefaultSize, 
+                    long style = 0, 
+                    const wxValidator& validator = wxDefaultValidator,
+                    const wxString& name = wxTextCtrlNameStr);
+        
+    void OnKeyDown(wxKeyEvent &inEvent);
+    void OnTextEnter(wxCommandEvent &inEvent);
 
-	void SaveCurrHist();
-	void DisplayCurrHist();
-	void HistPrev();
-	void HistNext();
-	
-	DECLARE_EVENT_TABLE();
+    void SaveCurrHist();
+    void DisplayCurrHist();
+    void HistPrev();
+    void HistNext();
+    
+    DECLARE_EVENT_TABLE();
 };
 
 #endif // HistoryText_H

@@ -389,7 +389,7 @@ void FancyCrashReporter::ReportCrashInCrashRepoter(const char *inReason) {
     buffer[sizeof(buffer)-1] = '\0';
 
     // Display the error *very carefully* and abort.
-	TLogger::DisplayAlert(TLogger::ALERT_ERROR, buffer);
+    TLogger::DisplayAlert(TLogger::ALERT_ERROR, buffer);
     ::abort();
 }
 
@@ -452,10 +452,10 @@ void FancyCrashReporter::CrashNow(const char *inReason, CrashType inType) {
     // submit this bug report.
     wxDebugReportPreviewStd preview;
     if (TInterpreterManager::IsInCommandLineMode()) {
-	    std::ostream *err(TLogger::GetErrorOutput());
+        std::ostream *err(TLogger::GetErrorOutput());
         *err << "Processing debug report." << std::endl;
-		if (report.Process()) {
-			*err << "Uploaded debug report to server." << std::endl;
+        if (report.Process()) {
+            *err << "Uploaded debug report to server." << std::endl;
         } else {
             *err << "Could not upload debug report to server." << std::endl;
             if (report.GetCompressedFileName() != wxT(""))

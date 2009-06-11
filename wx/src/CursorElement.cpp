@@ -73,7 +73,7 @@ void CursorElement::SetStageCursor(const wxPoint &point) {
 void CursorElement::MoveCursor(const wxPoint &point) {
     ASSERT(mIsRegistered);
     GetEventDispatcher()->DoEventCursorMoved(point);
-	wxGetApp().GetStage()->RefreshStage("none", 0);
+    wxGetApp().GetStage()->RefreshStage("none", 0);
 }
 
 void CursorElement::UnsetStageCursor() {

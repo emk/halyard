@@ -33,7 +33,7 @@ class AppLog : public wxLog
     bool mShouldSilentlyLogNonFatalErrors;
 
 public:
-	AppLog();
+    AppLog();
 
     //////////
     /// Call this function to prevent the display of any further wxWidgets
@@ -49,9 +49,9 @@ public:
     /// this function is called.
     ///
     void SilentlyLogNonFatalErrors();
-	
-	virtual void DoLog(wxLogLevel inLevel, const wxChar *inMsg,
-					   time_t inTimeStamp);
+    
+    virtual void DoLog(wxLogLevel inLevel, const wxChar *inMsg,
+                       time_t inTimeStamp);
 };
 
 #endif // AppLog_H

@@ -31,20 +31,20 @@ class FancyStatusBar;
 /// The GUI-based unit test driver.
 class TestHarness : public ITestProgressMeter
 {
-	static TestHarness *sInstance;
+    static TestHarness *sInstance;
 
-	StageFrame *mFrame;
-	FancyStatusBar *mStatusBar;
+    StageFrame *mFrame;
+    FancyStatusBar *mStatusBar;
 
 public:
-	static TestHarness *GetInstance();
+    static TestHarness *GetInstance();
 
-	TestHarness();
+    TestHarness();
 
-	void UpdateTestProgress(int inTestIndex, int inTestCount,
-							const TestCaseReport &inReport);
+    void UpdateTestProgress(int inTestIndex, int inTestCount,
+                            const TestCaseReport &inReport);
 
-	void RunTests();
+    void RunTests();
 
 };
 

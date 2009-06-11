@@ -97,59 +97,59 @@ bool TPolygon::Contains(const TPoint &inPt)
   int count = 0;
   for (i = mVertices.begin(); i != mVertices.end(); ++i)
   {
-	  // Get the endpoints of the current segment.
-	  begin = *i;
-	  end = (i+1) == mVertices.end() ? *(mVertices.begin()) : *(i+1);
-	
-	  // Make sure our endpoints are in order from right to left
-	  if (begin.X() < end.X()) 
-	  { 
-		  tmp = begin;
-		  begin = end;
-		  end = tmp;
-	  }
+      // Get the endpoints of the current segment.
+      begin = *i;
+      end = (i+1) == mVertices.end() ? *(mVertices.begin()) : *(i+1);
+    
+      // Make sure our endpoints are in order from right to left
+      if (begin.X() < end.X()) 
+      { 
+          tmp = begin;
+          begin = end;
+          end = tmp;
+      }
 
-	  // If the whole segment is not ever to the left of the start
-	  // point, it certainly can't intersect
-	  if (end.X() > inPt.X())
-		  continue;
-		  
-	  // If our beginning point is to the right of the ray, compute
-	  // it's value at the start of the ray. 
-	  if (begin.X() > inPt.X())
-	  {
-		  // Note: we can't be vertical, so this is OK.
-		  slope = (float) (end.Y() -  begin.Y()) 
-			  / (float) (end.X() - begin.X());
-		  rightVal = slope * (inPt.X() - begin.X()) + begin.Y();
-	  }
-	  else
-	  {
-		  rightVal = (float) begin.Y();
-	  }
+      // If the whole segment is not ever to the left of the start
+      // point, it certainly can't intersect
+      if (end.X() > inPt.X())
+          continue;
+          
+      // If our beginning point is to the right of the ray, compute
+      // it's value at the start of the ray. 
+      if (begin.X() > inPt.X())
+      {
+          // Note: we can't be vertical, so this is OK.
+          slope = (float) (end.Y() -  begin.Y()) 
+              / (float) (end.X() - begin.X());
+          rightVal = slope * (inPt.X() - begin.X()) + begin.Y();
+      }
+      else
+      {
+          rightVal = (float) begin.Y();
+      }
 
-	  // If the segment is horizontal, it doesn't affect our count
-	  if (begin.Y() == end.Y())
-		  continue;
-	  
-	  // We count the intersection when 
-	  // a) The end point is on the ray and the end point is the top
-	  //    of the segment. (remember, up is actually lower Y value)
-	  // b) The beginning point is on the ray and the beginning point 
-	  //    is the top of the segment.
-	  // c) The Y value of the segment at the start of the ray is
-	  //    greater than the Y value of the ray, and the Y value at
-	  //    the end point of the segment is lesser.
-	  // d) The opposite of (c) (Y val of segment lesser and Y value
-	  //    of end of segment greater).
-	  if ((end.Y() == inPt.Y() && begin.Y() > end.Y())           // a
-		  || (begin.Y() == inPt.Y() && begin.X() <= inPt.X()     // b
-			  && begin.Y() < end.Y())
-		  || (rightVal > (float) inPt.Y() && end.Y() < inPt.Y())  // c
-		  || (rightVal < (float) inPt.Y() && end.Y() > inPt.Y())) // d
-	  {
-		  count++;
-	  }
+      // If the segment is horizontal, it doesn't affect our count
+      if (begin.Y() == end.Y())
+          continue;
+      
+      // We count the intersection when 
+      // a) The end point is on the ray and the end point is the top
+      //    of the segment. (remember, up is actually lower Y value)
+      // b) The beginning point is on the ray and the beginning point 
+      //    is the top of the segment.
+      // c) The Y value of the segment at the start of the ray is
+      //    greater than the Y value of the ray, and the Y value at
+      //    the end point of the segment is lesser.
+      // d) The opposite of (c) (Y val of segment lesser and Y value
+      //    of end of segment greater).
+      if ((end.Y() == inPt.Y() && begin.Y() > end.Y())           // a
+          || (begin.Y() == inPt.Y() && begin.X() <= inPt.X()     // b
+              && begin.Y() < end.Y())
+          || (rightVal > (float) inPt.Y() && end.Y() < inPt.Y())  // c
+          || (rightVal < (float) inPt.Y() && end.Y() > inPt.Y())) // d
+      {
+          count++;
+      }
   }
   
   // If the count is odd, we're in.
@@ -158,36 +158,36 @@ bool TPolygon::Contains(const TPoint &inPt)
 
 void TPolygon::Offset(const TPoint &inPt)
 {
-	std::vector<TPoint>::iterator i;
-	
-	for (i = mVertices.begin(); i != mVertices.end(); ++i)
-		i->Set(i->X() + inPt.X(), i->Y() + inPt.Y());
-	
-	mBounds.Offset(inPt);
+    std::vector<TPoint>::iterator i;
+    
+    for (i = mVertices.begin(); i != mVertices.end(); ++i)
+        i->Set(i->X() + inPt.X(), i->Y() + inPt.Y());
+    
+    mBounds.Offset(inPt);
 }
 
 void TPolygon::MoveTo(const TPoint &inOrigin)
 {
-	TPoint offsetDelta(inOrigin.X() - Origin().X(), inOrigin.Y() - Origin().Y());
-	Offset(offsetDelta);
+    TPoint offsetDelta(inOrigin.X() - Origin().X(), inOrigin.Y() - Origin().Y());
+    Offset(offsetDelta);
 }
 
 TPoint TPolygon::Origin() const
 { 
-	return TPoint(mBounds.Left(), mBounds.Top()); 
+    return TPoint(mBounds.Left(), mBounds.Top()); 
 }
 
 bool TPolygon::operator==(const TPolygon &inPoly) const
 {
-	return mVertices == inPoly.Vertices();
+    return mVertices == inPoly.Vertices();
 }
 
 std::ostream &Halyard::operator<<(std::ostream &out, const TPolygon &poly) {
-	out << "(polygon";
-	std::vector<TPoint> vertices(poly.Vertices());
-	std::vector<TPoint>::iterator i = vertices.begin();
-	for (; i != vertices.end(); ++i)
-		out << " " << *i;
+    out << "(polygon";
+    std::vector<TPoint> vertices(poly.Vertices());
+    std::vector<TPoint>::iterator i = vertices.begin();
+    for (; i != vertices.end(); ++i)
+        out << " " << *i;
     out << ")";
-	return out;
+    return out;
 }

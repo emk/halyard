@@ -69,63 +69,63 @@ class ValueOrPercent;
 ///
 class TArgumentList
 {
-	//////////
-	/// The arguments passed to a primitive will be stored as TValues
-	/// in a TValueList.
+    //////////
+    /// The arguments passed to a primitive will be stored as TValues
+    /// in a TValueList.
     ///
-	TValueList mArgList;
+    TValueList mArgList;
 
-	//////////
-	/// A pointer to the current TValue object in mArgList
+    //////////
+    /// A pointer to the current TValue object in mArgList
     ///
-	TValueList::iterator mArgPtr;
+    TValueList::iterator mArgPtr;
 
 protected:
-	//////////
-	/// Fetch the next argument.
-	///
-	virtual TValue GetNextArg() {
-		if(!HasMoreArguments())
-			THROW("Not enough arguments");
-		return *mArgPtr++;
-	}
+    //////////
+    /// Fetch the next argument.
+    ///
+    virtual TValue GetNextArg() {
+        if(!HasMoreArguments())
+            THROW("Not enough arguments");
+        return *mArgPtr++;
+    }
 
-	//////////
-	/// Return the next argument as a symbol.  Symbols are basically the
-	/// same as strings, but they're typically used to name options in APIs,
-	/// and some languages (such as Scheme) want to make a distinction.  If
-	/// your language doesn't support symbols, make strings and symbols
-	/// equivalent.
-	///
-	virtual std::string GetSymbolArg();
+    //////////
+    /// Return the next argument as a symbol.  Symbols are basically the
+    /// same as strings, but they're typically used to name options in APIs,
+    /// and some languages (such as Scheme) want to make a distinction.  If
+    /// your language doesn't support symbols, make strings and symbols
+    /// equivalent.
+    ///
+    virtual std::string GetSymbolArg();
 
-	//////////
-	/// Return the next argument as either a value or a percentage.
-	///
-	virtual void GetValueOrPercentArg(bool &outIsPercent,
-									  int32 &outValue);
+    //////////
+    /// Return the next argument as either a value or a percentage.
+    ///
+    virtual void GetValueOrPercentArg(bool &outIsPercent,
+                                      int32 &outValue);
 
-	//////////
-	/// Return the next argument as a callback.  This object
-	/// is allocated on the heap, and must be destroyed by the
-	/// caller (typically the primitive function) using delete.
-	///
-	virtual TCallbackPtr GetCallbackArg();
+    //////////
+    /// Return the next argument as a callback.  This object
+    /// is allocated on the heap, and must be destroyed by the
+    /// caller (typically the primitive function) using delete.
+    ///
+    virtual TCallbackPtr GetCallbackArg();
 
 public:
-	TArgumentList() {}
-	TArgumentList(TValueList inVal);
-	virtual ~TArgumentList() {}
-		
-	//////////
-	/// Are there any more arguments left?
-	///	
-	virtual bool HasMoreArguments() { 
-		return (mArgPtr != mArgList.end());
-	}
+    TArgumentList() {}
+    TArgumentList(TValueList inVal);
+    virtual ~TArgumentList() {}
+        
+    //////////
+    /// Are there any more arguments left?
+    /// 
+    virtual bool HasMoreArguments() { 
+        return (mArgPtr != mArgList.end());
+    }
 
-	// These functions provide handy wrapper functions
-	// for the protected Get* functions above.
+    // These functions provide handy wrapper functions
+    // for the protected Get* functions above.
     template<typename T> 
     friend TArgumentList &operator>>(TArgumentList &args, T &out) {
         TValue arg = args.GetNextArg(); 
@@ -133,12 +133,12 @@ public:
         return args;
     }
 
-	friend TArgumentList &operator>>(TArgumentList &args, TCallbackPtr &out);
-	friend TArgumentList &operator>>(TArgumentList &args, TValue &out);
-	friend TArgumentList &operator>>(TArgumentList &inArgs,
-									 const SymbolName &inVoP);
-	friend TArgumentList &operator>>(TArgumentList &inArgs,
-									 const ValueOrPercent &inVoP);
+    friend TArgumentList &operator>>(TArgumentList &args, TCallbackPtr &out);
+    friend TArgumentList &operator>>(TArgumentList &args, TValue &out);
+    friend TArgumentList &operator>>(TArgumentList &inArgs,
+                                     const SymbolName &inVoP);
+    friend TArgumentList &operator>>(TArgumentList &inArgs,
+                                     const ValueOrPercent &inVoP);
 
     //////////
     /// Print this argument list to an output stream, for debugging
@@ -154,13 +154,13 @@ public:
 ///
 class SymbolName
 {
-	std::string &mName;
+    std::string &mName;
 
 public:
-	SymbolName(std::string &outName) : mName(outName) { }
+    SymbolName(std::string &outName) : mName(outName) { }
 
-	friend TArgumentList &operator>>(TArgumentList &inArgs,
-									 const SymbolName &inSymbolName);
+    friend TArgumentList &operator>>(TArgumentList &inArgs,
+                                     const SymbolName &inSymbolName);
 };
 
 //////////
@@ -174,15 +174,15 @@ public:
 ///
 class ValueOrPercent
 {
-	int32 mBaseValue;
-	int32 *mOutputValue;
+    int32 mBaseValue;
+    int32 *mOutputValue;
 
 public:
-	ValueOrPercent(int32 baseValue, int32 *outputValue)
-		: mBaseValue(baseValue), mOutputValue(outputValue) {}
+    ValueOrPercent(int32 baseValue, int32 *outputValue)
+        : mBaseValue(baseValue), mOutputValue(outputValue) {}
 
-	friend TArgumentList &operator>>(TArgumentList &inArgs,
-									 const ValueOrPercent &inVoP);
+    friend TArgumentList &operator>>(TArgumentList &inArgs,
+                                     const ValueOrPercent &inVoP);
 };
 
 //////////
@@ -193,46 +193,46 @@ public:
 class TPrimitiveManager
 {
 public:
-	//////////
-	/// A PrimitiveFunc implements a single primitive.
-	///
-	/// \param inArgs  The arguments to the primitive.
-	///
-	typedef void (*PrimitiveFunc)(TArgumentList &inArgs);
+    //////////
+    /// A PrimitiveFunc implements a single primitive.
+    ///
+    /// \param inArgs  The arguments to the primitive.
+    ///
+    typedef void (*PrimitiveFunc)(TArgumentList &inArgs);
 
 private:
-	//////////
-	/// The big table of all our primitive functions.
-	///
-	std::map<std::string,PrimitiveFunc> mPrimitiveMap;
+    //////////
+    /// The big table of all our primitive functions.
+    ///
+    std::map<std::string,PrimitiveFunc> mPrimitiveMap;
 
 public:
-	//////////
-	/// Register a primitive with the primitive manager.
-	///
-	/// \param inName  The name of the primitive, in lowercase.
-	/// \param inFunc  The function which implements this primitive.
-	///
-	void RegisterPrimitive(const std::string &inName, PrimitiveFunc inFunc);
+    //////////
+    /// Register a primitive with the primitive manager.
+    ///
+    /// \param inName  The name of the primitive, in lowercase.
+    /// \param inFunc  The function which implements this primitive.
+    ///
+    void RegisterPrimitive(const std::string &inName, PrimitiveFunc inFunc);
 
-	//////////
-	/// Does a primitive with the given name exist?
-	///
-	/// \param inName  The name of the primitive, in lowercase.
-	/// \return  Whether the given primitive exists.
-	///
-	bool DoesPrimitiveExist(const std::string &inName);
+    //////////
+    /// Does a primitive with the given name exist?
+    ///
+    /// \param inName  The name of the primitive, in lowercase.
+    /// \return  Whether the given primitive exists.
+    ///
+    bool DoesPrimitiveExist(const std::string &inName);
 
-	//////////
-	/// Call the specified primitive.  This function throws
-	/// all sorts of exciting exceptions, so you should probably
-	/// wrap it in a try/catch block and deal with any problems
-	/// that arise.
-	///
-	/// \param inName  The name of the primitive, in lowercase.
-	/// \param inArgs  The arguments to the primitive.
-	///
-	void CallPrimitive(const std::string &inName, TArgumentList &inArgs);
+    //////////
+    /// Call the specified primitive.  This function throws
+    /// all sorts of exciting exceptions, so you should probably
+    /// wrap it in a try/catch block and deal with any problems
+    /// that arise.
+    ///
+    /// \param inName  The name of the primitive, in lowercase.
+    /// \param inArgs  The arguments to the primitive.
+    ///
+    void CallPrimitive(const std::string &inName, TArgumentList &inArgs);
 };
 
 //////////
@@ -269,7 +269,7 @@ extern std::ostream &operator<<(std::ostream &out, TArgumentList &args);
     gPrimitiveManager.RegisterPrimitive(NAME, &DoPrim_ ## TOKEN)
 
 #define REGISTER_PRIMITIVE(NAME) \
-	REGISTER_PRIMITIVE_WITH_NAME(#NAME, NAME)
+    REGISTER_PRIMITIVE_WITH_NAME(#NAME, NAME)
 
 //////////
 /// Use this macro in place of a function prototype when implementing a
@@ -287,7 +287,7 @@ extern std::ostream &operator<<(std::ostream &out, TArgumentList &args);
 ///   }
 ///
 #define DEFINE_PRIMITIVE(NAME) \
-	static void DoPrim_ ## NAME(TArgumentList &inArgs)
+    static void DoPrim_ ## NAME(TArgumentList &inArgs)
 
 //////////
 /// Set the return value of the current primitive to the
@@ -297,7 +297,7 @@ extern std::ostream &operator<<(std::ostream &out, TArgumentList &args);
 ///
 inline void SetPrimitiveResult(const TValue &inVariable)
 {
-	gVariableManager.Set("_result", inVariable);
+    gVariableManager.Set("_result", inVariable);
 }
 
 END_NAMESPACE_HALYARD

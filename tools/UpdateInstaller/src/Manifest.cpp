@@ -35,11 +35,11 @@ enum ParseState { DIGEST, SIZE, PATH };
 Manifest::Manifest(const boost::filesystem::path &path) {
     std::string data = read_file(path);
 
-	init(data);
+    init(data);
 }
 
 Manifest::Manifest(const std::string &contents) {
-	init(contents);
+    init(contents);
 }
 
 void Manifest::init(const std::string &contents) {
@@ -96,58 +96,58 @@ std::string read_file(const boost::filesystem::path &path) {
 }
 
 SpecFile::SpecFile(const boost::filesystem::path &path) 
-	: mContents(read_file(path)), mHeader(parseHeader()), 
-	  mUrl(mHeader["Update-URL"]), mBuild(mHeader["Build"]), 
-	  mManifest(mContents) 
+    : mContents(read_file(path)), mHeader(parseHeader()), 
+      mUrl(mHeader["Update-URL"]), mBuild(mHeader["Build"]), 
+      mManifest(mContents) 
 { }
 
 enum HeaderParseState { NEWLINE, KEY, VALUE };
 
 SpecFile::StringMap SpecFile::parseHeader() {
-	HeaderParseState state = NEWLINE;
-	std::string key_buf, val_buf;
-	StringMap ret;
+    HeaderParseState state = NEWLINE;
+    std::string key_buf, val_buf;
+    StringMap ret;
 
-	std::string::iterator iter = mContents.begin();
-	for (; iter != mContents.end(); ++iter) {
-		switch(state) {
-		case NEWLINE: 
-			if (*iter == '\n') {
-				// We have a blank line, so we're done with the header
-				mContents = std::string(++iter, mContents.end());
-				return ret;
-			} else { 
-				key_buf += *iter;
-				state = KEY;
-			}
-			break;
-		case KEY:
-			if (*iter == ':') {
-				// check if we have ": "
-				if (++iter == mContents.end()) {
-					mContents = "";
-					return ret;
-				} else if (*iter = ' ') {
-					state = VALUE;
-				} else {
-					key_buf += ':';
-					key_buf += *iter;
-				}
-			} else {
-				key_buf += *iter;
-			}
-			break;
-		case VALUE:
-			if (*iter == '\n') {
-				ret[key_buf] = val_buf;
-				key_buf = val_buf = "";
-				state = NEWLINE;
-			} else {
-				val_buf += *iter;
-			}
-		}
-	}
+    std::string::iterator iter = mContents.begin();
+    for (; iter != mContents.end(); ++iter) {
+        switch(state) {
+        case NEWLINE: 
+            if (*iter == '\n') {
+                // We have a blank line, so we're done with the header
+                mContents = std::string(++iter, mContents.end());
+                return ret;
+            } else { 
+                key_buf += *iter;
+                state = KEY;
+            }
+            break;
+        case KEY:
+            if (*iter == ':') {
+                // check if we have ": "
+                if (++iter == mContents.end()) {
+                    mContents = "";
+                    return ret;
+                } else if (*iter = ' ') {
+                    state = VALUE;
+                } else {
+                    key_buf += ':';
+                    key_buf += *iter;
+                }
+            } else {
+                key_buf += *iter;
+            }
+            break;
+        case VALUE:
+            if (*iter == '\n') {
+                ret[key_buf] = val_buf;
+                key_buf = val_buf = "";
+                state = NEWLINE;
+            } else {
+                val_buf += *iter;
+            }
+        }
+    }
 
-	mContents = "";
-	return ret;
+    mContents = "";
+    return ret;
 }

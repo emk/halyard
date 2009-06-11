@@ -191,15 +191,15 @@ public:
     static void RegisterExitPrepFunction(ExitPrepFunction inFunc);
 
 private:
-	//////////
-	/// Either NULL, or a function which can be used to display an alert.
-	///
-	static AlertDisplayFunction s_AlertDisplayFunction;
+    //////////
+    /// Either NULL, or a function which can be used to display an alert.
+    ///
+    static AlertDisplayFunction s_AlertDisplayFunction;
 
-	//////////
-	/// Either NULL, or a function which should be called before exiting.
-	///
-	static ExitPrepFunction s_ExitPrepFunction;
+    //////////
+    /// Either NULL, or a function which should be called before exiting.
+    ///
+    static ExitPrepFunction s_ExitPrepFunction;
 
     //////////
     /// Can we use std::cerr for printing messages?  This is false for

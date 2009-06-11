@@ -51,7 +51,7 @@ CustomWxHtmlWindow::CustomWxHtmlWindow(wxWindow *inParent,
                    inBounds.GetPosition(),
                    inBounds.GetSize(),
                    wxHW_SCROLLBAR_AUTO | wxBORDER),
-	  mElement(inElement)
+      mElement(inElement)
 {
 }
 

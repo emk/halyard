@@ -26,7 +26,7 @@
 using namespace Halyard;
 
 BEGIN_EVENT_TABLE(MetaDotDlg, XrcDlg)
-	EVT_BUTTON(wxID_OK, MetaDotDlg::OnOK)
+    EVT_BUTTON(wxID_OK, MetaDotDlg::OnOK)
 END_EVENT_TABLE()
 
 MetaDotDlg::MetaDotDlg(wxWindow *inParent,
@@ -35,7 +35,7 @@ MetaDotDlg::MetaDotDlg(wxWindow *inParent,
       mDefinitions(defs), mChosenDefIndex(0)
 {
     ASSERT(!mDefinitions.empty());
-	Bind(mDefinitionsListBox, XRCID("DLG_DEF_LIST"));
+    Bind(mDefinitionsListBox, XRCID("DLG_DEF_LIST"));
 
     ScriptEditorDB::Definitions::iterator i = mDefinitions.begin();
     for (; i != mDefinitions.end(); ++i) {
@@ -48,9 +48,9 @@ MetaDotDlg::MetaDotDlg(wxWindow *inParent,
 }
 
 void MetaDotDlg::OnOK(wxCommandEvent &inEvent) {
-	Hide();
+    Hide();
     mChosenDefIndex = mDefinitionsListBox->GetSelection();
-	EndModal(wxID_OK);
+    EndModal(wxID_OK);
 }
 
 ScriptEditorDB::Definition MetaDotDlg::GetChosenDef() {

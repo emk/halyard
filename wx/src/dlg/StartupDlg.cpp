@@ -29,19 +29,19 @@
 using namespace Halyard;
 
 BEGIN_EVENT_TABLE(StartupDlg, XrcDlg)
-	//EVT_RADIOBUTTON(XRCID("DLG_STARTUP_NEW"), StartupDlg::OnNew)
-	//EVT_RADIOBUTTON(XRCID("DLG_STARTUP_OPEN"), StartupDlg::OnOpen)
-	//EVT_RADIOBUTTON(XRCID("DLG_STARTUP_RECENT"), StartupDlg::OnRecent)
-	EVT_BUTTON(wxID_OK, StartupDlg::OnOK)
+    //EVT_RADIOBUTTON(XRCID("DLG_STARTUP_NEW"), StartupDlg::OnNew)
+    //EVT_RADIOBUTTON(XRCID("DLG_STARTUP_OPEN"), StartupDlg::OnOpen)
+    //EVT_RADIOBUTTON(XRCID("DLG_STARTUP_RECENT"), StartupDlg::OnRecent)
+    EVT_BUTTON(wxID_OK, StartupDlg::OnOK)
 END_EVENT_TABLE()
 
 StartupDlg::StartupDlg(wxWindow *inParent)
     : XrcDlg(inParent, wxT("DLG_STARTUP"))
 {
-	Bind(mRadioNew, XRCID("DLG_STARTUP_NEW"));
-	Bind(mRadioOpen, XRCID("DLG_STARTUP_OPEN"));
-	Bind(mRadioRecent, XRCID("DLG_STARTUP_RECENT"));
-	Bind(mRecentList, XRCID("DLG_STARTUP_LIST"));
+    Bind(mRadioNew, XRCID("DLG_STARTUP_NEW"));
+    Bind(mRadioOpen, XRCID("DLG_STARTUP_OPEN"));
+    Bind(mRadioRecent, XRCID("DLG_STARTUP_RECENT"));
+    Bind(mRecentList, XRCID("DLG_STARTUP_LIST"));
 
     // Load our file history.
     shared_ptr<wxConfigBase> config(new wxConfig);
@@ -64,9 +64,9 @@ StartupDlg::StartupDlg(wxWindow *inParent)
 
 void StartupDlg::OnOK(wxCommandEvent &inEvent)
 {
-	Hide();
+    Hide();
 
-	BEGIN_EXCEPTION_TRAPPER()
+    BEGIN_EXCEPTION_TRAPPER()
 
     if (mRadioNew->GetValue()) {
         wxGetApp().GetStageFrame()->NewDocument();
@@ -86,7 +86,7 @@ void StartupDlg::OnOK(wxCommandEvent &inEvent)
     }
 
     END_EXCEPTION_TRAPPER(TException::ReportException)
-	
-	EndModal(wxID_OK);
+    
+    EndModal(wxID_OK);
 }
 

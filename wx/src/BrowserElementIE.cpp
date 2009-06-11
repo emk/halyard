@@ -32,7 +32,7 @@
 //=========================================================================
 
 enum {
-	// XXX - Assign a real ID.
+    // XXX - Assign a real ID.
     ID_MSHTML = 592
 };
 
@@ -58,7 +58,7 @@ private:
     void OnMSHTMLTitleChangeX(wxActiveXEvent& event);
     void OnMSHTMLCommandStateChangeX(wxActiveXEvent& event);
     void OnMSHTMLUpdateStopButtonX(wxActiveXEvent& event);
-	void OnMSHTMLNewWindow2X(wxActiveXEvent& event);
+    void OnMSHTMLNewWindow2X(wxActiveXEvent& event);
     void OnMSHTMLProgressChangeX(wxActiveXEvent& event);
 
     DECLARE_EVENT_TABLE()
@@ -67,15 +67,15 @@ private:
 BEGIN_EVENT_TABLE(CustomIEHtmlWindow, wxIEHtmlWin)
     EVT_ACTIVEX_DISPID(ID_MSHTML, DISPID_STATUSTEXTCHANGE,
                        OnMSHTMLStatusTextChangeX)
-	EVT_ACTIVEX(ID_MSHTML, "WindowClosing",     OnMSHTMLWindowClosingX)
+    EVT_ACTIVEX(ID_MSHTML, "WindowClosing",     OnMSHTMLWindowClosingX)
     EVT_ACTIVEX(ID_MSHTML, "BeforeNavigate2",   OnMSHTMLBeforeNavigate2X)
     EVT_ACTIVEX(ID_MSHTML, "NavigateComplete2", OnMSHTMLNavigateComplete2X)
-	EVT_ACTIVEX(ID_MSHTML, "TitleChange",       OnMSHTMLTitleChangeX)
-	EVT_ACTIVEX(ID_MSHTML, "CommandStateChange",OnMSHTMLCommandStateChangeX)
+    EVT_ACTIVEX(ID_MSHTML, "TitleChange",       OnMSHTMLTitleChangeX)
+    EVT_ACTIVEX(ID_MSHTML, "CommandStateChange",OnMSHTMLCommandStateChangeX)
     EVT_ACTIVEX(ID_MSHTML, "DownloadBegin",     OnMSHTMLUpdateStopButtonX)
     EVT_ACTIVEX(ID_MSHTML, "DownloadComplete",  OnMSHTMLUpdateStopButtonX)
-	EVT_ACTIVEX(ID_MSHTML, "NewWindow2",        OnMSHTMLNewWindow2X)
-	EVT_ACTIVEX(ID_MSHTML, "ProgressChange",    OnMSHTMLProgressChangeX)
+    EVT_ACTIVEX(ID_MSHTML, "NewWindow2",        OnMSHTMLNewWindow2X)
+    EVT_ACTIVEX(ID_MSHTML, "ProgressChange",    OnMSHTMLProgressChangeX)
 END_EVENT_TABLE()
 
 CustomIEHtmlWindow::CustomIEHtmlWindow(wxWindow *inParent,

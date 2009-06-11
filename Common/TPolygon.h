@@ -30,69 +30,69 @@ BEGIN_NAMESPACE_HALYARD
 ///
 class TPolygon
 {
-	std::vector<TPoint> mVertices;
-	TRect mBounds;
+    std::vector<TPoint> mVertices;
+    TRect mBounds;
 
 public:
-	//////////
-	/// Create a new polygon.
-	///
-	/// \param inVertices  The vertices of the polygon.
-	/// 
-	TPolygon(const std::vector<TPoint> &inVertices);
-	TPolygon() : mVertices(), mBounds() {}
+    //////////
+    /// Create a new polygon.
+    ///
+    /// \param inVertices  The vertices of the polygon.
+    /// 
+    TPolygon(const std::vector<TPoint> &inVertices);
+    TPolygon() : mVertices(), mBounds() {}
 
-	//////////
-	/// Determine if a point is in the polygon.
-	/// 
-	/// \param inPt  The point to check.
-	/// 
-	bool Contains(const TPoint &inPt);
+    //////////
+    /// Determine if a point is in the polygon.
+    /// 
+    /// \param inPt  The point to check.
+    /// 
+    bool Contains(const TPoint &inPt);
 
-	/////////
-	/// Get the origin of the polygon. 
-	/// 
-	TPoint Origin() const;
-	
-	//////////
-	/// Offset the polygon.
-	/// 
-	/// \param inPt  Point to be used as the offset.
-	/// 
-	void Offset(const TPoint &inPt);
+    /////////
+    /// Get the origin of the polygon. 
+    /// 
+    TPoint Origin() const;
+    
+    //////////
+    /// Offset the polygon.
+    /// 
+    /// \param inPt  Point to be used as the offset.
+    /// 
+    void Offset(const TPoint &inPt);
 
-	//////////
-	/// Move the polygon to a given point. 
-	///
-	/// \param inOrigin  The new origin to move the polygon to.
-	/// 
-	void MoveTo(const TPoint &inOrigin);
+    //////////
+    /// Move the polygon to a given point. 
+    ///
+    /// \param inOrigin  The new origin to move the polygon to.
+    /// 
+    void MoveTo(const TPoint &inOrigin);
 
-	//////////
-	/// Get a rectangle which completely contains the polygon.
-	/// 
-	const TRect Bounds() const { return mBounds; }
-	
-	//////////
-	/// Get the number of points in the polygon.
-	///
-	size_t GetPointCount() { return mVertices.size(); }
+    //////////
+    /// Get a rectangle which completely contains the polygon.
+    /// 
+    const TRect Bounds() const { return mBounds; }
+    
+    //////////
+    /// Get the number of points in the polygon.
+    ///
+    size_t GetPointCount() { return mVertices.size(); }
 
-	//////////
-	/// Get the specified point.
-	///
-	TPoint GetPoint(size_t inIndex)
-	    { ASSERT(inIndex < mVertices.size()); return mVertices[inIndex]; }
+    //////////
+    /// Get the specified point.
+    ///
+    TPoint GetPoint(size_t inIndex)
+        { ASSERT(inIndex < mVertices.size()); return mVertices[inIndex]; }
 
-	//////////
-	/// Get the points which define the polygon.
-	/// 
-	const std::vector<TPoint> &Vertices() const { return mVertices; }
+    //////////
+    /// Get the points which define the polygon.
+    /// 
+    const std::vector<TPoint> &Vertices() const { return mVertices; }
 
-	//////////
-	/// Test if two polygons are equal.
-	/// 
-	bool operator==(const TPolygon &inPoly) const;
+    //////////
+    /// Test if two polygons are equal.
+    /// 
+    bool operator==(const TPolygon &inPoly) const;
 };
 
 extern std::ostream &operator<<(std::ostream &out, const TPolygon &poly);

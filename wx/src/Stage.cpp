@@ -59,7 +59,7 @@
 #include "UrlRequest.h"
 
 #if CONFIG_HAVE_QUAKE2
-#	include "Quake2Engine.h"
+#   include "Quake2Engine.h"
 #endif // CONFIG_HAVE_QUAKE2
 
 #define IDLE_INTERVAL (1000.0/FRAMES_PER_SECOND) // milliseconds
@@ -72,27 +72,27 @@ using namespace Halyard;
 //=========================================================================
 
 BEGIN_EVENT_TABLE(Stage, wxWindow)
-	EVT_TIMER(HALYARD_STAGE_TIMER, Stage::OnTimer)
+    EVT_TIMER(HALYARD_STAGE_TIMER, Stage::OnTimer)
     EVT_MOTION(Stage::OnMouseMove)
     EVT_ERASE_BACKGROUND(Stage::OnEraseBackground)
     EVT_PAINT(Stage::OnPaint)
     EVT_CHAR(Stage::OnChar)
-	EVT_LEFT_DOWN(Stage::OnLeftDown)
-	EVT_LEFT_DCLICK(Stage::OnLeftDClick)
-	EVT_LEFT_UP(Stage::OnLeftUp)
-	EVT_RIGHT_DOWN(Stage::OnRightDown)
-	EVT_RIGHT_DCLICK(Stage::OnRightDown)
+    EVT_LEFT_DOWN(Stage::OnLeftDown)
+    EVT_LEFT_DCLICK(Stage::OnLeftDClick)
+    EVT_LEFT_UP(Stage::OnLeftUp)
+    EVT_RIGHT_DOWN(Stage::OnRightDown)
+    EVT_RIGHT_DCLICK(Stage::OnRightDown)
     EVT_MOUSE_CAPTURE_CHANGED(Stage::OnMouseCaptureChanged)
 END_EVENT_TABLE()
 
 Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     : wxWindow(), // Must use empty constructor; see below.
       mFrame(inFrame), mStageSize(inStageSize), mLastCard(""),
-	  mCompositingPixmap(inStageSize.GetWidth(),
-						 inStageSize.GetHeight(), 24),
-	  mOffscreenFadePixmap(inStageSize.GetWidth(),
-						   inStageSize.GetHeight(), 24),
-	  mDesiredCursor(NULL), mActualCursor(NULL),
+      mCompositingPixmap(inStageSize.GetWidth(),
+                         inStageSize.GetHeight(), 24),
+      mOffscreenFadePixmap(inStageSize.GetWidth(),
+                           inStageSize.GetHeight(), 24),
+      mDesiredCursor(NULL), mActualCursor(NULL),
       mElementsHaveChanged(false),
       mShouldHideCursorUntilMouseMoved(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
@@ -118,26 +118,26 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     // Set the owner of our mTimer object.
     mTimer.SetOwner(this, HALYARD_STAGE_TIMER);
 
-	mBackgroundDrawingArea = 
-		std::auto_ptr<DrawingArea>(new DrawingArea(this,
-												   inStageSize.GetWidth(),
-												   inStageSize.GetHeight(),
-												   false));
-	mDrawingContextStack =
-		std::auto_ptr<DrawingContextStack>(new DrawingContextStack(this));
+    mBackgroundDrawingArea = 
+        std::auto_ptr<DrawingArea>(new DrawingArea(this,
+                                                   inStageSize.GetWidth(),
+                                                   inStageSize.GetHeight(),
+                                                   false));
+    mDrawingContextStack =
+        std::auto_ptr<DrawingContextStack>(new DrawingContextStack(this));
     GetBackgroundDrawingArea()->Clear();
     
-	mLastIdleEvent = ::wxGetLocalTimeMillis();
-	mEventDispatcher = new EventDispatcher();
-	mImageCache = new ImageCache();
-	mCursorManager = new CursorManager();
-	mTransitionManager = new TransitionManager();
+    mLastIdleEvent = ::wxGetLocalTimeMillis();
+    mEventDispatcher = new EventDispatcher();
+    mImageCache = new ImageCache();
+    mCursorManager = new CursorManager();
+    mTransitionManager = new TransitionManager();
 
 #if wxUSE_ACCESSIBILITY
     // Install our custom accessibility handler.
     SetAccessible(new StageAccessible(this));
 #endif // wxUSE_ACCESSIBILITY
-	
+    
     // Initialize the clock.
     UpdateClockKeysInStateDB();
 
@@ -146,28 +146,28 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
     // for waking up from a WAIT.
     mTimer.Start(IDLE_INTERVAL / 2, wxTIMER_CONTINUOUS);
 
-	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Stage created."));
+    wxLogTrace(TRACE_STAGE_DRAWING, wxT("Stage created."));
 }
 
 Stage::~Stage()
 {
-	mIsBeingDestroyed = true;
+    mIsBeingDestroyed = true;
     mTimer.Stop();
-	DeleteElements();
+    DeleteElements();
 
     // Destory various resources *after* all elements.
-	delete mImageCache;
-	delete mCursorManager; 
-	delete mEventDispatcher;
-	delete mTransitionManager;
-	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Stage deleted."));
+    delete mImageCache;
+    delete mCursorManager; 
+    delete mEventDispatcher;
+    delete mTransitionManager;
+    wxLogTrace(TRACE_STAGE_DRAWING, wxT("Stage deleted."));
 }
 
 wxBitmap &Stage::GetCompositingPixmap() {
-	// Make sure our compositing is up to date.
-	if (!mRectsToComposite.empty()) {
+    // Make sure our compositing is up to date.
+    if (!mRectsToComposite.empty()) {
         CairoBitmapContext cr(mCompositingPixmap);
-		wxLogTrace(TRACE_STAGE_DRAWING, wxT("Begin compositing."));
+        wxLogTrace(TRACE_STAGE_DRAWING, wxT("Begin compositing."));
 
         // Set up our clipping region.  Since each component of this region
         // is rectangular and aligned to the pixel grid, we should use the
@@ -195,14 +195,14 @@ wxBitmap &Stage::GetCompositingPixmap() {
             if ((*elem_i)->IsInDragLayer())
                 (*elem_i)->CompositeInto(cr);
 
-		wxLogTrace(TRACE_STAGE_DRAWING, wxT("End compositing."));
-		mRectsToComposite.clear();
-	}
-	return mCompositingPixmap;
+        wxLogTrace(TRACE_STAGE_DRAWING, wxT("End compositing."));
+        mRectsToComposite.clear();
+    }
+    return mCompositingPixmap;
 }
 
 DrawingArea *Stage::GetCurrentDrawingArea() {
-	return mDrawingContextStack->GetCurrentDrawingArea();
+    return mDrawingContextStack->GetCurrentDrawingArea();
 }
 
 CairoSurfacePtr Stage::GetBrandingImage(const std::string &inName) {
@@ -296,57 +296,57 @@ void Stage::RaiseToTop(ElementPtr inElem) {
     // have to recomposite it (in case it has moved above or below another
     // element).  Note that this won't actually do anything if the Element
     // is being displayed over Quake 2.  See also Overlay::SetInDragLayer.
-	DrawingArea *drawing_area = inElem->GetDrawingArea();
+    DrawingArea *drawing_area = inElem->GetDrawingArea();
     if (drawing_area)
         drawing_area->InvalidateCompositing();
 }
 
 bool Stage::IsIdleAllowed() const {
-	// Don't allow idling when we've got drawing contexts pushed.
-	return mDrawingContextStack->IsEmpty();
+    // Don't allow idling when we've got drawing contexts pushed.
+    return mDrawingContextStack->IsEmpty();
 }
 
 bool Stage::IsScriptInitialized()
 {
-	// Assume that the script is properly initialized as soon as it has
-	// entered a card.  This is good enough for now, but we'll need to
-	// change it later.
-	return (mLastCard != "");
+    // Assume that the script is properly initialized as soon as it has
+    // entered a card.  This is good enough for now, but we'll need to
+    // change it later.
+    return (mLastCard != "");
 }
 
 void Stage::SetEditMode(bool inWantEditMode)
 {
-	if (IsInEditMode() == inWantEditMode)
-		return;
-	else if (inWantEditMode)
-	{
-		TInterpreter::GetInstance()->Stop();
-		// TODO - NotifyExitCard() should be triggered from kernel.ss, but
-		// this will mean auditing the engine code to only call
-		// CurCardName, etc., only when there is a current card.
+    if (IsInEditMode() == inWantEditMode)
+        return;
+    else if (inWantEditMode)
+    {
+        TInterpreter::GetInstance()->Stop();
+        // TODO - NotifyExitCard() should be triggered from kernel.ss, but
+        // this will mean auditing the engine code to only call
+        // CurCardName, etc., only when there is a current card.
         //
         // In general, the whole edit-mode system is a pretty ugly kludge,
         // and much more of it should be handled from the interpreter.
-		NotifyExitCard();
+        NotifyExitCard();
         // Delete any non-card elements.
         DeleteElements();
         // Delete any non-card, non-element listeners.
         gStateListenerManager.NotifyInterpreterStopped();
-		GetBackgroundDrawingArea()->Clear();
-	}
-	else
-	{
-		wxASSERT(mLastCard != "");
+        GetBackgroundDrawingArea()->Clear();
+    }
+    else
+    {
+        wxASSERT(mLastCard != "");
         // TODO - We don't recreate group- or sequence-level elements
         // properly here.
-		TInterpreter::GetInstance()->Go(mLastCard.c_str());
-	}
+        TInterpreter::GetInstance()->Go(mLastCard.c_str());
+    }
 }
 
 bool Stage::IsInEditMode()
 {
-	wxASSERT(TInterpreter::HaveInstance());
-	return TInterpreter::GetInstance()->IsStopped();
+    wxASSERT(TInterpreter::HaveInstance());
+    return TInterpreter::GetInstance()->IsStopped();
 }
 
 void Stage::HideCursorUntilMouseMoved() {
@@ -368,7 +368,7 @@ bool Stage::ShouldShowCursor() {
 
     // See if any of our elements want a cursor.
     ElementCollection::iterator i = mElements.begin();
-	for (; i != mElements.end(); i++)
+    for (; i != mElements.end(); i++)
         if ((*i)->IsShown() && (*i)->WantsCursor())
             return true;
 
@@ -378,43 +378,43 @@ bool Stage::ShouldShowCursor() {
 
 bool Stage::ShouldSendEvents()
 {
-	return (TInterpreter::HaveInstance() && IsScriptInitialized() &&
+    return (TInterpreter::HaveInstance() && IsScriptInitialized() &&
             !IsInEditMode());
 }
 
 bool Stage::CanJump()
 {
-	// This should match the list of sanity-checks in the function below.
-	return (TInterpreter::HaveInstance() &&
-			IsScriptInitialized() &&
-			!IsInEditMode());
+    // This should match the list of sanity-checks in the function below.
+    return (TInterpreter::HaveInstance() &&
+            IsScriptInitialized() &&
+            !IsInEditMode());
 }
 
 void Stage::TryJumpTo(const wxString &inName)
 {
-	// We go to quite a lot of trouble to verify this request.
-	if (!IsScriptInitialized())
-		::wxLogError(wxT("Cannot jump until finished initializing."));
-	else if (IsInEditMode())
-		::wxLogError(wxT("Unimplemented: Cannot jump while in edit mode."));
-	else
-	{
-		wxASSERT(TInterpreter::HaveInstance());
-		TInterpreter *interp = TInterpreter::GetInstance();
+    // We go to quite a lot of trouble to verify this request.
+    if (!IsScriptInitialized())
+        ::wxLogError(wxT("Cannot jump until finished initializing."));
+    else if (IsInEditMode())
+        ::wxLogError(wxT("Unimplemented: Cannot jump while in edit mode."));
+    else
+    {
+        wxASSERT(TInterpreter::HaveInstance());
+        TInterpreter *interp = TInterpreter::GetInstance();
         std::string name(inName.mb_str());
-		if (!interp->IsValidCard(name.c_str()))
-			::wxLogError(wxT("The card \'") + inName +
+        if (!interp->IsValidCard(name.c_str()))
+            ::wxLogError(wxT("The card \'") + inName +
                          wxT("\' does not exist."));
-		else
-			interp->JumpToCardByName(name.c_str());
-	}
+        else
+            interp->JumpToCardByName(name.c_str());
+    }
 }
 
 void Stage::NotifyEnterCard(const wxString &inName)
 {
-	mLastCard = std::string(inName.mb_str());
-	mFrame->GetLocationBox()->NotifyEnterCard(inName);
-	mFrame->GetProgramTree()->NotifyEnterCard(inName);
+    mLastCard = std::string(inName.mb_str());
+    mFrame->GetLocationBox()->NotifyEnterCard(inName);
+    mFrame->GetProgramTree()->NotifyEnterCard(inName);
     CrashReporter::GetInstance()->SetCurrentCard(std::string(inName.mb_str()));
 
     // If the script is waiting on a media element, end the wait now.
@@ -429,10 +429,10 @@ void Stage::NotifyExitCard()
 
 void Stage::NotifyReloadScriptStarting()
 {
-	mLastCard = "";
+    mLastCard = "";
     NotifyExitCard();
-	DeleteElements();
-	gStyleSheetManager.RemoveAll();
+    DeleteElements();
+    gStyleSheetManager.RemoveAll();
 }
 
 void Stage::NotifyReloadScriptSucceeded()
@@ -450,7 +450,7 @@ void Stage::NotifyReloadScriptSucceeded()
 
 void Stage::NotifyElementsChanged()
 {
-	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Elements on stage have changed."));
+    wxLogTrace(TRACE_STAGE_DRAWING, wxT("Elements on stage have changed."));
     // Notify our OnTimer method that the elements on the stage have
     // changed, and that we will need to recalculate the current element.
     // We can't do any of that work _here_, because recalculating the
@@ -490,39 +490,39 @@ void Stage::UpdateCurrentElementAndCursor(const wxPoint &inPosition)
     // check to see if either of those can be optimized.
 
     // Find which element we're in.
-	ElementPtr obj = FindLightWeightElement(inPosition);
+    ElementPtr obj = FindLightWeightElement(inPosition);
 
-	// Change the cursor, if necessary.  I haven't refactored this
-	// into EnterElement/LeaveElement yet because of how we handle
-	// mIsDisplayingXy.  Feel free to improve.
-	if (!mGrabbedElement)
-	{
-		if (mIsDisplayingXy)
-			mDesiredCursor = mCursorManager->FindCursor("cross");
-		else
-		{
-			if (obj) {
+    // Change the cursor, if necessary.  I haven't refactored this
+    // into EnterElement/LeaveElement yet because of how we handle
+    // mIsDisplayingXy.  Feel free to improve.
+    if (!mGrabbedElement)
+    {
+        if (mIsDisplayingXy)
+            mDesiredCursor = mCursorManager->FindCursor("cross");
+        else
+        {
+            if (obj) {
                 std::string name = obj->GetCursorName();
-				mDesiredCursor = mCursorManager->FindCursor(name);
+                mDesiredCursor = mCursorManager->FindCursor(name);
             } else {
-				mDesiredCursor = mCursorManager->FindCursor("arrow");
+                mDesiredCursor = mCursorManager->FindCursor("arrow");
             }
-		}
-	}
+        }
+    }
 
     // We *always* call this function, because the result of
     // ShouldShowCursor() may have changed.
     UpdateDisplayedCursor();
 
-	// Update the current element.
-	if (obj != mCurrentElement)
-	{
-		if (mCurrentElement && ShouldSendMouseEventsToElement(mCurrentElement))
-			LeaveElement(mCurrentElement, inPosition);
-		mCurrentElement = obj;
-		if (obj && ShouldSendMouseEventsToElement(obj))
-			EnterElement(obj, inPosition);
-	}
+    // Update the current element.
+    if (obj != mCurrentElement)
+    {
+        if (mCurrentElement && ShouldSendMouseEventsToElement(mCurrentElement))
+            LeaveElement(mCurrentElement, inPosition);
+        mCurrentElement = obj;
+        if (obj && ShouldSendMouseEventsToElement(obj))
+            EnterElement(obj, inPosition);
+    }
 
     // Optionally update the element named in the status bar.  (There's no
     // point in doing this if we're showing the current cursor position,
@@ -549,7 +549,7 @@ void Stage::UpdateCurrentElementAndCursor(const wxPoint &inPosition)
 }
 
 void Stage::UpdateCurrentElementAndCursor() {
-	UpdateCurrentElementAndCursor(CurrentMousePosition());
+    UpdateCurrentElementAndCursor(CurrentMousePosition());
 }
 
 void Stage::UpdateDisplayedCursor() {
@@ -589,17 +589,17 @@ void Stage::ReplaceDisplayedCursorWithDefault() {
 void Stage::UpdateClockKeysInStateDB() {
     // Set our two clock variables.  Note that this may cause script code
     // to run in response to the updates.
-	// XXX - Do something more accurate than GetLo with the milliseconds.
+    // XXX - Do something more accurate than GetLo with the milliseconds.
     gStateDB.Set("/system/clock/seconds", ::wxGetLocalTime());
     gStateDB.Set("/system/clock/milliseconds",
-				 (uint32) ::wxGetLocalTimeMillis().GetLo());
+                 (uint32) ::wxGetLocalTimeMillis().GetLo());
 }
 
 /// Put our interpreter to sleep.  It's our caller's responsibility to make
 /// sure TInterpreter::CanSuspend() is currently true.
 void Stage::InterpreterSleep()
 {
-	// TODO - Keep track of who we're sleeping for.
+    // TODO - Keep track of who we're sleeping for.
     ASSERT(TInterpreter::HaveInstance() &&
            !TInterpreter::GetInstance()->Paused() &&
            TInterpreter::GetInstance()->CanSuspend());
@@ -613,13 +613,13 @@ void Stage::InterpreterSetShouldWakeUp() {
 
 Stage::ElementCollection::iterator
 Stage::FindElementByName(ElementCollection &inCollection,
-						 const wxString &inName)
+                         const wxString &inName)
 {
-	ElementCollection::iterator i = inCollection.begin();
-	for (; i != inCollection.end(); i++)
-		if ((*i)->GetName() == inName)
-			return i;
-	return inCollection.end();
+    ElementCollection::iterator i = inCollection.begin();
+    for (; i != inCollection.end(); i++)
+        if ((*i)->GetName() == inName)
+            return i;
+    return inCollection.end();
 }
 
 void Stage::IdleElements() {
@@ -637,25 +637,25 @@ void Stage::IdleElements() {
 
 void Stage::OnTimer(wxTimerEvent& inEvent)
 {
-	ASSERT(!mIsBeingDestroyed);
+    ASSERT(!mIsBeingDestroyed);
 
     // If any elements have changed on the stage since we last encountered
     // this loop, then we need to call UpdateCurrentElementAndCursor.
-	if (mElementsHaveChanged) {
+    if (mElementsHaveChanged) {
         mElementsHaveChanged = false;
-		// Update our element borders (if necessary) and fix our cursor.
-		if (mIsDisplayingBorders)
-			InvalidateScreen();
-		UpdateCurrentElementAndCursor();
-	}
+        // Update our element borders (if necessary) and fix our cursor.
+        if (mIsDisplayingBorders)
+            InvalidateScreen();
+        UpdateCurrentElementAndCursor();
+    }
 
     // Check our displayed cursor, because the return value of
     // ShouldShowCursor() might have changed.
     UpdateDisplayedCursor();
 
     // If we've reached the end of our current WAIT, end it.
-	if (mWaitElement && mWaitElement->HasReachedFrame(mWaitFrame))
-		EndWait();
+    if (mWaitElement && mWaitElement->HasReachedFrame(mWaitFrame))
+        EndWait();
 
     // Display information about the currently playing media clip if the
     // MediaInfo pane is active.
@@ -667,11 +667,11 @@ void Stage::OnTimer(wxTimerEvent& inEvent)
             media_info->ClearText();
     }
 
-	// Send an idle event to the Scheme engine occasionally.
-	if (ShouldSendEvents() &&
-		::wxGetLocalTimeMillis() > mLastIdleEvent + IDLE_INTERVAL)
-	{
-		mLastIdleEvent = ::wxGetLocalTimeMillis();
+    // Send an idle event to the Scheme engine occasionally.
+    if (ShouldSendEvents() &&
+        ::wxGetLocalTimeMillis() > mLastIdleEvent + IDLE_INTERVAL)
+    {
+        mLastIdleEvent = ::wxGetLocalTimeMillis();
 
         // Now's an excellent time to update the clock information.
         UpdateClockKeysInStateDB();
@@ -682,24 +682,24 @@ void Stage::OnTimer(wxTimerEvent& inEvent)
         // Send idle events to all our elements.
         IdleElements();
 
-		// We only pass the idle event to just the card, and not any
-		// of the elements.  Idle event processing is handled differently
-		// from most other events; we let the scripting language work
-		// out the details.
-		GetEventDispatcher()->DoEventIdle();
-	}
+        // We only pass the idle event to just the card, and not any
+        // of the elements.  Idle event processing is handled differently
+        // from most other events; we let the scripting language work
+        // out the details.
+        GetEventDispatcher()->DoEventIdle();
+    }
 }
 
 void Stage::OnMouseMove(wxMouseEvent &inEvent)
 {
-	// This function occasionally gets called when destroying
-	// broken QuickTime movies.
-	if (mIsBeingDestroyed)
-		return;
+    // This function occasionally gets called when destroying
+    // broken QuickTime movies.
+    if (mIsBeingDestroyed)
+        return;
 
-	// Do any mouse-moved processing for our Elements.
+    // Do any mouse-moved processing for our Elements.
     mShouldHideCursorUntilMouseMoved = false;
-	UpdateCurrentElementAndCursor();
+    UpdateCurrentElementAndCursor();
 
     // Notify our cursor of its new location.
     if (mActualCursor)
@@ -731,31 +731,31 @@ void Stage::OnMouseMove(wxMouseEvent &inEvent)
         mFrame->SetStatusText(str);
     }
 
-	if (ShouldSendEvents())
-	{
-		EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
-		disp->DoEventMouseMoved(inEvent);
-	}
+    if (ShouldSendEvents())
+    {
+        EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
+        disp->DoEventMouseMoved(inEvent);
+    }
 }
 
 void Stage::OnEraseBackground(wxEraseEvent &inEvent)
 {
-	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Ignoring request to erase stage."));
+    wxLogTrace(TRACE_STAGE_DRAWING, wxT("Ignoring request to erase stage."));
 
     // Ignore this event to prevent flicker--we don't need to erase,
     // because we redraw everything from the offscreen buffer.  We may need
     // to override more of these events elsewhere.
 
-	// TODO - Sometimes parts of the frame don't get repainted.  Could we
-	// somehow indirectly be responsible?
+    // TODO - Sometimes parts of the frame don't get repainted.  Could we
+    // somehow indirectly be responsible?
 }
 
 void Stage::OnPaint(wxPaintEvent &inEvent)
 {
-	if (mIsBeingDestroyed)
-		return;
+    if (mIsBeingDestroyed)
+        return;
 
-	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Painting stage."));
+    wxLogTrace(TRACE_STAGE_DRAWING, wxT("Painting stage."));
 
     // Set up our drawing context, and paint the screen.
     wxPaintDC screen_dc(this);
@@ -772,7 +772,7 @@ void Stage::ClipElementsThatDrawThemselves(wxDC &inDC)
     bool need_clipping = false;
     wxRegion clip_to(wxRect(wxPoint(0, 0), GetSize()));
     ElementCollection::iterator i = mElements.begin();
-	for (; i != mElements.end(); ++i)
+    for (; i != mElements.end(); ++i)
         if ((*i)->IsShown() && (*i)->ApplyClippingToStage(clip_to))
             need_clipping = true;
 
@@ -788,8 +788,8 @@ void Stage::ClipElementsThatDrawThemselves(wxDC &inDC)
 
 void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion)
 {
-	// Make sure we don't overdraw any heavyweight elements.
-	ClipElementsThatDrawThemselves(inDC);
+    // Make sure we don't overdraw any heavyweight elements.
+    ClipElementsThatDrawThemselves(inDC);
 
     // Blit our offscreen pixmap to the screen.
     {
@@ -828,14 +828,14 @@ void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion)
             inDC.DrawLine(0, y2, width, y2);
     }
 
-	// If necessary, draw the borders.
-	if (mIsDisplayingBorders)
-	{
-		ElementCollection::iterator i = mElements.begin();
-		for (; i != mElements.end(); i++)
-			if ((*i)->IsShown())
-				DrawElementBorder(inDC, *i);
-	}
+    // If necessary, draw the borders.
+    if (mIsDisplayingBorders)
+    {
+        ElementCollection::iterator i = mElements.begin();
+        for (; i != mElements.end(); i++)
+            if ((*i)->IsShown())
+                DrawElementBorder(inDC, *i);
+    }
 }
 
 // XXX - these should be refactored, but it's just two lines they have 
@@ -847,15 +847,15 @@ void Stage::DrawElementBorder(wxDC &inDC, ElementPtr inElement)
         inDC.SetPen(*wxRED_PEN);
     else
         inDC.SetPen(*wxGREY_PEN);
-	inDC.SetBrush(*wxTRANSPARENT_BRUSH);
+    inDC.SetBrush(*wxTRANSPARENT_BRUSH);
 
-	inElement->DrawElementBorder(inDC);
+    inElement->DrawElementBorder(inDC);
 }
 
 void Stage::OnChar(wxKeyEvent &inEvent)
 {
-	if (!ShouldSendEvents()) {
-		inEvent.Skip();
+    if (!ShouldSendEvents()) {
+        inEvent.Skip();
     } else if (inEvent.GetKeyCode() == WXK_ESCAPE) {
         // The menu accelerator for StageFrame::OnStopMovies doesn't appear
         // to work in wxWidgets 2.9 (and maybe also 2.8).  If the
@@ -867,27 +867,27 @@ void Stage::OnChar(wxKeyEvent &inEvent)
         EndMediaElements();
     } else if (inEvent.GetKeyCode() == WXK_SPACE &&
                inEvent.ControlDown() && !inEvent.AltDown()) {
-		inEvent.Skip(); // Always allow toggling into edit mode.
-	} else {
+        inEvent.Skip(); // Always allow toggling into edit mode.
+    } else {
         // NOTE - We process character events directed at the Stage here,
         // but the Stage isn't always focused.  Is this really a good idea?
         // Douglas tells me that Director works like this, so at least
         // there's precedent.
-		EventDispatcher *dispatcher = GetEventDispatcher();
-		if (!dispatcher->DoEventChar(inEvent))
-			inEvent.Skip();
-	}
+        EventDispatcher *dispatcher = GetEventDispatcher();
+        if (!dispatcher->DoEventChar(inEvent))
+            inEvent.Skip();
+    }
 }
 
 void Stage::OnLeftDown(wxMouseEvent &inEvent)
 {
-	// Restore focus to the stage (or our game engine, if it's on top).
+    // Restore focus to the stage (or our game engine, if it's on top).
     if (GameEngineIsDisplayed())
         GameEngineSetFocus();
     else
         SetFocus();
 
-	// Dispatch the event.
+    // Dispatch the event.
     if (ShouldSendEvents()) {
         EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
         disp->DoEventLeftDown(inEvent, false);
@@ -922,7 +922,7 @@ void Stage::OnLeftDClick(wxMouseEvent &inEvent)
 {
     if (ShouldSendEvents()) {
         EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
-        disp->DoEventLeftDown(inEvent, true);	
+        disp->DoEventLeftDown(inEvent, true);   
     }
 }
 
@@ -937,35 +937,35 @@ void Stage::OnLeftUp(wxMouseEvent &inEvent)
 void Stage::OnRightDown(wxMouseEvent &inEvent)
 {
     if (!mIsDisplayingXy)
-		inEvent.Skip();
-	else
-	{
-		// Get the position of the click, build a string, and save the
-		// position for next time.
-		wxPoint pos = inEvent.GetPosition();
-		wxString str;
-		if (inEvent.ShiftDown() && mCopiedPoints.size() == 1)
-			str.Printf(wxT("(rect %d %d %d %d)"), 
-					   (mCopiedPoints.end()-1)->x, 
-					   (mCopiedPoints.end()-1)->y,
-					   pos.x, pos.y);
-		else if (inEvent.ShiftDown() && mCopiedPoints.size() > 1)
-		{
-			str.Printf(wxT("(polygon "));
-			std::vector<wxPoint>::iterator i;
-			for (i = mCopiedPoints.begin(); i != mCopiedPoints.end(); ++i)
-				str += wxString::Format(wxT("(point %d %d) "), i->x, i->y);
-			str += wxString::Format(wxT("(point %d %d))"), pos.x, pos.y);
-		}
-		else
-		{
-			str.Printf(wxT("(point %d %d)"), pos.x, pos.y);
-			mCopiedPoints.clear();
-		}
-		mCopiedPoints.push_back(pos);
+        inEvent.Skip();
+    else
+    {
+        // Get the position of the click, build a string, and save the
+        // position for next time.
+        wxPoint pos = inEvent.GetPosition();
+        wxString str;
+        if (inEvent.ShiftDown() && mCopiedPoints.size() == 1)
+            str.Printf(wxT("(rect %d %d %d %d)"), 
+                       (mCopiedPoints.end()-1)->x, 
+                       (mCopiedPoints.end()-1)->y,
+                       pos.x, pos.y);
+        else if (inEvent.ShiftDown() && mCopiedPoints.size() > 1)
+        {
+            str.Printf(wxT("(polygon "));
+            std::vector<wxPoint>::iterator i;
+            for (i = mCopiedPoints.begin(); i != mCopiedPoints.end(); ++i)
+                str += wxString::Format(wxT("(point %d %d) "), i->x, i->y);
+            str += wxString::Format(wxT("(point %d %d))"), pos.x, pos.y);
+        }
+        else
+        {
+            str.Printf(wxT("(point %d %d)"), pos.x, pos.y);
+            mCopiedPoints.clear();
+        }
+        mCopiedPoints.push_back(pos);
 
-		CopyStringToClipboard(str);
-	}
+        CopyStringToClipboard(str);
+    }
 }
 
 void Stage::OnMouseCaptureChanged(wxMouseCaptureChangedEvent &inEvent) {
@@ -983,25 +983,25 @@ void Stage::OnMouseCaptureChanged(wxMouseCaptureChangedEvent &inEvent) {
     // directly.  So this may be redudant 99% of the time on windows.  But
     // the other 1% of the time, it happens because somebody popped up an
     // error window while the mouse was grabbed.
-	mGrabbedElement = ElementPtr();
+    mGrabbedElement = ElementPtr();
 }
 
 void Stage::CopyStringToClipboard(const wxString &inString)
 {
-	// Copy our string to the clipboard.  This code snippet comes from
-	// the wxWindows manual.
-	if (wxTheClipboard->Open())
-	{
-		wxTheClipboard->SetData(new wxTextDataObject(inString));
-		wxTheClipboard->Close();
-		mFrame->SetStatusText(wxString(wxT("Copied: ")) + inString);
-	}
+    // Copy our string to the clipboard.  This code snippet comes from
+    // the wxWindows manual.
+    if (wxTheClipboard->Open())
+    {
+        wxTheClipboard->SetData(new wxTextDataObject(inString));
+        wxTheClipboard->Close();
+        mFrame->SetStatusText(wxString(wxT("Copied: ")) + inString);
+    }
 }
 
 void Stage::ValidateStage()
 {
-	// XXX - We can't actually *do* this using wxWindows, so we're
-	// repainting the screen too often.  But this would be an excellent
+    // XXX - We can't actually *do* this using wxWindows, so we're
+    // repainting the screen too often.  But this would be an excellent
     // time to clear mRectsToRefresh.
     mRectsToRefresh.clear();
 }
@@ -1020,8 +1020,8 @@ void Stage::InvalidateScreen() {
 
 void Stage::InvalidateRect(const wxRect &inRect)
 {
-	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Invalidating: %d %d %d %d"),
-			   inRect.x, inRect.y, inRect.GetRight(), inRect.GetBottom());
+    wxLogTrace(TRACE_STAGE_DRAWING, wxT("Invalidating: %d %d %d %d"),
+               inRect.x, inRect.y, inRect.GetRight(), inRect.GetBottom());
 
     // We want to make sure that we never try to do any drawing off
     // the edges of the screen. Certain platforms, (like wxMac) get
@@ -1035,7 +1035,7 @@ void Stage::InvalidateRect(const wxRect &inRect)
 
     // It's a little bit inelegant to maintain two different dirty lists,
     // but they get cleared by different actions.
-	mRectsToComposite.MergeRect(r);
+    mRectsToComposite.MergeRect(r);
 
     // Trigger screen repaint events--and update our manual refresh
     // list--but only if Quake 2 is not being displayed.  (Quake 2 covers
@@ -1050,59 +1050,59 @@ void Stage::InvalidateRect(const wxRect &inRect)
 
 void Stage::Screenshot(const wxString &inFilename)
 {
-	wxImage image = GetCompositingPixmap().ConvertToImage();
-	image.SaveFile(inFilename, wxBITMAP_TYPE_PNG);
+    wxImage image = GetCompositingPixmap().ConvertToImage();
+    image.SaveFile(inFilename, wxBITMAP_TYPE_PNG);
 }
 
 bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame)
 {
-	ASSERT(!mWaitElement);
+    ASSERT(!mWaitElement);
 
-	// Look for our element.
-	ElementCollection::iterator i =
-		FindElementByName(mElements, inElementName);
+    // Look for our element.
+    ElementCollection::iterator i =
+        FindElementByName(mElements, inElementName);
 
-	// Make sure we can wait on this element.
-	// TODO - Refactor this error-handling code to a standalone
-	// routine so we don't have to keep on typing it.  (Actually, this code
+    // Make sure we can wait on this element.
+    // TODO - Refactor this error-handling code to a standalone
+    // routine so we don't have to keep on typing it.  (Actually, this code
     // is handled nicely by some macros in TWxPrimitives.cpp, although they
     // report errors quite a bit more noisily.
     std::string name(inElementName.mb_str());
-	if (i == mElements.end())
-	{
-		gLog.Warn("halyard.wait", "wait: Element %s does not exist",
+    if (i == mElements.end())
+    {
+        gLog.Warn("halyard.wait", "wait: Element %s does not exist",
                   name.c_str());
-		return false;
-	}
-	MediaElementPtr media = MediaElementPtr(*i, dynamic_cast_tag());
-	if (!media)
-	{
-		gLog.Warn("halyard.wait", "wait: Element %s is not a media element",
+        return false;
+    }
+    MediaElementPtr media = MediaElementPtr(*i, dynamic_cast_tag());
+    if (!media)
+    {
+        gLog.Warn("halyard.wait", "wait: Element %s is not a media element",
                   name.c_str());
-		return false;		
-	}
+        return false;       
+    }
 
-	// Return immediately (if we're already past the wait point) or
-	// go to sleep for a while.
-	if (media->HasReachedFrame(inUntilFrame))
-		gLog.Trace("halyard.wait",
+    // Return immediately (if we're already past the wait point) or
+    // go to sleep for a while.
+    if (media->HasReachedFrame(inUntilFrame))
+        gLog.Trace("halyard.wait",
                    "wait: Media element %s has already past frame %d",
                    name.c_str(), inUntilFrame);
-	else
-	{
-		mWaitElement = media;
-		mWaitFrame = inUntilFrame;
-		InterpreterSleep();
-	}
-	return true;
+    else
+    {
+        mWaitElement = media;
+        mWaitFrame = inUntilFrame;
+        InterpreterSleep();
+    }
+    return true;
 }
 
 void Stage::EndWait()
 {
-	gLog.Trace("halyard.wait", "wait: Waking up.");
-	ASSERT(mWaitElement.get());
-	mWaitElement = MediaElementPtr();
-	mWaitFrame = 0;
+    gLog.Trace("halyard.wait", "wait: Waking up.");
+    ASSERT(mWaitElement.get());
+    mWaitElement = MediaElementPtr();
+    mWaitFrame = 0;
     InterpreterSetShouldWakeUp();
 }
 
@@ -1112,117 +1112,117 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds)
     // transitions in command-line mode to make automated testing faster.
     if (inTransition != "none" && inMilliseconds > 0 &&
         !TInterpreterManager::IsInCommandLineMode())
-	{
-		// Attempt to get a copy of whatever is on the screen.
-		wxClientDC client_dc(this);
+    {
+        // Attempt to get a copy of whatever is on the screen.
+        wxClientDC client_dc(this);
 
-		wxBitmap before(mStageSize.GetWidth(), mStageSize.GetHeight(), 24);
-		bool have_before;
-		{
-			wxMemoryDC before_dc;
-			before_dc.SelectObject(before);
-			have_before =
-				before_dc.Blit(0, 0,
-							   mStageSize.GetWidth(), mStageSize.GetHeight(),
-							   &client_dc, 0, 0);
-		}
+        wxBitmap before(mStageSize.GetWidth(), mStageSize.GetHeight(), 24);
+        bool have_before;
+        {
+            wxMemoryDC before_dc;
+            before_dc.SelectObject(before);
+            have_before =
+                before_dc.Blit(0, 0,
+                               mStageSize.GetWidth(), mStageSize.GetHeight(),
+                               &client_dc, 0, 0);
+        }
 
-		// Run transiton, if we can.
-		if (have_before)
-		{
+        // Run transiton, if we can.
+        if (have_before)
+        {
             // Calculate a single dirty rectangle for the transition.
             wxRect dirty = mRectsToRefresh.GetBounds();
             dirty.Intersect(wxRect(wxPoint(0, 0), mStageSize));
 
-			// Make sure we don't overdraw any heavyweight elements.
-			ClipElementsThatDrawThemselves(client_dc);
+            // Make sure we don't overdraw any heavyweight elements.
+            ClipElementsThatDrawThemselves(client_dc);
 
             // Run the transition itself.
-			TransitionResources r(client_dc, before, GetCompositingPixmap(),
-								  mOffscreenFadePixmap, dirty);
-			mTransitionManager->RunTransition(inTransition, inMilliseconds, r);
-		}
-	}
+            TransitionResources r(client_dc, before, GetCompositingPixmap(),
+                                  mOffscreenFadePixmap, dirty);
+            mTransitionManager->RunTransition(inTransition, inMilliseconds, r);
+        }
+    }
 
-	// Draw our offscreen buffer to the screen, and mark that portion of
-	// the screen as updated.
-	{
-		wxClientDC client_dc(this);
-		PaintStage(client_dc, mRectsToRefresh);
-	}
-	ValidateStage();
+    // Draw our offscreen buffer to the screen, and mark that portion of
+    // the screen as updated.
+    {
+        wxClientDC client_dc(this);
+        PaintStage(client_dc, mRectsToRefresh);
+    }
+    ValidateStage();
 }
 
 void Stage::AddElement(ElementPtr inElement)
 {
-	// Delete any existing Element with the same name.
-	(void) DeleteElementByName(inElement->GetName());
+    // Delete any existing Element with the same name.
+    (void) DeleteElementByName(inElement->GetName());
 
-	// Add the new Element to our list.
+    // Add the new Element to our list.
     gLog.Trace("halyard.element", "%s: Added to stage",
                inElement->GetLogName());
-	mElements.push_back(inElement);
-	NotifyElementsChanged();
+    mElements.push_back(inElement);
+    NotifyElementsChanged();
 }
 
 ElementPtr Stage::FindElement(const wxString &inElementName)
 {
-	ElementCollection::iterator i =
-		FindElementByName(mElements, inElementName);
-	if (i == mElements.end())
-		return ElementPtr();
-	else
-		return *i;
+    ElementCollection::iterator i =
+        FindElementByName(mElements, inElementName);
+    if (i == mElements.end())
+        return ElementPtr();
+    else
+        return *i;
 }
 
 ElementPtr Stage::FindLightWeightElement(const wxPoint &inPoint,
                                          bool inMustWantCursor)
 {
-	// Look for the most-recently-added Element containing inPoint.
-	ElementPtr result;
-	ElementCollection::iterator i = mElements.begin();
-	for (; i != mElements.end(); i++)
-		if ((*i)->IsLightWeight() && (*i)->IsShown() &&
+    // Look for the most-recently-added Element containing inPoint.
+    ElementPtr result;
+    ElementCollection::iterator i = mElements.begin();
+    for (; i != mElements.end(); i++)
+        if ((*i)->IsLightWeight() && (*i)->IsShown() &&
             ((*i)->WantsCursor() || !inMustWantCursor) &&
             (*i)->IsPointInElement(inPoint))
-			result = *i;
-	return result;
+            result = *i;
+    return result;
 }
 
 EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint)
 {
-	// If a grab is in effect, return the element immediately.
-	if (mGrabbedElement)
-		return mGrabbedElement->GetEventDispatcher().get();
+    // If a grab is in effect, return the element immediately.
+    if (mGrabbedElement)
+        return mGrabbedElement->GetEventDispatcher().get();
 
-	// Otherwise, look things up normally.
-	ElementPtr elem = FindLightWeightElement(inPoint);
-	if (elem && elem->GetEventDispatcher())
-		return elem->GetEventDispatcher().get();
-	else
-		return GetEventDispatcher();
+    // Otherwise, look things up normally.
+    ElementPtr elem = FindLightWeightElement(inPoint);
+    if (elem && elem->GetEventDispatcher())
+        return elem->GetEventDispatcher().get();
+    else
+        return GetEventDispatcher();
 }
 
 void Stage::DestroyElement(ElementPtr inElement)
 {
-	wxString name = inElement->GetName();
+    wxString name = inElement->GetName();
 
-	// Make sure this element isn't on our drawing context stack.
-	if (mDrawingContextStack->ContainsElement(inElement))
-		gLog.Fatal("halyard.element",
+    // Make sure this element isn't on our drawing context stack.
+    if (mDrawingContextStack->ContainsElement(inElement))
+        gLog.Fatal("halyard.element",
                    "%s: Tried to delete element with an active drawing context",
                    inElement->GetLogName());
 
-	// Clean up any dangling references to this object.
-	if (inElement == mGrabbedElement)
-		MouseUngrab(mGrabbedElement);
-	if (inElement == mCurrentElement)
-		mCurrentElement = ElementPtr();
+    // Clean up any dangling references to this object.
+    if (inElement == mGrabbedElement)
+        MouseUngrab(mGrabbedElement);
+    if (inElement == mCurrentElement)
+        mCurrentElement = ElementPtr();
     if (inElement == mCurrentElementNamedInStatusBar)
         mCurrentElementNamedInStatusBar = ElementPtr();
     MediaElementPtr as_media(inElement, dynamic_cast_tag());
-	if (as_media && as_media == mWaitElement)
-		EndWait();
+    if (as_media && as_media == mWaitElement)
+        EndWait();
 
     // If the element we're deleting is a CursorElement, then we need to
     // tell it to unregister itself, and then update the cursor we're
@@ -1239,11 +1239,11 @@ void Stage::DestroyElement(ElementPtr inElement)
         ASSERT(as_cursor != mActualCursor);
     }
 
-	// We don't have to destroy the object explicity, because the
-	// ElementPtr smart-pointer class will take care of that for us.
+    // We don't have to destroy the object explicity, because the
+    // ElementPtr smart-pointer class will take care of that for us.
     //
-	// TODO - Implemented delayed destruction so element callbacks can
-	// destroy the element they're attached to.
+    // TODO - Implemented delayed destruction so element callbacks can
+    // destroy the element they're attached to.
 
     gLog.Trace("halyard.element", "%s: Removed from stage",
                inElement->GetLogName());
@@ -1251,100 +1251,100 @@ void Stage::DestroyElement(ElementPtr inElement)
 
 bool Stage::DeleteElementByName(const wxString &inName)
 {
-	bool found = false;
-	ElementCollection::iterator i = FindElementByName(mElements, inName);
-	if (i != mElements.end())
-	{
-		// Completely remove from the collection first, then destroy.
-		ElementPtr elem = *i;
-		mElements.erase(i);
-		DestroyElement(elem);
-		found = true;
-	}
-	NotifyElementsChanged();
-	return found;
+    bool found = false;
+    ElementCollection::iterator i = FindElementByName(mElements, inName);
+    if (i != mElements.end())
+    {
+        // Completely remove from the collection first, then destroy.
+        ElementPtr elem = *i;
+        mElements.erase(i);
+        DestroyElement(elem);
+        found = true;
+    }
+    NotifyElementsChanged();
+    return found;
 }
 
 void Stage::DeleteElements()
 {
-	ElementCollection::iterator i = mElements.begin();
-	for (; i != mElements.end(); ++i)
-		DestroyElement(*i);
-	mElements.clear();
-	NotifyElementsChanged();
+    ElementCollection::iterator i = mElements.begin();
+    for (; i != mElements.end(); ++i)
+        DestroyElement(*i);
+    mElements.clear();
+    NotifyElementsChanged();
 }
 
 bool Stage::IsMediaPlaying()
 {
-	ElementCollection::iterator i = mElements.begin();
-	for (; i != mElements.end(); ++i) {
-		MediaElementPtr elem = MediaElementPtr(*i, dynamic_cast_tag());
-		if (elem && !elem->IsLooping())
-			return true;
+    ElementCollection::iterator i = mElements.begin();
+    for (; i != mElements.end(); ++i) {
+        MediaElementPtr elem = MediaElementPtr(*i, dynamic_cast_tag());
+        if (elem && !elem->IsLooping())
+            return true;
     }
-	return false;
+    return false;
 }
 
 void Stage::EndMediaElements()
 {
-	ElementCollection::iterator i = mElements.begin();
-	for (; i != mElements.end(); ++i) {
-		MediaElementPtr elem = MediaElementPtr(*i, dynamic_cast_tag());
-		if (elem && !elem->IsLooping()) {
+    ElementCollection::iterator i = mElements.begin();
+    for (; i != mElements.end(); ++i) {
+        MediaElementPtr elem = MediaElementPtr(*i, dynamic_cast_tag());
+        if (elem && !elem->IsLooping()) {
             std::string name((*i)->GetName().mb_str());
-			gLog.Debug("halyard", "Manually ending media: %s", name.c_str());
-			elem->EndPlayback();
-		}
-	}
+            gLog.Debug("halyard", "Manually ending media: %s", name.c_str());
+            elem->EndPlayback();
+        }
+    }
 }
 
 void Stage::MouseGrab(ElementPtr inElement)
 {
-	ASSERT(inElement->IsLightWeight());
-	ASSERT(inElement->GetEventDispatcher().get());
-	if (mGrabbedElement)
-	{
+    ASSERT(inElement->IsLightWeight());
+    ASSERT(inElement->GetEventDispatcher().get());
+    if (mGrabbedElement)
+    {
         std::string name(inElement->GetName().mb_str());
         std::string grabbed_name(mGrabbedElement->GetName().mb_str());
-		gLog.Error("halyard.stage.grab",
+        gLog.Error("halyard.stage.grab",
                    "Grabbing %s while %s is already grabbed",
-				   name.c_str(), grabbed_name.c_str());
-		MouseUngrab(mGrabbedElement);
-	}
-	mGrabbedElement = inElement;
-	CaptureMouse();
+                   name.c_str(), grabbed_name.c_str());
+        MouseUngrab(mGrabbedElement);
+    }
+    mGrabbedElement = inElement;
+    CaptureMouse();
 }
 
 void Stage::MouseUngrab(ElementPtr inElement)
 {
-	ASSERT(inElement->IsLightWeight());
-	if (!mGrabbedElement)
-	{
+    ASSERT(inElement->IsLightWeight());
+    if (!mGrabbedElement)
+    {
         std::string name(inElement->GetName().mb_str());
-		gLog.Error("halyard.stage.grab",
+        gLog.Error("halyard.stage.grab",
                    "Ungrabbing %s when it isn't grabbed", name.c_str());
-		return;
-	}
-	if (inElement != mGrabbedElement)
-	{
+        return;
+    }
+    if (inElement != mGrabbedElement)
+    {
         std::string name(inElement->GetName().mb_str());
         std::string grabbed_name(mGrabbedElement->GetName().mb_str());
-		gLog.Error("halyard.stage.grab",
+        gLog.Error("halyard.stage.grab",
                    "Ungrabbing %s when %s is grabbed", name.c_str(),
                    grabbed_name.c_str());
-	}
+    }
 
-	// Force updating of the current element, cursor, etc.
-	if (mCurrentElement != mGrabbedElement)
-		mCurrentElement = ElementPtr();
+    // Force updating of the current element, cursor, etc.
+    if (mCurrentElement != mGrabbedElement)
+        mCurrentElement = ElementPtr();
 
-	// Release our grab.
-	mGrabbedElement = ElementPtr();
-	ReleaseMouse();
-	UpdateCurrentElementAndCursor();
+    // Release our grab.
+    mGrabbedElement = ElementPtr();
+    ReleaseMouse();
+    UpdateCurrentElementAndCursor();
 }
 
 bool Stage::ShouldSendMouseEventsToElement(ElementPtr inElement)
 {
-	return !mGrabbedElement || (inElement == mGrabbedElement);
+    return !mGrabbedElement || (inElement == mGrabbedElement);
 }

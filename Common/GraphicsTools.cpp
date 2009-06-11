@@ -46,7 +46,7 @@ GreyMap::~GreyMap()
 
 void GreyMap::Clear(Channel inColor)
 {
-	Channel *end = pixels + stride * height;
-	for (Channel *cursor = pixels; cursor < end; cursor++)
-		*cursor = inColor;
+    Channel *end = pixels + stride * height;
+    for (Channel *cursor = pixels; cursor < end; cursor++)
+        *cursor = inColor;
 }

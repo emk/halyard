@@ -43,7 +43,7 @@ public:
 
 private:
     DECLARE_EVENT_TABLE();
-	
+    
     wxCheckBox *mUseRegex;
     wxTextCtrl *mSearchText;
     wxCheckBox *mStartAtTop;
@@ -77,7 +77,7 @@ private:
     static wxString GetKeyString(const wxString &key);
 
 public:
-	FindDlg(wxWindow *inParent, bool haveSelection);
+    FindDlg(wxWindow *inParent, bool haveSelection);
 
     virtual void EndModal(int retCode);
 

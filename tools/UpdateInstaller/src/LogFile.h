@@ -27,9 +27,9 @@
 #include "boost/format.hpp"
 
 namespace boost {
-	namespace filesystem {
-		class path;
-	}
+    namespace filesystem {
+        class path;
+    }
 }
 
 using namespace boost::filesystem;
@@ -41,14 +41,14 @@ public:
         FATAL
     };
 
-	LogFile(const path &file);
-	~LogFile();
+    LogFile(const path &file);
+    ~LogFile();
 
-	void Log(const boost::format &message, Severity severity = MESSAGE);
-	void Log(const std::string &message, Severity severity = MESSAGE);
-	void Log(const char *message, Severity severity = MESSAGE);
+    void Log(const boost::format &message, Severity severity = MESSAGE);
+    void Log(const std::string &message, Severity severity = MESSAGE);
+    void Log(const char *message, Severity severity = MESSAGE);
 private: 
-	FILE *mLogFile;
+    FILE *mLogFile;
 };
 
 #endif // Log_H

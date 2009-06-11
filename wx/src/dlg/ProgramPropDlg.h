@@ -34,10 +34,10 @@ namespace model { class Object; }
 class ProgramPropDlg : public PropertyDlg
 {
     DECLARE_EVENT_TABLE();
-	DECLARE_PROPERTY_DIALOG();
+    DECLARE_PROPERTY_DIALOG();
 
 public:
-	ProgramPropDlg(wxWindow *inParent, model::Object *inObject);
+    ProgramPropDlg(wxWindow *inParent, model::Object *inObject);
 };
 
 #endif // ProgramPropDlg_H

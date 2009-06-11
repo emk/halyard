@@ -30,18 +30,18 @@
 ///  A simple thermometer-style class with a setable color.
 class ProgressMeter : public wxWindow
 {
-	wxColour mColor;
-	float mValue;
+    wxColour mColor;
+    float mValue;
 
-	void Draw(wxDC &inDC);
-	void Refresh();
+    void Draw(wxDC &inDC);
+    void Refresh();
     void OnPaint(wxPaintEvent &inEvent);
 
 public:
-	ProgressMeter(wxWindow *inParent);
+    ProgressMeter(wxWindow *inParent);
 
-	void SetColor(const wxColor &inColor) { mColor = inColor; Refresh(); }
-	void SetValue(float inValue) { mValue = inValue; Refresh(); }
+    void SetColor(const wxColor &inColor) { mColor = inColor; Refresh(); }
+    void SetValue(float inValue) { mValue = inValue; Refresh(); }
 
     DECLARE_EVENT_TABLE()
 };
@@ -51,30 +51,30 @@ BEGIN_EVENT_TABLE(ProgressMeter, wxWindow)
 END_EVENT_TABLE()
 
 ProgressMeter::ProgressMeter(wxWindow *inParent)
-	: wxWindow(inParent, -1), mValue(0.0)
+    : wxWindow(inParent, -1), mValue(0.0)
 {
-	mColor = FancyStatusBar::DEFAULT_PROGRESS_COLOR;
+    mColor = FancyStatusBar::DEFAULT_PROGRESS_COLOR;
 }
 
 void ProgressMeter::Draw(wxDC &inDC)
 {
-	wxBrush brush(mColor, wxSOLID);
-	inDC.SetBrush(brush);
-	inDC.SetPen(*wxTRANSPARENT_PEN);
-	wxSize sz = GetSize();
-	inDC.DrawRectangle(0, 0, mValue * sz.GetWidth(), sz.GetHeight());
+    wxBrush brush(mColor, wxSOLID);
+    inDC.SetBrush(brush);
+    inDC.SetPen(*wxTRANSPARENT_PEN);
+    wxSize sz = GetSize();
+    inDC.DrawRectangle(0, 0, mValue * sz.GetWidth(), sz.GetHeight());
 }
 
 void ProgressMeter::Refresh()
 {
-	wxClientDC dc(this);
-	Draw(dc);
+    wxClientDC dc(this);
+    Draw(dc);
 }
 
 void ProgressMeter::OnPaint(wxPaintEvent &inEvent)
 {
     wxPaintDC dc(this);
-	Draw(dc);
+    Draw(dc);
 }
 
 
@@ -90,40 +90,40 @@ BEGIN_EVENT_TABLE(FancyStatusBar, wxStatusBar)
 END_EVENT_TABLE()
 
 enum {
-	TEXT_FIELD,
-	PROGRESS_FIELD,
-	THUMB_FIELD,
-	FIELD_COUNT,
+    TEXT_FIELD,
+    PROGRESS_FIELD,
+    THUMB_FIELD,
+    FIELD_COUNT,
 
-	TEXT_FIELD_WIDTH     = -1, // resizable
-	PROGRESS_FIELD_WIDTH = 150,
-	THUMB_FIELD_WIDTH    = 20
+    TEXT_FIELD_WIDTH     = -1, // resizable
+    PROGRESS_FIELD_WIDTH = 150,
+    THUMB_FIELD_WIDTH    = 20
 };
 
 FancyStatusBar::FancyStatusBar(wxWindow *inParent)
-	: wxStatusBar(inParent, -1)
+    : wxStatusBar(inParent, -1)
 {
-	int field_widths[FIELD_COUNT] =
-		{TEXT_FIELD_WIDTH, PROGRESS_FIELD_WIDTH, THUMB_FIELD_WIDTH};
-	SetFieldsCount(FIELD_COUNT, field_widths);
-	mProgressMeter = new ProgressMeter(this);
+    int field_widths[FIELD_COUNT] =
+        {TEXT_FIELD_WIDTH, PROGRESS_FIELD_WIDTH, THUMB_FIELD_WIDTH};
+    SetFieldsCount(FIELD_COUNT, field_widths);
+    mProgressMeter = new ProgressMeter(this);
 }
 
 void FancyStatusBar::OnSize(wxSizeEvent &event)
 {
-	wxRect rect;
-	GetFieldRect(PROGRESS_FIELD, rect);
-	rect.Deflate(1, 1);
-	mProgressMeter->SetSize(rect);
+    wxRect rect;
+    GetFieldRect(PROGRESS_FIELD, rect);
+    rect.Deflate(1, 1);
+    mProgressMeter->SetSize(rect);
 }
 
 void FancyStatusBar::SetProgressColor(const wxColour &inColor)
 {
-	mProgressMeter->SetColor(inColor);
+    mProgressMeter->SetColor(inColor);
 }
 
 void FancyStatusBar::SetProgress(float inValue)
 {
-	mProgressMeter->SetValue(inValue);
+    mProgressMeter->SetValue(inValue);
 }
 

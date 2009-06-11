@@ -49,21 +49,21 @@ class LightweightElement : public Element {
 #if wxUSE_ACCESSIBILITY
     shared_ptr<wxAccessible> mAccessible;
 #endif // wxUSE_ACCESSIBILITY
-	
+    
 public:
-	LightweightElement(Stage *inStage, const wxString &inName,
-					   Halyard::TCallbackPtr inDispatch,
+    LightweightElement(Stage *inStage, const wxString &inName,
+                       Halyard::TCallbackPtr inDispatch,
                        const std::string &inCursorName);
 
-	virtual bool IsShown() { return mIsShown; }
-	virtual void Show(bool inShow);
+    virtual bool IsShown() { return mIsShown; }
+    virtual void Show(bool inShow);
 
     virtual bool WantsCursor() const { return mWantsCursor; }
     void SetWantsCursor(bool wantsCursor) { mWantsCursor = wantsCursor; }
-	virtual bool IsLightWeight() { return true; }
+    virtual bool IsLightWeight() { return true; }
 
-	virtual std::string GetCursorName() { return mCursorName; }
-	virtual void SetCursorName(const std::string &inCursorName);
+    virtual std::string GetCursorName() { return mCursorName; }
+    virtual void SetCursorName(const std::string &inCursorName);
 
     virtual bool IsInDragLayer() const;
     virtual void SetInDragLayer(bool inDragLayer);

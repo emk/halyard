@@ -31,7 +31,7 @@
 //=========================================================================
 
 AudioStreamElement::AudioStreamElement(Stage *inStage, const wxString &inName,
-									   AudioStream *inStream,
+                                       AudioStream *inStream,
                                        Halyard::TCallbackPtr inDispatcher)
     : InvisibleElement(inStage, inName, inDispatcher), mStream(inStream)
 {
@@ -64,7 +64,7 @@ bool AudioStreamElement::IsLooping()
 void AudioStreamElement::EndPlayback()
 {
     MediaElement::EndPlayback();
-	mStream->Stop();
+    mStream->Stop();
 }
 
 void AudioStreamElement::Pause()
@@ -78,7 +78,7 @@ void AudioStreamElement::Resume()
 }
 
 void AudioStreamElement::SetVolume(const std::string &inChannel,
-								   double inVolume)
+                                   double inVolume)
 {
     mStream->SetChannelVolume(inChannel, inVolume);
 }

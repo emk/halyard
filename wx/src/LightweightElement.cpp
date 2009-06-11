@@ -33,13 +33,13 @@ using namespace Halyard;
 
 
 LightweightElement::LightweightElement(Stage *inStage, const wxString &inName,
-									   Halyard::TCallbackPtr inDispatch,
+                                       Halyard::TCallbackPtr inDispatch,
                                        const std::string &inCursorName)
     : Element(inStage, inName, inDispatch), mCursorName(inCursorName),
       mIsShown(true), mWantsCursor(false), mIsInDragLayer(false)
 {
 #if wxUSE_ACCESSIBILITY
-	mAccessible = shared_ptr<wxAccessible>(new LightweightAccessible(this));
+    mAccessible = shared_ptr<wxAccessible>(new LightweightAccessible(this));
 #endif // wxUSE_ACCESSIBILITY
 }
 

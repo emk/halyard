@@ -30,7 +30,7 @@ AppLog::AppLog()
     : mShouldSilentlyLogNonFatalErrors(false)
 
 {
-	gLog.Debug("halyard", "WX INITIALIZING: Sending wx log messages to Halyard logs.");
+    gLog.Debug("halyard", "WX INITIALIZING: Sending wx log messages to Halyard logs.");
 }
 
 void AppLog::SilentlyLogNonFatalErrors()
@@ -39,64 +39,64 @@ void AppLog::SilentlyLogNonFatalErrors()
 }
 
 void AppLog::DoLog(wxLogLevel inLevel, const wxChar *inMsg,
-				  time_t inTimeStamp)
+                  time_t inTimeStamp)
 {
     const char *label = "MESSAGE";
     bool log = true;
 
     switch (inLevel)
     {
-		case wxLOG_FatalError:
-			label = "FATAL ERROR";
+        case wxLOG_FatalError:
+            label = "FATAL ERROR";
             break;
-			
+            
         case wxLOG_Error:
-			label = "ERROR";
+            label = "ERROR";
             break;
-			
+            
         case wxLOG_Warning:
-			label = "WARNING";
+            label = "WARNING";
             break;
-			
+            
         case wxLOG_Info:
-			label = "INFO";
-			break;
+            label = "INFO";
+            break;
 
         case wxLOG_Message:
-			label = "MESSAGE";
-			break;
-			
+            label = "MESSAGE";
+            break;
+            
         case wxLOG_Status:
-			log = false;
-			break;
-			
+            log = false;
+            break;
+            
         case wxLOG_Trace:
-			label = "TRACE";
-			break;
-			
+            label = "TRACE";
+            break;
+            
         case wxLOG_Debug:
-			label = "DEBUG";
-			break;
+            label = "DEBUG";
+            break;
     }
-	
+    
     if (log)
     {
-		// Format our timestamp.
-		wxChar buffer[256];
+        // Format our timestamp.
+        wxChar buffer[256];
         wxStrftime(buffer, WXSIZEOF(buffer), wxT("%H:%M:%S"),
-				   localtime(&inTimeStamp));
+                   localtime(&inTimeStamp));
         std::string timestamp(ToStdString(buffer));
         std::string message(ToStdString(inMsg));
 
-		// Print our log message to the appropriate logs.
-		switch (inLevel) 
-		{ 
-			case wxLOG_FatalError:
-				gLog.Fatal("halyard", "WX %s: %s [%s]", label, message.c_str(),
+        // Print our log message to the appropriate logs.
+        switch (inLevel) 
+        { 
+            case wxLOG_FatalError:
+                gLog.Fatal("halyard", "WX %s: %s [%s]", label, message.c_str(),
                                 timestamp.c_str());
-				break;
+                break;
 
-		    case wxLOG_Error:
+            case wxLOG_Error:
                 if (mShouldSilentlyLogNonFatalErrors) {
                     gLog.Debug("halyard", "WX %s: %s [%s]", label, message.c_str(),
                                   timestamp.c_str());
@@ -106,17 +106,17 @@ void AppLog::DoLog(wxLogLevel inLevel, const wxChar *inMsg,
                     gLog.Error("halyard", "WX %s: %s [%s]", label, message.c_str(),
                                timestamp.c_str());
                 }
-				break;
+                break;
 
-		    case wxLOG_Warning:
-				gLog.Warn("halyard", "WX %s: %s [%s]", label, message.c_str(),
+            case wxLOG_Warning:
+                gLog.Warn("halyard", "WX %s: %s [%s]", label, message.c_str(),
                              timestamp.c_str());
-				break;
-				
-		    default:
-				gLog.Debug("halyard", "WX %s: %s [%s]", label, message.c_str(),
+                break;
+                
+            default:
+                gLog.Debug("halyard", "WX %s: %s [%s]", label, message.c_str(),
                               timestamp.c_str());
-				break;
-		}
+                break;
+        }
     }
 }

@@ -45,7 +45,7 @@ const char* PERFFILE_NAME = "perf.cmi";
 
 CScormAiccGwCtl::CScormAiccGwCtl()
 {
-	m_szTmpDir[0] = 0;
+    m_szTmpDir[0] = 0;
    m_bWindowOnly = TRUE;
 }
 
@@ -57,7 +57,7 @@ CScormAiccGwCtl::CScormAiccGwCtl()
 STDMETHODIMP CScormAiccGwCtl::get_CourseGUID(BSTR *pVal)
 {
    *pVal = m_sCourseGUID.Copy();
-	return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP CScormAiccGwCtl::put_CourseGUID(BSTR newVal)
@@ -74,7 +74,7 @@ STDMETHODIMP CScormAiccGwCtl::put_CourseGUID(BSTR newVal)
 STDMETHODIMP CScormAiccGwCtl::get_CourseParams(BSTR *pVal)
 {
    *pVal = m_sCourseParams.Copy();
-	return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP CScormAiccGwCtl::put_CourseParams(BSTR newVal)
@@ -84,7 +84,7 @@ STDMETHODIMP CScormAiccGwCtl::put_CourseParams(BSTR newVal)
    USES_CONVERSION;
    AtlTrace(_T("m_sCourseParams is %s.\n"), OLE2T(m_sCourseParams.Copy()));
 #endif
-	return S_OK;
+    return S_OK;
 }
 ////////////////////////////////////////////////
 //
@@ -94,30 +94,30 @@ STDMETHODIMP CScormAiccGwCtl::put_CourseParams(BSTR newVal)
 ////////////////////////////////////////////////
 STDMETHODIMP CScormAiccGwCtl::InterfaceSupportsErrorInfo(REFIID riid)
 {
-	static const IID* arr[] = 
-	{
-		&IID_IScormAiccGwCtl,
-	};
-	for (int i=0; i<sizeof(arr)/sizeof(arr[0]); i++)
-	{
-		if (InlineIsEqualGUID(*arr[i], riid))
-			return S_OK;
-	}
-	return S_FALSE;
+    static const IID* arr[] = 
+    {
+        &IID_IScormAiccGwCtl,
+    };
+    for (int i=0; i<sizeof(arr)/sizeof(arr[0]); i++)
+    {
+        if (InlineIsEqualGUID(*arr[i], riid))
+            return S_OK;
+    }
+    return S_FALSE;
 }
 
 LRESULT CScormAiccGwCtl::OnSetFocus (UINT uMsg, WPARAM wParam, LPARAM lParam, 
                                      BOOL& bHandled)
 {
-	LRESULT lRes = CComControl<CScormAiccGwCtl>::OnSetFocus(uMsg, wParam, 
+    LRESULT lRes = CComControl<CScormAiccGwCtl>::OnSetFocus(uMsg, wParam, 
                                                            lParam, bHandled);
-	if (m_bInPlaceActive)
-	{
-		DoVerbUIActivate(&m_rcPos,  NULL);
-		if(!IsChild(::GetFocus()))
-			m_ctlButton.SetFocus();
-	}
-	return lRes;
+    if (m_bInPlaceActive)
+    {
+        DoVerbUIActivate(&m_rcPos,  NULL);
+        if(!IsChild(::GetFocus()))
+            m_ctlButton.SetFocus();
+    }
+    return lRes;
 }
 
 //
@@ -236,7 +236,7 @@ LRESULT CScormAiccGwCtl::OnCreate (UINT /*uMsg*/, WPARAM /*wParam*/,
    m_ctlButton.EnableWindow (TRUE);             // enable button
    m_ctlButton.ShowWindow (SW_SHOW);
 
-	return 0;
+    return 0;
 
 }
 
@@ -244,7 +244,7 @@ STDMETHODIMP CScormAiccGwCtl::SetObjectRects (LPCRECT /*prcPos*/,
                                               LPCRECT /*prcClip*/)
 {
    SizeToLabel();                // size contained button window to text label
-	return S_OK;
+    return S_OK;
 }
 
 //
@@ -258,7 +258,7 @@ LRESULT CScormAiccGwCtl::OnClicked (UINT /*uMsg*/, WPARAM /*wParam*/,
    
    m_ctlButton.EnableWindow (FALSE);      // this is a one-click-only button
 
-	USES_CONVERSION;                       // for conversions of CComBSTR objs
+    USES_CONVERSION;                       // for conversions of CComBSTR objs
 
    if (isMyCourseRunning())
       return Error (_T("There's an application already running"));
@@ -347,7 +347,7 @@ LRESULT CScormAiccGwCtl::OnClicked (UINT /*uMsg*/, WPARAM /*wParam*/,
    // polling the state of the launched process
    //
    m_nTimer = m_ctlButton.SetTimer (1, 1000);        
-	return 0;
+    return 0;
 
 }
 
@@ -358,7 +358,7 @@ LRESULT CScormAiccGwCtl::OnClicked (UINT /*uMsg*/, WPARAM /*wParam*/,
 ////////////////////////////////////////////////
 HRESULT CScormAiccGwCtl::FinalConstruct()
 {
-	return S_OK;
+    return S_OK;
 }
 
 void CScormAiccGwCtl::FinalRelease()
@@ -527,13 +527,13 @@ STDMETHODIMP CScormAiccGwCtl::isCourseInstalled (BOOL *pbSuccess)
 {
    *pbSuccess = OpenKeyForGUID(); 
    CloseKeyForGUID();
-	return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP CScormAiccGwCtl::GetFileContent(unsigned int nID, BSTR *psContent)
 {
 
-	USES_CONVERSION;                       // for conversions of CComBSTR objs
+    USES_CONVERSION;                       // for conversions of CComBSTR objs
 
    //
    // Construct the name of the path to the output file.
@@ -604,7 +604,7 @@ STDMETHODIMP CScormAiccGwCtl::GetFileContent(unsigned int nID, BSTR *psContent)
    *psContent = (BSTR)sTmp;
    //AtlTrace("%s", OLE2T(*psContent));         // limited to 512 chars
 
-	return S_OK;
+    return S_OK;
 }
 
 LRESULT CScormAiccGwCtl::OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -615,7 +615,7 @@ LRESULT CScormAiccGwCtl::OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
       m_ctlButton.KillTimer(m_nTimer);    // stop the timer (must be done before event)
       Fire_AppTerminated();               // fire an event for the client
    }
-	bHandled=TRUE;
-	return 0;
+    bHandled=TRUE;
+    return 0;
 }
 

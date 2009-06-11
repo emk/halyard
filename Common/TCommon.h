@@ -50,13 +50,13 @@
 /// \param inLine  The line number of the assertion.
 ///
 extern void HalyardCheckAssertion(int inTest, const char *inDescription,
-								const char *inFile, int inLine);
+                                const char *inFile, int inLine);
 
 #ifdef DEBUG
-#	define ASSERT(test) \
-		HalyardCheckAssertion((int) (test), #test, __FILE__, __LINE__);
+#   define ASSERT(test) \
+        HalyardCheckAssertion((int) (test), #test, __FILE__, __LINE__);
 #else // DEBUG
-#	define ASSERT(test) ((void) 0)
+#   define ASSERT(test) ((void) 0)
 #endif // DEBUG
 
 #define Max(x, y)   ((x) > (y) ? (x) : (y))
@@ -66,11 +66,11 @@ extern void HalyardCheckAssertion(int inTest, const char *inDescription,
 // Allow our test suites to access some private and protected methods.
 // At the top of a test file, write '#define WANT_HALYARD_TEST_INTERFACES 1'.
 #ifdef WANT_HALYARD_TEST_INTERFACES
-#	define TESTABLE_PRIVATE    public
-#	define TESTABLE_PROTECTED  public
+#   define TESTABLE_PRIVATE    public
+#   define TESTABLE_PROTECTED  public
 #else
-#	define TESTABLE_PRIVATE    private
-#	define TESTABLE_PROTECTED  protected
+#   define TESTABLE_PRIVATE    private
+#   define TESTABLE_PROTECTED  protected
 #endif
 
 BEGIN_NAMESPACE_HALYARD
@@ -78,9 +78,9 @@ BEGIN_NAMESPACE_HALYARD
 //////////
 enum TriState
 {
-	TriStateOff,
-	TriStateOn,
-	TriStateLatent
+    TriStateOff,
+    TriStateOn,
+    TriStateLatent
 };
 
 //////////

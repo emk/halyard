@@ -28,9 +28,9 @@
 #include <map>
 
 namespace boost {
-	namespace filesystem {
-		class path;
-	}
+    namespace filesystem {
+        class path;
+    }
 }
 
 std::string read_file(const boost::filesystem::path &path);
@@ -55,33 +55,33 @@ public:
     typedef std::vector<Entry> EntryVector;
 
     Manifest(const boost::filesystem::path &path);
-	Manifest(const std::string &contents);
+    Manifest(const std::string &contents);
     const EntryVector &entries() const { return mEntries; }
 
 private:
     EntryVector mEntries;
 
-	void init(const std::string &contents);
+    void init(const std::string &contents);
 };
 
 class SpecFile {
 public: 
-	SpecFile(const boost::filesystem::path &path);
+    SpecFile(const boost::filesystem::path &path);
 
-	std::string url() const { return mUrl; }
-	std::string build() const { return mBuild; }
-	const Manifest &manifest() const { return mManifest; }
+    std::string url() const { return mUrl; }
+    std::string build() const { return mBuild; }
+    const Manifest &manifest() const { return mManifest; }
 
 private:
-	typedef std::map<std::string, std::string> StringMap;
+    typedef std::map<std::string, std::string> StringMap;
 
-	// Parse the header, leaving mContents with just the manifest
-	StringMap parseHeader();
-	
-	std::string mContents;
-	StringMap mHeader;
-	std::string mUrl, mBuild;
-	Manifest mManifest;
+    // Parse the header, leaving mContents with just the manifest
+    StringMap parseHeader();
+    
+    std::string mContents;
+    StringMap mHeader;
+    std::string mUrl, mBuild;
+    Manifest mManifest;
 };
 
 #endif Manifest_H

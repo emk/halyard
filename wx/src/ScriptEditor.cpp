@@ -576,7 +576,7 @@ void ScriptTextCtrl::SetKeywordLists() {
 }
 
 wxString ScriptTextCtrl::GetKeywords(TScriptIdentifier::Type type) {
-	std::string result;
+    std::string result;
     IdentifierList::iterator i = mIdentifiers.begin();
     for (; i != mIdentifiers.end(); ++i) {
         if (i->GetType() == type) {
@@ -652,7 +652,7 @@ void ScriptTextCtrl::OnMarginClick(wxStyledTextEvent &event) {
 void ScriptTextCtrl::OnCharAdded(wxStyledTextEvent &event) {
     // Sanity-check our buffer position--we should be immediately
     // *after* the inserted character.
-	int pos = GetCurrentPos();
+    int pos = GetCurrentPos();
     if (pos < 1)
         return;
 
@@ -794,7 +794,7 @@ void ScriptTextCtrl::OnShowWhitespace(wxCommandEvent &event) {
 
 void ScriptTextCtrl::OnUpdateUiShowWhitespace(wxUpdateUIEvent &event) {
     event.Enable(true);
-	event.Check(GetViewWhiteSpace() ? true : false);
+    event.Check(GetViewWhiteSpace() ? true : false);
 }
 
 void ScriptTextCtrl::OnShowLineNums(wxCommandEvent &event) {
@@ -1021,7 +1021,7 @@ bool ScriptTextCtrl::DoFind(const SearchRange &range, bool interactive) {
 
     // Run the Find command.
     wxString text = FindDlg::GetSearchText();
-	int match_start = wxSTC_INVALID_POSITION,
+    int match_start = wxSTC_INVALID_POSITION,
         match_end = wxSTC_INVALID_POSITION;
     if (range.start1 != wxSTC_INVALID_POSITION)
         FindText(range.start1, range.end1, text, flags,
@@ -1156,7 +1156,7 @@ wxString ScriptTextCtrl::GetWordAt(int pos, int *outBegin, int *outEnd)
         word_begin--;
     int word_end = pos - line_start;
     while (static_cast<size_t>(word_end) < line.length() &&
-		   IsIdentifierChar(line[word_end]))
+           IsIdentifierChar(line[word_end]))
         word_end++;
     if (word_begin == word_end ||
         !IsIdentifierStartChar(line[word_begin]))
@@ -1322,7 +1322,7 @@ int ScriptTextCtrl::CalculateIndentation(int inParentPos,
             // These *might* be function calls, so use the standard rule.
             case wxSTC_LISP_IDENTIFIER:
             case wxSTC_LISP_OPERATOR:
-			default:
+            default:
                 return CalculateFunctionIndentation(inParentPos, inSiblingPos);
         }
     }
@@ -1740,7 +1740,7 @@ FileTreeItemData::FileTreeItemData(CustomTreeCtrl *inTreeCtrl,
 }
 
 void FileTreeItemData::OnLeftDClick(wxMouseEvent& event) {
-	ScriptEditor::OpenDocument(ToWxString(mPath));
+    ScriptEditor::OpenDocument(ToWxString(mPath));
 }
 
 
@@ -2019,7 +2019,7 @@ BEGIN_EVENT_TABLE(ScriptEditor, AuiFrame)
     EVT_UPDATE_UI(wxID_CLEAR, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_SELECTALL, ScriptEditor::DisableUiItem)
 
-	EVT_UPDATE_UI(wxID_FIND, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_FIND, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(HALYARD_FIND_AGAIN, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(HALYARD_FIND_SELECTION, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(HALYARD_FIND_IN_NEXT_FILE, ScriptEditor::DisableUiItem)
@@ -2093,7 +2093,7 @@ ScriptEditor::ScriptEditor()
     ASSERT(!sFrame);
     sFrame = this;
 
-	// Get an appropriate icon for this window.
+    // Get an appropriate icon for this window.
     SetIcon(wxICON(ic_scripts));
 
     // Add a status bar to our frame.
@@ -2386,13 +2386,13 @@ bool ScriptEditor::ProcessEvent(wxEvent& event) {
 
 int ScriptEditor::GetTextSize() {
     int size = 10;
-	shared_ptr<wxConfigBase> config(new wxConfig);
-	config->Read(wxT("/ScriptEditor/TextSize"), &size);
+    shared_ptr<wxConfigBase> config(new wxConfig);
+    config->Read(wxT("/ScriptEditor/TextSize"), &size);
     return size;
 }
 
 void ScriptEditor::SetTextSize(int size) {
-	shared_ptr<wxConfigBase> config(new wxConfig);
+    shared_ptr<wxConfigBase> config(new wxConfig);
     config->Write(wxT("/ScriptEditor/TextSize"), size);
     
     // Push our change to all open documents.

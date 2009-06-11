@@ -69,29 +69,29 @@ void EventDispatcher::SetDispatcher(TCallbackPtr inCallback)
 void EventDispatcher::NotifyReloadScriptStarting()
 {
     mDispatcher.reset();
-	sEnableExpensiveEvents = false;
+    sEnableExpensiveEvents = false;
 }
 
 void EventDispatcher::EnableExpensiveEvents(bool inEnable)
 {
-	if (inEnable == sEnableExpensiveEvents)
-		return;
-	if (inEnable)
-		gLog.Debug("halyard.events", "Turning expensive events on.");
-	else
-		gLog.Debug("halyard.events", "Turning expensive events off.");
-	sEnableExpensiveEvents = inEnable;
+    if (inEnable == sEnableExpensiveEvents)
+        return;
+    if (inEnable)
+        gLog.Debug("halyard.events", "Turning expensive events on.");
+    else
+        gLog.Debug("halyard.events", "Turning expensive events off.");
+    sEnableExpensiveEvents = inEnable;
 }
 
 bool EventDispatcher::EventSetup()
 {
-	if (!mDispatcher)
-		return false;
+    if (!mDispatcher)
+        return false;
 
     // Clear our "pass" and "vetoed" flags.
     gVariableManager.Set("_pass", false);
     gVariableManager.Set("_veto", false);
-	return true;
+    return true;
 }
 
 bool EventDispatcher::EventCleanup()
@@ -107,89 +107,89 @@ bool EventDispatcher::EventCleanup()
 void EventDispatcher::CheckForVeto(bool &outWasVetoed) {
     // See if this event was vetoed.
     outWasVetoed = (!tvalue_cast<bool>(gVariableManager.Get("_pass")) &&
-					tvalue_cast<bool>(gVariableManager.Get("_veto")));
+                    tvalue_cast<bool>(gVariableManager.Get("_veto")));
 }
 
 bool EventDispatcher::DoEventUpdateUI(const wxString &inCommandName) {
-	if (!EventSetup())
-		return false;
+    if (!EventSetup())
+        return false;
 
-	TValueList args;
-	args.push_back(TSymbol("update-ui"));
-	args.push_back(TSymbol(std::string(inCommandName.mb_str())));
-	mDispatcher->Run(args);
-	return EventCleanup();    
+    TValueList args;
+    args.push_back(TSymbol("update-ui"));
+    args.push_back(TSymbol(std::string(inCommandName.mb_str())));
+    mDispatcher->Run(args);
+    return EventCleanup();    
 }
 
 bool EventDispatcher::DoEventLeftDown(wxMouseEvent &inEvent,
-									  bool inIsDoubleClick)
+                                      bool inIsDoubleClick)
 {
-	if (!EventSetup())
-		return false;
+    if (!EventSetup())
+        return false;
 
-	TValueList args;
-	args.push_back(TSymbol("mouse-down"));
-	args.push_back(inEvent.GetPosition().x);
-	args.push_back(inEvent.GetPosition().y);
-	args.push_back(inIsDoubleClick);
+    TValueList args;
+    args.push_back(TSymbol("mouse-down"));
+    args.push_back(inEvent.GetPosition().x);
+    args.push_back(inEvent.GetPosition().y);
+    args.push_back(inIsDoubleClick);
     args.push_back(IsEventStale(inEvent));
     mDispatcher->Run(args);
-	return EventCleanup();
+    return EventCleanup();
 }
 
 bool EventDispatcher::DoSimpleEvent(const char *inType) {
     if (!EventSetup())
-		return false;
+        return false;
 
-	TValueList args;
+    TValueList args;
     args.push_back(TSymbol(inType));
     mDispatcher->Run(args);
-	return EventCleanup();
+    return EventCleanup();
 }
 
 bool EventDispatcher::DoSimpleMouseEvent(const char *inType,
-										 wxPoint inPosition,
+                                         wxPoint inPosition,
                                          bool inIsStale)
 {
-	if (!EventSetup())
-		return false;
+    if (!EventSetup())
+        return false;
 
-	TValueList args;
-	args.push_back(TSymbol(inType));
-	args.push_back(inPosition.x);
-	args.push_back(inPosition.y);
+    TValueList args;
+    args.push_back(TSymbol(inType));
+    args.push_back(inPosition.x);
+    args.push_back(inPosition.y);
     args.push_back(inIsStale);
-	mDispatcher->Run(args);
-	return EventCleanup();
+    mDispatcher->Run(args);
+    return EventCleanup();
 }
 
 bool EventDispatcher::DoEventLeftUp(wxMouseEvent &inEvent)
 {
-	return DoSimpleMouseEvent("mouse-up", inEvent.GetPosition(),
+    return DoSimpleMouseEvent("mouse-up", inEvent.GetPosition(),
                               IsEventStale(inEvent));
 }
 
 bool EventDispatcher::DoEventMouseEnter(wxPoint inPosition)
 {
-	return DoSimpleMouseEvent("mouse-enter", inPosition);
+    return DoSimpleMouseEvent("mouse-enter", inPosition);
 }
 
 bool EventDispatcher::DoEventMouseLeave(wxPoint inPosition)
 {
-	return DoSimpleMouseEvent("mouse-leave", inPosition);
+    return DoSimpleMouseEvent("mouse-leave", inPosition);
 }
 
 bool EventDispatcher::DoEventChar(wxKeyEvent &inEvent)
 {
     if (!EventSetup())
-		return false;
+        return false;
 
-	// Turn our character into a string.
+    // Turn our character into a string.
     char str[2];
     str[0] = inEvent.GetKeyCode();
     str[1] = '\0';
 
-	TValueList args, modifiers;
+    TValueList args, modifiers;
     args.push_back(TSymbol("char"));
     args.push_back(str);
 
@@ -200,33 +200,33 @@ bool EventDispatcher::DoEventChar(wxKeyEvent &inEvent)
     if (inEvent.ShiftDown())
         modifiers.push_back(TSymbol("shift"));
 
-	args.push_back(modifiers);
+    args.push_back(modifiers);
     args.push_back(IsEventStale(inEvent));
 
     mDispatcher->Run(args);
-	return EventCleanup();
+    return EventCleanup();
 }
 
 bool EventDispatcher::DoEventIdle()
 {
-	if (!sEnableExpensiveEvents)
-		return false;
+    if (!sEnableExpensiveEvents)
+        return false;
 
     if (!EventSetup())
-		return false;
+        return false;
 
-	TValueList args;
+    TValueList args;
     args.push_back(TSymbol("idle"));
     mDispatcher->Run(args);
-	return EventCleanup();
+    return EventCleanup();
 }
 
 bool EventDispatcher::DoEventMouseMoved(wxMouseEvent &inEvent)
 {
-	if (!sEnableExpensiveEvents)
-		return false;
-	
-	return DoSimpleMouseEvent("mouse-moved", inEvent.GetPosition());
+    if (!sEnableExpensiveEvents)
+        return false;
+    
+    return DoSimpleMouseEvent("mouse-moved", inEvent.GetPosition());
 }
 
 bool EventDispatcher::DoEventTextChanged(wxCommandEvent &inEvent)
@@ -243,61 +243,61 @@ bool EventDispatcher::DoEventBrowserNavigate(const wxString &inUrl,
                                              bool &outWasVetoed)
 {
     if (!EventSetup())
-		return false;
+        return false;
 
-	TValueList args;
+    TValueList args;
     args.push_back(TSymbol("browser-navigate"));
     args.push_back(std::string(inUrl.mb_str()));
     mDispatcher->Run(args);
     CheckForVeto(outWasVetoed);
-	return EventCleanup();
+    return EventCleanup();
 }
 
 bool EventDispatcher::DoEventBrowserPageChanged(const wxString &inUrl) {
     if (!EventSetup())
-		return false;
+        return false;
 
-	TValueList args;
+    TValueList args;
     args.push_back(TSymbol("browser-page-changed"));
     args.push_back(std::string(inUrl.mb_str()));
     mDispatcher->Run(args);
-	return EventCleanup();
+    return EventCleanup();
 }
 
 bool EventDispatcher::DoEventBrowserTitleChanged(const wxString &inTitle) {
     if (!EventSetup())
-		return false;
+        return false;
 
-	TValueList args;
+    TValueList args;
     args.push_back(TSymbol("browser-title-changed"));
     args.push_back(std::string(inTitle.mb_str()));
     mDispatcher->Run(args);
-	return EventCleanup();
+    return EventCleanup();
 }
 
 bool EventDispatcher::DoEventStatusTextChanged(const wxString &inText) {
     if (!EventSetup())
-		return false;
+        return false;
 
-	TValueList args;
+    TValueList args;
     args.push_back(TSymbol("status-text-changed"));
     args.push_back(std::string(inText.mb_str()));
     mDispatcher->Run(args);
-	return EventCleanup();
+    return EventCleanup();
 }
 
 bool EventDispatcher::DoEventProgressChanged(bool inIsDone,
                                              double inPortionCompleted)
 {
     if (!EventSetup())
-		return false;
+        return false;
 
-	TValueList args;
+    TValueList args;
     args.push_back(TSymbol("progress-changed"));
     args.push_back(inIsDone);
     args.push_back(inPortionCompleted);
     mDispatcher->Run(args);
-	return EventCleanup();
+    return EventCleanup();
 }
 
 bool EventDispatcher::DoEventPlaybackTimer() {
@@ -324,16 +324,16 @@ bool EventDispatcher::DoEventMediaCaption(const std::string &caption) {
     if (!EventSetup())
         return false;
     
-	TValueList args;
+    TValueList args;
     args.push_back(TSymbol("media-caption"));
     args.push_back(caption);
     mDispatcher->Run(args);
     
-	return EventCleanup();    
+    return EventCleanup();    
 }
 
 bool EventDispatcher::DoEventCursorMoved(const wxPoint &point) {
-	return DoSimpleMouseEvent("cursor-moved", point);
+    return DoSimpleMouseEvent("cursor-moved", point);
 }
 
 bool EventDispatcher::DoEventCursorShown() {
@@ -348,12 +348,12 @@ bool EventDispatcher::DoEventDataReceived(const std::string &data) {
     if (!EventSetup())
         return false;
     
-	TValueList args;
+    TValueList args;
     args.push_back(TSymbol("data-received"));
     args.push_back(data);
     mDispatcher->Run(args);
     
-	return EventCleanup();    
+    return EventCleanup();    
 }
 
 bool EventDispatcher::DoEventTransferFinished(bool success,

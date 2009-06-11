@@ -38,21 +38,21 @@ class TValue;
 /// Centralized manager for special variables shared between the Halyard
 /// engine and a script.  The variables store TValue objects.
 class TVariableManager {
-	typedef std::map<std::string, TValue> TValueMap;
+    typedef std::map<std::string, TValue> TValueMap;
 
-	TValueMap mMap;
+    TValueMap mMap;
 
 public:
-	TVariableManager() {}
-	virtual ~TVariableManager() {}
+    TVariableManager() {}
+    virtual ~TVariableManager() {}
 
-	void Set(const std::string &inName, const TValue &inVal);
-	TValue Get(const std::string &inName);
+    void Set(const std::string &inName, const TValue &inVal);
+    TValue Get(const std::string &inName);
     bool VariableExists(const std::string &inName);
 
-	TValue::Type GetType(const char *inName);
-	void MakeNull(const char *inName);
-	bool IsNull(const char *inName);	
+    TValue::Type GetType(const char *inName);
+    void MakeNull(const char *inName);
+    bool IsNull(const char *inName);    
 
 };
 

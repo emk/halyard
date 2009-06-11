@@ -47,10 +47,10 @@ class StageFrame : public AuiFrame,
                    public Halyard::TReloadNotified,
                    public model::View
 {
-	//////////
-	/// Our associated document object.
-	///
-	Halyard::Document *mDocument;
+    //////////
+    /// Our associated document object.
+    ///
+    Halyard::Document *mDocument;
 
     //////////
     /// A separate top-level window which logs a variety of interesting
@@ -64,21 +64,21 @@ class StageFrame : public AuiFrame,
     ///
     Stage *mStage;
 
-	//////////
-	/// The frame surrounding our stage.  This is just empty space.
-	///
-	StageBackground *mBackground;
+    //////////
+    /// The frame surrounding our stage.  This is just empty space.
+    ///
+    StageBackground *mBackground;
 
-	//////////
-	/// A window which displays a tree of all the interesting information
-	/// in our program.
-	///
-	ProgramTree *mProgramTree;
+    //////////
+    /// A window which displays a tree of all the interesting information
+    /// in our program.
+    ///
+    ProgramTree *mProgramTree;
 
-	//////////
-	/// The drop-down box which allows us to jump between cards.
-	///
-	LocationBox *mLocationBox;
+    //////////
+    /// The drop-down box which allows us to jump between cards.
+    ///
+    LocationBox *mLocationBox;
 
     //////////
     /// Our "listener", which allows users to execute small code snippets.
@@ -128,11 +128,11 @@ class StageFrame : public AuiFrame,
 
 #if wxUSE_DISPLAY
 
-	//////////
-	/// The best video mode for full-screen displays.  We calculate this
-	/// once at startup.
-	///
-	wxVideoMode mFullScreenVideoMode;
+    //////////
+    /// The best video mode for full-screen displays.  We calculate this
+    /// once at startup.
+    ///
+    wxVideoMode mFullScreenVideoMode;
 
     //////////
     /// The name of the wxConfig key we'll use to store our screen-resizing
@@ -142,30 +142,30 @@ class StageFrame : public AuiFrame,
 
 #endif // wxUSE_DISPLAY
 
-	//////////
-	/// Used to prevent endless recursion if we pop up a dialog in OnActivate.
-	///
-	bool mIsUpdatingVideoMode;
+    //////////
+    /// Used to prevent endless recursion if we pop up a dialog in OnActivate.
+    ///
+    bool mIsUpdatingVideoMode;
 
     //////////
     /// When we switch to full screen mode, we save our wxAui perspective.
     ///
     wxString mLastPerspectiveBeforeFullScreenMode;
 
-	//////////
-	/// Calculate the best video mode to use for full-screen displays.
-	///
-	void FindBestFullScreenVideoMode();
+    //////////
+    /// Calculate the best video mode to use for full-screen displays.
+    ///
+    void FindBestFullScreenVideoMode();
 
-	//////////
-	/// Switch the video mode to full-screen, if possible.
-	///
-	void SetFullScreenVideoMode();
+    //////////
+    /// Switch the video mode to full-screen, if possible.
+    ///
+    void SetFullScreenVideoMode();
 
-	//////////
-	/// Switch the video mode back to normal, if possible.
-	///
-	void ResetVideoMode();
+    //////////
+    /// Switch the video mode back to normal, if possible.
+    ///
+    void ResetVideoMode();
 
 #if wxUSE_DISPLAY
 
@@ -254,10 +254,10 @@ public:
     ///
     MediaInfoPane *GetMediaInfoPane() { return mMediaInfoPane; }
 
-	//////////
-	/// Override wxFrame's ShowFullScreen method so we can hide some
-	/// distracting visual clutter.
-	///
+    //////////
+    /// Override wxFrame's ShowFullScreen method so we can hide some
+    /// distracting visual clutter.
+    ///
     virtual bool ShowFullScreen(bool show, long style = wxFULLSCREEN_ALL);
 
     //////////
@@ -270,20 +270,20 @@ public:
     ///
     static void MaybeAddToRecentProgramList(const wxString &inDirPath);
 
-	//////////
-	/// Create a new document in the current frame.
-	///
-	void NewDocument();
+    //////////
+    /// Create a new document in the current frame.
+    ///
+    void NewDocument();
 
-	//////////
-	/// Create a new document in the current frame.
-	///
-	void OpenDocument();
+    //////////
+    /// Create a new document in the current frame.
+    ///
+    void OpenDocument();
 
     //////////
     /// Given a directory name, open up the document it contains.
     ///
-	void OpenDocument(const wxString &inDirPath);
+    void OpenDocument(const wxString &inDirPath);
 
     //////////
     /// Make sure that no update is currently underway.
@@ -305,17 +305,17 @@ public:
     ///
     void NotifyReloadScriptFailed();
 
-	//////////
-	/// We listen to the Document object so we can update the frame
-	/// title.
-	///
-	void ObjectChanged();
+    //////////
+    /// We listen to the Document object so we can update the frame
+    /// title.
+    ///
+    void ObjectChanged();
 
-	//////////
-	/// We listen to the Document object so we can update the frame
-	/// title.
-	///
-	void ObjectDeleted();
+    //////////
+    /// We listen to the Document object so we can update the frame
+    /// title.
+    ///
+    void ObjectDeleted();
 
     //////////
     /// Turn on developer tools even if we're not in authoring mode.
@@ -346,7 +346,7 @@ private:
     bool TryToCloseScriptEditor(wxCloseEvent &inEvent);
     bool AreDevToolsAvailable();
 
-	// Lots of menu and toolbar event handlers.
+    // Lots of menu and toolbar event handlers.
     void UpdateUiDevTool(wxUpdateUIEvent &inEvent);
     void OnExit(wxCommandEvent &inEvent);
     void UpdateUiNewProgram(wxUpdateUIEvent &inEvent);
@@ -388,7 +388,7 @@ private:
     /// When our window is activated, we need to make sure that
     /// UpdateVideoMode has been called properly.
     ///
-	void OnActivate(wxActivateEvent &inEvent);
+    void OnActivate(wxActivateEvent &inEvent);
 
     //////////
     /// We provide an OnClose event handler so we can notify the application

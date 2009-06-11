@@ -57,7 +57,7 @@ protected:
     virtual MovieFrame CurrentFrame();
 
 public:
-	GeigerSynthElement(Stage *inStage, const wxString &inName,
+    GeigerSynthElement(Stage *inStage, const wxString &inName,
                        const std::string &inStatePath,
                        const char *inChirpLocation,
                        size_t inBufferSize,
@@ -71,10 +71,10 @@ public:
 
     virtual void Idle();
     virtual bool IsLooping() { return true; }
-	virtual void EndPlayback();
+    virtual void EndPlayback();
     virtual void Pause();
     virtual void Resume();
-	virtual void SetVolume(const std::string &inChannel, double inVolume);
+    virtual void SetVolume(const std::string &inChannel, double inVolume);
 };
 
 #endif // GeigerSynthElement_H

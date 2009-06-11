@@ -41,7 +41,7 @@ public:
     virtual ~CrashReporter() {}
 
     virtual void BeginInterceptingCrashes();
-	virtual void RegisterDocument(Document *inDocument);
+    virtual void RegisterDocument(Document *inDocument);
     virtual void AddDiagnosticFile(const std::string &inFileName,
                                    const std::string &inDescription);
     virtual void SetCurrentCard(const std::string &inCardName);

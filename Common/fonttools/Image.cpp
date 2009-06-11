@@ -38,7 +38,7 @@ PngImage::PngImage(int width, int height)
 {
     m_image = gdImageCreateTrueColor(width, height);
     gdImageFilledRectangle(m_image, 0, 0, width, height,
-			   gdTrueColor(255, 240, 210));
+               gdTrueColor(255, 240, 210));
     gdImageAlphaBlending(m_image, 1);
 }
 
@@ -48,17 +48,17 @@ PngImage::~PngImage()
 }
 
 void PngImage::DrawPixMap(GraphicsTools::Point inPoint,
-			  GraphicsTools::PixMap &inPixmap)
+              GraphicsTools::PixMap &inPixmap)
 {
     for (int y = 0; y < inPixmap.height; y++)
     {
-	for (int x = 0; x < inPixmap.width; x++)
-	{
-	    GraphicsTools::Color color = inPixmap.At(x, y);
-	    gdImageSetPixel(m_image, inPoint.x + x, inPoint.y + y,
-			    gdTrueColorAlpha(color.red, color.green,
-					     color.blue, color.alpha / 2));
-	}
+    for (int x = 0; x < inPixmap.width; x++)
+    {
+        GraphicsTools::Color color = inPixmap.At(x, y);
+        gdImageSetPixel(m_image, inPoint.x + x, inPoint.y + y,
+                gdTrueColorAlpha(color.red, color.green,
+                         color.blue, color.alpha / 2));
+    }
     }
 }
 

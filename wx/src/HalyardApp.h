@@ -51,10 +51,10 @@ class HalyardApp : public wxApp
     ///
     wxString mArgScript;
 
-	//////////
-	/// Do we have our own, custom event loop?  Or should we use wxWindows'
-	/// event loop?
-	///
+    //////////
+    /// Do we have our own, custom event loop?  Or should we use wxWindows'
+    /// event loop?
+    ///
     bool mHaveOwnEventLoop;
 
     //////////
@@ -62,10 +62,10 @@ class HalyardApp : public wxApp
     ///
     bool mLogsAreInitialized;
 
-	//////////
-	/// Our StageFrame.
-	///
-	StageFrame *mStageFrame;
+    //////////
+    /// Our StageFrame.
+    ///
+    StageFrame *mStageFrame;
 
     //////////
     /// Are we planning to launch the UpdateInstaller before we exit?
@@ -77,10 +77,10 @@ class HalyardApp : public wxApp
     ///
     shared_ptr<wxFileConfig> mUserConfig;
 
-	//////////
-	/// This procedure is called periodically by the script interpreter
-	/// to give time to the GUI.
-	///
+    //////////
+    /// This procedure is called periodically by the script interpreter
+    /// to give time to the GUI.
+    ///
     static void IdleProc(bool inBlock);
 
     //////////
@@ -146,14 +146,14 @@ public:
     ///
     void LaunchUpdateInstallerBeforeExiting();
     
-	//////////
-	/// We perform normal application initialization in OnInit. 
-	///
+    //////////
+    /// We perform normal application initialization in OnInit. 
+    ///
     virtual bool OnInit();
 
-	//////////
-	/// We perform normal application cleanup in OnExit.
-	///
+    //////////
+    /// We perform normal application cleanup in OnExit.
+    ///
     virtual int OnExit();
 
     //////////
@@ -182,18 +182,18 @@ public:
 
 #if wxCHECK_VERSION(2,9,0)
 
-	//////////
+    //////////
     /// In wxWidgets 2.9, we can override this to replace the standard
     /// event loop with our own.
-	///
+    ///
     virtual wxAppTraits *CreateTraits();
 
 #elif wxCHECK_VERSION(2,8,0)
 
-	//////////
+    //////////
     /// We attempt to replace the standard main loop with one that
-	/// calls TInterpreterManager::Run.
-	///
+    /// calls TInterpreterManager::Run.
+    ///
     virtual int MainLoop();
 
 #endif // wxCHECK_VERSION...
@@ -205,27 +205,27 @@ public:
     ///
     int MainLoopInternal();
 
-	//////////
-	/// Because we've chosen to provide our own main loop, we need to
-	/// override the standard "request application shutdown" function.
-	///
+    //////////
+    /// Because we've chosen to provide our own main loop, we need to
+    /// override the standard "request application shutdown" function.
+    ///
     virtual void ExitMainLoop();
 
-	//////////
-	/// Remove the stage frame from this application.  This should only
-	/// be called by the StageFrame.
-	///
-	void DetachStageFrame() { mStageFrame = NULL; }
-	
-	//////////
-	/// Get the StageFrame for this application.
-	///
-	StageFrame *GetStageFrame() { ASSERT(mStageFrame); return mStageFrame; }
-	
-	//////////
-	/// Get the Stage for this application.
-	///
-	Stage *GetStage();
+    //////////
+    /// Remove the stage frame from this application.  This should only
+    /// be called by the StageFrame.
+    ///
+    void DetachStageFrame() { mStageFrame = NULL; }
+    
+    //////////
+    /// Get the StageFrame for this application.
+    ///
+    StageFrame *GetStageFrame() { ASSERT(mStageFrame); return mStageFrame; }
+    
+    //////////
+    /// Get the Stage for this application.
+    ///
+    Stage *GetStage();
 
     //////////
     /// Return true if and only if this application has a stage.

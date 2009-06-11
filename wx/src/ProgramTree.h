@@ -36,20 +36,20 @@ class ProgramTreeCtrl;
 /// Public interface to tree widget describing a Halyard script.
 class ProgramTree : public wxWindow, public Halyard::TReloadNotified
 {
-	DECLARE_EVENT_TABLE()
+    DECLARE_EVENT_TABLE()
 
-	typedef std::map<std::string,wxTreeItemId> ItemMap;
+    typedef std::map<std::string,wxTreeItemId> ItemMap;
 
-	ProgramTreeCtrl *mTree;
-	wxTreeItemId mRootID;
-	ItemMap mGroupMemberMap;
+    ProgramTreeCtrl *mTree;
+    wxTreeItemId mRootID;
+    ItemMap mGroupMemberMap;
 
-	bool mHaveLastHighlightedItem;
-	wxTreeItemId mLastHighlightedItem;
+    bool mHaveLastHighlightedItem;
+    wxTreeItemId mLastHighlightedItem;
 
-	enum {
-		MINIMUM_WIDTH = 150
-	};
+    enum {
+        MINIMUM_WIDTH = 150
+    };
 
     /// Return true iff the specified tree item corresponds to a card.
     bool IsCardItem(wxTreeItemId inItemId);
@@ -77,12 +77,12 @@ class ProgramTree : public wxWindow, public Halyard::TReloadNotified
     void OnSize(wxSizeEvent &inEvent);    
 
 public:
-	ProgramTree(StageFrame *inStageFrame, int inID);
+    ProgramTree(StageFrame *inStageFrame, int inID);
 
-	//////////
-	/// Notify the tree that a document has been loaded.
-	///
-	void RegisterDocument(Halyard::Document *inDocument);
+    //////////
+    /// Notify the tree that a document has been loaded.
+    ///
+    void RegisterDocument(Halyard::Document *inDocument);
 
     //////////
     /// Register a newly-loaded card with the program tree.
@@ -90,9 +90,9 @@ public:
     void RegisterGroupMember(const wxString &inName, bool inIsCard,
                              bool inIsLoaded);
 
-	//////////
-	/// Notify the program tree that script is being reloaded.
-	///
+    //////////
+    /// Notify the program tree that script is being reloaded.
+    ///
     void NotifyReloadScriptStarting();
 
     //////////

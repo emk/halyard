@@ -41,7 +41,7 @@
 #include "FancyCrashReporter.h"
 #endif // CONFIG_HAVE_FANCYCRASHREPORT
 #if CONFIG_HAVE_QUICKTIME
-#	include "TQTMovie.h"
+#   include "TQTMovie.h"
 #endif // CONFIG_HAVE_QUICKTIME
 #include "AppGlobals.h"
 #include "HalyardApp.h"
@@ -51,10 +51,10 @@
 #include "dlg/StartupDlg.h"
 #include "TWxPrimitives.h"
 #if CONFIG_HAVE_QUAKE2
-#	include "TQuake2Primitives.h"
+#   include "TQuake2Primitives.h"
 #endif // CONFIG_HAVE_QUAKE2
 #if CONFIG_HAVE_AUDIOSTREAMS
-#	include "AudioStream.h"
+#   include "AudioStream.h"
 #endif // CONFIG_HAVE_AUDIOSTREAMS
 #include "Downloader.h"
 #include "Stage.h"
@@ -166,64 +166,64 @@ void HalyardApp::LaunchUpdateInstaller() {
     FileSystem::Path dst_root(FileSystem::GetBaseDirectory());
     FileSystem::Path updates_dir(src_root.AddComponent("Updates"));
     FileSystem::Path updater(updates_dir.AddComponent("UpdateInstaller"));
-	FileSystem::Path halyard(dst_root.AddComponent("Halyard"));
+    FileSystem::Path halyard(dst_root.AddComponent("Halyard"));
 
-	std::vector<std::string> clItems;
-	clItems.push_back(src_root.ToNativePathString()); // Update data here.
-	clItems.push_back(dst_root.ToNativePathString()); // Copy to here.
-	clItems.push_back(halyard.ToNativePathString());   // Command to run after.
-	clItems.push_back(dst_root.ToNativePathString()); //   Arg for command.
+    std::vector<std::string> clItems;
+    clItems.push_back(src_root.ToNativePathString()); // Update data here.
+    clItems.push_back(dst_root.ToNativePathString()); // Copy to here.
+    clItems.push_back(halyard.ToNativePathString());   // Command to run after.
+    clItems.push_back(dst_root.ToNativePathString()); //   Arg for command.
 
-	CommandLine cl(clItems);
+    CommandLine cl(clItems);
     if (!CommandLine::ExecAsync(updater.ToNativePathString(), cl))
         gLog.Fatal("halyard", "Error installing update.");
 }
 
 void HalyardApp::IdleProc(bool inBlock)
 {
-	if (wxGetApp().HaveStage() && !wxGetApp().GetStage()->IsIdleAllowed())
-		THROW("Tried to call (idle) at an unsafe time");
+    if (wxGetApp().HaveStage() && !wxGetApp().GetStage()->IsIdleAllowed())
+        THROW("Tried to call (idle) at an unsafe time");
 
-	// Constraints:
-	//   1) Cannot leave until all pending events are dispatched,
-	//      or else GUI responsiveness will drop dramatically.
-	//   2) Cannot make a *blocking* call to Dispatch() until
-	//      all outstanding idles have been processed, or
-	//      else idle event processing will be delayed indefinitely.
-	//   3) Must not process idles if events are pending, or else
-	//      the application may freeze.
-	//   4) If we're not in blocking mode, must place an upper limit
-	//      on how many idles we process before returning to
-	//      Scheme, or an infinitely repeating idler (such as wxQuake2)
-	//      will prevent us from ever returning.
+    // Constraints:
+    //   1) Cannot leave until all pending events are dispatched,
+    //      or else GUI responsiveness will drop dramatically.
+    //   2) Cannot make a *blocking* call to Dispatch() until
+    //      all outstanding idles have been processed, or
+    //      else idle event processing will be delayed indefinitely.
+    //   3) Must not process idles if events are pending, or else
+    //      the application may freeze.
+    //   4) If we're not in blocking mode, must place an upper limit
+    //      on how many idles we process before returning to
+    //      Scheme, or an infinitely repeating idler (such as wxQuake2)
+    //      will prevent us from ever returning.
 
-	// Run the idle loop, getting events from the user and giving time to
-	// process idles. Block will be true when we want to block and only 
-	// process user events, never going back to scheme until an event tells us
-	// to.
+    // Run the idle loop, getting events from the user and giving time to
+    // process idles. Block will be true when we want to block and only 
+    // process user events, never going back to scheme until an event tells us
+    // to.
 
-	if (inBlock)
-	{
-		while (!wxGetApp().Pending() && wxGetApp().ProcessIdle())
-			;
-		wxGetApp().Dispatch();
-	}
+    if (inBlock)
+    {
+        while (!wxGetApp().Pending() && wxGetApp().ProcessIdle())
+            ;
+        wxGetApp().Dispatch();
+    }
 
-	// We don't allow more than five consecutive idles before returning to
-	// Scheme.  Returning to Scheme is very fast, and we may need to
-	// process a jump command.
-	int max_idles = 5;
+    // We don't allow more than five consecutive idles before returning to
+    // Scheme.  Returning to Scheme is very fast, and we may need to
+    // process a jump command.
+    int max_idles = 5;
 
-	// Dispatch all queued events and return from the IdleProc.  Note that
-	// the '||' operator short-circuts, and will prevent us from calling
-	// ProcessIdle until the pending queue is drained.  See the ProcessIdle
-	// documentation for an explanation of when and why we might need to
-	// call it multiple times.
-	while (wxGetApp().Pending() || (wxGetApp().ProcessIdle() && --max_idles))
-	{
-		if (wxGetApp().Pending())
-			wxGetApp().Dispatch();
-	}
+    // Dispatch all queued events and return from the IdleProc.  Note that
+    // the '||' operator short-circuts, and will prevent us from calling
+    // ProcessIdle until the pending queue is drained.  See the ProcessIdle
+    // documentation for an explanation of when and why we might need to
+    // call it multiple times.
+    while (wxGetApp().Pending() || (wxGetApp().ProcessIdle() && --max_idles))
+    {
+        if (wxGetApp().Pending())
+            wxGetApp().Dispatch();
+    }
 }
 
 void HalyardApp::PrepareForCrash() {
@@ -308,25 +308,25 @@ void HalyardApp::OnAssert(const wxChar *file, int line, const wxChar *cond,
 // WARNING - This function _must not_ call Assert, Error, FatalError, etc.,
 // or else it will cause an infinite loop.
 static void SafeAlert(TLogger::AlertType inType, const char *message) {
-	uint32 alertType = MB_TASKMODAL | MB_OK;
+    uint32 alertType = MB_TASKMODAL | MB_OK;
     const char *caption = NULL;
-	switch (inType) {
-		case TLogger::ALERT_INFO:
-			alertType |= MB_ICONINFORMATION;
+    switch (inType) {
+        case TLogger::ALERT_INFO:
+            alertType |= MB_ICONINFORMATION;
             caption = "Note";
-			break;
+            break;
 
-		case TLogger::ALERT_WARNING:
-			alertType |= MB_ICONINFORMATION;
+        case TLogger::ALERT_WARNING:
+            alertType |= MB_ICONINFORMATION;
             caption = "Warning";
-			break;
+            break;
 
-		case TLogger::ALERT_ERROR:
-			alertType |= MB_ICONSTOP;
+        case TLogger::ALERT_ERROR:
+            alertType |= MB_ICONSTOP;
             caption = "Error";
-			break;
-	}
-	::MessageBox(NULL, message, caption, alertType);
+            break;
+    }
+    ::MessageBox(NULL, message, caption, alertType);
 }
 
 #else // !(defined __WXMSW__ && !wxCHECK_VERSION(2,6,2))
@@ -513,7 +513,7 @@ bool HalyardApp::OnInit() {
     // script commands, but the former uses multimedia runtime mode, and the
     // latter is for calling the engine from command-line scripts.
     TInterpreterManager::Mode special_mode = TInterpreterManager::RUNTIME;
-	size_t ac; wxChar **av;
+    size_t ac; wxChar **av;
     for (ac = argc-1, av = ((wxChar **) argv)+1; ac > 0; --ac, ++av) {
         wxString arg(av[0]);
         if (ac >= 2 && (arg == wxT("-e") || arg == wxT("-c"))) {
@@ -556,8 +556,8 @@ int HalyardApp::OnExit() {
     UrlRequest::Cleanup();
 
 #if CONFIG_HAVE_AUDIOSTREAMS
-	// Shut down our audio synthesis layer.
-	AudioStream::ShutDownStreams();
+    // Shut down our audio synthesis layer.
+    AudioStream::ShutDownStreams();
 #endif // CONFIG_HAVE_AUDIOSTREAMS
     
     // Shut down QuickTime.  wxWindows guarantees to have destroyed
@@ -636,9 +636,9 @@ int HalyardApp::MainLoopInternal() {
         
     // Create a SchemeInterpreterManager.
     TInterpreterManager *manager =
-		GetSchemeInterpreterManager(&HalyardApp::IdleProc);
+        GetSchemeInterpreterManager(&HalyardApp::IdleProc);
 
-	Downloader *downloader = new Downloader();
+    Downloader *downloader = new Downloader();
 
     // Create our cached configuration object.  This automatically registers
     // it with the TInterpreterManager, so it must be called after the 
@@ -653,29 +653,29 @@ int HalyardApp::MainLoopInternal() {
         // Prompt for a program to open.  We can't do this until the
         // TInterpreterManager is loaded.  (We need to do this inside
         // a block to make sure the dialog is destroyed quickly.)
-		StartupDlg startup_dialog(mStageFrame);
-		startup_dialog.ShowModal();
-	}
+        StartupDlg startup_dialog(mStageFrame);
+        startup_dialog.ShowModal();
+    }
 
-	// Run our own event loop.
-	SetExitOnFrameDelete(FALSE);
-	mHaveOwnEventLoop = true;
-	IdleProc(false);
-	manager->Run();
+    // Run our own event loop.
+    SetExitOnFrameDelete(FALSE);
+    mHaveOwnEventLoop = true;
+    IdleProc(false);
+    manager->Run();
 
     // Cleanup
     error = manager->ExitedWithError();
     delete cached_conf;
     cached_conf = NULL;
-	delete downloader;
-	downloader = NULL;
-	delete manager;
-	manager = NULL;
+    delete downloader;
+    downloader = NULL;
+    delete manager;
+    manager = NULL;
 
-	// We could run the built-in event loop using the following call,
-	// if there were some reason the above code would not work (perhaps
-	// because of a starup error):
-	//    return wxApp::MainLoop();
+    // We could run the built-in event loop using the following call,
+    // if there were some reason the above code would not work (perhaps
+    // because of a starup error):
+    //    return wxApp::MainLoop();
 
     END_EXCEPTION_TRAPPER(ReportFatalException);
 
@@ -792,7 +792,7 @@ void HalyardApp::OnActivateApp(wxActivateEvent &event) {
     // iconize it so the user can see the desktop.  Note that we also need
     // to deiconize the StageFrame here (in at least some cases) to prevent
     // a bug where the user can't deiconize the window.
-	if (mStageFrame && mStageFrame->IsFullScreen())
-		mStageFrame->Iconize(!event.GetActive());
+    if (mStageFrame && mStageFrame->IsFullScreen())
+        mStageFrame->Iconize(!event.GetActive());
     event.Skip();
 }

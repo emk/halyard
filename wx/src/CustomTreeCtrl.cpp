@@ -33,11 +33,11 @@
 BEGIN_EVENT_TABLE(CustomTreeCtrl, wxTreeCtrl)
     EVT_LEFT_DCLICK(CustomTreeCtrl::OnLeftDClick)
     EVT_RIGHT_DOWN(CustomTreeCtrl::OnRightDown)
-	EVT_TREE_BEGIN_LABEL_EDIT(wxID_ANY, CustomTreeCtrl::OnBeginLabelEdit)
-	EVT_TREE_END_LABEL_EDIT(wxID_ANY, CustomTreeCtrl::OnEndLabelEdit)
+    EVT_TREE_BEGIN_LABEL_EDIT(wxID_ANY, CustomTreeCtrl::OnBeginLabelEdit)
+    EVT_TREE_END_LABEL_EDIT(wxID_ANY, CustomTreeCtrl::OnEndLabelEdit)
     EVT_TREE_ITEM_EXPANDING(wxID_ANY, CustomTreeCtrl::OnExpanding)
-	EVT_TREE_BEGIN_DRAG(wxID_ANY, CustomTreeCtrl::OnBeginDrag)
-	EVT_TREE_END_DRAG(wxID_ANY, CustomTreeCtrl::OnEndDrag)
+    EVT_TREE_BEGIN_DRAG(wxID_ANY, CustomTreeCtrl::OnBeginDrag)
+    EVT_TREE_END_DRAG(wxID_ANY, CustomTreeCtrl::OnEndDrag)
     EVT_MOTION(CustomTreeCtrl::OnMouseMoved)
 END_EVENT_TABLE()
 
@@ -87,90 +87,90 @@ void CustomTreeCtrl::BuildIconList()
 CustomTreeItemData *
 CustomTreeCtrl::GetCustomTreeItemData(wxTreeItemId inId)
 {
-	return dynamic_cast<CustomTreeItemData*>(GetItemData(inId));
+    return dynamic_cast<CustomTreeItemData*>(GetItemData(inId));
 }
 
 CustomTreeItemData *
 CustomTreeCtrl::GetCustomTreeItemData(wxMouseEvent &inEvent)
 {
     wxTreeItemId id = HitTest(inEvent.GetPosition());
-	return id ? GetCustomTreeItemData(id) : NULL;
+    return id ? GetCustomTreeItemData(id) : NULL;
 }
 
 CustomTreeItemData *
 CustomTreeCtrl::GetCustomTreeItemData(wxTreeEvent &inEvent)
 {
-	return GetCustomTreeItemData(inEvent.GetItem());
+    return GetCustomTreeItemData(inEvent.GetItem());
 }
 
 void CustomTreeCtrl::OnLeftDClick(wxMouseEvent& event)
 {
-	CustomTreeItemData *data = GetCustomTreeItemData(event);
-	if (data)
-		data->OnLeftDClick(event);
+    CustomTreeItemData *data = GetCustomTreeItemData(event);
+    if (data)
+        data->OnLeftDClick(event);
     else
         event.Skip();
 }
 
 void CustomTreeCtrl::OnRightDown(wxMouseEvent& event)
 {
-	CustomTreeItemData *data = GetCustomTreeItemData(event);
-	if (data)
-		data->OnRightDown(event);
+    CustomTreeItemData *data = GetCustomTreeItemData(event);
+    if (data)
+        data->OnRightDown(event);
 }
 
 void CustomTreeCtrl::OnBeginLabelEdit(wxTreeEvent &event)
 {
-	CustomTreeItemData *data = GetCustomTreeItemData(event);
-	if (data)
-		data->OnBeginLabelEdit(event);	
+    CustomTreeItemData *data = GetCustomTreeItemData(event);
+    if (data)
+        data->OnBeginLabelEdit(event);  
 }
 
 void CustomTreeCtrl::OnEndLabelEdit(wxTreeEvent &event)
 {
-	CustomTreeItemData *data = GetCustomTreeItemData(event);
-	if (data)
-		data->OnEndLabelEdit(event);	
+    CustomTreeItemData *data = GetCustomTreeItemData(event);
+    if (data)
+        data->OnEndLabelEdit(event);    
 }
 
 void CustomTreeCtrl::OnExpanding(wxTreeEvent &event)
 {
-	CustomTreeItemData *data = GetCustomTreeItemData(event);
-	if (data)
-		data->OnExpanding(event);
+    CustomTreeItemData *data = GetCustomTreeItemData(event);
+    if (data)
+        data->OnExpanding(event);
 }
 
 void CustomTreeCtrl::OnBeginDrag(wxTreeEvent& event)
 {
-	CustomTreeItemData *data = GetCustomTreeItemData(event);
-	if (data && data->CanBeDragged())
-	{
-		event.Allow();
-		mDragItemData = data;
-	}
+    CustomTreeItemData *data = GetCustomTreeItemData(event);
+    if (data && data->CanBeDragged())
+    {
+        event.Allow();
+        mDragItemData = data;
+    }
 }
 
 void CustomTreeCtrl::OnEndDrag(wxTreeEvent& event)
 {
-	CustomTreeItemData *data = GetCustomTreeItemData(event);
-	if (data && data->CanAcceptDrag(mDragItemData))
-		data->DragDone(mDragItemData);
-	mDragItemData = NULL;
+    CustomTreeItemData *data = GetCustomTreeItemData(event);
+    if (data && data->CanAcceptDrag(mDragItemData))
+        data->DragDone(mDragItemData);
+    mDragItemData = NULL;
 }
 
 void CustomTreeCtrl::OnMouseMoved(wxMouseEvent& event)
 {
-	if (!mDragItemData)
-		SetCursor(*wxSTANDARD_CURSOR);
-	else
-	{
-		CustomTreeItemData *data = GetCustomTreeItemData(event);
-		if (data && data != mDragItemData &&
-			data->CanAcceptDrag(mDragItemData))
-			SetCursor(*wxSTANDARD_CURSOR);
-		else
-			SetCursor(wxCursor(wxCURSOR_NO_ENTRY));
-	}
+    if (!mDragItemData)
+        SetCursor(*wxSTANDARD_CURSOR);
+    else
+    {
+        CustomTreeItemData *data = GetCustomTreeItemData(event);
+        if (data && data != mDragItemData &&
+            data->CanAcceptDrag(mDragItemData))
+            SetCursor(*wxSTANDARD_CURSOR);
+        else
+            SetCursor(wxCursor(wxCURSOR_NO_ENTRY));
+    }
 }
 
 
@@ -179,13 +179,13 @@ void CustomTreeCtrl::OnMouseMoved(wxMouseEvent& event)
 //=========================================================================
 
 CustomTreeItemData::CustomTreeItemData(CustomTreeCtrl *inTreeCtrl)
-	: mTreeCtrl(inTreeCtrl)
+    : mTreeCtrl(inTreeCtrl)
 {
-	ASSERT(mTreeCtrl != NULL);
+    ASSERT(mTreeCtrl != NULL);
 }
 
 void CustomTreeItemData::OnBeginLabelEdit(wxTreeEvent &event)
 {
-	// By default, do not allow nodes in our tree to be renamed.
-	event.Veto();
+    // By default, do not allow nodes in our tree to be renamed.
+    event.Veto();
 }

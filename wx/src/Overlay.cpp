@@ -44,21 +44,21 @@ void Overlay::Show(bool inShow) {
 }
 
 bool Overlay::IsPointInElement(const wxPoint &inPoint) {
-	wxRect bounds = mDrawingArea.GetBounds();
+    wxRect bounds = mDrawingArea.GetBounds();
     if (!bounds.Contains(inPoint)) {
-		// Outside our bounding box.
-		return false; 
-	} else if (!mDrawingArea.HasAlpha() || mAreTransparentAreasClickable) {
-		// We're either opaque or our transparent areas are clickable, so
-		// we only need to check the bounding box.
-		return true;
-	} else {
-		// We have an alpha channel.  We only consider points to be inside
-		// the overlay if they contain graphical data.
-		GraphicsTools::Color c =
-			mDrawingArea.GetPixel(inPoint.x - bounds.x, inPoint.y - bounds.y);
-		return !c.IsCompletelyTransparent();
-	}
+        // Outside our bounding box.
+        return false; 
+    } else if (!mDrawingArea.HasAlpha() || mAreTransparentAreasClickable) {
+        // We're either opaque or our transparent areas are clickable, so
+        // we only need to check the bounding box.
+        return true;
+    } else {
+        // We have an alpha channel.  We only consider points to be inside
+        // the overlay if they contain graphical data.
+        GraphicsTools::Color c =
+            mDrawingArea.GetPixel(inPoint.x - bounds.x, inPoint.y - bounds.y);
+        return !c.IsCompletelyTransparent();
+    }
 }
 
 void Overlay::MoveTo(const wxPoint &inPoint) {

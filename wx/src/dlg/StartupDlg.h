@@ -33,17 +33,17 @@
 class StartupDlg : public XrcDlg
 {
     DECLARE_EVENT_TABLE();
-	
+    
     wxFileHistory mHistory;
-	wxRadioButton *mRadioRecent;
-	wxRadioButton *mRadioOpen;
-	wxRadioButton *mRadioNew;
-	wxListBox *mRecentList;
+    wxRadioButton *mRadioRecent;
+    wxRadioButton *mRadioOpen;
+    wxRadioButton *mRadioNew;
+    wxListBox *mRecentList;
 
-	void OnOK(wxCommandEvent &inEvent);
+    void OnOK(wxCommandEvent &inEvent);
 
 public:
-	StartupDlg(wxWindow *inParent);
+    StartupDlg(wxWindow *inParent);
 };
 
 #endif // StartupDlg_H

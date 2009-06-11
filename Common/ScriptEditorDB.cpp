@@ -178,7 +178,7 @@ void ScriptEditorDB::EnsureCorrectSchema() {
          "CREATE TABLE alias ("
          "  file_id INT NOT NULL,"
          "  name TEXT NOT NULL,"
-		 "  points_to TEXT NOT NULL)"},
+         "  points_to TEXT NOT NULL)"},
         {"table", "indent",
          "CREATE TABLE indent ("
          "  file_id INT NOT NULL,"
@@ -255,7 +255,7 @@ std::string ScriptEditorDB::RelPathToNative(const std::string &relpath) {
         result = RuntimePath();
     } else {
         // All other relpaths are relative to the root path.
-		result = RootPath() / fs::path(relpath, fs::no_check);
+        result = RootPath() / fs::path(relpath, fs::no_check);
     }
     return result.native_file_string().c_str();
 }
@@ -498,8 +498,8 @@ void ScriptEditorDB::DeleteAnyFileData(const std::string &relpath) {
 bool ScriptEditorDB::NeedsProcessingInternal(const std::string &relpath,
                                              const ModTimeMap &modtimes)
 {
-	fs::path path(RelPathToNative(relpath), fs::native);
-	time_t new_modtime = fs::last_write_time(path);
+    fs::path path(RelPathToNative(relpath), fs::native);
+    time_t new_modtime = fs::last_write_time(path);
 
     ModTimeMap::const_iterator found = modtimes.find(relpath);
     if (found != modtimes.end()) {
@@ -721,7 +721,7 @@ void ScriptEditorDB::AddListener(IListener *inListener) {
     // Adapted from Model::RegisterView, because the template grik was
     // too ugly to refactor.
     if (std::count(mListeners.begin(), mListeners.end(), inListener) == 0)
-		mListeners.push_back(inListener);
+        mListeners.push_back(inListener);
 
     StTransaction transaction(this);
 
@@ -733,17 +733,17 @@ void ScriptEditorDB::AddListener(IListener *inListener) {
     r.close();
 
     // Send FileChanged messages for each file in the database.
-	for (std::vector<std::string>::iterator i = files.begin();
-		 i != files.end(); ++i)
+    for (std::vector<std::string>::iterator i = files.begin();
+         i != files.end(); ++i)
         inListener->FileChanged(*i);
 }
 
 void ScriptEditorDB::RemoveListener(IListener *inListener) {
     // Adapted from Model::RegisterView, because the template grik was
     // too ugly to refactor.
-	std::vector<IListener*>::iterator found =
-		std::find(mListeners.begin(), mListeners.end(), inListener);
-	if (found != mListeners.end())
+    std::vector<IListener*>::iterator found =
+        std::find(mListeners.begin(), mListeners.end(), inListener);
+    if (found != mListeners.end())
         mListeners.erase(found);
 }
 
@@ -793,7 +793,7 @@ DEFINE_PRIMITIVE(ScriptEditorDBInsertIndentation) {
 
 void Halyard::RegisterScriptEditorDBPrimitives()
 {
-	REGISTER_PRIMITIVE(ScriptEditorDBInsertDef);
+    REGISTER_PRIMITIVE(ScriptEditorDBInsertDef);
     REGISTER_PRIMITIVE(ScriptEditorDBInsertHelp);
     REGISTER_PRIMITIVE(ScriptEditorDBInsertIndentation);
 }
@@ -817,8 +817,8 @@ BEGIN_TEST_CASE(TestScriptEditorDB, TestCase) {
 
     // Check to make sure the file exists.
     FileSystem::Path test_db(FileSystem::GetScriptTempFilePath("test.sqlite3"));
-	fs::path db_path(test_db.ToNativePathString(), fs::native);
-	CHECK_EQ(fs::exists(db_path), true);
+    fs::path db_path(test_db.ToNativePathString(), fs::native);
+    CHECK_EQ(fs::exists(db_path), true);
     CHECK_EQ(fs::is_directory(db_path), false);
 
     // Process a file.

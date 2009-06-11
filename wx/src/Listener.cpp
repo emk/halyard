@@ -43,12 +43,12 @@ Listener::Listener(StageFrame *inStageFrame)
     : wxWindow(inStageFrame, wxID_ANY), mIsFirstLine(true)
 {
     mHistory = new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
-							  wxSize(50, 50), // Also used as a MinSize.
-							  wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
-	// Use a history text control, so we can have a command history
+                              wxSize(50, 50), // Also used as a MinSize.
+                              wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
+    // Use a history text control, so we can have a command history
     mInput = new HistoryTextCtrl(this, HALYARD_LISTENER_TEXT_ENTRY, wxT(""),
-								 wxDefaultPosition, wxDefaultSize,
-								 wxTE_PROCESS_ENTER);
+                                 wxDefaultPosition, wxDefaultSize,
+                                 wxTE_PROCESS_ENTER);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(mHistory, 1 /* stretch */, wxGROW, 0);
@@ -61,11 +61,11 @@ Listener::Listener(StageFrame *inStageFrame)
     // bold.  We'll use these for the listener output.
     wxFont f = mHistory->GetFont();
     mNormalFont = wxFont(f.GetPointSize(), f.GetFamily(), f.GetStyle(),
-						 f.GetWeight(), f.GetUnderlined(), f.GetFaceName(),
-						 f.GetDefaultEncoding());
+                         f.GetWeight(), f.GetUnderlined(), f.GetFaceName(),
+                         f.GetDefaultEncoding());
     mBoldFont = wxFont(f.GetPointSize(), f.GetFamily(), f.GetStyle(),
-					   wxBOLD, f.GetUnderlined(), f.GetFaceName(),
-					   f.GetDefaultEncoding());
+                       wxBOLD, f.GetUnderlined(), f.GetFaceName(),
+                       f.GetDefaultEncoding());
 
     FocusInput();
 }
@@ -82,10 +82,10 @@ void Listener::UpdateUiInput(wxUpdateUIEvent &inEvent)
 void Listener::OnTextEnter(wxCommandEvent &inEvent)
 {
     if (inEvent.GetString() == wxT(""))
-		inEvent.Skip();
+        inEvent.Skip();
     else
     {
-		ASSERT(TInterpreter::HaveInstance());
+        ASSERT(TInterpreter::HaveInstance());
 
         // Add some spacing in between consecutive output blocks.
         if (mIsFirstLine)
@@ -93,37 +93,37 @@ void Listener::OnTextEnter(wxCommandEvent &inEvent)
         else
             mHistory->AppendText(wxT("\n\n"));
 
-		// Print the user's input.
-		wxString input = inEvent.GetString();
-		mHistory->SetDefaultStyle(wxTextAttr(*wxBLACK, wxNullColour,
-											 mBoldFont));
-		mHistory->AppendText(input);
-	
-		// Talk to the interpreter.
-		std::string result;
-		bool ok =
-			TInterpreter::GetInstance()->Eval(std::string(input.mb_str()),
+        // Print the user's input.
+        wxString input = inEvent.GetString();
+        mHistory->SetDefaultStyle(wxTextAttr(*wxBLACK, wxNullColour,
+                                             mBoldFont));
+        mHistory->AppendText(input);
+    
+        // Talk to the interpreter.
+        std::string result;
+        bool ok =
+            TInterpreter::GetInstance()->Eval(std::string(input.mb_str()),
                                               result);
-		
-		// Print the interpreter's output.
-		if (ok)
-		{
-			mHistory->SetDefaultStyle(wxTextAttr(*wxBLUE, wxNullColour,
-												 mNormalFont));
-			mHistory->AppendText(wxT("\n==> ") + ToWxString(result));
-		}
-		else
-		{
-			mHistory->SetDefaultStyle(wxTextAttr(*wxRED, wxNullColour,
-												 mNormalFont));
-			mHistory->AppendText(wxT("\nERROR: ") + ToWxString(result));
-		}
+        
+        // Print the interpreter's output.
+        if (ok)
+        {
+            mHistory->SetDefaultStyle(wxTextAttr(*wxBLUE, wxNullColour,
+                                                 mNormalFont));
+            mHistory->AppendText(wxT("\n==> ") + ToWxString(result));
+        }
+        else
+        {
+            mHistory->SetDefaultStyle(wxTextAttr(*wxRED, wxNullColour,
+                                                 mNormalFont));
+            mHistory->AppendText(wxT("\nERROR: ") + ToWxString(result));
+        }
 
         // Show the recently-appended text.
         mHistory->ShowPosition(mHistory->GetLastPosition());
-		
-		// Clear our input field.
-		mInput->SetValue(wxT(""));
+        
+        // Clear our input field.
+        mInput->SetValue(wxT(""));
     }
 }
 

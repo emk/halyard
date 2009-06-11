@@ -35,27 +35,27 @@ class AudioStream;
 ///
 class AudioStreamElement : public InvisibleElement, public MediaElement
 {
-	AudioStream *mStream;
+    AudioStream *mStream;
 
 protected:
     virtual bool IsDone();
     virtual MovieFrame CurrentFrame();
 
 public:
-	AudioStreamElement(Stage *inStage, const wxString &inName,
-					   AudioStream *inStream,
+    AudioStreamElement(Stage *inStage, const wxString &inName,
+                       AudioStream *inStream,
                        Halyard::TCallbackPtr inDispatcher);
-	virtual ~AudioStreamElement();
+    virtual ~AudioStreamElement();
 
-	AudioStream *GetAudioStream() { return mStream; }
+    AudioStream *GetAudioStream() { return mStream; }
 
     virtual void Idle();
     virtual bool IsLooping();
-	virtual void EndPlayback();
+    virtual void EndPlayback();
     virtual void Pause();
     virtual void Resume();
-	
-	virtual void SetVolume(const std::string &inChannel, double inVolume);
+    
+    virtual void SetVolume(const std::string &inChannel, double inVolume);
 };
 
 #endif // AudioStreamElement_H

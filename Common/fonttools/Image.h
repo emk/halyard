@@ -37,7 +37,7 @@ public:
     ~PngImage();
 
     virtual void DrawPixMap(GraphicsTools::Point inPoint,
-			    GraphicsTools::PixMap &inPixmap);
+                GraphicsTools::PixMap &inPixmap);
 
     void save(const char *filename);
 };

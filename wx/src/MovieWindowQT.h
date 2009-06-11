@@ -59,9 +59,9 @@ class MovieWindowQT : public MovieWindow
     ///
     wxPoint GetMoviePosRelativeToPort();
 
-	//////////
-	/// Delete any movie attached to this object.
-	///
+    //////////
+    /// Delete any movie attached to this object.
+    ///
     void CleanUpMovie();
 
 public:
@@ -70,11 +70,11 @@ public:
     /// identical to those of the MovieWindow constructor.
     ///
     MovieWindowQT(wxWindow *inParent, wxWindowID inID = -1,
-				  const wxPoint &inPos = wxDefaultPosition,
-				  const wxSize &inSize = wxDefaultSize,
-				  long inWindowStyle = 0,
-				  MovieWindowStyle inMovieWindowStyle = 0,
-				  const wxString &inName = wxPanelNameStr);
+                  const wxPoint &inPos = wxDefaultPosition,
+                  const wxSize &inSize = wxDefaultSize,
+                  long inWindowStyle = 0,
+                  MovieWindowStyle inMovieWindowStyle = 0,
+                  const wxString &inName = wxPanelNameStr);
 
     //////////
     /// Clean up the resources held by the MovieWindow.  Use Destroy()
@@ -89,9 +89,9 @@ public:
 
     //////////
     /// Get the current frame of the movie (where there are 30 frames
-	/// per second).  Returns 0 if there is no movie or the movie hasn't
-	/// started.  This number *can* decrease, especially if the user
-	/// is playing with the movie controller.
+    /// per second).  Returns 0 if there is no movie or the movie hasn't
+    /// started.  This number *can* decrease, especially if the user
+    /// is playing with the movie controller.
     ///
     virtual MovieFrame GetFrame();
 
@@ -129,26 +129,26 @@ public:
 
     //////////
     /// Is the movie finished?  This function is fairly smart about broken
-	/// movies, looping movies, etc.
+    /// movies, looping movies, etc.
     ///
     virtual bool IsDone();
 
-	//////////
-	/// Pause the movie
-	/// Note: these methods may not be happy if the underlying movie code 
-	/// does not like to be paused.
-	///
-	virtual void Pause();
+    //////////
+    /// Pause the movie
+    /// Note: these methods may not be happy if the underlying movie code 
+    /// does not like to be paused.
+    ///
+    virtual void Pause();
 
-	//////////
-	/// Resume the movie
-	///
-	virtual void Resume();
+    //////////
+    /// Resume the movie
+    ///
+    virtual void Resume();
 
     //////////
     /// Set the movie's volume.
     ///
-	virtual void SetVolume(const std::string &inChannel, double inVolume);
+    virtual void SetVolume(const std::string &inChannel, double inVolume);
 
     //////////
     /// Set the number of seconds which can pass without inactivity
@@ -159,28 +159,28 @@ public:
     ///
     virtual void SetTimeout(unsigned int timeout);
 
-	void OnEraseBackground(wxEraseEvent &inEvent);
+    void OnEraseBackground(wxEraseEvent &inEvent);
 
-	//////////
-	/// Some Sorenson codecs need to receive this paint message, or they
-	/// won't display video at all.  So just smile and nod, and do what
-	/// they want.
-	///
-	/// TODO - I haven't tested whether this is still necessary under
-	/// wxWindows, but it was in older applications using this QuickTime
-	/// interface.)
-	///
-	void OnPaint(wxPaintEvent &inEvent);
+    //////////
+    /// Some Sorenson codecs need to receive this paint message, or they
+    /// won't display video at all.  So just smile and nod, and do what
+    /// they want.
+    ///
+    /// TODO - I haven't tested whether this is still necessary under
+    /// wxWindows, but it was in older applications using this QuickTime
+    /// interface.)
+    ///
+    void OnPaint(wxPaintEvent &inEvent);
 
-	void OnIdle(wxIdleEvent &inEvent);
+    void OnIdle(wxIdleEvent &inEvent);
 
     void OnMouseMove(wxMouseEvent &inEvent);
 
-	void OnActivate(wxActivateEvent &inEvent);
+    void OnActivate(wxActivateEvent &inEvent);
 
-	void OnLeftDown(wxMouseEvent &inEvent);
+    void OnLeftDown(wxMouseEvent &inEvent);
 
-	void OnKeyDown(wxKeyEvent &inEvent);
+    void OnKeyDown(wxKeyEvent &inEvent);
 
     DECLARE_EVENT_TABLE();
 };

@@ -47,10 +47,10 @@ END_NAMESPACE_HALYARD
 /// The window where all actual script output and interaction occurs.
 class Stage : public wxWindow, public Halyard::TReloadNotified
 {
-	//////////
-	/// A list of Elements.
-	///
-	typedef std::deque<ElementPtr> ElementCollection;
+    //////////
+    /// A list of Elements.
+    ///
+    typedef std::deque<ElementPtr> ElementCollection;
 
     //////////
     /// The StageFrame associated with the stage.  We need to poke at it
@@ -80,12 +80,12 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
     /// Before drawing graphics to the stage, we need to composite several
     /// layers into a single image.  We use this buffer for that purpose.
     ///
-	wxBitmap mCompositingPixmap;
+    wxBitmap mCompositingPixmap;
 
-	//////////
-	/// Rectangles which need to be recomposited.
-	///
-	DirtyList mRectsToComposite;
+    //////////
+    /// Rectangles which need to be recomposited.
+    ///
+    DirtyList mRectsToComposite;
     
     //////////
     /// Rectangles which need to be redrawn to the screen during a refresh.
@@ -94,51 +94,51 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
 
     //////////
     /// This drawing area contains the background graphics for the stage.
-	/// Other layers are composited with this layer.
+    /// Other layers are composited with this layer.
     ///
-	std::auto_ptr<DrawingArea> mBackgroundDrawingArea;
+    std::auto_ptr<DrawingArea> mBackgroundDrawingArea;
 
-	//////////
-	/// The current stack of drawing contexts.
-	///
-	std::auto_ptr<DrawingContextStack> mDrawingContextStack;
+    //////////
+    /// The current stack of drawing contexts.
+    ///
+    std::auto_ptr<DrawingContextStack> mDrawingContextStack;
 
     //////////
     /// A bitmap for use during various fade effects.
     ///
     wxBitmap mOffscreenFadePixmap;
 
-	//////////
-	/// We try to rate-limit our idle events to prevent performance
-	/// problems with the Scheme garbage collector (the event dispatching
-	/// system allocates some memory to process events).
-	///
-	wxLongLong mLastIdleEvent;
+    //////////
+    /// We try to rate-limit our idle events to prevent performance
+    /// problems with the Scheme garbage collector (the event dispatching
+    /// system allocates some memory to process events).
+    ///
+    wxLongLong mLastIdleEvent;
 
-	//////////
-	/// This object does all of our event-dispatching for us.
-	///
-	EventDispatcher *mEventDispatcher;
+    //////////
+    /// This object does all of our event-dispatching for us.
+    ///
+    EventDispatcher *mEventDispatcher;
 
-	//////////
-	/// Our image cache.  This allows us to speed up image loading
-	/// tremendously in some common cases.
-	///
-	ImageCache *mImageCache;
+    //////////
+    /// Our image cache.  This allows us to speed up image loading
+    /// tremendously in some common cases.
+    ///
+    ImageCache *mImageCache;
 
-	//////////
-	/// Our cursor manager.  This maps strings to cursors, and allows the
-	/// application to register new cursors.
-	///
-	CursorManager *mCursorManager;
+    //////////
+    /// Our cursor manager.  This maps strings to cursors, and allows the
+    /// application to register new cursors.
+    ///
+    CursorManager *mCursorManager;
 
-	//////////
-	/// Our transition manager.  This maps transition names to transitions,
-	/// and applies them.
-	///
-	TransitionManager *mTransitionManager;
+    //////////
+    /// Our transition manager.  This maps transition names to transitions,
+    /// and applies them.
+    ///
+    TransitionManager *mTransitionManager;
 
-	//////////
+    //////////
     /// The cursor that we're (nominally) displaying for the stage right
     /// now, if we're actually displaying a cursor.  See the notes in
     /// Cursor.h about cursor-pointer ownership.
@@ -151,42 +151,42 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
     ///
     Halyard::Cursor *mActualCursor;
 
-	//////////
-	/// Our currently active elements.
-	///
-	ElementCollection mElements;
-
-	//////////
-	/// The element which most recently contained the mouse.
+    //////////
+    /// Our currently active elements.
     ///
-	/// Invariant: This variable is always NULL, or points to a valid
-	/// lightweight element.  Be careful when deleting elements!
-	///
-	ElementPtr mCurrentElement;
+    ElementCollection mElements;
+
+    //////////
+    /// The element which most recently contained the mouse.
+    ///
+    /// Invariant: This variable is always NULL, or points to a valid
+    /// lightweight element.  Be careful when deleting elements!
+    ///
+    ElementPtr mCurrentElement;
 
     //////////
     /// The element which most recently contained the mouse, _including_
     /// those elements which don't otherwise support mouse interaction.
     ///
-	/// Invariant: This variable is always NULL, or points to a valid
-	/// lightweight element.
+    /// Invariant: This variable is always NULL, or points to a valid
+    /// lightweight element.
     ///
     ElementPtr mCurrentElementNamedInStatusBar;
 
-	//////////
-	/// The element which has a "grab" on the mouse.
-	///
-	ElementPtr mGrabbedElement;
+    //////////
+    /// The element which has a "grab" on the mouse.
+    ///
+    ElementPtr mGrabbedElement;
 
-	//////////
-	/// The movie we're waiting on, or NULL if we're not waiting on anything.
-	///
-	MediaElementPtr mWaitElement;
+    //////////
+    /// The movie we're waiting on, or NULL if we're not waiting on anything.
+    ///
+    MediaElementPtr mWaitElement;
 
-	//////////
-	/// The movie frame we're waiting on.
-	///
-	MovieFrame mWaitFrame;
+    //////////
+    /// The movie frame we're waiting on.
+    ///
+    MovieFrame mWaitFrame;
 
     //////////
     /// Have the elements on the stage changed since the last time we
@@ -224,31 +224,31 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
     ///
     bool mIsBeingDestroyed;
 
-	//////////
-	/// The last stage position copied with a right-click.
-	///
-	std::vector<wxPoint> mCopiedPoints;
+    //////////
+    /// The last stage position copied with a right-click.
+    ///
+    std::vector<wxPoint> mCopiedPoints;
 
-	//////////
-	/// Get the compositing pixmap associated with this stage.
-	///
-	wxBitmap &GetCompositingPixmap();
+    //////////
+    /// Get the compositing pixmap associated with this stage.
+    ///
+    wxBitmap &GetCompositingPixmap();
 
-	//////////
-	/// Validate the entire stage--i.e., mark it as having been redrawn.
-	///
-	void ValidateStage();
+    //////////
+    /// Validate the entire stage--i.e., mark it as having been redrawn.
+    ///
+    void ValidateStage();
 
-	//////////
-	/// Set up clipping regions on a DC to make sure that we don't try
-	/// to overdraw any heavyweight elements.
-	///
-	void ClipElementsThatDrawThemselves(wxDC &inDC);
+    //////////
+    /// Set up clipping regions on a DC to make sure that we don't try
+    /// to overdraw any heavyweight elements.
+    ///
+    void ClipElementsThatDrawThemselves(wxDC &inDC);
 
-	//////////
-	/// Repaint the stage.
-	///
-	void PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion);
+    //////////
+    /// Repaint the stage.
+    ///
+    void PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion);
 
     //////////
     /// Draw a border for the specified element.
@@ -265,42 +265,42 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
     ///
     void GameEngineSetFocus();
 
-	//////////
-	/// End an active Wait().
-	///
-	void EndWait();
+    //////////
+    /// End an active Wait().
+    ///
+    void EndWait();
 
-	//////////
-	/// Put the interpreter to sleep.
-	///
-	void InterpreterSleep();
+    //////////
+    /// Put the interpreter to sleep.
+    ///
+    void InterpreterSleep();
 
     //////////
     /// Wake the interpreter up at the next opportunity.
     ///
     void InterpreterSetShouldWakeUp();
 
-	//////////
-	/// Find an element by name, and return an iterator.
-	///
-	ElementCollection::iterator
-	FindElementByName(ElementCollection &inCollection,
-					  const wxString &inName);
+    //////////
+    /// Find an element by name, and return an iterator.
+    ///
+    ElementCollection::iterator
+    FindElementByName(ElementCollection &inCollection,
+                      const wxString &inName);
 
-	//////////
-	/// Detach an element from the stage and destroy it.
-	///
-	void DestroyElement(ElementPtr inElement);
+    //////////
+    /// Detach an element from the stage and destroy it.
+    ///
+    void DestroyElement(ElementPtr inElement);
 
-	//////////
-	/// We've entered an element; update things appropriately.
-	///
-	void EnterElement(ElementPtr inElement, const wxPoint &inPosition);
+    //////////
+    /// We've entered an element; update things appropriately.
+    ///
+    void EnterElement(ElementPtr inElement, const wxPoint &inPosition);
 
-	//////////
-	/// We've left an element; update things appropriately.
-	///
-	void LeaveElement(ElementPtr inElement, const wxPoint &inPosition);
+    //////////
+    /// We've left an element; update things appropriately.
+    ///
+    void LeaveElement(ElementPtr inElement, const wxPoint &inPosition);
 
     //////////
     /// Get the current mouse position, relative to the origin of the
@@ -323,12 +323,12 @@ class Stage : public wxWindow, public Halyard::TReloadNotified
     ///
     void ReplaceDisplayedCursorWithDefault();
 
-	//////////
-	/// Figure out which element we're inside, and figure out what cursor
-	/// we should be displaying now.
-	///
-	void UpdateCurrentElementAndCursor(const wxPoint &inPosition);
-	void UpdateCurrentElementAndCursor();
+    //////////
+    /// Figure out which element we're inside, and figure out what cursor
+    /// we should be displaying now.
+    ///
+    void UpdateCurrentElementAndCursor(const wxPoint &inPosition);
+    void UpdateCurrentElementAndCursor();
 
 public:
     //////////
@@ -342,15 +342,15 @@ public:
     Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize);
 
     //////////
-	/// We need to clean up any resources which aren't directly managed
-	/// by wxWindows.
-	///
+    /// We need to clean up any resources which aren't directly managed
+    /// by wxWindows.
+    ///
     ~Stage();
 
-	//////////
-	/// Get the size of our stage.
-	///
-	wxSize GetStageSize() const { return mStageSize; }
+    //////////
+    /// Get the size of our stage.
+    ///
+    wxSize GetStageSize() const { return mStageSize; }
 
     //////////
     /// Load a special-purpose graphic associated with our currently running
@@ -389,28 +389,28 @@ public:
     ///
     void RaiseToTop(ElementPtr inElem);
 
-	//////////
-	/// Should the script be allowed to idle right now?
-	///
-	bool IsIdleAllowed() const;
+    //////////
+    /// Should the script be allowed to idle right now?
+    ///
+    bool IsIdleAllowed() const;
 
-	//////////
-	/// Return true if and only if the script is fully initialized.
-	/// Will briefly return false after the script is reloaded.
-	///
-	bool IsScriptInitialized();
+    //////////
+    /// Return true if and only if the script is fully initialized.
+    /// Will briefly return false after the script is reloaded.
+    ///
+    bool IsScriptInitialized();
 
-	//////////
-	/// Place the stage into edit mode or take it out again.  May
-	/// only be called if IsScriptInitialized() returns true.
-	///
-	void SetEditMode(bool inWantEditMode = true);
+    //////////
+    /// Place the stage into edit mode or take it out again.  May
+    /// only be called if IsScriptInitialized() returns true.
+    ///
+    void SetEditMode(bool inWantEditMode = true);
 
-	//////////
-	/// Is the stage in edit mode?  May only be called if
-	/// IsScriptInitialized() returns true.
-	///
-	bool IsInEditMode();
+    //////////
+    /// Is the stage in edit mode?  May only be called if
+    /// IsScriptInitialized() returns true.
+    ///
+    bool IsInEditMode();
 
     //////////
     /// Hide the cursor until the user moves the mouse.  Overrides all
@@ -421,42 +421,42 @@ public:
     ///
     void HideCursorUntilMouseMoved();
 
-	//////////
-	/// Should we display a cursor?
-	///
+    //////////
+    /// Should we display a cursor?
+    ///
     bool ShouldShowCursor();
 
-	//////////
-	/// Should we send events to our event dispatcher?
-	///
-	bool ShouldSendEvents();
+    //////////
+    /// Should we send events to our event dispatcher?
+    ///
+    bool ShouldSendEvents();
 
-	//////////
-	/// Return true if and only if it's safe to call TryJumpTo().
-	///
-	bool CanJump();
+    //////////
+    /// Return true if and only if it's safe to call TryJumpTo().
+    ///
+    bool CanJump();
 
-	//////////
-	/// Jump to the specified card.  May only be called if
-	/// IsScriptInitialized() returns true.  If the specified
-	/// card does not exist, displays an error to the user.
-	///
-	void TryJumpTo(const wxString &inName);
+    //////////
+    /// Jump to the specified card.  May only be called if
+    /// IsScriptInitialized() returns true.  If the specified
+    /// card does not exist, displays an error to the user.
+    ///
+    void TryJumpTo(const wxString &inName);
 
-	//////////
-	/// Return the EventDispatcher associated with this stage.
-	///
-	EventDispatcher *GetEventDispatcher() { return mEventDispatcher; }
+    //////////
+    /// Return the EventDispatcher associated with this stage.
+    ///
+    EventDispatcher *GetEventDispatcher() { return mEventDispatcher; }
 
-	//////////
-	/// Return the image cache associated with this stage.
-	///
-	ImageCache *GetImageCache() { return mImageCache; }
+    //////////
+    /// Return the image cache associated with this stage.
+    ///
+    ImageCache *GetImageCache() { return mImageCache; }
 
-	//////////
-	/// Return the cursor manager associated with this stage.
-	///
-	CursorManager *GetCursorManager() { return mCursorManager; }
+    //////////
+    /// Return the cursor manager associated with this stage.
+    ///
+    CursorManager *GetCursorManager() { return mCursorManager; }
 
     //////////
     /// Notify the stage that the interpreter has moved to a new card.
@@ -488,20 +488,20 @@ public:
     ///
     void UpdateClockKeysInStateDB();
 
-	//////////
-	/// Redirect all further drawing calls to the specified element until
-	/// further notice.
-	///
-	void PushDrawingContext(ElementPtr inElement)
-		{ mDrawingContextStack->PushDrawingContext(inElement); }
+    //////////
+    /// Redirect all further drawing calls to the specified element until
+    /// further notice.
+    ///
+    void PushDrawingContext(ElementPtr inElement)
+        { mDrawingContextStack->PushDrawingContext(inElement); }
 
-	//////////
-	/// Pop the top element off the current drawing stack, and make sure
-	/// it matches the specified element.
-	///
-	void PopDrawingContext(ElementPtr inElement)
-		{ mDrawingContextStack->PopDrawingContext(inElement); }
-	
+    //////////
+    /// Pop the top element off the current drawing stack, and make sure
+    /// it matches the specified element.
+    ///
+    void PopDrawingContext(ElementPtr inElement)
+        { mDrawingContextStack->PopDrawingContext(inElement); }
+    
     //////////
     /// Send an idle message to any elements on the stage.  (This is one
     /// of many functions called by OnTimer, and you probably won't need
@@ -531,9 +531,9 @@ public:
     ///
     void OnPaint(wxPaintEvent &inEvent);
 
-	//////////
-	/// Handle a character event.
-	///
+    //////////
+    /// Handle a character event.
+    ///
     void OnChar(wxKeyEvent &inEvent);
 
     //////////
@@ -580,7 +580,7 @@ public:
     /// Toggle the display of the grid.
     ///
     void ToggleDisplayGrid()
-		{ InvalidateScreen(); mIsDisplayingGrid = !mIsDisplayingGrid; }
+        { InvalidateScreen(); mIsDisplayingGrid = !mIsDisplayingGrid; }
 
     //////////
     /// Are we currently displaying the borders?
@@ -591,7 +591,7 @@ public:
     /// Toggle the display of the borders.
     ///
     void ToggleDisplayBorders()
-		{ InvalidateScreen(); mIsDisplayingBorders = !mIsDisplayingBorders; }
+        { InvalidateScreen(); mIsDisplayingBorders = !mIsDisplayingBorders; }
 
     //////////
     /// Should the next compile include error tracing?
@@ -602,157 +602,157 @@ public:
     /// Toggle whether the next compile should include error tracing.
     ///
     void ToggleErrortraceCompile()
-		{ mIsErrortraceCompileEnabled = !mIsErrortraceCompileEnabled; }
+        { mIsErrortraceCompileEnabled = !mIsErrortraceCompileEnabled; }
 
-	//////////
-	/// Invalidate the entire stage.
-	///
-	void InvalidateStage();
+    //////////
+    /// Invalidate the entire stage.
+    ///
+    void InvalidateStage();
 
-	//////////
-	/// Invalidate just the screen, not the offscreen compositing for the stage.
-	///
-	void InvalidateScreen();
+    //////////
+    /// Invalidate just the screen, not the offscreen compositing for the stage.
+    ///
+    void InvalidateScreen();
 
-	//////////
-	/// Invalidate the specified rectangle.
-	///
-	void InvalidateRect(const wxRect &inRect);
+    //////////
+    /// Invalidate the specified rectangle.
+    ///
+    void InvalidateRect(const wxRect &inRect);
 
-	//////////
-	/// Get the currently selected drawing area for this stage.
-	///
-	DrawingArea *GetCurrentDrawingArea();
+    //////////
+    /// Get the currently selected drawing area for this stage.
+    ///
+    DrawingArea *GetCurrentDrawingArea();
 
-	//////////
-	/// Get the background drawing area for this stage.
-	///
-	DrawingArea *GetBackgroundDrawingArea()
-		{ return mBackgroundDrawingArea.get(); }
+    //////////
+    /// Get the background drawing area for this stage.
+    ///
+    DrawingArea *GetBackgroundDrawingArea()
+        { return mBackgroundDrawingArea.get(); }
 
-	//////////
-	/// Save a screenshot to the specified file
-	///
-	/// \param inFilename  The name of the file to save to.
-	///
-	void Screenshot(const wxString &inFilename);
+    //////////
+    /// Save a screenshot to the specified file
+    ///
+    /// \param inFilename  The name of the file to save to.
+    ///
+    void Screenshot(const wxString &inFilename);
 
-	//////////
-	/// Copy a string to the clipboard.
-	///
-	/// \param inString  The string to copy.
-	///
-	void CopyStringToClipboard(const wxString &inString);
+    //////////
+    /// Copy a string to the clipboard.
+    ///
+    /// \param inString  The string to copy.
+    ///
+    void CopyStringToClipboard(const wxString &inString);
 
-	//////////
-	/// Suspend the interpreter until the named movie reaches the specified
-	/// frame.
-	///
-	/// \param inElementName  The name of the MediaElement to wait on.
-	/// \param inUntilFrame  The frame to wait until.
-	/// \return  true if the wait request was valid, false if the
-	///                named element doesn't exist or isn't a movie.
-	///
-	bool Wait(const wxString &inElementName, MovieFrame inUntilFrame);
+    //////////
+    /// Suspend the interpreter until the named movie reaches the specified
+    /// frame.
+    ///
+    /// \param inElementName  The name of the MediaElement to wait on.
+    /// \param inUntilFrame  The frame to wait until.
+    /// \return  true if the wait request was valid, false if the
+    ///                named element doesn't exist or isn't a movie.
+    ///
+    bool Wait(const wxString &inElementName, MovieFrame inUntilFrame);
 
-	//////////
-	/// Refresh the screen using the specified effect.
-	///
-	/// \param inTransition  The name of the transition to use, or "none".
-	/// \param inMilliseconds  The desired duration of the transition.
-	///
-	void RefreshStage(const std::string &inTransition,
-					  int inMilliseconds);
+    //////////
+    /// Refresh the screen using the specified effect.
+    ///
+    /// \param inTransition  The name of the transition to use, or "none".
+    /// \param inMilliseconds  The desired duration of the transition.
+    ///
+    void RefreshStage(const std::string &inTransition,
+                      int inMilliseconds);
 
-	//////////
-	/// Add a Element to this Stage.  This should only be called
-	/// by the Element class.
-	///
-	void AddElement(ElementPtr inElement);
+    //////////
+    /// Add a Element to this Stage.  This should only be called
+    /// by the Element class.
+    ///
+    void AddElement(ElementPtr inElement);
 
-	//////////
-	/// Find an element by name.
-	///
-	/// \param inElementName  The name to search for.
-	/// \return  A pointer to the element, or NULL.
-	///
-	ElementPtr FindElement(const wxString &inElementName);
+    //////////
+    /// Find an element by name.
+    ///
+    /// \param inElementName  The name to search for.
+    /// \return  A pointer to the element, or NULL.
+    ///
+    ElementPtr FindElement(const wxString &inElementName);
 
-	//////////
-	/// Find the lightweight Element containing the specified point, if
-	/// any.
-	///
-	/// \param inPoint  The point to check.
+    //////////
+    /// Find the lightweight Element containing the specified point, if
+    /// any.
+    ///
+    /// \param inPoint  The point to check.
     /// \param inMustWantCursor  Only find elements where WantsCursor is true.
-	/// \return  A pointer to the Element, or NULL.
-	///
-	ElementPtr FindLightWeightElement(const wxPoint &inPoint,
+    /// \return  A pointer to the Element, or NULL.
+    ///
+    ElementPtr FindLightWeightElement(const wxPoint &inPoint,
                                       bool inMustWantCursor = true);
 
-	//////////
-	/// Find the appropriate event dispatcher for the given point.
-	/// We normally call this function when we want to find a
-	/// lightweight element to handle some kind of mouse event.
-	///
-	/// \param inPoint  The point to check.
-	/// \return  The event dispatcher which should handle
-	///                this event.
-	///
-	EventDispatcher *FindEventDispatcher(const wxPoint &inPoint);
+    //////////
+    /// Find the appropriate event dispatcher for the given point.
+    /// We normally call this function when we want to find a
+    /// lightweight element to handle some kind of mouse event.
+    ///
+    /// \param inPoint  The point to check.
+    /// \return  The event dispatcher which should handle
+    ///                this event.
+    ///
+    EventDispatcher *FindEventDispatcher(const wxPoint &inPoint);
 
-	//////////
-	/// Delete a Element by name.
-	///
-	/// \param inName  The name of the Element to delete.
-	/// \return  Returns true if that Element existed.
-	///
-	bool DeleteElementByName(const wxString &inName);
+    //////////
+    /// Delete a Element by name.
+    ///
+    /// \param inName  The name of the Element to delete.
+    /// \return  Returns true if that Element existed.
+    ///
+    bool DeleteElementByName(const wxString &inName);
 
-	//////////
-	/// Delete all Elements owned the Stage.
-	///
-	void DeleteElements();
+    //////////
+    /// Delete all Elements owned the Stage.
+    ///
+    void DeleteElements();
 
-	//////////
-	/// Return true if a movie is playing.
-	///
-	bool IsMediaPlaying();
+    //////////
+    /// Return true if a movie is playing.
+    ///
+    bool IsMediaPlaying();
 
-	//////////
-	/// End all media (audio & video) elements which are playing.
-	///
-	void EndMediaElements();
+    //////////
+    /// End all media (audio & video) elements which are playing.
+    ///
+    void EndMediaElements();
 
-	//////////
-	/// "Grab" the mouse on behalf of the specified element.  This means
-	/// that all mouse events will be sent to that element until further
-	/// notice, regardless of where the event occurred.  Grabs are used to
-	/// implement standard buttons without busy-looping during mouse down.
-	///
-	void MouseGrab(ElementPtr inElement);
+    //////////
+    /// "Grab" the mouse on behalf of the specified element.  This means
+    /// that all mouse events will be sent to that element until further
+    /// notice, regardless of where the event occurred.  Grabs are used to
+    /// implement standard buttons without busy-looping during mouse down.
+    ///
+    void MouseGrab(ElementPtr inElement);
 
-	//////////
-	/// Ungrab the mouse.  'inElement' should match the previous grab.
-	///
-	void MouseUngrab(ElementPtr inElement);
+    //////////
+    /// Ungrab the mouse.  'inElement' should match the previous grab.
+    ///
+    void MouseUngrab(ElementPtr inElement);
 
-	//////////
-	/// Is the mouse grabbed right now?
-	///
-	bool MouseIsGrabbed() { return mGrabbedElement ? true : false; }
+    //////////
+    /// Is the mouse grabbed right now?
+    ///
+    bool MouseIsGrabbed() { return mGrabbedElement ? true : false; }
 
-	//////////
-	/// Is the mouse grabbed by the specified element?
-	///
-	bool MouseIsGrabbedBy(ElementPtr inElement)
-    	{ return mGrabbedElement == inElement; }
+    //////////
+    /// Is the mouse grabbed by the specified element?
+    ///
+    bool MouseIsGrabbedBy(ElementPtr inElement)
+        { return mGrabbedElement == inElement; }
 
-	//////////
-	/// Should we send mouse events to the specified element?  This is
-	/// normally true, unless a grab is in effect, in which case only
-	/// the grabbed element should receive mouse events.
-	///
-	bool ShouldSendMouseEventsToElement(ElementPtr inElement);
+    //////////
+    /// Should we send mouse events to the specified element?  This is
+    /// normally true, unless a grab is in effect, in which case only
+    /// the grabbed element should receive mouse events.
+    ///
+    bool ShouldSendMouseEventsToElement(ElementPtr inElement);
 
     //////////
     /// Get the number of accessible children of the Stage.

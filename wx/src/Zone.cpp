@@ -28,9 +28,9 @@
 using namespace Halyard;
 
 Zone::Zone(Stage *inStage, const wxString &inName, const TPolygon &inPoly,
-		   Halyard::TCallbackPtr inDispatch, const std::string &inCursorName)
+           Halyard::TCallbackPtr inDispatch, const std::string &inCursorName)
     : LightweightElement(inStage, inName, inDispatch, inCursorName),
-	  mPolygon(inPoly)
+      mPolygon(inPoly)
 {
 }
 
@@ -43,18 +43,18 @@ void Zone::MoveTo(const wxPoint &inPoint) {
 }
 
 void Zone::DrawElementBorder(wxDC &inDC) {
-	std::vector<TPoint> pts = mPolygon.Vertices();
-	std::vector<TPoint>::iterator i;
-	TPoint begin, end;
+    std::vector<TPoint> pts = mPolygon.Vertices();
+    std::vector<TPoint>::iterator i;
+    TPoint begin, end;
 
-	// TODO - this should be implemented by an iterator over the edges!
-	// Implement that iterator!
-	for (i = pts.begin(); i != pts.end(); ++i) {
-		begin = *i;
-		end = (i+1) == pts.end() ? *(pts.begin()) : *(i+1);
-		
-		inDC.DrawLine(begin.X(), begin.Y(), end.X(), end.Y());
-	}
+    // TODO - this should be implemented by an iterator over the edges!
+    // Implement that iterator!
+    for (i = pts.begin(); i != pts.end(); ++i) {
+        begin = *i;
+        end = (i+1) == pts.end() ? *(pts.begin()) : *(i+1);
+        
+        inDC.DrawLine(begin.X(), begin.Y(), end.X(), end.Y());
+    }
 }
 
 void Zone::SetShape(const Halyard::TPolygon &inPoly) {

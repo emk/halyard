@@ -225,7 +225,7 @@ utf16_string Halyard::utf16_from_utf8(const utf8_string &utf8) {
                 default:
                     gLog.Fatal("halyard", "Error in UTF-8 decoder tables");
             }
-		    
+            
             // Advance to the end of the sequence.
             i += length;
             
@@ -327,12 +327,12 @@ utf8_string Halyard::utf8_from_multibyte(const std::string &str) {
 
 BEGIN_TEST_CASE(TestMultibyteConversion, TestCase) {
     // Check simple conversions to UTF-16.
-	CHECK_EQ(utf16_from_multibyte("") == L"", true);
-	CHECK_EQ(utf16_from_multibyte("abc") == L"abc", true);
+    CHECK_EQ(utf16_from_multibyte("") == L"", true);
+    CHECK_EQ(utf16_from_multibyte("abc") == L"abc", true);
 
     // Check simple conversions to native multibyte.
-	CHECK_EQ(multibyte_from_utf16(L""), "");
-	CHECK_EQ(multibyte_from_utf16(L"abc"), "abc");
+    CHECK_EQ(multibyte_from_utf16(L""), "");
+    CHECK_EQ(multibyte_from_utf16(L"abc"), "abc");
 
     // Since we don't actually *know* what the native multibyte encoding
     // is, we're somewhat limited in the kinds of tests we can write.

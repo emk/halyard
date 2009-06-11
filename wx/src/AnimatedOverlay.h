@@ -33,16 +33,16 @@ class AnimatedOverlay : public Overlay, public Halyard::TStateListener {
     wxPoint mCurrentOffset;
     std::string mCurrentImage;
 
-	typedef std::vector<std::string> ImageList;
-	ImageList mImages;
-	std::string mStatePath;
-	
+    typedef std::vector<std::string> ImageList;
+    ImageList mImages;
+    std::string mStatePath;
+    
     void UpdatePosition();
-	CairoSurfacePtr LoadImage(const std::string &inName);
-	void DrawImage(const std::string &inName);
-	
+    CairoSurfacePtr LoadImage(const std::string &inName);
+    void DrawImage(const std::string &inName);
+    
 public:
-	AnimatedOverlay(Stage *inStage, const wxString &inName, 
+    AnimatedOverlay(Stage *inStage, const wxString &inName, 
                     const wxRect &inBounds, 
                     Halyard::TCallbackPtr inDispatch,
                     const std::string &inCursorName,
@@ -51,7 +51,7 @@ public:
                     Halyard::TValueList images);
 
     virtual void MoveTo(const wxPoint &inPoint);
-	virtual void NotifyStateChanged();
+    virtual void NotifyStateChanged();
 };
 
 #endif // AnimatedOverlay_H

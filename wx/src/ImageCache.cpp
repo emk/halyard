@@ -55,49 +55,49 @@ size_t ImageCache::SurfaceSize(CairoSurfacePtr inSurface)
 ImageCache::Cache::iterator
 ImageCache::BetterToPurge(Cache::iterator inA, Cache::iterator inB)
 {
-	size_t size_a = SurfaceSize(inA->second.surface);
-	size_t size_b = SurfaceSize(inB->second.surface);
+    size_t size_a = SurfaceSize(inA->second.surface);
+    size_t size_b = SurfaceSize(inB->second.surface);
 
-	// If one of the images is much older than the other, purge it.  It
-	// doesn't take *too* long to load images.
-	if (inA->second.last_used > inB->second.last_used + AGE_MARGIN)
-		return inA;
-	if (inB->second.last_used > inA->second.last_used + AGE_MARGIN)
-		return inB;
+    // If one of the images is much older than the other, purge it.  It
+    // doesn't take *too* long to load images.
+    if (inA->second.last_used > inB->second.last_used + AGE_MARGIN)
+        return inA;
+    if (inB->second.last_used > inA->second.last_used + AGE_MARGIN)
+        return inB;
 
-	// If one of the images is much bigger than the other, purge it.  Our
-	// cache benefits small images most, because there appears to be
-	// a large constant time overhead on loading images, regardless of
-	// size.  Curious.
-	if (size_a > SIZE_FACTOR * size_b)
-		return inA;
-	if (size_b > SIZE_FACTOR * size_a)
-		return inB;
+    // If one of the images is much bigger than the other, purge it.  Our
+    // cache benefits small images most, because there appears to be
+    // a large constant time overhead on loading images, regardless of
+    // size.  Curious.
+    if (size_a > SIZE_FACTOR * size_b)
+        return inA;
+    if (size_b > SIZE_FACTOR * size_a)
+        return inB;
 
-	// Purge whichever image is least popular.
-	return (inA->second.count > inB->second.count) ? inA : inB;
+    // Purge whichever image is least popular.
+    return (inA->second.count > inB->second.count) ? inA : inB;
 }
 
 void ImageCache::RequireFreeSpace(size_t inSpaceNeeded)
 {
-	ASSERT(inSpaceNeeded <= GetMaxCacheSize());
+    ASSERT(inSpaceNeeded <= GetMaxCacheSize());
 
-	// Loop until we've got enough space.
-	while (mCurrentBytes + inSpaceNeeded > mMaxBytes)
-	{
-		ASSERT(mCache.begin() != mCache.end());
+    // Loop until we've got enough space.
+    while (mCurrentBytes + inSpaceNeeded > mMaxBytes)
+    {
+        ASSERT(mCache.begin() != mCache.end());
 
-		// Loop through the cache, looking for something to purge.
-		Cache::iterator i = mCache.begin();
-		Cache::iterator candidate = i++;
-		for (; i != mCache.end(); ++i)
-			candidate = BetterToPurge(candidate, i);
+        // Loop through the cache, looking for something to purge.
+        Cache::iterator i = mCache.begin();
+        Cache::iterator candidate = i++;
+        for (; i != mCache.end(); ++i)
+            candidate = BetterToPurge(candidate, i);
 
-		// Purge it.
-		gLog.Trace("halyard", "Purging image: %s", candidate->first.c_str());
-		mCurrentBytes -= SurfaceSize(candidate->second.surface);
-		mCache.erase(candidate);
-	}
+        // Purge it.
+        gLog.Trace("halyard", "Purging image: %s", candidate->first.c_str());
+        mCurrentBytes -= SurfaceSize(candidate->second.surface);
+        mCache.erase(candidate);
+    }
 }
 
 CairoSurfacePtr ImageCache::GetImage(wxString inPath)
@@ -107,43 +107,43 @@ CairoSurfacePtr ImageCache::GetImage(wxString inPath)
     // Look for the image in our cache.
     Cache::iterator found = mCache.find(path);
     if (found != mCache.end()) {
-		found->second.count++;
-		found->second.last_used = ::wxGetUTCTime();
-		return found->second.surface;
+        found->second.count++;
+        found->second.last_used = ::wxGetUTCTime();
+        return found->second.surface;
     }
 
     // We're going to have to load the image.
     wxImage image;
     image.LoadFile(inPath);
     if (!image.Ok()) {
-		// Load failed, return a null surface.
-		return CairoSurfacePtr();
-	}
+        // Load failed, return a null surface.
+        return CairoSurfacePtr();
+    }
     CairoSurfacePtr surface(SurfaceFromImage(image));
 
     // If the image is too big to cache, just return it.
-	size_t size = SurfaceSize(surface);
-	if (size > GetMaxCacheSize() / 2)
-		return surface;
+    size_t size = SurfaceSize(surface);
+    if (size > GetMaxCacheSize() / 2)
+        return surface;
 
-	// Make sure there's enough room in our cache to hold this image.
-	RequireFreeSpace(size);
+    // Make sure there's enough room in our cache to hold this image.
+    RequireFreeSpace(size);
 
-	// Store the image into our cache, and return it.
-	mCurrentBytes += size;
-	CachedImage cached;
-	cached.surface   = surface;
-	cached.last_used = ::wxGetUTCTime();
-	cached.count     = 1;
-	mCache.insert(Cache::value_type(path, cached));
-	return surface;
+    // Store the image into our cache, and return it.
+    mCurrentBytes += size;
+    CachedImage cached;
+    cached.surface   = surface;
+    cached.last_used = ::wxGetUTCTime();
+    cached.count     = 1;
+    mCache.insert(Cache::value_type(path, cached));
+    return surface;
 }
 
 void ImageCache::NotifyReloadScriptStarting()
 {
     // Dump our entire cache when the script gets reloaded.
     mCache.clear();
-	mCurrentBytes = 0;
+    mCurrentBytes = 0;
 }
 
 CairoSurfacePtr ImageCache::SurfaceFromImage(wxImage &inImage) {

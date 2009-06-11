@@ -30,8 +30,8 @@ BEGIN_NAMESPACE_HALYARD
 /// Savable representation of a HalyardProgram.
 class HalyardProgram : public model::Object {
 public:
-	DECLARE_MODEL_CLASS(HalyardProgram);
-	virtual void Initialize();
+    DECLARE_MODEL_CLASS(HalyardProgram);
+    virtual void Initialize();
 
     std::string GetName();
     std::string GetCopyright();

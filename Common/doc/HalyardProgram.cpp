@@ -34,19 +34,19 @@ IMPLEMENT_MODEL_CLASS(HalyardProgram);
 
 void HalyardProgram::Initialize()
 {
-	time_t t = time(0);
-	std::string year =
-		boost::lexical_cast<std::string>(localtime(&t)->tm_year + 1900);
+    time_t t = time(0);
+    std::string year =
+        boost::lexical_cast<std::string>(localtime(&t)->tm_year + 1900);
 
-	SetString("name", "");
-	//SetSize("stageSize", ...);
-	SetString("copyright",
-			  "Copyright " + year + " ???.  All rights reserved.");
-	SetString("version", "0.0");
-	SetString("comments", "");
+    SetString("name", "");
+    //SetSize("stageSize", ...);
+    SetString("copyright",
+              "Copyright " + year + " ???.  All rights reserved.");
+    SetString("version", "0.0");
+    SetString("comments", "");
 
-	Set("cards", new List());
-	Set("backgrounds", new List());
+    Set("cards", new List());
+    Set("backgrounds", new List());
 
     // Add any new fields in the migration code, not in Initialize(), so we
     // can just go ahead and migrate objects to the latest version.

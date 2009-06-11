@@ -51,7 +51,7 @@ class TStateListenerManager : public TReloadNotified  {
     typedef std::multimap<std::string,CallbackListenerPtr> ListenerMap;
 
     ListenerMap mListeners;
-	
+    
 public:
     //////////
     /// Unregister all TStateListeners in the manager.

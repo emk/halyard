@@ -26,25 +26,25 @@
 /// A collection of screen rectangles which have been marked "dirty".  This
 /// class does smart merging of dirty rectangles to minimize redraw.
 class DirtyList {
-	typedef std::vector<wxRect> RectVector;
-	RectVector mRectangles;
-	
+    typedef std::vector<wxRect> RectVector;
+    RectVector mRectangles;
+    
 public:
-	typedef RectVector::iterator iterator;
-	typedef RectVector::const_iterator const_iterator;
+    typedef RectVector::iterator iterator;
+    typedef RectVector::const_iterator const_iterator;
 
-	DirtyList() {}
-	
-	bool empty() { return mRectangles.empty(); }
-	void clear() { mRectangles.clear(); }
+    DirtyList() {}
+    
+    bool empty() { return mRectangles.empty(); }
+    void clear() { mRectangles.clear(); }
 
-	iterator begin() { return mRectangles.begin(); }
-	iterator end() { return mRectangles.end(); }
+    iterator begin() { return mRectangles.begin(); }
+    iterator end() { return mRectangles.end(); }
 
-	const_iterator begin() const { return mRectangles.begin(); }
-	const_iterator end() const { return mRectangles.end(); }
+    const_iterator begin() const { return mRectangles.begin(); }
+    const_iterator end() const { return mRectangles.end(); }
 
-	void MergeRect(const wxRect &inRect);
+    void MergeRect(const wxRect &inRect);
 
     wxRect GetBounds() const;
 

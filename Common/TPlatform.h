@@ -27,7 +27,7 @@
 //////////
 /// \defgroup platform Platform-Specific Configuration
 ///
-///	Platform-specific configuration code.
+/// Platform-specific configuration code.
 ///
 /// \author Chuck Officer
 /// \author ...and others

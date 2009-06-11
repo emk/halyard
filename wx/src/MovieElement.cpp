@@ -28,21 +28,21 @@ using namespace Halyard;
 
 MovieElement::MovieElement(Stage *inStage, const wxString &inName,
                            Halyard::TCallbackPtr inDispatcher,
-						   const wxRect &inBounds,
-						   const wxString &inLocation,
-						   long inWindowStyle,
-						   MovieWindowStyle inMovieWindowStyle,
+                           const wxRect &inBounds,
+                           const wxString &inLocation,
+                           long inWindowStyle,
+                           MovieWindowStyle inMovieWindowStyle,
                            float inVolume)
     : Widget(inStage, inName, inDispatcher),
       mLocationInfo(inLocation), mMovieWindow(NULL),
-	  mHaveSentMediaErrorEvent(false),
+      mHaveSentMediaErrorEvent(false),
       mHaveSentMediaTimeoutEvent(false)
 {
     mMovieWindow = new MovieWindowNative(inStage, -1, inBounds.GetPosition(),
-										 inBounds.GetSize(), inWindowStyle,
-										 inMovieWindowStyle);
+                                         inBounds.GetSize(), inWindowStyle,
+                                         inMovieWindowStyle);
     mMovieWindow->SetVolume("all", inVolume);
-	try {
+    try {
         mMovieWindow->SetMovie(inLocation);
     } catch (std::exception &e) {
         // Log this exception.  We'll report it in our Idle() method,
@@ -52,15 +52,15 @@ MovieElement::MovieElement(Stage *inStage, const wxString &inName,
         gLog.Info("halyard", "Movie error: %s for %s", e.what(),
                   location.c_str());
     }
-	InitializeWidgetWindow(mMovieWindow);
+    InitializeWidgetWindow(mMovieWindow);
 }
 
 bool MovieElement::HasVisibleRepresentation()
 {
-	if (mMovieWindow->GetMovieWindowStyle() & MOVIE_AUDIO_ONLY)
-		return false;
-	else
-		return true;
+    if (mMovieWindow->GetMovieWindowStyle() & MOVIE_AUDIO_ONLY)
+        return false;
+    else
+        return true;
 }
 
 bool MovieElement::WantsCursor() const {
@@ -134,17 +134,17 @@ bool MovieElement::IsLooping()
 void MovieElement::EndPlayback()
 {
     MediaElement::EndPlayback();
-	mMovieWindow->Pause();
+    mMovieWindow->Pause();
 }
 
 void MovieElement::Pause()
 {
-	mMovieWindow->Pause();
+    mMovieWindow->Pause();
 }
 
 void MovieElement::Resume()
 {
-	mMovieWindow->Resume();
+    mMovieWindow->Resume();
 }
 
 void MovieElement::SetVolume(const std::string &inChannel, double inVolume)

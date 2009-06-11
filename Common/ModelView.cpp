@@ -33,48 +33,48 @@ using namespace model;
 //=========================================================================
 
 View::View()
-	: mObject(NULL), mObjectIsLive(false)
+    : mObject(NULL), mObjectIsLive(false)
 {
 }
 
 View::~View()
 {
-	if (mObject)
-		mObject->UnregisterView(this);
+    if (mObject)
+        mObject->UnregisterView(this);
 }
 
 void View::SetObject(Object *inObject)
 {
-	ASSERT(inObject);
-	ASSERT(!mObject);
-	mObject = inObject;
-	mObject->RegisterView(this);
-	CallObjectChanged();
+    ASSERT(inObject);
+    ASSERT(!mObject);
+    mObject = inObject;
+    mObject->RegisterView(this);
+    CallObjectChanged();
 }
 
 Object *View::GetObject()
 {
-	ASSERT(mObject && ObjectIsLive());
-	return mObject;
+    ASSERT(mObject && ObjectIsLive());
+    return mObject;
 }
 
 void View::CallObjectChanged()
 {
-	mObjectIsLive = true;
-	ObjectChanged();
+    mObjectIsLive = true;
+    ObjectChanged();
 }
 
 void View::CallObjectDeleted()
 {
-	mObjectIsLive = false;
-	ObjectDeleted();
+    mObjectIsLive = false;
+    ObjectDeleted();
 }
 
 void View::ClearObject()
 {
-	// We are called by the destructor of Object, and we should set any
-	// out-of-date pointers to NULL.
-	ASSERT(mObject);
-	mObject = NULL;
-	CallObjectDeleted();
+    // We are called by the destructor of Object, and we should set any
+    // out-of-date pointers to NULL.
+    ASSERT(mObject);
+    mObject = NULL;
+    CallObjectDeleted();
 }

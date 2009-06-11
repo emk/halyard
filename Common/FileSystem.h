@@ -31,88 +31,88 @@
 ///
 namespace FileSystem {
 
-	//////////
-	/// A file-system related error. 
-	/// TODO - Refactor and combine with Typography::Error?
-	///
-	class Error : public Halyard::TException {
-	public:
-		Error(const char *inErrorFile, int inErrorLine, int inErrorCode);
-		Error(const char *inErrorFile, int inErrorLine,
-			  const std::string &inErrorMessage)
-			: TException(inErrorFile, inErrorLine, inErrorMessage) {}
-		
-		virtual const char *GetClassName() const
-		    { return "FileSystem::Error"; }
-	};
-	
-	//////////
-	/// A portable representation of a pathname.  Not yet complete.
-	///
-	class Path {
-		std::string mPath;
+    //////////
+    /// A file-system related error. 
+    /// TODO - Refactor and combine with Typography::Error?
+    ///
+    class Error : public Halyard::TException {
+    public:
+        Error(const char *inErrorFile, int inErrorLine, int inErrorCode);
+        Error(const char *inErrorFile, int inErrorLine,
+              const std::string &inErrorMessage)
+            : TException(inErrorFile, inErrorLine, inErrorMessage) {}
+        
+        virtual const char *GetClassName() const
+            { return "FileSystem::Error"; }
+    };
+    
+    //////////
+    /// A portable representation of a pathname.  Not yet complete.
+    ///
+    class Path {
+        std::string mPath;
 
-	public:
-		//////////
-		/// Create a path to the current working directory.
-		///
-		Path();
+    public:
+        //////////
+        /// Create a path to the current working directory.
+        ///
+        Path();
 
-		//////////
-		/// Create a path from a string.
-		/// TODO - Specify string format.
-		/// TODO - Check for trailing directory separator.
-		/// 
-		Path(const std::string &inPath);
-		
-		//////////
-		/// Return the extension of the last element of the path, if
-		/// it appears to have one.  Otherwise, return "".
-		///
-		std::string GetExtension() const;
+        //////////
+        /// Create a path from a string.
+        /// TODO - Specify string format.
+        /// TODO - Check for trailing directory separator.
+        /// 
+        Path(const std::string &inPath);
+        
+        //////////
+        /// Return the extension of the last element of the path, if
+        /// it appears to have one.  Otherwise, return "".
+        ///
+        std::string GetExtension() const;
 
-		//////////
-		/// Change the extension of a path, or add one if none exists.
-		///
-		/// \param inNewExtension  The extension to use.
-		/// \return  A path with the new extension.
-		///
-		Path ReplaceExtension(std::string inNewExtension) const;
+        //////////
+        /// Change the extension of a path, or add one if none exists.
+        ///
+        /// \param inNewExtension  The extension to use.
+        /// \return  A path with the new extension.
+        ///
+        Path ReplaceExtension(std::string inNewExtension) const;
 
-		//////////
-		/// Does this path point to an actual object on disk?
-		///
-		bool DoesExist() const;
+        //////////
+        /// Does this path point to an actual object on disk?
+        ///
+        bool DoesExist() const;
 
-		//////////
-		/// Does this path point to a file on disk?
-		///
-		bool IsRegularFile() const;
+        //////////
+        /// Does this path point to a file on disk?
+        ///
+        bool IsRegularFile() const;
 
-		//////////
-		/// Does this path point to a directory on disk?
-		///
-		bool IsDirectory() const;
+        //////////
+        /// Does this path point to a directory on disk?
+        ///
+        bool IsDirectory() const;
 
-		//////////
-		/// Read in all the entries from a directory.
-		///
-		std::list<std::string> GetDirectoryEntries() const;
+        //////////
+        /// Read in all the entries from a directory.
+        ///
+        std::list<std::string> GetDirectoryEntries() const;
 
-		//////////
-		/// Delete the file pointed to by this path.  (If we name this
-		/// "DeleteFile", it gets clobbered by a #define in windows.h.)
-		///
-		void RemoveFile() const;
+        //////////
+        /// Delete the file pointed to by this path.  (If we name this
+        /// "DeleteFile", it gets clobbered by a #define in windows.h.)
+        ///
+        void RemoveFile() const;
 
-		//////////
-		/// Add a component to the end of the path (as though the
-		/// the path were a directory).
-		///
-		/// \param inFileName  The component to add to the path.
-		/// \return  The path plus the new component.
-		///
-		Path AddComponent(const std::string &inFileName) const;
+        //////////
+        /// Add a component to the end of the path (as though the
+        /// the path were a directory).
+        ///
+        /// \param inFileName  The component to add to the path.
+        /// \return  The path plus the new component.
+        ///
+        Path AddComponent(const std::string &inFileName) const;
 
         //////////
         /// An abbreviated form of AddComponent, intended to mimic
@@ -121,12 +121,12 @@ namespace FileSystem {
         Path operator/(const std::string &inFileName) const
             { return AddComponent(inFileName); }
 
-		//////////
-		/// Add a "parent directory" component to the end of
-		/// the path.  This may have exciting behavior in the
-		/// presence of symlinks.
-		/// 
-		Path AddParentComponent() const;
+        //////////
+        /// Add a "parent directory" component to the end of
+        /// the path.  This may have exciting behavior in the
+        /// presence of symlinks.
+        /// 
+        Path AddParentComponent() const;
 
         //////////
         /// Fetch the parent directory of this path.  This is done by
@@ -143,49 +143,49 @@ namespace FileSystem {
         /// filesystem root, ParentDirectory() will raise an exception.
         ///
         Path ParentDirectory() const;
-		
-		//////////
-		/// Convert a Path object into a local path string.  This isn't
-		/// entirely correct on the Macintosh (where two files can have the
-		/// same pathname if two hard drives have the same name), but we
-		/// need it to interface to third-party libraries that assume paths
-		/// are unique.
-		///
-		std::string ToNativePathString () const;
+        
+        //////////
+        /// Convert a Path object into a local path string.  This isn't
+        /// entirely correct on the Macintosh (where two files can have the
+        /// same pathname if two hard drives have the same name), but we
+        /// need it to interface to third-party libraries that assume paths
+        /// are unique.
+        ///
+        std::string ToNativePathString () const;
 
-		//////////
-		/// Rename this file to 'inNewName'.
-		///
-		void RenameFile(const Path &inNewName) const;
+        //////////
+        /// Rename this file to 'inNewName'.
+        ///
+        void RenameFile(const Path &inNewName) const;
 
-		//////////
-		/// Replace this file with 'inTemporaryFile'.  On some platforms,
-		/// it's possible to implement this as an atomic operation.
-		///
-		void ReplaceWithTemporaryFile(const Path &inTemporaryFile) const;
+        //////////
+        /// Replace this file with 'inTemporaryFile'.  On some platforms,
+        /// it's possible to implement this as an atomic operation.
+        ///
+        void ReplaceWithTemporaryFile(const Path &inTemporaryFile) const;
 
-		//////////
-		/// Create an empty file with the specified MIME type.  (The type
-		/// is only used on operating systems which support file types.)
-		///
-		void CreateWithMimeType(const std::string &inMimeType);
+        //////////
+        /// Create an empty file with the specified MIME type.  (The type
+        /// is only used on operating systems which support file types.)
+        ///
+        void CreateWithMimeType(const std::string &inMimeType);
 
-		//////////
-		/// Compare two paths for equality.  This is a dumb test--it doesn't
-		/// know anything about simplifying paths, and it doesn't look at
-		/// the disk.  It just does a memberwise comparison.  It isn't
-		/// good for much besides the test suites, actually.
-		///
-		friend bool operator==(const Path& inLeft, const Path& inRight);
+        //////////
+        /// Compare two paths for equality.  This is a dumb test--it doesn't
+        /// know anything about simplifying paths, and it doesn't look at
+        /// the disk.  It just does a memberwise comparison.  It isn't
+        /// good for much besides the test suites, actually.
+        ///
+        friend bool operator==(const Path& inLeft, const Path& inRight);
 
-		//////////
-		/// Create a path from an absolute native pathname string.
-		/// DO NOT PASS A RELATIVE PATH STRING.  The quality of the
-		/// Path returned by this function is directly related to
-		/// the quality of the input path.
-		///
-		static Path NativePath(const std::string &inPath);
-	};
+        //////////
+        /// Create a path from an absolute native pathname string.
+        /// DO NOT PASS A RELATIVE PATH STRING.  The quality of the
+        /// Path returned by this function is directly related to
+        /// the quality of the input path.
+        ///
+        static Path NativePath(const std::string &inPath);
+    };
 
     //////////
     /// The runtime directory is effectively part of Halyard itself, not
@@ -208,22 +208,22 @@ namespace FileSystem {
     ///
     Path GetRuntimeDirectory();
 
-	//////////
-	/// Set the base directory for the application.  Defaults to
-	/// the current working directory.
-	///
-	void SetBaseDirectory(const Path &inDirectory);
+    //////////
+    /// Set the base directory for the application.  Defaults to
+    /// the current working directory.
+    ///
+    void SetBaseDirectory(const Path &inDirectory);
 
-	//////////
-	/// Set the base directory for the application using a native
-	/// path name.  Any trailing directory separator will be removed.
-	///
-	void SetBaseDirectory(const std::string &inDirectory);
+    //////////
+    /// Set the base directory for the application using a native
+    /// path name.  Any trailing directory separator will be removed.
+    ///
+    void SetBaseDirectory(const std::string &inDirectory);
 
-	//////////
-	/// Return the current base directory for this application.
-	///
-	Path GetBaseDirectory();
+    //////////
+    /// Return the current base directory for this application.
+    ///
+    Path GetBaseDirectory();
 
     //////////
     /// Set the directory to use for log files and other application
@@ -251,11 +251,11 @@ namespace FileSystem {
     ///
     Path GetAppLocalDataDirectory();
 
-	//////////
-	/// Get the directory Halyard uses to store runtime support files.
-	///
-	inline Path GetRuntimeCollectsDirectory()
-	    { return GetRuntimeDirectory().AddComponent("collects"); }
+    //////////
+    /// Get the directory Halyard uses to store runtime support files.
+    ///
+    inline Path GetRuntimeCollectsDirectory()
+        { return GetRuntimeDirectory().AddComponent("collects"); }
 
     //////////
     /// Set the name of the data directories we'll use for this script.
@@ -297,7 +297,7 @@ namespace FileSystem {
     /// Get the directory storing script-level configuration files.
     ///
     inline Path GetScriptConfigDirectory()
-	    { return GetBaseDirectory().AddComponent("config"); }
+        { return GetBaseDirectory().AddComponent("config"); }
 
     //////////
     /// Get the path to a config file.  See GetScriptConfigDirectory.
@@ -305,36 +305,36 @@ namespace FileSystem {
     inline Path GetScriptConfigFilePath(const std::string &inFileName)
         { return GetScriptConfigDirectory().AddComponent(inFileName); }
 
-	//////////
-	/// Get the directory Halyard uses to store fonts.  (Eventually there
-	/// will be more of these functions, and we might combine them
-	/// into one function with a string argument.)
-	///
-	inline Path GetFontDirectory()
-	    { return GetRuntimeDirectory().AddComponent("fonts"); }
+    //////////
+    /// Get the directory Halyard uses to store fonts.  (Eventually there
+    /// will be more of these functions, and we might combine them
+    /// into one function with a string argument.)
+    ///
+    inline Path GetFontDirectory()
+        { return GetRuntimeDirectory().AddComponent("fonts"); }
 
-	//////////
-	/// We refer to fonts (and directories containing fonts) using
-	/// Unix-style relative paths.  The "Fonts" directory is represented as
-	/// "", a directory within it is represented as "dirname", and a file
-	/// /// within the directory is represented as "dirname/font.tff".
-	/// This /// slightly odd interface is a placeholder to allow recursive
-	/// font directory scanning *before* we finish migrating fully to
-	/// boost::filesystem.
-	///
-	Path ResolveFontPath(const std::string &inRelPath);
+    //////////
+    /// We refer to fonts (and directories containing fonts) using
+    /// Unix-style relative paths.  The "Fonts" directory is represented as
+    /// "", a directory within it is represented as "dirname", and a file
+    /// /// within the directory is represented as "dirname/font.tff".
+    /// This /// slightly odd interface is a placeholder to allow recursive
+    /// font directory scanning *before* we finish migrating fully to
+    /// boost::filesystem.
+    ///
+    Path ResolveFontPath(const std::string &inRelPath);
 
-	//////////
-	/// Get the directory Halyard uses to store scripts.
-	///
-	inline Path GetScriptsDirectory()
+    //////////
+    /// Get the directory Halyard uses to store scripts.
+    ///
+    inline Path GetScriptsDirectory()
         { return GetBaseDirectory().AddComponent("scripts"); }
 
-	//////////
-	/// Get the path to a specific script file.
-	///
-	inline Path GetScriptFilePath(const std::string &inScriptFileName)
-	    { return GetScriptsDirectory().AddComponent(inScriptFileName); }
+    //////////
+    /// Get the path to a specific script file.
+    ///
+    inline Path GetScriptFilePath(const std::string &inScriptFileName)
+        { return GetScriptsDirectory().AddComponent(inScriptFileName); }
 
     //////////
     /// Get the directory containing our local, non-streamable content
@@ -343,32 +343,32 @@ namespace FileSystem {
     inline Path GetLocalContentDirectory()
         { return GetBaseDirectory().AddComponent("local"); }
 
-	//////////
-	/// Get the directory which contains the script's "branding"
-	/// graphics--ones which we will use as chrome for various parts of the
-	/// engine UI, including the icon and the splash screen.
+    //////////
+    /// Get the directory which contains the script's "branding"
+    /// graphics--ones which we will use as chrome for various parts of the
+    /// engine UI, including the icon and the splash screen.
     //
-	inline Path GetBrandingDirectory()
+    inline Path GetBrandingDirectory()
         { return GetLocalContentDirectory().AddComponent("branding"); }
 
-	//////////
-	/// Get the path to a "branding" graphic.  See GetBrandingDirectory.
-	///
-	inline Path GetBrandingFilePath(const std::string &inFileName)
-	    { return GetBrandingDirectory().AddComponent(inFileName); }
+    //////////
+    /// Get the path to a "branding" graphic.  See GetBrandingDirectory.
+    ///
+    inline Path GetBrandingFilePath(const std::string &inFileName)
+        { return GetBrandingDirectory().AddComponent(inFileName); }
 
-	// TODO - Factor out more platform-specific config to use
-	// the directories listed above.
+    // TODO - Factor out more platform-specific config to use
+    // the directories listed above.
 
-	//////////
-	/// Checks existence of file and directory and displays specific
-	/// error message if non-existent.
-	///
-	/// \param inPath  The path to check on.
-	/// \param inShouldBeDir  True if the path refers to a directory, false if
-	///                       path refers to a file
-	///
-	void ExistenceCheck(const Path &inPath, const bool &isDir);
+    //////////
+    /// Checks existence of file and directory and displays specific
+    /// error message if non-existent.
+    ///
+    /// \param inPath  The path to check on.
+    /// \param inShouldBeDir  True if the path refers to a directory, false if
+    ///                       path refers to a file
+    ///
+    void ExistenceCheck(const Path &inPath, const bool &isDir);
 }
 
 #endif // FileSystem_H

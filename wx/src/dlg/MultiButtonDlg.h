@@ -31,17 +31,17 @@
 class MultiButtonDlg : public XrcDlg
 {
     DECLARE_EVENT_TABLE();
-	
-	wxStaticText *mMessage;
-	wxButton *mButton1;
-	wxButton *mButton2;
-	wxButton *mButton3;
+    
+    wxStaticText *mMessage;
+    wxButton *mButton1;
+    wxButton *mButton2;
+    wxButton *mButton3;
 
     void LabelOrHideButton(wxButton *inButton, const wxString &inLabel);
-	void OnButton(wxCommandEvent &inEvent);
+    void OnButton(wxCommandEvent &inEvent);
 
 public:
-	MultiButtonDlg(wxWindow *inParent, const wxString &inTitle,
+    MultiButtonDlg(wxWindow *inParent, const wxString &inTitle,
                    const wxString &inMessage, const wxString &inButton1,
                    const wxString &inButton2 = wxT(""),
                    const wxString &inButton3 = wxT(""));

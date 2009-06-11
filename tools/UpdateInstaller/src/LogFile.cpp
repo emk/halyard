@@ -37,7 +37,7 @@ LogFile::LogFile(const path &file) : mLogFile(NULL) {
   mLogFile = fopen(file.native_file_string().c_str(), "a+");
   if (mLogFile == NULL) {
     throw new std::runtime_error("Couldn't open log file: " 
-				 + file.native_file_string());
+                 + file.native_file_string());
   }
 }
 

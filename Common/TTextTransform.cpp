@@ -42,14 +42,14 @@ utf8_string TTextTransform::FixSpecials(const utf8_string &inString) {
     // Iterate through the string.
     size_t input_length = inString.length();
     for (size_t i = 0; i < input_length; i++) {
-		char current = inString[i];
-		if (current == '-' && i+1 < input_length && inString[i+1] == '-') {
-			result += "&mdash;";
-			i++;
-		} else if (current == '.' && i+2 < input_length &&
-				 inString[i+1] == '.' && inString[i+2] == '.') {
-			result += "&hellip;";
-			i += 2;
+        char current = inString[i];
+        if (current == '-' && i+1 < input_length && inString[i+1] == '-') {
+            result += "&mdash;";
+            i++;
+        } else if (current == '.' && i+2 < input_length &&
+                 inString[i+1] == '.' && inString[i+2] == '.') {
+            result += "&hellip;";
+            i += 2;
         } else if (current == '<') {
             // Skip to matching '>'.
             result += inString[i++];
@@ -57,55 +57,55 @@ utf8_string TTextTransform::FixSpecials(const utf8_string &inString) {
                 result += inString[i++];
             if (i < input_length)
                 result += inString[i];
-		} else {
-			result += current;
-		}
+        } else {
+            result += current;
+        }
     }
     return result;
 }
 
 utf8_string TTextTransform::FixQuotes(const utf8_string& inString) {
     utf8_string result;
-	
+    
     // 'want_left' indicates that the next character, if a quote,
     // should be a left quote.
     // Quotes at the beginning of the string should be a left quote.
     bool want_left = true;
-	
+    
     // Iterate through the string.
     size_t input_length = inString.length();
     for (size_t i = 0; i < input_length; i++) {
-		char current = inString[i];
-		if (current == '\'') {
-			if (want_left)
-				result += "&lsquo;";
-			else
-				result += "&rsquo;";
-			// Leave want_left unchanged.
-		} else if (current == '\"') {
-			if (want_left)
-				result += "&ldquo;";
-			else
-				result += "&rdquo;";
-			// Leave want_left unchanged.	    
-		} else if (isspace(current)) {
-			result += current;
-			want_left = true;
-		} else if (current == '<') {
+        char current = inString[i];
+        if (current == '\'') {
+            if (want_left)
+                result += "&lsquo;";
+            else
+                result += "&rsquo;";
+            // Leave want_left unchanged.
+        } else if (current == '\"') {
+            if (want_left)
+                result += "&ldquo;";
+            else
+                result += "&rdquo;";
+            // Leave want_left unchanged.       
+        } else if (isspace(current)) {
+            result += current;
+            want_left = true;
+        } else if (current == '<') {
             // Skip to matching '>'.
             result += inString[i++];
             while (i < input_length && inString[i] != '>')
                 result += inString[i++];
             if (i < input_length)
                 result += inString[i];
-		} else {
-			result += current;
-			want_left = false;
-		}
+        } else {
+            result += current;
+            want_left = false;
+        }
     }
     return result;
 }
 
 utf8_string TTextTransform::TransformString (const utf8_string& inString) {
-	return FixQuotes(FixSpecials(inString));
+    return FixQuotes(FixSpecials(inString));
 }

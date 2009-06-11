@@ -33,15 +33,15 @@
 class MetaDotDlg : public XrcDlg
 {
     DECLARE_EVENT_TABLE();
-	
+    
     Halyard::ScriptEditorDB::Definitions mDefinitions;
-	wxListBox *mDefinitionsListBox;
+    wxListBox *mDefinitionsListBox;
     size_t mChosenDefIndex;
 
-	void OnOK(wxCommandEvent &inEvent);
+    void OnOK(wxCommandEvent &inEvent);
 
 public:
-	MetaDotDlg(wxWindow *inParent,
+    MetaDotDlg(wxWindow *inParent,
                const Halyard::ScriptEditorDB::Definitions &defs);
     Halyard::ScriptEditorDB::Definition GetChosenDef();
 };

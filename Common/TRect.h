@@ -36,68 +36,68 @@ class TRect
     public:
         TRect() : m_Left(0), m_Top(0), m_Right(0), m_Bottom(0) {}
 
-	    TRect(int32 inLeft, int32 inTop, 
-			  int32 inRight, int32 inBottom);
+        TRect(int32 inLeft, int32 inTop, 
+              int32 inRight, int32 inBottom);
 
-		TRect(const TRect &rect);
-	    
-	    void Set(int32 inLeft, int32 inTop, 
-				 int32 inRight, int32 inBottom);
-		
-	    void Set(const TRect &inRect);
+        TRect(const TRect &rect);
+        
+        void Set(int32 inLeft, int32 inTop, 
+                 int32 inRight, int32 inBottom);
+        
+        void Set(const TRect &inRect);
 
-	    void Offset(const TPoint &inPt);
+        void Offset(const TPoint &inPt);
 
-		inline void SetTop(int32 inTop) { m_Top = inTop; }
-		
-		inline void	SetLeft(int32 inLeft) { m_Left = inLeft; }
-		
-		inline void	SetBottom(int32 inBottom) { m_Bottom = inBottom; }
-		
-		inline void	SetRight(int32 inRight) { m_Right = inRight; }
+        inline void SetTop(int32 inTop) { m_Top = inTop; }
+        
+        inline void SetLeft(int32 inLeft) { m_Left = inLeft; }
+        
+        inline void SetBottom(int32 inBottom) { m_Bottom = inBottom; }
+        
+        inline void SetRight(int32 inRight) { m_Right = inRight; }
 
-	    inline void	OffsetLeft(int32 inLeftOffset) { m_Left += inLeftOffset; }
-		
-		inline void	OffsetBottom(int32 inBottomOffset) { 
-			m_Bottom += inBottomOffset; 
-		}
-		
-		inline void	OffsetRight(int32 inRightOffset) { 
-			m_Right += inRightOffset; 
-		}
+        inline void OffsetLeft(int32 inLeftOffset) { m_Left += inLeftOffset; }
+        
+        inline void OffsetBottom(int32 inBottomOffset) { 
+            m_Bottom += inBottomOffset; 
+        }
+        
+        inline void OffsetRight(int32 inRightOffset) { 
+            m_Right += inRightOffset; 
+        }
 
-		inline int32 Top() const { return (m_Top); }
-		
-		inline int32 Left() const { return (m_Left); }
-		
-		inline int32 Bottom() const { return (m_Bottom); }
-		
-		inline int32 Right() const { return (m_Right); }
+        inline int32 Top() const { return (m_Top); }
+        
+        inline int32 Left() const { return (m_Left); }
+        
+        inline int32 Bottom() const { return (m_Bottom); }
+        
+        inline int32 Right() const { return (m_Right); }
 
-		TPoint TopLeft() const;
+        TPoint TopLeft() const;
 
-		int32 Width() { return (m_Right - m_Left); }
-		
-		int32 Height() { return (m_Bottom - m_Top); }
+        int32 Width() { return (m_Right - m_Left); }
+        
+        int32 Height() { return (m_Bottom - m_Top); }
 
-		TRect &operator=(const TRect &inRect);
-		
-		bool operator==(const TRect &inRect) const;
+        TRect &operator=(const TRect &inRect);
+        
+        bool operator==(const TRect &inRect) const;
 
         // Does TRect contain TPoint?
-		bool Contains(TPoint &inPt);
-		
-	protected:
-		int32 m_Left;
+        bool Contains(TPoint &inPt);
+        
+    protected:
+        int32 m_Left;
         int32 m_Top;
-		int32 m_Right;
-		int32 m_Bottom;
+        int32 m_Right;
+        int32 m_Bottom;
 };
 
 inline std::ostream &operator<<(std::ostream &out, const TRect &r) {
-	out << "(rect " << r.Left() << " " << r.Top() << " " << r.Right() << " "
-		<< r.Bottom() << ")";
-	return out;
+    out << "(rect " << r.Left() << " " << r.Top() << " " << r.Right() << " "
+        << r.Bottom() << ")";
+    return out;
 }
 
 END_NAMESPACE_HALYARD

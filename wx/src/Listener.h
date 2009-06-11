@@ -33,20 +33,20 @@ class Listener : public wxWindow
 {
     bool mIsFirstLine;
 
-	wxTextCtrl *mHistory;
-	wxTextCtrl *mInput;
+    wxTextCtrl *mHistory;
+    wxTextCtrl *mInput;
 
-	wxFont mNormalFont;
-	wxFont mBoldFont;
+    wxFont mNormalFont;
+    wxFont mBoldFont;
 
 public:
-	Listener(StageFrame *inStageFrame);
+    Listener(StageFrame *inStageFrame);
 
     /// Focus the listener's text input area.
     void FocusInput();
 
-	void UpdateUiInput(wxUpdateUIEvent &inEvent);
-	void OnTextEnter(wxCommandEvent &inEvent);
+    void UpdateUiInput(wxUpdateUIEvent &inEvent);
+    void OnTextEnter(wxCommandEvent &inEvent);
     void OnSize(wxSizeEvent &inEvent);
 
     DECLARE_EVENT_TABLE();

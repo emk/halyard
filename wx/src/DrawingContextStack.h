@@ -36,11 +36,11 @@ class DrawingArea;
 class DrawingContextStack {
     typedef std::vector<ElementPtr> ElementStack;
 
-	//////////
-	/// The stage we're associated with.  This provides our default
-	/// DrawingArea when we have nothing else.
-	///
-	Stage *mStage;
+    //////////
+    /// The stage we're associated with.  This provides our default
+    /// DrawingArea when we have nothing else.
+    ///
+    Stage *mStage;
 
     //////////
     /// A stack of currently-active drawing contexts.
@@ -50,13 +50,13 @@ class DrawingContextStack {
 public:
     DrawingContextStack(Stage *inStage) : mStage(inStage) {}
 
-	bool IsEmpty() { return mDrawingContextStack.empty(); }
-	bool ContainsElement(ElementPtr inElement);
+    bool IsEmpty() { return mDrawingContextStack.empty(); }
+    bool ContainsElement(ElementPtr inElement);
 
-	DrawingArea *GetCurrentDrawingArea();
+    DrawingArea *GetCurrentDrawingArea();
 
-	void PushDrawingContext(ElementPtr inElement);
-	void PopDrawingContext(ElementPtr inElement);
+    void PushDrawingContext(ElementPtr inElement);
+    void PopDrawingContext(ElementPtr inElement);
 };
 
 #endif // DrawingContextStack_H

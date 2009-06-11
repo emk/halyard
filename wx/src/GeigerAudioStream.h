@@ -43,16 +43,16 @@ class GeigerAudioStream : public AudioStream
 
     int mChirpsPlayed;
     double mFrameEndTime;
-	int mClipCount;
+    int mClipCount;
 
     void ZeroBuffer(float *outBuffer, unsigned long inFrames);
-	void ClipBuffer(float *ioBuffer, unsigned long inFrames);
+    void ClipBuffer(float *ioBuffer, unsigned long inFrames);
     bool DoesEventOccurGivenProbability(float inProbability);
     bool ShouldChirpDuringInterval(size_t inSamplesPerInterval);
     size_t FindCursorIndexForNewChirp();
     void UpdateChirpStateForInterval(unsigned long inFrames);
     void MixChirpIntoBuffer(size_t inCursor, float *ioBuffer,
-							unsigned long inFrames);
+                            unsigned long inFrames);
 
 public:
     GeigerAudioStream(const char *inFileName, float inVolume = 1.0f);
@@ -60,13 +60,13 @@ public:
     virtual void LogFinalStreamInfo();
     
     void SetChirpsPerSecond(float inChirpsPerSecond)
-		{ mChirpsPerSecond = inChirpsPerSecond; }
+        { mChirpsPerSecond = inChirpsPerSecond; }
 
     virtual bool IsLooping() { return true; }
 
 protected:
     bool FillBuffer(void *outBuffer, unsigned long inFrames,
-					PaTimestamp inTime);	
+                    PaTimestamp inTime);    
 };
 
 #endif // GeigerAudioStream_H

@@ -42,8 +42,8 @@ using namespace Halyard;
 
 static inline float note_amplitude(PaTimestamp sample, int cycles_per_second)
 {
-	return (float) sin((1.0 * sample / AudioStream::SAMPLES_PER_SECOND) *
-					   cycles_per_second * RADIANS_PER_CYCLE);
+    return (float) sin((1.0 * sample / AudioStream::SAMPLES_PER_SECOND) *
+                       cycles_per_second * RADIANS_PER_CYCLE);
 }
 
 
@@ -61,14 +61,14 @@ class AudioStreamThread : public wxThread {
     void SleepUntilWakeupOrTimeout();
 
 public:
-	enum {
-		TIMER_INTERVAL = 500 // in milliseconds
-	};
+    enum {
+        TIMER_INTERVAL = 500 // in milliseconds
+    };
 
-	AudioStreamThread();
+    AudioStreamThread();
     void WakeUp();
 
-	virtual ExitCode Entry();
+    virtual ExitCode Entry();
 };
 
 AudioStreamThread::AudioStreamThread()
@@ -100,15 +100,15 @@ wxThread::ExitCode AudioStreamThread::Entry() {
     // on us.  Our responsibility is to exit reasonably quickly at that
     // point.  We can't exit, though, until IdleAllStreams() has destroyed
     // all streams.
-	while (!TestDestroy()) {
+    while (!TestDestroy()) {
         AudioStream::IdleAllStreams();
-		if (!TestDestroy())
-			SleepUntilWakeupOrTimeout();
+        if (!TestDestroy())
+            SleepUntilWakeupOrTimeout();
     }
-	// This should be true during any normal shutdown, but I'm not sure
-	// about the more exotic abnormal shutdowns.
+    // This should be true during any normal shutdown, but I'm not sure
+    // about the more exotic abnormal shutdowns.
     ASSERT(!AudioStream::StreamsAreRunning());
-	return 0;
+    return 0;
 }
 
 
@@ -162,25 +162,25 @@ wxThread::ExitCode AudioStreamThread::Entry() {
 //  Delete, RegisterStream, UnregisterStream and IdleAllStreams.
 
 AudioStream::AudioStream(Format inFormat, float inVolume)
-	: mIsRunning(false), mStreamState(INITIALIZING), mSavedSamplesPlayed(0)
+    : mIsRunning(false), mStreamState(INITIALIZING), mSavedSamplesPlayed(0)
 {
-	for (int i = 0; i < MAX_CHANNELS; i++)
-		mChannelVolumes[i] = inVolume;
+    for (int i = 0; i < MAX_CHANNELS; i++)
+        mChannelVolumes[i] = inVolume;
 
-	mFormat = (inFormat == INT16_PCM_STREAM) ? paInt16 : paFloat32;
+    mFormat = (inFormat == INT16_PCM_STREAM) ? paInt16 : paFloat32;
     
     wxCriticalSectionLocker lock(sPortAudioCriticalSection);
-	PaError err = Pa_OpenDefaultStream(&mStream,
-									   0,         // no input
-									   2,         // stereo output
-									   mFormat,
-									   SAMPLES_PER_SECOND,
-									   256,       // frames/buffer
-									   16,         // default number of buffers
-									   &AudioCallback,
-									   this);     // user data for callback
+    PaError err = Pa_OpenDefaultStream(&mStream,
+                                       0,         // no input
+                                       2,         // stereo output
+                                       mFormat,
+                                       SAMPLES_PER_SECOND,
+                                       256,       // frames/buffer
+                                       16,         // default number of buffers
+                                       &AudioCallback,
+                                       this);     // user data for callback
     if (err != paNoError)
-		gLog.Fatal("halyard", "Cannot open audio output stream: %s (%d)",
+        gLog.Fatal("halyard", "Cannot open audio output stream: %s (%d)",
                         Pa_GetErrorText(err), err);
 }
 
@@ -194,7 +194,7 @@ AudioStream::~AudioStream() {
 void AudioStream::InitializationDone() {
     ASSERT(GetStreamState() == INITIALIZING);
     SetStreamState(PRELOADING);
-	RegisterStream(this);
+    RegisterStream(this);
 }
 
 void AudioStream::Preload() {
@@ -221,7 +221,7 @@ void AudioStream::Preload() {
 
 void AudioStream::Delete() {
     ASSERT(IsStreamStatePreloadingOrActive());
-	ASSERT(!mIsRunning);
+    ASSERT(!mIsRunning);
     ASSERT(!IsPortAudioStreamRunning());
 
     // Before we can actually delete this object, we need to make sure
@@ -302,83 +302,83 @@ bool AudioStream::IsPortAudioStreamRunning() const {
 }
 
 int AudioStream::AudioCallback(void *inInputBuffer,
-							   void *outOutputBuffer,
-							   unsigned long inFramesPerBuffer,
-							   PaTimestamp inOutTime,
-							   void *inUserData)
+                               void *outOutputBuffer,
+                               unsigned long inFramesPerBuffer,
+                               PaTimestamp inOutTime,
+                               void *inUserData)
 {
-	// Recover our object, and delegate all the work to it.
-	AudioStream *obj = (AudioStream *) inUserData;
+    // Recover our object, and delegate all the work to it.
+    AudioStream *obj = (AudioStream *) inUserData;
     // We have to access mStreamState directly, because the multimedia
     // timer thread cannot access sCriticalSection without causing a
     // deadlock.  Be warned.  As long as we check PRELOADING and ACTIVE
     // in the right order, there shouldn't be any race conditions with
     // other mutators of mStreamState.
     ASSERT(obj->mStreamState == PRELOADING || obj->mStreamState == ACTIVE);
-	bool should_stop = obj->FillBuffer((float *) outOutputBuffer,
-									   inFramesPerBuffer, inOutTime);
-	obj->ApplyChannelVolumes(outOutputBuffer, inFramesPerBuffer);
+    bool should_stop = obj->FillBuffer((float *) outOutputBuffer,
+                                       inFramesPerBuffer, inOutTime);
+    obj->ApplyChannelVolumes(outOutputBuffer, inFramesPerBuffer);
     ASSERT(obj->mStreamState == PRELOADING || obj->mStreamState == ACTIVE);
-	return should_stop ? 1 : 0;
+    return should_stop ? 1 : 0;
 }
 
 void AudioStream::ApplyChannelVolumes(void *ioOutputBuffer,
-									  unsigned long inFramesPerBuffer)
+                                      unsigned long inFramesPerBuffer)
 {
-	ASSERT(GetChannelCount() == 2);
-	ASSERT(mFormat == paInt16 || mFormat == paFloat32);
+    ASSERT(GetChannelCount() == 2);
+    ASSERT(mFormat == paInt16 || mFormat == paFloat32);
 
-	// If the volume is 1.0, we don't need to do anything.
-	if (mChannelVolumes[0] == 1.0 && mChannelVolumes[1] == 1.0)
-		return;
+    // If the volume is 1.0, we don't need to do anything.
+    if (mChannelVolumes[0] == 1.0 && mChannelVolumes[1] == 1.0)
+        return;
 
-	if (mFormat == paInt16)
-	{
-		int16 *buffer = (int16 *) ioOutputBuffer;
-		for (unsigned long i = 0; i < inFramesPerBuffer; i++)
-		{
-			*buffer++ *= mChannelVolumes[(size_t) LEFT_CHANNEL];
-			*buffer++ *= mChannelVolumes[(size_t) RIGHT_CHANNEL];
-		}
-	}
-	else if (mFormat == paFloat32)
-	{
-		float *buffer = (float *) ioOutputBuffer;
-		for (unsigned long i = 0; i < inFramesPerBuffer; i++)
-		{
-			*buffer++ *= mChannelVolumes[(size_t) LEFT_CHANNEL];
-			*buffer++ *= mChannelVolumes[(size_t) RIGHT_CHANNEL];
-		}		
-	}
+    if (mFormat == paInt16)
+    {
+        int16 *buffer = (int16 *) ioOutputBuffer;
+        for (unsigned long i = 0; i < inFramesPerBuffer; i++)
+        {
+            *buffer++ *= mChannelVolumes[(size_t) LEFT_CHANNEL];
+            *buffer++ *= mChannelVolumes[(size_t) RIGHT_CHANNEL];
+        }
+    }
+    else if (mFormat == paFloat32)
+    {
+        float *buffer = (float *) ioOutputBuffer;
+        for (unsigned long i = 0; i < inFramesPerBuffer; i++)
+        {
+            *buffer++ *= mChannelVolumes[(size_t) LEFT_CHANNEL];
+            *buffer++ *= mChannelVolumes[(size_t) RIGHT_CHANNEL];
+        }       
+    }
 }
 
 void AudioStream::SetChannelVolume(int inChannel, float inVolume)
 {
     ASSERT(GetStreamState() != DELETING);
-	ASSERT(0 <= inChannel && inChannel < GetChannelCount());
-	mChannelVolumes[inChannel] = inVolume;
+    ASSERT(0 <= inChannel && inChannel < GetChannelCount());
+    mChannelVolumes[inChannel] = inVolume;
 }
 
 void AudioStream::SetChannelVolume(const std::string &inChannel,
                                    float inVolume)
 {
     ASSERT(GetStreamState() != DELETING);
-	int channels = GetChannelCount();
-	if (inChannel == "left" && channels >= 2)
-		SetChannelVolume(AudioStream::LEFT_CHANNEL, inVolume);
-	else if (inChannel == "right" && channels >= 2)
-		SetChannelVolume(AudioStream::RIGHT_CHANNEL, inVolume);
-	else if (inChannel == "all")
-		SetVolume(inVolume);
-	else
-		THROW("Tried to set volume on an unknown channel");
+    int channels = GetChannelCount();
+    if (inChannel == "left" && channels >= 2)
+        SetChannelVolume(AudioStream::LEFT_CHANNEL, inVolume);
+    else if (inChannel == "right" && channels >= 2)
+        SetChannelVolume(AudioStream::RIGHT_CHANNEL, inVolume);
+    else if (inChannel == "all")
+        SetVolume(inVolume);
+    else
+        THROW("Tried to set volume on an unknown channel");
 }
 
 void AudioStream::SetVolume(float inVolume)
 {
     ASSERT(GetStreamState() != DELETING);
-	for (int i = 0; i < GetChannelCount(); i++)
-		SetChannelVolume(i, inVolume);
+    for (int i = 0; i < GetChannelCount(); i++)
+        SetChannelVolume(i, inVolume);
 }
 
 bool AudioStream::IsDone() const {
@@ -435,7 +435,7 @@ void AudioStream::StartIfStartDelayedByPreload() {
 void AudioStream::Start() {
     wxCriticalSectionLocker lock(sCriticalSection);
     ASSERT(mStreamState == PRELOADING || mStreamState == ACTIVE);
-	if (!mIsRunning) {
+    if (!mIsRunning) {
         if (mStreamState == PRELOADING && BACKGROUND_START_AFTER_PRELOAD) {
             // We can't actually start this stream, because Idle() hasn't
             // been called yet and we don't want lots of buffer underruns.
@@ -452,7 +452,7 @@ void AudioStream::Start() {
 void AudioStream::Stop() {
     wxCriticalSectionLocker lock(sCriticalSection);
     ASSERT(mStreamState == PRELOADING || mStreamState == ACTIVE);
-	if (mIsRunning) {
+    if (mIsRunning) {
         wxCriticalSectionLocker lock2(sPortAudioCriticalSection);
 
 #ifdef DEBUG
@@ -462,7 +462,7 @@ void AudioStream::Stop() {
         double min_time_to_save = Pa_StreamTime(mStream);
 #endif // DEBUG
 
-		Pa_StopStream(mStream);
+        Pa_StopStream(mStream);
 
         // PORTABILITY - Now that the stream is stopped, save Pa_StreamTime
         // for future use, because at least on Windows, Pa_StartStream
@@ -473,8 +473,8 @@ void AudioStream::Stop() {
         ASSERT(stream_time >= min_time_to_save && stream_time >= 0);
         mSavedSamplesPlayed += stream_time;
 
-		mIsRunning = false;
-	}
+        mIsRunning = false;
+    }
     ASSERT(!IsPortAudioStreamRunning());
 }
 
@@ -499,14 +499,14 @@ void AudioStream::InitializeStreams() {
                             Pa_GetErrorText(err), err);
     }
 
-	sThread = new AudioStreamThread();
-	sThread->Create();
+    sThread = new AudioStreamThread();
+    sThread->Create();
     sThread->Run();
     // TODO - Should we suspend the thread when there are no streams?
 }
 
 void AudioStream::ShutDownStreams() {
-	sThread->Delete();
+    sThread->Delete();
     // Since our background thread is guaranteed to be dead, we don't
     // actually need this lock. (Actually, Pa_Terminate() takes a while
     // to run--longer than we'd normally hold a critical section for,
@@ -517,14 +517,14 @@ void AudioStream::ShutDownStreams() {
 
 void AudioStream::RegisterStream(AudioStream *inStream) {
     wxCriticalSectionLocker lock(sCriticalSection);
-	sStreams.push_front(inStream);
+    sStreams.push_front(inStream);
     // Get this new stream services as soon as possible.
     sThread->WakeUp();
 }
 
 void AudioStream::UnregisterStream(AudioStream *inStream) {
     wxCriticalSectionLocker lock(sCriticalSection);
-	sStreams.remove(inStream);
+    sStreams.remove(inStream);
 }
 
 bool AudioStream::StreamsAreRunning() {
@@ -556,8 +556,8 @@ void AudioStream::IdleAllStreams() {
 
     // Walk the stream list back-to-front, so service newly-created
     // streams before "topping off" existing streams.
-	AudioStreamList::reverse_iterator i = copy.rbegin();
-	for (; i != copy.rend(); ++i) {
+    AudioStreamList::reverse_iterator i = copy.rbegin();
+    for (; i != copy.rend(); ++i) {
         // Get the stream state, and process the stream appropriately.
         // It's possible for the stream state to advance from PRELOADING or
         // ACTIVE to DELETING between the call to GetStreamState() and the
@@ -610,16 +610,16 @@ SineAudioStream::SineAudioStream(int inFrequency, float inVolume)
 }
 
 bool SineAudioStream::FillBuffer(void *outBuffer,
-								 unsigned long inFrames,
-								 PaTimestamp inTime)
+                                 unsigned long inFrames,
+                                 PaTimestamp inTime)
 {
-	float *buffer = (float *) outBuffer;
-	PaTimestamp time = inTime;
-	for (unsigned long i = 0; i < inFrames; i++)
-	{
-		float sample = note_amplitude(time++, mFrequency) * 0.5;
-		*buffer++ = sample;
-		*buffer++ = sample;
-	}
-	return false;	
+    float *buffer = (float *) outBuffer;
+    PaTimestamp time = inTime;
+    for (unsigned long i = 0; i < inFrames; i++)
+    {
+        float sample = note_amplitude(time++, mFrequency) * 0.5;
+        *buffer++ = sample;
+        *buffer++ = sample;
+    }
+    return false;   
 }

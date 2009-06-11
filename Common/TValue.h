@@ -51,8 +51,8 @@ inline bool operator==(const TNull &inV1, const TNull &inV2) {
 }
 
 inline std::ostream &operator<<(std::ostream &out, const TNull &inV) {
-	out << "#<void>";
-	return out;
+    out << "#<void>";
+    return out;
 }
 
 
@@ -109,7 +109,7 @@ extern std::ostream &operator<<(std::ostream &out, const TPercent &inPercent);
 /// \see TValue
 typedef shared_ptr<TCallback> TCallbackPtr;
 extern std::ostream &operator<<(std::ostream &out,
-								const TCallbackPtr &inCallback);
+                                const TCallbackPtr &inCallback);
 
 
 //=========================================================================
@@ -181,7 +181,7 @@ public:
 
     /// Normal casting from a TValue to a TCallbackPtr does not work
     /// so need to explicitly extract TCallbackPtr.
-	TCallbackPtr GetCallbackPtr();
+    TCallbackPtr GetCallbackPtr();
 
 private:
     //////////

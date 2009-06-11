@@ -32,16 +32,16 @@
 ///
 class Zone : public LightweightElement
 {
-	Halyard::TPolygon mPolygon;
-	
+    Halyard::TPolygon mPolygon;
+    
 public:
-	Zone(Stage *inStage, const wxString &inName,
+    Zone(Stage *inStage, const wxString &inName,
          const Halyard::TPolygon &inPoly,
-		 Halyard::TCallbackPtr inDispatch, const std::string &inCursorName);
+         Halyard::TCallbackPtr inDispatch, const std::string &inCursorName);
 
-	virtual bool IsPointInElement(const wxPoint &inPoint);
+    virtual bool IsPointInElement(const wxPoint &inPoint);
     virtual void MoveTo(const wxPoint &inPoint);
-	virtual void DrawElementBorder(wxDC &inDC);
+    virtual void DrawElementBorder(wxDC &inDC);
 
     /// Set the shape of this zone.
     virtual void SetShape(const Halyard::TPolygon &inPoly);

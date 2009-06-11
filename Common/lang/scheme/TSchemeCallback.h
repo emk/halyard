@@ -30,19 +30,19 @@ BEGIN_NAMESPACE_HALYARD
 ///
 class TSchemeCallback : public TCallback
 {
-	//////////
-	/// Our callback object.  Note that we need to use a TSchemePtr to
-	/// prevent mCallback from being garbage-collected, because we're
-	/// a heap-based object.
-	///
-	TSchemePtr<Scheme_Object> mCallback;
+    //////////
+    /// Our callback object.  Note that we need to use a TSchemePtr to
+    /// prevent mCallback from being garbage-collected, because we're
+    /// a heap-based object.
+    ///
+    TSchemePtr<Scheme_Object> mCallback;
 
 public:
-	TSchemeCallback(Scheme_Object *inCallback) : mCallback(inCallback) {}
+    TSchemeCallback(Scheme_Object *inCallback) : mCallback(inCallback) {}
 
-	// For documentation of these virtual methods, see TInterpreter.h.
-	virtual TValue Run(const TValueList &inArguments = TValueList());
-	virtual std::string PrintableRepresentation() { return "#<thunk>"; }
+    // For documentation of these virtual methods, see TInterpreter.h.
+    virtual TValue Run(const TValueList &inArguments = TValueList());
+    virtual std::string PrintableRepresentation() { return "#<thunk>"; }
 };
 
 END_NAMESPACE_HALYARD

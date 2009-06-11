@@ -42,80 +42,80 @@ Quake2Engine *Quake2Engine::sInstance = NULL;
 //=========================================================================
 
 #define REQUIRE_QUAKE2_INITIALIZATION \
-	if (!Quake2Engine::IsInitialized()) { \
-		THROW("Quake 2 is not initialized."); \
-	}
+    if (!Quake2Engine::IsInitialized()) { \
+        THROW("Quake 2 is not initialized."); \
+    }
 
 DEFINE_PRIMITIVE(Quake2Init)
-{	
-	std::string game, driver;
+{   
+    std::string game, driver;
 
     // Default driver.
     driver = "soft";
 
-	inArgs >> game;
+    inArgs >> game;
     if (inArgs.HasMoreArguments())
         inArgs >> SymbolName(driver);
 
-	if (!Quake2Engine::IsInitialized())
-		Quake2Engine::Initialize(game, driver);
+    if (!Quake2Engine::IsInitialized())
+        Quake2Engine::Initialize(game, driver);
 }
 
 DEFINE_PRIMITIVE(Quake2Command)
 {
-	std::string cmd;
-	inArgs >> cmd;
-	REQUIRE_QUAKE2_INITIALIZATION;
-	Quake2Engine::GetInstance()->ExecCommand(cmd.c_str());
+    std::string cmd;
+    inArgs >> cmd;
+    REQUIRE_QUAKE2_INITIALIZATION;
+    Quake2Engine::GetInstance()->ExecCommand(cmd.c_str());
 }
 
 DEFINE_PRIMITIVE(Quake2BackgroundLoadCommand)
 {
-	std::string cmd;
-	inArgs >> cmd;
-	REQUIRE_QUAKE2_INITIALIZATION;
-	Quake2Engine::GetInstance()->ExecBackgroundLoadCommand(cmd.c_str());
+    std::string cmd;
+    inArgs >> cmd;
+    REQUIRE_QUAKE2_INITIALIZATION;
+    Quake2Engine::GetInstance()->ExecBackgroundLoadCommand(cmd.c_str());
 }
 
 DEFINE_PRIMITIVE(Quake2IsLoadingInBackground)
 {
-	REQUIRE_QUAKE2_INITIALIZATION;
-	::SetPrimitiveResult(Quake2Engine::GetInstance()->IsLoadingInBackground());
+    REQUIRE_QUAKE2_INITIALIZATION;
+    ::SetPrimitiveResult(Quake2Engine::GetInstance()->IsLoadingInBackground());
 }
 
 DEFINE_PRIMITIVE(Quake2Print)
 {
-	std::string msg;
-	inArgs >> msg;
-	REQUIRE_QUAKE2_INITIALIZATION;
-	Quake2Engine::GetInstance()->Print(msg.c_str());
+    std::string msg;
+    inArgs >> msg;
+    REQUIRE_QUAKE2_INITIALIZATION;
+    Quake2Engine::GetInstance()->Print(msg.c_str());
 }
 
 DEFINE_PRIMITIVE(Quake2RegisterCommand)
 {
-	std::string name;
-	TCallbackPtr callback;
-	inArgs >> SymbolName(name) >> callback;
-	REQUIRE_QUAKE2_INITIALIZATION; // FIXME - We may leak callback here.
-	Quake2Engine::GetInstance()->RegisterCallback(name, callback);
+    std::string name;
+    TCallbackPtr callback;
+    inArgs >> SymbolName(name) >> callback;
+    REQUIRE_QUAKE2_INITIALIZATION; // FIXME - We may leak callback here.
+    Quake2Engine::GetInstance()->RegisterCallback(name, callback);
 }
 
 DEFINE_PRIMITIVE(Quake2IsShown)
 {
-	REQUIRE_QUAKE2_INITIALIZATION;
-	::SetPrimitiveResult(Quake2Engine::GetInstance()->IsShown());
+    REQUIRE_QUAKE2_INITIALIZATION;
+    ::SetPrimitiveResult(Quake2Engine::GetInstance()->IsShown());
 }
 
 DEFINE_PRIMITIVE(Quake2Show)
 {
-	REQUIRE_QUAKE2_INITIALIZATION;
-	Quake2Engine::GetInstance()->Show();
+    REQUIRE_QUAKE2_INITIALIZATION;
+    Quake2Engine::GetInstance()->Show();
 }
 
 DEFINE_PRIMITIVE(Quake2Hide)
 {
-	REQUIRE_QUAKE2_INITIALIZATION;
-	Quake2Engine::GetInstance()->Hide();
+    REQUIRE_QUAKE2_INITIALIZATION;
+    Quake2Engine::GetInstance()->Hide();
 }
 
 DEFINE_PRIMITIVE(Quake2SetShouldRunInBackground)
@@ -136,42 +136,42 @@ DEFINE_PRIMITIVE(Quake2GetShouldRunInBackground)
 
 DEFINE_PRIMITIVE(Quake2SetStringVar)
 {
-	std::string name, value;
-	inArgs >> SymbolName(name) >> value;
-	REQUIRE_QUAKE2_INITIALIZATION;
-	Quake2Engine::GetInstance()->SetVariable(name.c_str(), value.c_str());
+    std::string name, value;
+    inArgs >> SymbolName(name) >> value;
+    REQUIRE_QUAKE2_INITIALIZATION;
+    Quake2Engine::GetInstance()->SetVariable(name.c_str(), value.c_str());
 }
 
 DEFINE_PRIMITIVE(Quake2GetStringVar)
 {
-	std::string name;
-	inArgs >> SymbolName(name);
+    std::string name;
+    inArgs >> SymbolName(name);
 
-	REQUIRE_QUAKE2_INITIALIZATION;
-	wxString value;
-	Quake2Engine::GetInstance()->GetVariable(name.c_str(), value);
-	::SetPrimitiveResult(ToStdString(value));
+    REQUIRE_QUAKE2_INITIALIZATION;
+    wxString value;
+    Quake2Engine::GetInstance()->GetVariable(name.c_str(), value);
+    ::SetPrimitiveResult(ToStdString(value));
 }
 
 DEFINE_PRIMITIVE(Quake2SetFloatVar)
 {
-	std::string name;
-	double value;
-	inArgs >> SymbolName(name) >> value;
-	REQUIRE_QUAKE2_INITIALIZATION;
-	Quake2Engine::GetInstance()->SetVariable(name.c_str(),
-											 static_cast<float>(value));
+    std::string name;
+    double value;
+    inArgs >> SymbolName(name) >> value;
+    REQUIRE_QUAKE2_INITIALIZATION;
+    Quake2Engine::GetInstance()->SetVariable(name.c_str(),
+                                             static_cast<float>(value));
 }
 
 DEFINE_PRIMITIVE(Quake2GetFloatVar)
 {
-	std::string name;
-	inArgs >> SymbolName(name);
+    std::string name;
+    inArgs >> SymbolName(name);
 
-	REQUIRE_QUAKE2_INITIALIZATION;
-	float value;
-	Quake2Engine::GetInstance()->GetVariable(name.c_str(), value);
-	::SetPrimitiveResult(static_cast<double>(value));
+    REQUIRE_QUAKE2_INITIALIZATION;
+    float value;
+    Quake2Engine::GetInstance()->GetVariable(name.c_str(), value);
+    ::SetPrimitiveResult(static_cast<double>(value));
 }
 
 
@@ -182,21 +182,21 @@ DEFINE_PRIMITIVE(Quake2GetFloatVar)
 
 void Halyard::RegisterQuake2Primitives()
 {
-	REGISTER_PRIMITIVE(Quake2Init);
-	REGISTER_PRIMITIVE(Quake2Command);
-	REGISTER_PRIMITIVE(Quake2BackgroundLoadCommand);
-	REGISTER_PRIMITIVE(Quake2IsLoadingInBackground);
-	REGISTER_PRIMITIVE(Quake2Print);
-	REGISTER_PRIMITIVE(Quake2RegisterCommand);
-	REGISTER_PRIMITIVE(Quake2IsShown);
-	REGISTER_PRIMITIVE(Quake2Show);
-	REGISTER_PRIMITIVE(Quake2Hide);
+    REGISTER_PRIMITIVE(Quake2Init);
+    REGISTER_PRIMITIVE(Quake2Command);
+    REGISTER_PRIMITIVE(Quake2BackgroundLoadCommand);
+    REGISTER_PRIMITIVE(Quake2IsLoadingInBackground);
+    REGISTER_PRIMITIVE(Quake2Print);
+    REGISTER_PRIMITIVE(Quake2RegisterCommand);
+    REGISTER_PRIMITIVE(Quake2IsShown);
+    REGISTER_PRIMITIVE(Quake2Show);
+    REGISTER_PRIMITIVE(Quake2Hide);
     REGISTER_PRIMITIVE(Quake2SetShouldRunInBackground);
     REGISTER_PRIMITIVE(Quake2GetShouldRunInBackground);
-	REGISTER_PRIMITIVE(Quake2SetStringVar);
-	REGISTER_PRIMITIVE(Quake2GetStringVar);
-	REGISTER_PRIMITIVE(Quake2SetFloatVar);
-	REGISTER_PRIMITIVE(Quake2GetFloatVar);
+    REGISTER_PRIMITIVE(Quake2SetStringVar);
+    REGISTER_PRIMITIVE(Quake2GetStringVar);
+    REGISTER_PRIMITIVE(Quake2SetFloatVar);
+    REGISTER_PRIMITIVE(Quake2GetFloatVar);
 }
 
 #endif // CONFIG_HAVE_QUAKE2

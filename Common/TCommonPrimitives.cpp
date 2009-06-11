@@ -89,9 +89,9 @@ static const char *byte_to_hex_string[256] = {
 
 DEFINE_PRIMITIVE(HavePrimitive)
 {
-	std::string name;
-	inArgs >> SymbolName(name);
-	::SetPrimitiveResult(gPrimitiveManager.DoesPrimitiveExist(name));
+    std::string name;
+    inArgs >> SymbolName(name);
+    ::SetPrimitiveResult(gPrimitiveManager.DoesPrimitiveExist(name));
 }
 
 
@@ -103,7 +103,7 @@ DEFINE_PRIMITIVE(HavePrimitive)
 
 DEFINE_PRIMITIVE(RunInitialCommands)
 {
-	TInterpreterManager *manager = TInterpreterManager::GetInstance();
+    TInterpreterManager *manager = TInterpreterManager::GetInstance();
     manager->RunInitialCommands();
 }
 
@@ -115,17 +115,17 @@ DEFINE_PRIMITIVE(RunInitialCommands)
 
 DEFINE_PRIMITIVE(Idle)
 {
-	// Recover our TInterpreterManager.
-	TInterpreterManager *manager = TInterpreterManager::GetInstance();
-	ASSERT(manager);
+    // Recover our TInterpreterManager.
+    TInterpreterManager *manager = TInterpreterManager::GetInstance();
+    ASSERT(manager);
 
-	// Should our idle loop block until any events are received from 
-	// the user?
-	bool block;
-	inArgs >> block;
+    // Should our idle loop block until any events are received from 
+    // the user?
+    bool block;
+    inArgs >> block;
 
-	// Call our stored idle procedure and let the GUI run for a bit.
-	manager->DoIdle(block);
+    // Call our stored idle procedure and let the GUI run for a bit.
+    manager->DoIdle(block);
 }
 
 
@@ -142,9 +142,9 @@ DEFINE_PRIMITIVE(Idle)
 
 DEFINE_PRIMITIVE(Log)
 {
-	std::string level_str, category, msg;
-	inArgs >> SymbolName(level_str) >> category >> msg;
-	level_str = ::MakeStringLowercase(level_str);
+    std::string level_str, category, msg;
+    inArgs >> SymbolName(level_str) >> category >> msg;
+    level_str = ::MakeStringLowercase(level_str);
     gLog.Log(TLogger::LevelFromString(level_str), category, "%s", msg.c_str());
 }
 
@@ -176,10 +176,10 @@ DEFINE_PRIMITIVE(CommandLineError) {
 
 DEFINE_PRIMITIVE(PolygonContains)
 {
-	TPolygon poly;
-	TPoint pt;
-	inArgs >> poly >> pt;
-	::SetPrimitiveResult(poly.Contains(pt));
+    TPolygon poly;
+    TPoint pt;
+    inArgs >> poly >> pt;
+    ::SetPrimitiveResult(poly.Contains(pt));
 }
 
 //-------------------------------------------------------------------------
@@ -191,11 +191,11 @@ DEFINE_PRIMITIVE(PolygonContains)
 
 DEFINE_PRIMITIVE(SetTyped)
 {
-	TValue val;
-	std::string vname;
-	inArgs >> SymbolName(vname) >> val;
+    TValue val;
+    std::string vname;
+    inArgs >> SymbolName(vname) >> val;
 
-	gVariableManager.Set(vname, val);
+    gVariableManager.Set(vname, val);
 }
 
 
@@ -206,10 +206,10 @@ DEFINE_PRIMITIVE(SetTyped)
 
 DEFINE_PRIMITIVE(Get)
 {
-	std::string vname;
-	inArgs >> SymbolName(vname);
+    std::string vname;
+    inArgs >> SymbolName(vname);
 
-   	::SetPrimitiveResult(gVariableManager.Get(vname.c_str()));
+    ::SetPrimitiveResult(gVariableManager.Get(vname.c_str()));
 }
 
 
@@ -220,10 +220,10 @@ DEFINE_PRIMITIVE(Get)
 
 DEFINE_PRIMITIVE(VariableInitialized)
 {
-	std::string vname;
-	inArgs >> SymbolName(vname);
+    std::string vname;
+    inArgs >> SymbolName(vname);
 
-	::SetPrimitiveResult(gVariableManager.VariableExists(vname.c_str()));
+    ::SetPrimitiveResult(gVariableManager.VariableExists(vname.c_str()));
 }
 
 
@@ -234,7 +234,7 @@ DEFINE_PRIMITIVE(VariableInitialized)
 
 DEFINE_PRIMITIVE(DefStyle)
 {
-	gStyleSheetManager.AddStyleSheet(inArgs);
+    gStyleSheetManager.AddStyleSheet(inArgs);
 }
 
 
@@ -249,8 +249,8 @@ DEFINE_PRIMITIVE(DefStyle)
 // graphical interface.
 
 DEFINE_PRIMITIVE(ExitScriptNonGui) {
-	// Ask the interpreter manager to shut us down.
-	TInterpreterManager::GetInstance()->RequestQuitApplication();
+    // Ask the interpreter manager to shut us down.
+    TInterpreterManager::GetInstance()->RequestQuitApplication();
 }
 
 
@@ -308,12 +308,12 @@ DEFINE_PRIMITIVE(LoadScriptFailed) {
 
 DEFINE_PRIMITIVE(MeasureTextAA)
 {
-	std::string style;
-	std::string text;
-	uint32 max_width;
+    std::string style;
+    std::string text;
+    uint32 max_width;
 
-	inArgs >> SymbolName(style) >> text >> max_width;
-	TRect bounds = gStyleSheetManager.Draw(style, text,
+    inArgs >> SymbolName(style) >> text >> max_width;
+    TRect bounds = gStyleSheetManager.Draw(style, text,
                                            GraphicsTools::Point(0, 0),
                                            max_width, NULL);
     ASSERT(bounds.Top() == 0);
@@ -360,16 +360,16 @@ DEFINE_PRIMITIVE(ShouldExitWithError) {
 }
 
 DEFINE_PRIMITIVE(StateDbSet) {
-	std::string key;
-	TValue val;
-	inArgs >> SymbolName(key) >> val;
-	gStateDB.Set(key, val);
+    std::string key;
+    TValue val;
+    inArgs >> SymbolName(key) >> val;
+    gStateDB.Set(key, val);
 }
 
 DEFINE_PRIMITIVE(StateDbGet) {
-	std::string listener_name, key;
+    std::string listener_name, key;
     int32 serial_number;
-	inArgs >> SymbolName(listener_name) >> serial_number >> SymbolName(key);
+    inArgs >> SymbolName(listener_name) >> serial_number >> SymbolName(key);
     shared_ptr<TStateListener> listener =
         gStateListenerManager.FindListener(listener_name, serial_number);
     ::SetPrimitiveResult(gStateDB.Get(listener.get(), key));
@@ -412,22 +412,22 @@ DEFINE_PRIMITIVE(UntracedNoop)
 
 void Halyard::RegisterCommonPrimitives()
 {
-	REGISTER_PRIMITIVE(HavePrimitive);
+    REGISTER_PRIMITIVE(HavePrimitive);
     REGISTER_PRIMITIVE(RunInitialCommands);
     REGISTER_PRIMITIVE(Idle);
-	REGISTER_PRIMITIVE(Log);
-	REGISTER_PRIMITIVE(CommandLineError);
-	REGISTER_PRIMITIVE(PolygonContains);
-	REGISTER_PRIMITIVE(SetTyped);
-	REGISTER_PRIMITIVE(Get);
-	REGISTER_PRIMITIVE(VariableInitialized);
-	REGISTER_PRIMITIVE(DefStyle);
+    REGISTER_PRIMITIVE(Log);
+    REGISTER_PRIMITIVE(CommandLineError);
+    REGISTER_PRIMITIVE(PolygonContains);
+    REGISTER_PRIMITIVE(SetTyped);
+    REGISTER_PRIMITIVE(Get);
+    REGISTER_PRIMITIVE(VariableInitialized);
+    REGISTER_PRIMITIVE(DefStyle);
     REGISTER_PRIMITIVE(ExitScriptNonGui);
     REGISTER_PRIMITIVE(IsInCommandLineMode);
     REGISTER_PRIMITIVE(IsLazyLoadingEnabled);
     REGISTER_PRIMITIVE(LoadScriptFailed);
     REGISTER_PRIMITIVE(MaybeSetIsLazyLoadingEnabled);
-	REGISTER_PRIMITIVE(MeasureTextAA);
+    REGISTER_PRIMITIVE(MeasureTextAA);
     REGISTER_PRIMITIVE(NotifyFileLoaded);
     REGISTER_PRIMITIVE(NotifyScriptLoaded);
     REGISTER_PRIMITIVE(Sha1File);

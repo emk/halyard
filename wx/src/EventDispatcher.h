@@ -32,22 +32,22 @@ class EventDispatcher : boost::noncopyable, public Halyard::TReloadNotified
 {
     static bool sMaxStaleTimeInitialized;
     static wxLongLong sMaxStaleTime;
-	static bool sEnableExpensiveEvents;
+    static bool sEnableExpensiveEvents;
 
     Halyard::TCallbackPtr mDispatcher;
 
-	bool EventSetup();
-	bool EventCleanup();
+    bool EventSetup();
+    bool EventCleanup();
     void CheckForVeto(bool &outWasVetoed);
 
     bool IsEventStale(const wxEvent &event);
-	bool DoSimpleEvent(const char *inType);
-	bool DoSimpleMouseEvent(const char *inType, wxPoint inPosition,
+    bool DoSimpleEvent(const char *inType);
+    bool DoSimpleMouseEvent(const char *inType, wxPoint inPosition,
                             bool inIsStale = false);
 
 public:
-	EventDispatcher();
-	~EventDispatcher();
+    EventDispatcher();
+    ~EventDispatcher();
 
     //////////
     /// Mark all events which were generated before this moment--but which
@@ -55,22 +55,22 @@ public:
     ///
     static void UpdateMaxStaleTime();
 
-	//////////
-	/// Set the event-dispatching callback.
-	///
-	void SetDispatcher(Halyard::TCallbackPtr inCallback);
+    //////////
+    /// Set the event-dispatching callback.
+    ///
+    void SetDispatcher(Halyard::TCallbackPtr inCallback);
 
-	//////////
-	/// Notify the EventDispatcher that script is being reloaded.
-	///
+    //////////
+    /// Notify the EventDispatcher that script is being reloaded.
+    ///
     void NotifyReloadScriptStarting();
 
-	//////////
-	/// Turn "expensive" events--idle events, mouse moved events--on or
-	/// off.  These tend to generate a lot of garbage for the Scheme
-	/// GC to clean up.
-	///
-	static void EnableExpensiveEvents(bool inEnable);
+    //////////
+    /// Turn "expensive" events--idle events, mouse moved events--on or
+    /// off.  These tend to generate a lot of garbage for the Scheme
+    /// GC to clean up.
+    ///
+    static void EnableExpensiveEvents(bool inEnable);
 
     //////////
     /// Dispatch an event asking for menus and buttons related to
@@ -78,40 +78,40 @@ public:
     ///
     bool DoEventUpdateUI(const wxString &inCommandName);
 
-	//////////
-	/// Dispatch a mouse-down event.
-	///
-	bool DoEventLeftDown(wxMouseEvent &inEvent, bool inIsDoubleClick);
+    //////////
+    /// Dispatch a mouse-down event.
+    ///
+    bool DoEventLeftDown(wxMouseEvent &inEvent, bool inIsDoubleClick);
 
-	///////////
-	/// Dispatch a mouse-up event.
-	///
-	bool DoEventLeftUp(wxMouseEvent &inEvent);
+    ///////////
+    /// Dispatch a mouse-up event.
+    ///
+    bool DoEventLeftUp(wxMouseEvent &inEvent);
 
-	//////////
-	/// Dispatch a mouse-enter event.
-	///
-	bool DoEventMouseEnter(wxPoint inPosition);
+    //////////
+    /// Dispatch a mouse-enter event.
+    ///
+    bool DoEventMouseEnter(wxPoint inPosition);
 
-	//////////
-	/// Dispatch a mouse-leave event.
-	///
-	bool DoEventMouseLeave(wxPoint inPosition);
+    //////////
+    /// Dispatch a mouse-leave event.
+    ///
+    bool DoEventMouseLeave(wxPoint inPosition);
 
-	//////////
-	/// Dispatch a character event.  Return true if the event was handled.
-	///
-	bool DoEventChar(wxKeyEvent &inEvent);
+    //////////
+    /// Dispatch a character event.  Return true if the event was handled.
+    ///
+    bool DoEventChar(wxKeyEvent &inEvent);
 
-	//////////
-	/// Dispatch an idle event.
-	///
-	bool DoEventIdle();
-	
-	//////////
-	/// Dispatch a mouse move event.
-	///
-	bool DoEventMouseMoved(wxMouseEvent &inEvent);
+    //////////
+    /// Dispatch an idle event.
+    ///
+    bool DoEventIdle();
+    
+    //////////
+    /// Dispatch a mouse move event.
+    ///
+    bool DoEventMouseMoved(wxMouseEvent &inEvent);
 
     //////////
     /// Dispatch a TextChanged event.

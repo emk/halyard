@@ -32,7 +32,7 @@ extern void test_TVectorDiff (void);
 static void fill_vec(const char *inData, std::vector<char> &outVec)
 {
     for (int i = 0; inData[i] != 0; i++)
-		outVec.push_back(inData[i]);
+        outVec.push_back(inData[i]);
 }
 
 static void TEST_LCS(const char *v1, const char *v2, const char *lcs)
@@ -48,13 +48,13 @@ static void TEST_LCS(const char *v1, const char *v2, const char *lcs)
 
 void test_TVectorDiff (void)
 {
-	TEST_LCS("", "", "");
-	TEST_LCS("a", "", "");
-	TEST_LCS("", "a", "");
-	TEST_LCS("a", "a", "a");
-	TEST_LCS("ab", "ac", "a");
-	TEST_LCS("abcdef", "abfcde", "abcde");
-	TEST_LCS("abXcdXef", "YYabcdeYYYf", "abcdef");
+    TEST_LCS("", "", "");
+    TEST_LCS("a", "", "");
+    TEST_LCS("", "a", "");
+    TEST_LCS("a", "a", "a");
+    TEST_LCS("ab", "ac", "a");
+    TEST_LCS("abcdef", "abfcde", "abcde");
+    TEST_LCS("abXcdXef", "YYabcdeYYYf", "abcdef");
 }
 
 

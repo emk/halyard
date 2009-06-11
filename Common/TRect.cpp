@@ -26,49 +26,49 @@
 using namespace Halyard;
 
 TRect::TRect(int32 inLeft, int32 inTop,
-	     int32 inRight, int32 inBottom)
+         int32 inRight, int32 inBottom)
 { 
-	m_Top = inTop;
-	m_Left = inLeft;
-	m_Bottom = inBottom; 
-	m_Right = inRight;
+    m_Top = inTop;
+    m_Left = inLeft;
+    m_Bottom = inBottom; 
+    m_Right = inRight;
 }
 
 TRect::TRect(const TRect &inRect)
 {
-	m_Top = inRect.m_Top;
-	m_Left = inRect.m_Left;
-	m_Bottom = inRect.m_Bottom;
-	m_Right = inRect.m_Right;
+    m_Top = inRect.m_Top;
+    m_Left = inRect.m_Left;
+    m_Bottom = inRect.m_Bottom;
+    m_Right = inRect.m_Right;
 }
 
 void TRect::Set(int32 inLeft, int32 inTop, int32 inRight, int32 inBottom)
 {  
-	m_Top = inTop; 
-	m_Left = inLeft; 
-	m_Bottom = inBottom; 
-	m_Right = inRight; 
+    m_Top = inTop; 
+    m_Left = inLeft; 
+    m_Bottom = inBottom; 
+    m_Right = inRight; 
 }
 
 void TRect::Set(const TRect &inRect)
 {
-	m_Top = inRect.Top();
-	m_Left = inRect.Left();
-	m_Bottom = inRect.Bottom();
-	m_Right = inRect.Right();
+    m_Top = inRect.Top();
+    m_Left = inRect.Left();
+    m_Bottom = inRect.Bottom();
+    m_Right = inRect.Right();
 }
 
 TPoint TRect::TopLeft(void) const
 {
-	TPoint retPt(m_Left, m_Top);
-	return retPt;
+    TPoint retPt(m_Left, m_Top);
+    return retPt;
 }
 
 TRect &TRect::operator=(const TRect &inRect)
 {
-	Set(inRect);
+    Set(inRect);
 
-	return (*this);
+    return (*this);
 }
 
 // 
@@ -76,32 +76,32 @@ TRect &TRect::operator=(const TRect &inRect)
 //
 bool TRect::operator==(const TRect &inRect) const
 {
-	if ((inRect.Top() == m_Top) &&
-		(inRect.Left() == m_Left) &&
-		(inRect.Bottom() == m_Bottom) &&
-		(inRect.Right() == m_Right))
-	{
-		return (true);
-	}
-	return (false);
+    if ((inRect.Top() == m_Top) &&
+        (inRect.Left() == m_Left) &&
+        (inRect.Bottom() == m_Bottom) &&
+        (inRect.Right() == m_Right))
+    {
+        return (true);
+    }
+    return (false);
 }
 
 bool TRect::Contains(TPoint &inPt)
 {
-	if ((inPt.X() >= m_Left) && 
-		(inPt.X() <= m_Right) &&
-		(inPt.Y() >= m_Top) && 
-		(inPt.Y() <= m_Bottom))
-	{
-		return (true);
-	}
-	return (false);
+    if ((inPt.X() >= m_Left) && 
+        (inPt.X() <= m_Right) &&
+        (inPt.Y() >= m_Top) && 
+        (inPt.Y() <= m_Bottom))
+    {
+        return (true);
+    }
+    return (false);
 }
 
 void TRect::Offset(const TPoint &inPt)
 {
-	m_Top += inPt.Y();
-	m_Bottom += inPt.Y();
-	m_Left += inPt.X();
-	m_Right += inPt.X();
+    m_Top += inPt.Y();
+    m_Bottom += inPt.Y();
+    m_Left += inPt.X();
+    m_Right += inPt.X();
 }

@@ -32,10 +32,10 @@
    platforms. */
 class CommandLine {
 public:
-	CommandLine(int argc, char **argv);
-	CommandLine(std::vector<std::string> &args) : mArgs(args) {}
+    CommandLine(int argc, char **argv);
+    CommandLine(std::vector<std::string> &args) : mArgs(args) {}
 
-	std::string WindowsQuotedString() const;
+    std::string WindowsQuotedString() const;
 
     /// Run the specified program with the specified arguments.  The
     /// 'inProgram' argument should be a native, properly-quoted path
@@ -50,9 +50,9 @@ public:
                           const CommandLine &inArgs);
 
 private:
-	std::string WindowsQuoteArgument(std::string arg) const;
+    std::string WindowsQuoteArgument(std::string arg) const;
 
-	std::vector<std::string> mArgs;
+    std::vector<std::string> mArgs;
 };
 
 #endif // CommandLine_H

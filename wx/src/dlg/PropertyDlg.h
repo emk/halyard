@@ -31,62 +31,62 @@ namespace model { class Object; };
 class PropertyDlg : public wxDialog
 {
 public:
-	typedef unsigned long Flags;
-	enum /* Flags */ {
-		MULTILINE = 1
-	};
+    typedef unsigned long Flags;
+    enum /* Flags */ {
+        MULTILINE = 1
+    };
 
     /// A mapping between a dialog item and a field of a model::Object.
-	class Field {
-	public:
-		Field(const char *inName, const char *inLabel, Flags inFlags)
-			: name(inName), label(inLabel), flags(inFlags) {}
+    class Field {
+    public:
+        Field(const char *inName, const char *inLabel, Flags inFlags)
+            : name(inName), label(inLabel), flags(inFlags) {}
 
-		const char *name;
-		const char *label;
-		Flags flags;
-	};
+        const char *name;
+        const char *label;
+        Flags flags;
+    };
 
     /// The description of a PropertyDlg to create.
-	class Description {
-	public:
-		Description(const char *inName);
-		void AddField(const Field &inField);
+    class Description {
+    public:
+        Description(const char *inName);
+        void AddField(const Field &inField);
 
-		const char *name;
-		std::vector<Field> fields;
-	};
+        const char *name;
+        std::vector<Field> fields;
+    };
 
 private:
     DECLARE_EVENT_TABLE();
-	
-	model::Object *mObject;
-	wxSizer *mPropSizer;
+    
+    model::Object *mObject;
+    wxSizer *mPropSizer;
 
-	wxButton *mOkButton;
-	wxButton *mCancelButton;
-	wxButton *mApplyButton;
-	wxButton *mHelpButton;
+    wxButton *mOkButton;
+    wxButton *mCancelButton;
+    wxButton *mApplyButton;
+    wxButton *mHelpButton;
 
 protected:
-	PropertyDlg(wxWindow *inParent, Description *inDescription,
-				model::Object *inObject);
+    PropertyDlg(wxWindow *inParent, Description *inDescription,
+                model::Object *inObject);
 
-	void AddField(Field &inField);
+    void AddField(Field &inField);
 };
 
 #define DECLARE_PROPERTY_DIALOG() \
-	static Description *GetDialogDescription()
+    static Description *GetDialogDescription()
 
 #define BEGIN_PROPERTY_DIALOG(CLASS, NAME) \
-	PropertyDlg::Description *CLASS::GetDialogDescription() { \
-		Description *result = new Description(NAME);
+    PropertyDlg::Description *CLASS::GetDialogDescription() { \
+        Description *result = new Description(NAME);
 
 #define PROPERTY_FIELD(NAME,LABEL,FLAGS) \
-		result->AddField(Field(NAME,LABEL,FLAGS));
+        result->AddField(Field(NAME,LABEL,FLAGS));
 
 #define END_PROPERTY_DIALOG() \
-		return result; \
-	}
+        return result; \
+    }
 
 #endif // PropertyDlg_H

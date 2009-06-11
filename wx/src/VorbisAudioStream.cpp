@@ -115,125 +115,125 @@ void IntuitiveVolatile<T>::write(T inValue) {
 //  should do something much more useful.
 
 VorbisAudioStream::VorbisAudioStream(const char *inFileName,
-									 size_t inBufferSize,
-									 bool inShouldLoop,
+                                     size_t inBufferSize,
+                                     bool inShouldLoop,
                                      float inVolume)
-	: AudioStream(INT16_PCM_STREAM, inVolume),
-	  mFileName(inFileName), mShouldLoop(inShouldLoop),
-	  // Pad the buffer with an extra frame which we'll never use.
-	  // See IsBufferFull() for details.
-	  mBufferSize(inBufferSize+CHANNELS),
-	  mBuffer(new int16[inBufferSize+CHANNELS]),
+    : AudioStream(INT16_PCM_STREAM, inVolume),
+      mFileName(inFileName), mShouldLoop(inShouldLoop),
+      // Pad the buffer with an extra frame which we'll never use.
+      // See IsBufferFull() for details.
+      mBufferSize(inBufferSize+CHANNELS),
+      mBuffer(new int16[inBufferSize+CHANNELS]),
       mDataBegin(0), mDataEnd(0), mDoneWithFile(false)
 {
-	// Buffer size must be a multiple of the number of channels.
-	ASSERT(mBufferSize % CHANNELS == 0);
+    // Buffer size must be a multiple of the number of channels.
+    ASSERT(mBufferSize % CHANNELS == 0);
 
     mSamplesLoaded = 0;
-	mUnderrunCount = 0;
+    mUnderrunCount = 0;
 
-	InitializeFile();
+    InitializeFile();
 
     // Allow background thread to start calling Idle().
     InitializationDone();
 }
 
 void VorbisAudioStream::LogFinalStreamInfo() {
-	gLog.Debug("halyard", "Stopped Vorbis stream, %d samples underrun",
+    gLog.Debug("halyard", "Stopped Vorbis stream, %d samples underrun",
                mUnderrunCount);
 }
 
 void VorbisAudioStream::InitializeFile()
 {
-	mDoneWithFile.write(false);
-	VorbisFile *file =
-		new VorbisFile(mFileName.c_str(), SAMPLES_PER_SECOND, CHANNELS);
-	mFile = shared_ptr<VorbisFile>(file);
+    mDoneWithFile.write(false);
+    VorbisFile *file =
+        new VorbisFile(mFileName.c_str(), SAMPLES_PER_SECOND, CHANNELS);
+    mFile = shared_ptr<VorbisFile>(file);
 }
 
 void VorbisAudioStream::RestartFileIfLoopingAndDone()
 {
-	if (mDoneWithFile.read() && mShouldLoop)
-		InitializeFile();
+    if (mDoneWithFile.read() && mShouldLoop)
+        InitializeFile();
 }
 
 size_t VorbisAudioStream::ReadIntoBlock(int16 *inSpace, size_t inLength)
 {
-	size_t written;
-	if (!mFile->Read(inSpace, inLength, &written))
-		mDoneWithFile.write(true);
-	ASSERT(!mDoneWithFile.read() || written == 0);
+    size_t written;
+    if (!mFile->Read(inSpace, inLength, &written))
+        mDoneWithFile.write(true);
+    ASSERT(!mDoneWithFile.read() || written == 0);
     mSamplesLoaded += written / CHANNELS;
-	return written;
+    return written;
 }
 
 inline bool VorbisAudioStream::DoneReadingData() const
 {
-	return mDoneWithFile.read() && !mShouldLoop;
+    return mDoneWithFile.read() && !mShouldLoop;
 }
 
 bool VorbisAudioStream::IsBufferFull() const
 {
-	// We always leave at least one empty frame somewhere in the buffer.
-	// This means that an empty buffer can be represented as
-	// mDataBegin == mDataEnd, and never be confused with a full buffer.
-	return (mDataEnd.read() + CHANNELS) % mBufferSize == mDataBegin.read();
+    // We always leave at least one empty frame somewhere in the buffer.
+    // This means that an empty buffer can be represented as
+    // mDataBegin == mDataEnd, and never be confused with a full buffer.
+    return (mDataEnd.read() + CHANNELS) % mBufferSize == mDataBegin.read();
 }
 
 void VorbisAudioStream::GetFreeBlocks(int16 **outSpace1, size_t *outLength1,
-									  int16 **outSpace2, size_t *outLength2)
+                                      int16 **outSpace2, size_t *outLength2)
 {
-	// Cache local copies of these variables to prevent interesting
-	// things from happening when the other thread updates mDataBegin.
-	int begin = mDataBegin.read();
-	int end = mDataEnd.read();
+    // Cache local copies of these variables to prevent interesting
+    // things from happening when the other thread updates mDataBegin.
+    int begin = mDataBegin.read();
+    int end = mDataEnd.read();
 
-	// Figure out where the empty space is.  (We must leave one frame
-	// empty.  See IsBufferFull() for details.)
-	if ((end + CHANNELS) % mBufferSize == begin)
-	{
-		// The buffer is already full, so there's no free space.
-		*outSpace1  = NULL;
-		*outLength1 = 0;
-		*outSpace2  = NULL;
-		*outLength2 = 0;
-	}
-	else if (end < begin)
-	{
-		// Simple contiguous free space.
-		*outSpace1  = &mBuffer[end];
-		*outLength1 = begin - end - CHANNELS;
-		*outSpace2  = NULL;
-		*outLength2 = 0;
-	}
-	else if (begin == 0)
-	{
-		// Sneaky contiguous free space.  Handle this case separately to
-		// avoid complicating the case below.
-		*outSpace1  = &mBuffer[end];
-		*outLength1 = mBufferSize - end - CHANNELS;
-		*outSpace2  = NULL;
-		*outLength2 = 0;
-	}
-	else
-	{
-		// True wraparound!
-		ASSERT(begin >= CHANNELS);
-		*outSpace1  = &mBuffer[end];
-		*outLength1 = mBufferSize - end;
-		*outSpace2  = &mBuffer[0];
-		*outLength2 = begin - CHANNELS;
-	}
+    // Figure out where the empty space is.  (We must leave one frame
+    // empty.  See IsBufferFull() for details.)
+    if ((end + CHANNELS) % mBufferSize == begin)
+    {
+        // The buffer is already full, so there's no free space.
+        *outSpace1  = NULL;
+        *outLength1 = 0;
+        *outSpace2  = NULL;
+        *outLength2 = 0;
+    }
+    else if (end < begin)
+    {
+        // Simple contiguous free space.
+        *outSpace1  = &mBuffer[end];
+        *outLength1 = begin - end - CHANNELS;
+        *outSpace2  = NULL;
+        *outLength2 = 0;
+    }
+    else if (begin == 0)
+    {
+        // Sneaky contiguous free space.  Handle this case separately to
+        // avoid complicating the case below.
+        *outSpace1  = &mBuffer[end];
+        *outLength1 = mBufferSize - end - CHANNELS;
+        *outSpace2  = NULL;
+        *outLength2 = 0;
+    }
+    else
+    {
+        // True wraparound!
+        ASSERT(begin >= CHANNELS);
+        *outSpace1  = &mBuffer[end];
+        *outLength1 = mBufferSize - end;
+        *outSpace2  = &mBuffer[0];
+        *outLength2 = begin - CHANNELS;
+    }
 
-	// Make sure we're returning entire frames.
-	ASSERT(*outLength1 % CHANNELS == 0);
-	ASSERT(*outLength2 % CHANNELS == 0);
+    // Make sure we're returning entire frames.
+    ASSERT(*outLength1 % CHANNELS == 0);
+    ASSERT(*outLength2 % CHANNELS == 0);
 }
 
 void VorbisAudioStream::MarkAsWritten(size_t inSize)
 {
-	mDataEnd.write((mDataEnd.read() + inSize) % mBufferSize);
-	ASSERT(0 <= mDataEnd.read() && mDataEnd.read() < mBufferSize);
+    mDataEnd.write((mDataEnd.read() + inSize) % mBufferSize);
+    ASSERT(0 <= mDataEnd.read() && mDataEnd.read() < mBufferSize);
 }
 
 bool VorbisAudioStream::IsDone() const {
@@ -243,25 +243,25 @@ bool VorbisAudioStream::IsDone() const {
 
 void VorbisAudioStream::Idle()
 {
-	// Add as much data to the buffer as we can.
-	RestartFileIfLoopingAndDone();
-	while (!DoneReadingData() && !IsBufferFull())
-	{
-		// Figure out how much free space we need to fill.
-		int16 *space1, *space2;
-		size_t length1, length2;
-		GetFreeBlocks(&space1, &length1, &space2, &length2);
+    // Add as much data to the buffer as we can.
+    RestartFileIfLoopingAndDone();
+    while (!DoneReadingData() && !IsBufferFull())
+    {
+        // Figure out how much free space we need to fill.
+        int16 *space1, *space2;
+        size_t length1, length2;
+        GetFreeBlocks(&space1, &length1, &space2, &length2);
 
-		// Fill as much space as we can.
-		size_t total_written = 0;
-		if (space1)
-			total_written += ReadIntoBlock(space1, length1);
-		if (space2)
-			total_written += ReadIntoBlock(space2, length2);
-		MarkAsWritten(total_written);
+        // Fill as much space as we can.
+        size_t total_written = 0;
+        if (space1)
+            total_written += ReadIntoBlock(space1, length1);
+        if (space2)
+            total_written += ReadIntoBlock(space2, length2);
+        MarkAsWritten(total_written);
 
-		RestartFileIfLoopingAndDone();
-	}
+        RestartFileIfLoopingAndDone();
+    }
 }
 
 double VorbisAudioStream::GetSamplesPlayed() const {
@@ -273,45 +273,45 @@ double VorbisAudioStream::GetSamplesPlayed() const {
 }
 
 bool VorbisAudioStream::FillBuffer(void *outBuffer, unsigned long inFrames,
-								   PaTimestamp inTime)
+                                   PaTimestamp inTime)
 {
-	// This routine assumes 2 channels.  If you allow different numbers
-	// of channels, you'll need to fix it.
-	ASSERT(CHANNELS == 2);
+    // This routine assumes 2 channels.  If you allow different numbers
+    // of channels, you'll need to fix it.
+    ASSERT(CHANNELS == 2);
 
-	int16 *buffer = (int16 *) outBuffer;
-	size_t begin = mDataBegin.read();
-	size_t end = mDataEnd.read();
+    int16 *buffer = (int16 *) outBuffer;
+    size_t begin = mDataBegin.read();
+    size_t end = mDataEnd.read();
 
-	// We don't have any data, and we're not getting more.  Quit.
-	if (begin == end && DoneReadingData())
-		return true;
+    // We don't have any data, and we're not getting more.  Quit.
+    if (begin == end && DoneReadingData())
+        return true;
 
-	// Write our data to the output buffer, and pad with zeros if
-	// necessary.
-	for (size_t i = 0; i < inFrames; i++)
-	{
-		if (begin != end)
-		{
-			// Copy samples into the synth output buffer.
-			*buffer++ = mBuffer[begin++];
-			ASSERT(begin != end && begin != mBufferSize);
-			*buffer++ = mBuffer[begin++];
-			begin %= mBufferSize;
-			ASSERT(0 <= begin && begin < mBufferSize);
-		}
-		else
-		{
-			// We have no data with which to fill the buffer.  (We
-			// may get more later if mDone is false.)
-			*buffer++ = 0;
-			*buffer++ = 0;
-			/// \todo Although we inline this conditional, is it still too
-			/// expensive?
+    // Write our data to the output buffer, and pad with zeros if
+    // necessary.
+    for (size_t i = 0; i < inFrames; i++)
+    {
+        if (begin != end)
+        {
+            // Copy samples into the synth output buffer.
+            *buffer++ = mBuffer[begin++];
+            ASSERT(begin != end && begin != mBufferSize);
+            *buffer++ = mBuffer[begin++];
+            begin %= mBufferSize;
+            ASSERT(0 <= begin && begin < mBufferSize);
+        }
+        else
+        {
+            // We have no data with which to fill the buffer.  (We
+            // may get more later if mDone is false.)
+            *buffer++ = 0;
+            *buffer++ = 0;
+            /// \todo Although we inline this conditional, is it still too
+            /// expensive?
             if (!DoneReadingData())
                 mUnderrunCount++;
-		}
-	}
-	mDataBegin.write(begin);
-	return false;
+        }
+    }
+    mDataBegin.write(begin);
+    return false;
 }

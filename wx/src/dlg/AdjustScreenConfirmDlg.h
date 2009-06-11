@@ -40,7 +40,7 @@ class AdjustScreenConfirmDlg : public XrcDlg
     long mExpireTime;
 
     void OnIdle(wxIdleEvent &inEvent);
-	
+    
 public:
     AdjustScreenConfirmDlg(wxWindow *inParent);
 };

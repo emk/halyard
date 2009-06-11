@@ -29,11 +29,11 @@
 typedef unsigned long MovieWindowStyle;
 
 enum /* MovieWindowStyle */ {
-	MOVIE_CONTROLLER = 1,
-	MOVIE_LOOP = 2,
-	MOVIE_AUDIO_ONLY = 4,
-	MOVIE_INTERACTION = 8,
-	MOVIE_REPORT_CAPTIONS = 16
+    MOVIE_CONTROLLER = 1,
+    MOVIE_LOOP = 2,
+    MOVIE_AUDIO_ONLY = 4,
+    MOVIE_INTERACTION = 8,
+    MOVIE_REPORT_CAPTIONS = 16
 };
 
 //////////
@@ -54,11 +54,11 @@ public:
     /// class.
     ///
     MovieWindow(wxWindow *inParent, wxWindowID inID = -1,
-				const wxPoint &inPos = wxDefaultPosition,
-				const wxSize &inSize = wxDefaultSize,
-				long inWindowStyle = 0,
-				MovieWindowStyle inMovieWindowStyle = 0,
-				const wxString &inName = wxPanelNameStr);
+                const wxPoint &inPos = wxDefaultPosition,
+                const wxSize &inSize = wxDefaultSize,
+                long inWindowStyle = 0,
+                MovieWindowStyle inMovieWindowStyle = 0,
+                const wxString &inName = wxPanelNameStr);
 
     //////////
     /// Clean up the resources held by the MovieWindow.  Use Destroy()
@@ -66,10 +66,10 @@ public:
     ///
     virtual ~MovieWindow();
 
-	//////////
-	/// Get the style of this movie window.
-	///
-	MovieWindowStyle GetMovieWindowStyle() const { return mMovieWindowStyle; }
+    //////////
+    /// Get the style of this movie window.
+    ///
+    MovieWindowStyle GetMovieWindowStyle() const { return mMovieWindowStyle; }
 
     //////////
     /// Ask this widget to create and manage the specified movie.
@@ -78,9 +78,9 @@ public:
 
     //////////
     /// Get the current frame of the movie (where there are 30 frames
-	/// per second).  Returns 0 if there is no movie or the movie hasn't
-	/// started.  This number *can* decrease, especially if the user
-	/// is playing with the movie controller.
+    /// per second).  Returns 0 if there is no movie or the movie hasn't
+    /// started.  This number *can* decrease, especially if the user
+    /// is playing with the movie controller.
     ///
     virtual MovieFrame GetFrame();
     
@@ -123,33 +123,33 @@ public:
 
     //////////
     /// Is the movie finished?  This function is fairly smart about broken
-	/// movies, looping movies, etc.
+    /// movies, looping movies, etc.
     ///
     virtual bool IsDone();
 
-	//////////
-	/// Pause the movie.
-	/// Note: these methods may not be happy if the underlying movie code 
-	/// does not like to be paused.
-	///
-	virtual void Pause();
+    //////////
+    /// Pause the movie.
+    /// Note: these methods may not be happy if the underlying movie code 
+    /// does not like to be paused.
+    ///
+    virtual void Pause();
 
-	//////////
-	/// Resume the movie
-	///
-	virtual void Resume();
+    //////////
+    /// Resume the movie
+    ///
+    virtual void Resume();
 
     //////////
     /// Set the movie's volume.
     ///
-	virtual void SetVolume(const std::string &inChannel, double inVolume);
+    virtual void SetVolume(const std::string &inChannel, double inVolume);
 
     //////////
     /// Set the number of seconds which can pass without inactivity
     /// without causing a timeout.  This generally affects only networked
     /// movies.
     ///
-	virtual void SetTimeout(unsigned int timeout) {}
+    virtual void SetTimeout(unsigned int timeout) {}
 };
 
 // Define MovieWindowNative to map to an appropriate movie window class.

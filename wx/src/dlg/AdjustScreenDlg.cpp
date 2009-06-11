@@ -26,8 +26,8 @@
 using namespace Halyard;
 
 BEGIN_EVENT_TABLE(AdjustScreenDlg, XrcDlg)
-	EVT_BUTTON(wxID_YES, XrcDlg::OnSimpleButton)
-	EVT_BUTTON(wxID_NO, XrcDlg::OnSimpleButton)
+    EVT_BUTTON(wxID_YES, XrcDlg::OnSimpleButton)
+    EVT_BUTTON(wxID_NO, XrcDlg::OnSimpleButton)
 END_EVENT_TABLE()
 
 AdjustScreenDlg::AdjustScreenDlg(wxWindow *inParent)

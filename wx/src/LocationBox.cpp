@@ -39,11 +39,11 @@ using namespace Halyard;
 
 BEGIN_EVENT_TABLE(LocationBox, LOCATION_BOX_PARENT_CLASS)
     EVT_UPDATE_UI(HALYARD_LOCATION_BOX, LocationBox::UpdateUiLocationBox)
-	EVT_CHAR(LocationBox::OnChar)
+    EVT_CHAR(LocationBox::OnChar)
 
 // We only process this event if we're a ComboBox.
 #if CONFIG_LOCATION_BOX_IS_COMBO
-	EVT_COMBOBOX(HALYARD_LOCATION_BOX, LocationBox::OnComboBoxSelected)
+    EVT_COMBOBOX(HALYARD_LOCATION_BOX, LocationBox::OnComboBoxSelected)
 #endif
 
 END_EVENT_TABLE()
@@ -52,16 +52,16 @@ END_EVENT_TABLE()
 
 LocationBox::LocationBox(wxToolBar *inParent)
     : wxComboBox(inParent, HALYARD_LOCATION_BOX, wxT(""),
-				 wxDefaultPosition, wxSize(200, -1),
-				 0, NULL, wxWANTS_CHARS|wxCB_DROPDOWN)
+                 wxDefaultPosition, wxSize(200, -1),
+                 0, NULL, wxWANTS_CHARS|wxCB_DROPDOWN)
 {
 }
 
 #else // !CONFIG_LOCATION_BOX_IS_COMBO
 
 LocationBox::LocationBox(wxToolBar *inParent)
-	: wxTextCtrl(inParent, HALYARD_LOCATION_BOX, wxT(""), wxDefaultPosition,
-				 wxSize(200, -1), wxTE_PROCESS_ENTER)
+    : wxTextCtrl(inParent, HALYARD_LOCATION_BOX, wxT(""), wxDefaultPosition,
+                 wxSize(200, -1), wxTE_PROCESS_ENTER)
 {
 }
 
@@ -69,79 +69,79 @@ LocationBox::LocationBox(wxToolBar *inParent)
 
 void LocationBox::NotifyEnterCard(const wxString &inName)
 {
-	SetValue(inName);
-	RegisterCard(inName);
+    SetValue(inName);
+    RegisterCard(inName);
 }
 
 void LocationBox::RegisterCard(const wxString &inCardName)
 {
 #if CONFIG_LOCATION_BOX_IS_COMBO
-	// Update our drop-down list of cards.
-	// First, delete the card from the list
-	int loc = FindString(inCardName);
-	std::vector<wxString> vec;
-	int i;
+    // Update our drop-down list of cards.
+    // First, delete the card from the list
+    int loc = FindString(inCardName);
+    std::vector<wxString> vec;
+    int i;
 
-	if (loc != wxNOT_FOUND)
-		Delete(loc);	
+    if (loc != wxNOT_FOUND)
+        Delete(loc);    
 
-	// Now move all of the remaining cards into a vector
-	for (i = GetCount() - 1; i >= 0; i--) {
-		vec.push_back(GetString(i));
-		Delete(i);
-	}
+    // Now move all of the remaining cards into a vector
+    for (i = GetCount() - 1; i >= 0; i--) {
+        vec.push_back(GetString(i));
+        Delete(i);
+    }
 
-	// Add our new card at the front of the list
-	Append(inCardName);
+    // Add our new card at the front of the list
+    Append(inCardName);
 
-	// Put back all of the remaining cards
-	for (i = vec.size() - 1; i >= 0; i--) 
-		Append(vec[i]);
+    // Put back all of the remaining cards
+    for (i = vec.size() - 1; i >= 0; i--) 
+        Append(vec[i]);
 #endif // CONFIG_LOCATION_BOX_IS_COMBO
 }
 
 void LocationBox::TryJump(const wxString &inCardName)
 {
-	Stage *stage = wxGetApp().GetStage();
+    Stage *stage = wxGetApp().GetStage();
     if (stage->CanJump())
-	{
-		// If the specified card exists, add it to our list.
+    {
+        // If the specified card exists, add it to our list.
         std::string card_name(inCardName.mb_str());
-		if (TInterpreter::GetInstance()->IsValidCard(card_name.c_str()))
-			RegisterCard(inCardName);
+        if (TInterpreter::GetInstance()->IsValidCard(card_name.c_str()))
+            RegisterCard(inCardName);
 
-		// Jump to the specified card, or display an error if it
-		// does not exist.
-		stage->TryJumpTo(inCardName);
-	}
+        // Jump to the specified card, or display an error if it
+        // does not exist.
+        stage->TryJumpTo(inCardName);
+    }
 }
 
 void LocationBox::UpdateUiLocationBox(wxUpdateUIEvent &inEvent)
 {
-	// We need to check for a stage because we may be called after the
-	// Stage is unregistered.
-	if (wxGetApp().HaveStage())
-		inEvent.Enable(wxGetApp().GetStage()->CanJump());
+    // We need to check for a stage because we may be called after the
+    // Stage is unregistered.
+    if (wxGetApp().HaveStage())
+        inEvent.Enable(wxGetApp().GetStage()->CanJump());
 }
 
 void LocationBox::OnChar(wxKeyEvent &inEvent)
 {
-	if (inEvent.GetKeyCode() == WXK_RETURN)
-		TryJump(GetValue());
-	else
-		inEvent.Skip();
+    if (inEvent.GetKeyCode() == WXK_RETURN)
+        TryJump(GetValue());
+    else
+        inEvent.Skip();
 }
 
 #if CONFIG_LOCATION_BOX_IS_COMBO
 
 void LocationBox::OnComboBoxSelected(wxCommandEvent &inEvent)
 {
-	TryJump(inEvent.GetString());
+    TryJump(inEvent.GetString());
 }
 
 #endif // CONFIG_LOCATION_BOX_IS_COMBO
 
 void LocationBox::Prompt()
 {
-	SetFocus();
+    SetFocus();
 }

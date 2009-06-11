@@ -177,19 +177,19 @@ void FindDlg::OnButton(wxCommandEvent &event) {
 
 /// Set a registry key.
 void FindDlg::SetKey(const wxString &key, bool value) {
-	shared_ptr<wxConfigBase> config(new wxConfig);
+    shared_ptr<wxConfigBase> config(new wxConfig);
     config->Write(wxT("/Search/") + key, value);
 }
 
 /// Set a registry key.
 void FindDlg::SetKey(const wxString &key, const wxString &value) {
-	shared_ptr<wxConfigBase> config(new wxConfig);
+    shared_ptr<wxConfigBase> config(new wxConfig);
     config->Write(wxT("/Search/") + key, value);    
 }
 
 /// Get a registry key.
 bool FindDlg::GetKeyBool(const wxString &key) {
-	shared_ptr<wxConfigBase> config(new wxConfig);
+    shared_ptr<wxConfigBase> config(new wxConfig);
     bool result;
     config->Read(wxT("/Search/") + key, &result, false);
     return result;
@@ -197,7 +197,7 @@ bool FindDlg::GetKeyBool(const wxString &key) {
 
 /// Get a registry key.
 wxString FindDlg::GetKeyString(const wxString &key) {
-	shared_ptr<wxConfigBase> config(new wxConfig);
+    shared_ptr<wxConfigBase> config(new wxConfig);
     wxString result;
     config->Read(wxT("/Search/") + key, &result, wxT(""));
     return result;    
@@ -205,13 +205,13 @@ wxString FindDlg::GetKeyString(const wxString &key) {
 
 /// Set our search area.
 void FindDlg::SetSearchArea(SearchArea area) {
-	shared_ptr<wxConfigBase> config(new wxConfig);
+    shared_ptr<wxConfigBase> config(new wxConfig);
     config->Write(wxT("/Search/SearchArea"), static_cast<int>(area));
 }
 
 /// Get our search area.
 FindDlg::SearchArea FindDlg::GetSearchArea() {
-	shared_ptr<wxConfigBase> config(new wxConfig);
+    shared_ptr<wxConfigBase> config(new wxConfig);
     int regval;
     config->Read(wxT("/Search/SearchArea"), &regval, CURRENT_SCRIPT);
     switch (regval) {

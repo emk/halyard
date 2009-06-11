@@ -35,7 +35,7 @@ class wxQuake2Overlay;
 /// An object which can be drawn to by scripts.
 class DrawingArea : public GraphicsTools::Image {
     Stage *mStage;
-	wxRect mBounds;
+    wxRect mBounds;
     CairoSurfacePtr mSurface;
     bool mIsShown;
     bool mHasAlpha;
@@ -52,7 +52,7 @@ class DrawingArea : public GraphicsTools::Image {
     //////////
     /// Initialize our underlying Cairo surface.
     ///
-	void InitializeSurface();
+    void InitializeSurface();
 
     /// If we have a copy wxQuake2, and it's running, then initialize
     /// the Quake 2 overlay object associated with this drawing area.
@@ -70,19 +70,19 @@ class DrawingArea : public GraphicsTools::Image {
     /// If we have a game overlay, move it to the specified location.
     void GameOverlayMoveTo(const wxPoint &inPoint);
 
-	//////////
-	/// Invalidate the specified rectangle.
-	///
-	/// \param inRect  The rectangle to invalidate.
-	/// \param inInflate  The number of pixels by which we should inflate
-	/// 		         the rectangle.
+    //////////
+    /// Invalidate the specified rectangle.
+    ///
+    /// \param inRect  The rectangle to invalidate.
+    /// \param inInflate  The number of pixels by which we should inflate
+    ///                  the rectangle.
     /// \param inHasSurfaceChanged  If false, the contents of this rect haven't
     ///               changed, just the stage's alpha-compositing for this
     ///               region.  If we're relying on game engine for real-time
     ///               compositing, it doesn't need to reconvert the data in
     ///               this rectangle.
-	///	
-	void InvalidateRect(const wxRect &inRect, int inInflate = 0,
+    /// 
+    void InvalidateRect(const wxRect &inRect, int inInflate = 0,
                         bool inHasSurfaceChanged = true);
 
     //////////
@@ -92,14 +92,14 @@ class DrawingArea : public GraphicsTools::Image {
 
 public:
     DrawingArea(Stage *inStage, int inWidth, int inHeight, bool inHasAlpha);
-	DrawingArea(Stage *inStage, const wxRect &inBounds, bool inHasAlpha);
+    DrawingArea(Stage *inStage, const wxRect &inBounds, bool inHasAlpha);
     ~DrawingArea();
     
     /// Set the size of this DrawingArea.  Erases all contents.
     void SetSize(const wxSize &inSize);
 
-	wxRect GetBounds() { return mBounds; }
-	bool HasAlpha() { return mHasAlpha; }
+    wxRect GetBounds() { return mBounds; }
+    bool HasAlpha() { return mHasAlpha; }
 
     //////////
     /// Show or hide this drawing area.
@@ -126,47 +126,47 @@ public:
     ///
     void Clear(const GraphicsTools::Color &inColor);
 
-	//////////
-	/// Draw a line in the specified color.
-	///
-	void DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
-				  const GraphicsTools::Color &inColor, int inWidth);
+    //////////
+    /// Draw a line in the specified color.
+    ///
+    void DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
+                  const GraphicsTools::Color &inColor, int inWidth);
 
-	//////////
-	/// Fill in the specified box with the specified color.
-	///
-	void FillBox(const wxRect &inBounds, 
-				 const GraphicsTools::Color &inColor);
+    //////////
+    /// Fill in the specified box with the specified color.
+    ///
+    void FillBox(const wxRect &inBounds, 
+                 const GraphicsTools::Color &inColor);
 
-	//////////
-	/// Outline the specified box with the specified color.
-	///
-	void OutlineBox(const wxRect &inBounds,
+    //////////
+    /// Outline the specified box with the specified color.
+    ///
+    void OutlineBox(const wxRect &inBounds,
                     const GraphicsTools::Color &inColor,
-					int inWidth);
+                    int inWidth);
 
-	//////////
-	/// Fill in the specified oval with the specified color.
-	///
-	void FillOval(const wxRect &inBounds, 
+    //////////
+    /// Fill in the specified oval with the specified color.
+    ///
+    void FillOval(const wxRect &inBounds, 
                   const GraphicsTools::Color &inColor);
 
-	//////////
-	/// Outline the specified oval with the specified color.
-	///
-	void OutlineOval(const wxRect &inBounds,
+    //////////
+    /// Outline the specified oval with the specified color.
+    ///
+    void OutlineOval(const wxRect &inBounds,
                      const GraphicsTools::Color &inColor,
                      int inWidth);
 
-	//////////
-	/// Draw a portable PixMap to the screen, blending alpha
-	/// values appropriately.
-	///
-	/// \param inPoint    The location at which to draw the greymap.
-	/// \param inGreyMap  The greymap to draw.
-	/// \param inColor    The color to draw with.
-	///
-	void DrawGreyMap(GraphicsTools::Point inPoint,
+    //////////
+    /// Draw a portable PixMap to the screen, blending alpha
+    /// values appropriately.
+    ///
+    /// \param inPoint    The location at which to draw the greymap.
+    /// \param inGreyMap  The greymap to draw.
+    /// \param inColor    The color to draw with.
+    ///
+    void DrawGreyMap(GraphicsTools::Point inPoint,
                      const GraphicsTools::GreyMap *inGreyMap,
                      GraphicsTools::Color inColor);
 
@@ -184,7 +184,7 @@ public:
     /// optional scaling and clipping.  The inClipRect, if specified, is in
     /// co-ordinates relative to inSurface.  Only works for
     /// cairo_image_surface objects.
-	///
+    ///
     wxRect DrawImage(CairoSurfacePtr inImage, wxCoord inX, wxCoord inY,
                      double inScaleX = 1.0, double inScaleY = 1.0,
                      wxRect *inClipRect = NULL);
@@ -202,15 +202,15 @@ public:
     ///
     void Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY);
 
-	//////////
-	/// Blit the contents of the specified DC to our offscreen buffer.
-	/// If the blit fails, fill the offscreen buffer with black.
-	/// (This is currently used for synchronizing our display with
-	/// whatever Quake 2 left on the screen.)
-	/// 
-	/// \param inDC  a DC the same size as the stage
-	///
-	void DrawDCContents(wxDC &inDC);
+    //////////
+    /// Blit the contents of the specified DC to our offscreen buffer.
+    /// If the blit fails, fill the offscreen buffer with black.
+    /// (This is currently used for synchronizing our display with
+    /// whatever Quake 2 left on the screen.)
+    /// 
+    /// \param inDC  a DC the same size as the stage
+    ///
+    void DrawDCContents(wxDC &inDC);
 
     //////////
     /// Draw a 12-point string of text at the specified location.  This is
@@ -219,19 +219,19 @@ public:
     /// guarantees about what font we use or whether we anti-alias the
     /// text.
     ///
-	void DrawSimpleText(GraphicsTools::Point inAt, wxString inText,
+    void DrawSimpleText(GraphicsTools::Point inAt, wxString inText,
                         GraphicsTools::Color inColor);
 
-	//////////
-	/// Get the color at the specified location (specified in DrawingArea
-	/// co-ordinates).
-	///
-	GraphicsTools::Color GetPixel(wxCoord inX, wxCoord inY);
+    //////////
+    /// Get the color at the specified location (specified in DrawingArea
+    /// co-ordinates).
+    ///
+    GraphicsTools::Color GetPixel(wxCoord inX, wxCoord inY);
 
-	//////////
-	/// Composite our data into the specified CairoContext.
-	///
-	void CompositeInto(CairoContext &inCr);
+    //////////
+    /// Composite our data into the specified CairoContext.
+    ///
+    void CompositeInto(CairoContext &inCr);
 };
 
 #endif // DrawingArea_H

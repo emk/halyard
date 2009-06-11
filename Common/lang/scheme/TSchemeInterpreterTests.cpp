@@ -40,58 +40,58 @@ static int gPauseCount = 0;
 
 // The idle function called periodically by our Scheme interpreter.
 void Halyard::TSchemeInterpreterTestIdleProc(bool inBlock) {
-	if (gTestingPause && --gPauseCount <= 0)
-	{
-		gTestingPause = false;
-		gPauseCount = 0;
+    if (gTestingPause && --gPauseCount <= 0)
+    {
+        gTestingPause = false;
+        gPauseCount = 0;
 
-		TEST(TInterpreter::GetInstance()->Paused());
-		TInterpreter::GetInstance()->WakeUp();
-		TEST(!TInterpreter::GetInstance()->Paused());
-	}
+        TEST(TInterpreter::GetInstance()->Paused());
+        TInterpreter::GetInstance()->WakeUp();
+        TEST(!TInterpreter::GetInstance()->Paused());
+    }
 }
 
 DEFINE_PRIMITIVE(TestStop)
 {
-	std::string next_card;
-	inArgs >> SymbolName(next_card);
+    std::string next_card;
+    inArgs >> SymbolName(next_card);
 
-	TEST(!TInterpreter::GetInstance()->IsStopped());
-	TInterpreter::GetInstance()->Stop();
-	TEST(TInterpreter::GetInstance()->IsStopped());
-	TInterpreter::GetInstance()->Go(next_card.c_str());
-	TEST(!TInterpreter::GetInstance()->IsStopped());
+    TEST(!TInterpreter::GetInstance()->IsStopped());
+    TInterpreter::GetInstance()->Stop();
+    TEST(TInterpreter::GetInstance()->IsStopped());
+    TInterpreter::GetInstance()->Go(next_card.c_str());
+    TEST(!TInterpreter::GetInstance()->IsStopped());
 }
 
 DEFINE_PRIMITIVE(TestPause)
 {
-	gTestingPause = true;
-	gPauseCount = 10;
+    gTestingPause = true;
+    gPauseCount = 10;
 
-	TEST(!TInterpreter::GetInstance()->Paused());
-	TInterpreter::GetInstance()->Pause();
-	TEST(TInterpreter::GetInstance()->Paused());
+    TEST(!TInterpreter::GetInstance()->Paused());
+    TInterpreter::GetInstance()->Pause();
+    TEST(TInterpreter::GetInstance()->Paused());
 }
 
 DEFINE_PRIMITIVE(TestCallback)
 {
-	TCallbackPtr callback;
-	inArgs >> callback;
-	callback->Run();
+    TCallbackPtr callback;
+    inArgs >> callback;
+    callback->Run();
 }
 
 DEFINE_PRIMITIVE(TestCallbackArgs)
 {
-	TCallbackPtr callback;
-	inArgs >> callback;
+    TCallbackPtr callback;
+    inArgs >> callback;
 
-	TValueList args, nested;
-	args.push_back("hello");
-	args.push_back(TSymbol("world"));
-	nested.push_back("foo");
-	nested.push_back(TSymbol("bar"));
-	args.push_back(nested);
-	callback->Run(args);
+    TValueList args, nested;
+    args.push_back("hello");
+    args.push_back(TSymbol("world"));
+    nested.push_back("foo");
+    nested.push_back(TSymbol("bar"));
+    args.push_back(nested);
+    callback->Run(args);
 }
 
 DEFINE_PRIMITIVE(TestScriptEditorDB)
@@ -108,23 +108,23 @@ DEFINE_PRIMITIVE(TestScriptEditorDB)
 }
 
 #define DEFINE_TYPE_TEST_PRIMITIVES(TYPE, COUNT) \
-	static TYPE TYPE##_test_values[COUNT]; \
+    static TYPE TYPE##_test_values[COUNT]; \
     static uint32 TYPE##_index = 0; \
-	DEFINE_PRIMITIVE(Set_Wanted_##TYPE) { \
-		inArgs >> TYPE##_index; \
-		ASSERT(TYPE##_index < COUNT); \
-	} \
-	DEFINE_PRIMITIVE(Test_Check_##TYPE) { \
-		TYPE arg; \
-		inArgs >> arg; \
-		TEST(TYPE##_test_values[TYPE##_index] == arg); \
-	}
+    DEFINE_PRIMITIVE(Set_Wanted_##TYPE) { \
+        inArgs >> TYPE##_index; \
+        ASSERT(TYPE##_index < COUNT); \
+    } \
+    DEFINE_PRIMITIVE(Test_Check_##TYPE) { \
+        TYPE arg; \
+        inArgs >> arg; \
+        TEST(TYPE##_test_values[TYPE##_index] == arg); \
+    }
 
 #define REGISTER_TYPE_TEST_PRIMITIVES(TYPE) \
     do { \
-		REGISTER_PRIMITIVE(Set_Wanted_##TYPE); \
-		REGISTER_PRIMITIVE(Test_Check_##TYPE); \
-	} while (0)
+        REGISTER_PRIMITIVE(Set_Wanted_##TYPE); \
+        REGISTER_PRIMITIVE(Test_Check_##TYPE); \
+    } while (0)
 
 DEFINE_TYPE_TEST_PRIMITIVES(string, 2)
 DEFINE_TYPE_TEST_PRIMITIVES(int32, 3)
@@ -138,51 +138,51 @@ DEFINE_TYPE_TEST_PRIMITIVES(Color, 1)
 
 void Halyard::RegisterTSchemeInterpreterTestPrimitives()
 {
-	REGISTER_PRIMITIVE(TestStop);
-	REGISTER_PRIMITIVE(TestPause);
-	REGISTER_PRIMITIVE(TestCallback);
-	REGISTER_PRIMITIVE(TestCallbackArgs);
+    REGISTER_PRIMITIVE(TestStop);
+    REGISTER_PRIMITIVE(TestPause);
+    REGISTER_PRIMITIVE(TestCallback);
+    REGISTER_PRIMITIVE(TestCallbackArgs);
     REGISTER_PRIMITIVE(TestScriptEditorDB);
 
-	string_test_values[0] = "";
-	string_test_values[1] = "hello";
-	REGISTER_TYPE_TEST_PRIMITIVES(string);
+    string_test_values[0] = "";
+    string_test_values[1] = "hello";
+    REGISTER_TYPE_TEST_PRIMITIVES(string);
 
-	int32_test_values[0] = INT_MIN;
-	int32_test_values[1] = 0;
-	int32_test_values[2] = INT_MAX;
-	REGISTER_TYPE_TEST_PRIMITIVES(int32);
+    int32_test_values[0] = INT_MIN;
+    int32_test_values[1] = 0;
+    int32_test_values[2] = INT_MAX;
+    REGISTER_TYPE_TEST_PRIMITIVES(int32);
 
-	uint32_test_values[0] = 0;
-	uint32_test_values[1] = 1;
-	uint32_test_values[2] = UINT_MAX;
-	REGISTER_TYPE_TEST_PRIMITIVES(uint32);
+    uint32_test_values[0] = 0;
+    uint32_test_values[1] = 1;
+    uint32_test_values[2] = UINT_MAX;
+    REGISTER_TYPE_TEST_PRIMITIVES(uint32);
 
-	bool_test_values[0] = true;
-	bool_test_values[1] = false;
-	REGISTER_TYPE_TEST_PRIMITIVES(bool);
+    bool_test_values[0] = true;
+    bool_test_values[1] = false;
+    REGISTER_TYPE_TEST_PRIMITIVES(bool);
 
-	double_test_values[0] = -1.0;
-	double_test_values[1] = 0.0;
-	double_test_values[2] = 1.0;
-	REGISTER_TYPE_TEST_PRIMITIVES(double);
+    double_test_values[0] = -1.0;
+    double_test_values[1] = 0.0;
+    double_test_values[2] = 1.0;
+    REGISTER_TYPE_TEST_PRIMITIVES(double);
 
-	TPoint_test_values[0] = TPoint(1, 2);
-	REGISTER_TYPE_TEST_PRIMITIVES(TPoint);
+    TPoint_test_values[0] = TPoint(1, 2);
+    REGISTER_TYPE_TEST_PRIMITIVES(TPoint);
 
-	TRect_test_values[0] = TRect(1, 2, 3, 4);
-	REGISTER_TYPE_TEST_PRIMITIVES(TRect);
+    TRect_test_values[0] = TRect(1, 2, 3, 4);
+    REGISTER_TYPE_TEST_PRIMITIVES(TRect);
 
-	std::vector<TPoint> pts;
-	pts.push_back(TPoint(0, 0));
-	pts.push_back(TPoint(2, 0));
-	pts.push_back(TPoint(1, 2));
-	TPolygon_test_values[0] = TPolygon();
-	TPolygon_test_values[1] = TPolygon(pts);
-	REGISTER_TYPE_TEST_PRIMITIVES(TPolygon);
+    std::vector<TPoint> pts;
+    pts.push_back(TPoint(0, 0));
+    pts.push_back(TPoint(2, 0));
+    pts.push_back(TPoint(1, 2));
+    TPolygon_test_values[0] = TPolygon();
+    TPolygon_test_values[1] = TPolygon(pts);
+    REGISTER_TYPE_TEST_PRIMITIVES(TPolygon);
 
-	Color_test_values[0] = Color(1, 2, 3, 4);
-	REGISTER_TYPE_TEST_PRIMITIVES(Color);
+    Color_test_values[0] = Color(1, 2, 3, 4);
+    REGISTER_TYPE_TEST_PRIMITIVES(Color);
 }
 
 void Halyard::CheckTSchemeInterpreterTestResults() {
@@ -190,8 +190,8 @@ void Halyard::CheckTSchemeInterpreterTestResults() {
     // called TInterpreterManager::Run.  Here, we just double-check a few
     // variables that should have been set earlier.
 
-	// Make sure we visited all the right cards.
-	TEST(gVariableManager.Get("seen-start") == std::string("1"));
-	TEST(gVariableManager.Get("seen-test-1") == std::string("1"));
-	TEST(gVariableManager.Get("seen-test-2") == std::string("1"));
+    // Make sure we visited all the right cards.
+    TEST(gVariableManager.Get("seen-start") == std::string("1"));
+    TEST(gVariableManager.Get("seen-test-1") == std::string("1"));
+    TEST(gVariableManager.Get("seen-test-2") == std::string("1"));
 }
