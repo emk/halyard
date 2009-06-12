@@ -274,6 +274,7 @@ want_intltool=false
 want_pkg_config=false
 want_gtk_doc=false
 want_gnome_doc_utils=false
+want_maintainer_mode=false
 
 # IML - emk - 2 May 2008 - We don't need to recursively configure any of
 # our subprojects, so ignore their configure.ac files.
@@ -307,6 +308,11 @@ for configure_ac in $configure_files; do
     fi
     if grep "^GNOME_DOC_INIT" $configure_ac >/dev/null; then
         want_gnome_doc_utils=true
+    fi
+
+    # check that AM_MAINTAINER_MODE is used
+    if grep "^AM_MAINTAINER_MODE" $configure_ac >/dev/null; then
+	want_maintainer_mode=true
     fi
 
     # check to make sure gnome-common macros can be found ...
@@ -504,7 +510,11 @@ for configure_ac in $configure_files; do
     fi
 done
 
-conf_flags="--enable-maintainer-mode"
+conf_flags=""
+
+if $want_maintainer_mode; then
+    conf_flags="--enable-maintainer-mode"
+fi
 
 if test x$NOCONFIGURE = x; then
     printbold Running $srcdir/configure $conf_flags "$@" ...
