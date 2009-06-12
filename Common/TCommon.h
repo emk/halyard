@@ -49,12 +49,14 @@
 /// \param inFile  The file in which the assertion appears.
 /// \param inLine  The line number of the assertion.
 ///
-extern void HalyardCheckAssertion(int inTest, const char *inDescription,
-								const char *inFile, int inLine);
+extern void HalyardCheckAssertion(unsigned long inTest,
+                                  const char *inDescription,
+                                  const char *inFile, int inLine);
 
 #ifdef DEBUG
 #	define ASSERT(test) \
-		HalyardCheckAssertion((int) (test), #test, __FILE__, __LINE__);
+		HalyardCheckAssertion((unsigned long) (test), #test, __FILE__, \
+                              __LINE__);
 #else // DEBUG
 #	define ASSERT(test) ((void) 0)
 #endif // DEBUG
