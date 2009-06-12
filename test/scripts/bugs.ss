@@ -162,5 +162,38 @@
                          :dragging? #t))
     (rectangle rect ((.in-drag-layer.bounds) (color 0 70 50))))
 
+  
+  (define-stylesheet $normal-style
+    :family "Century Schoolbook L"
+    :size 16
+    :color $color-black
+    )
+  
+  (define-stylesheet $new-style
+    :base $normal-style
+    :family "DejaVu Sans Mono")
+  
+  (card /bugs/bug-f12767-measure-text-space-before-newline
+      (%bug-card% :bug-id "F12767"
+                  :bug-title "Measure-text confused by space before newline"
+                  :instructions (cat "Both boxes should display the same "
+                                     "2 lines of black text."))
+    (attr s          "of Measure Text, \na \"TEST.\"")
+    (attr s-no-space "of Measure Text,\na \"TEST.\"")
+    
+    (def (text-tester at style name)
+      ;; Draw the text with no space in a colorful hue.
+      (new-text at
+                (apply stylesheet :base style (list :color $color-highlight))
+                (.s-no-space) :name (symcat name '-no-space))
+      ;; Draw the text with the extra space on top with the color black.
+      (new-text at style (.s) :name name))
+    
+    (setup
+      (clear-dc $color-white)
+      (.text-tester (point 100 100) $normal-style 'foo)
+      (.text-tester (point 100 200) $new-style 'bar))
+    )
+  
   )
 
