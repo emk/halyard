@@ -81,14 +81,16 @@ void TValue::TemplateImpl<T>::Write(std::ostream &out) {
     out << mValue;
 }
 
-template <>
-void TValue::TemplateImpl<std::string>::Write(std::ostream &out) {
-    out << MakeQuotedString(mValue);
-}
-
-template <>
-void TValue::TemplateImpl<bool>::Write(std::ostream &out) {
-    out << (mValue ? "#t" : "#f");
+namespace Halyard {
+    template <>
+    void TValue::TemplateImpl<std::string>::Write(std::ostream &out) {
+        out << MakeQuotedString(mValue);
+    }
+    
+    template <>
+    void TValue::TemplateImpl<bool>::Write(std::ostream &out) {
+        out << (mValue ? "#t" : "#f");
+    }
 }
 
 //=========================================================================
