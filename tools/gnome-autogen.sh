@@ -487,7 +487,7 @@ for configure_ac in $configure_files; do
           cp -pf INSTALL INSTALL.autogen_bak
         fi
 	if [ $REQUIRED_AUTOMAKE_VERSION != 1.4 ]; then
-	    $AUTOMAKE --gnu --add-missing --force --copy || exit 1
+	    $AUTOMAKE --gnu --add-missing --force --copy -Wno-portability || exit 1
 	else
 	    $AUTOMAKE --gnu --add-missing --copy || exit 1
 	fi
