@@ -110,7 +110,7 @@ AC_DEFUN([AX_LIB_MZSCHEME],
             ac_mzscheme_libs="-framework PLT_MzScheme"
         else
             ac_mzscheme_libdir="-L$ac_mzscheme_path/lib"
-            if test $ac_mzscheme_want_precise_gc = 1; then
+            if test $ac_mzscheme_want_precise_gc -eq 0; then
                 ac_mzscheme_libs="-lmzscheme -lmzgc"
             else
                 ac_mzscheme_libs="-lmzscheme3m"
