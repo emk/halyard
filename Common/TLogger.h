@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -57,14 +57,10 @@ public:
     static std::string StringFromLevel(Level inLevel);
 
 private:
-    //////////
     /// Have we initialized our log files yet?
-    ///
     static bool sLogFilesAreInitialized;
 
-    //////////
     /// See TryToAvoidExitingWithError.
-    ///
     static bool sShouldTryToAvoidExitingWithError;
 
     /// Used to prevent re-entrant calls to MaybeHandleLogMessage.
@@ -89,12 +85,9 @@ private:
         __attribute__((noreturn));
 
 public:
-    //////////
     /// Initialize TLogger.
-    ///
     static void InitializeLogFiles();
 
-    //////////
     /// When we're not in AUTHORING mode, we treat all errors as fatal,
     /// because in RUNTIME mode the end-user won't know how to recover from
     /// them, and in COMMAND_LINE mode the engine will generally hang after
@@ -106,7 +99,6 @@ public:
     /// change the default policy.
     ///
     /// KLUDGE - See if we can integrate this better into log4cplus rules.
-    ///
     static void TryToAvoidExitingWithError();
 
     TLogger() : mIsInMaybeHandleLogMessage(false) {}
@@ -156,62 +148,42 @@ public:
     /// reasonable settings.
     typedef void (*ExitPrepFunction)();
 
-    //////////
     /// Notfy TLog whether standard error is available.
-    ///
     static void SetIsStandardErrorAvailable(bool inIsAvailable);
 
-    //////////
     /// Get an output stream that we can use for displaying errors.  This
     /// will point to either std:cerr, or to a file if std::cerr is not
     /// available.
-    ///
     static std::ostream *GetErrorOutput();
 
-    //////////
     /// Display an alert in a plaform-specific fashion.
-    ///
     static void DisplayAlert(AlertType inType, const char *inMessage);
 
-    //////////
     /// Register a function to display an alert.  Note that this function
     /// MUST NOT call ASSERT, FatalError, or other logging functions!
-    ///
     static void RegisterAlertDisplayFunction(AlertDisplayFunction inFunc);
 
-    //////////
     /// We may need to restore some system state before our application
     /// exits.  Call this function to do anything necessary.
-    ///
     static void PrepareToExit();
     
-    //////////
     /// Install a function to be called before exiting with an error.
-    ///
     static void RegisterExitPrepFunction(ExitPrepFunction inFunc);
 
 private:
-	//////////
-	/// Either NULL, or a function which can be used to display an alert.
-	///
-	static AlertDisplayFunction s_AlertDisplayFunction;
+    /// Either NULL, or a function which can be used to display an alert.
+    static AlertDisplayFunction s_AlertDisplayFunction;
 
-	//////////
-	/// Either NULL, or a function which should be called before exiting.
-	///
-	static ExitPrepFunction s_ExitPrepFunction;
+    /// Either NULL, or a function which should be called before exiting.
+    static ExitPrepFunction s_ExitPrepFunction;
 
-    //////////
     /// Can we use std::cerr for printing messages?  This is false for
     /// Win32 and Mac GUI applications, which aren't hooked up to a usable
     /// console.
-    ///
     static bool s_IsStandardErrorAvailable;
 
-    //////////
     /// A pointer to the "console" that we'll use for printing errors to
     /// the console.
-    ///
     static std::ostream *s_ErrorOutput;    
 };
 

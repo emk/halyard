@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -30,10 +30,10 @@ using namespace Halyard;
 
 Widget::Widget(Stage *inStage, const wxString &inName,
                Halyard::TCallbackPtr inDispatcher)
-	: Element(inStage, inName, inDispatcher), mWindow(NULL)
+    : Element(inStage, inName, inDispatcher), mWindow(NULL)
 {
-	// Our subclass must call InitializeWidgetWindow before exiting its
-	// constructor.
+    // Our subclass must call InitializeWidgetWindow before exiting its
+    // constructor.
 }
 
 
@@ -46,21 +46,21 @@ Widget::Widget(Stage *inStage, const wxString &inName, wxWindow *inWindow)
 Widget::~Widget() {
     // XXX - Is this actually safe to do?  We might be called when we are
     // removed from the stage, or when the stage is destroyed.
-	//
-	// We only destroy the window if it's been created.
-	if (mWindow)
-		mWindow->Destroy();
+    //
+    // We only destroy the window if it's been created.
+    if (mWindow)
+        mWindow->Destroy();
 }
 
 void Widget::InitializeWidgetWindow(wxWindow *inWindow) {
-	ASSERT(mWindow == NULL);
-	ASSERT(inWindow != NULL);
-	mWindow = inWindow;
+    ASSERT(mWindow == NULL);
+    ASSERT(inWindow != NULL);
+    mWindow = inWindow;
 }
 
 wxRect Widget::GetRect() {
-	ASSERT(mWindow != NULL);
-	return mWindow->GetRect();
+    ASSERT(mWindow != NULL);
+    return mWindow->GetRect();
 }
 
 void Widget::Show(bool inShow) {
@@ -90,15 +90,15 @@ void Widget::Show(bool inShow) {
 }
 
 bool Widget::IsShown() {
-	ASSERT(mWindow != NULL);
-	return mWindow->IsShown();
+    ASSERT(mWindow != NULL);
+    return mWindow->IsShown();
 }
 
 void Widget::DrawElementBorder(wxDC &inDC) {
-	// Draw the border *outside* our rectangle.
-	wxRect r = this->GetRect();
-	r.Inflate(1);
-	inDC.DrawRectangle(r.x, r.y, r.width, r.height);
+    // Draw the border *outside* our rectangle.
+    wxRect r = this->GetRect();
+    r.Inflate(1);
+    inDC.DrawRectangle(r.x, r.y, r.width, r.height);
 }
 
 void Widget::SetFocus() {

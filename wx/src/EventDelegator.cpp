@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -60,8 +60,8 @@ bool EventDelegator::DelegateEvent(wxEvent& event, bool *outResult) {
 
     // We can actually delegate this event!  Save our new value of
     // mCurrentEvent.
-	wxEvent *prev_event = mCurrentEvent;
-	try {
+    wxEvent *prev_event = mCurrentEvent;
+    try {
         mCurrentEvent = &event;
         *outResult = mDelegate->ProcessEvent(event);
     } catch (...) {

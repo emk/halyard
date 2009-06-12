@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -51,39 +51,39 @@ UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root)
     if (!exists(dst_root / "release.spec"))
         throw std::exception("No release.spec in target directory");
 
-	Manifest diff(src_root / "Updates/temp/MANIFEST-DIFF");
+    Manifest diff(src_root / "Updates/temp/MANIFEST-DIFF");
 
-	Manifest::EntryVector::const_iterator iter = diff.entries().begin();
-	for (; iter != diff.entries().end(); ++iter) {
-		path src_path = src_root / "Updates/pool" / iter->digest();
-		path dst_path = dst_root / iter->path();
+    Manifest::EntryVector::const_iterator iter = diff.entries().begin();
+    for (; iter != diff.entries().end(); ++iter) {
+        path src_path = src_root / "Updates/pool" / iter->digest();
+        path dst_path = dst_root / iter->path();
         mCopies.push_back(CopySpec(src_path, dst_path));
-	}
+    }
 
-	// TODO - add test case for subset of manifests installed
-	SpecFile spec(src_root / "Updates/release.spec");
-	directory_iterator dir_iter(dst_root);
-	for(; dir_iter != directory_iterator(); ++dir_iter) {
-		if (dir_iter->leaf().substr(0, 9) == "MANIFEST.") {
-			path src_path = src_root / "Updates/manifests" / spec.build() 
-				/ dir_iter->leaf();
-			
-			mCopies.push_back(CopySpec(src_path, *dir_iter));
-		}
-	}
+    // TODO - add test case for subset of manifests installed
+    SpecFile spec(src_root / "Updates/release.spec");
+    directory_iterator dir_iter(dst_root);
+    for(; dir_iter != directory_iterator(); ++dir_iter) {
+        if (dir_iter->leaf().substr(0, 9) == "MANIFEST.") {
+            path src_path = src_root / "Updates/manifests" / spec.build() 
+                / dir_iter->leaf();
+            
+            mCopies.push_back(CopySpec(src_path, *dir_iter));
+        }
+    }
 
-	mCopies.push_back(CopySpec(src_root / "Updates/release.spec", 
-							   dst_root / "release.spec"));
+    mCopies.push_back(CopySpec(src_root / "Updates/release.spec", 
+                               dst_root / "release.spec"));
 }
 
 bool UpdateInstaller::IsUpdatePossible() {
-	std::vector<CopySpec>::const_iterator copy = mCopies.begin();
-	for (; copy != mCopies.end(); ++copy) {
-		if (!copy->IsCopyPossible()) {
-			return false;
-		}
-	}
-	return true;
+    std::vector<CopySpec>::const_iterator copy = mCopies.begin();
+    for (; copy != mCopies.end(); ++copy) {
+        if (!copy->IsCopyPossible()) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void UpdateInstaller::InstallUpdate() {
@@ -91,12 +91,12 @@ void UpdateInstaller::InstallUpdate() {
 
     size_t total = mCopies.size();
     UpdateProgressRange(total);
-	std::vector<CopySpec>::const_iterator copy = mCopies.begin();
-	for (size_t i = 0; copy != mCopies.end(); ++copy, ++i) {
+    std::vector<CopySpec>::const_iterator copy = mCopies.begin();
+    for (size_t i = 0; copy != mCopies.end(); ++copy, ++i) {
         UpdateProgress(i);
-		create_directories(copy->dest.branch_path());
-		copy->CopyOverwriting();
-	}
+        create_directories(copy->dest.branch_path());
+        copy->CopyOverwriting();
+    }
     UpdateProgress(total);
 
     UnlockDestinationDirectory();
@@ -148,32 +148,32 @@ bool UpdateInstaller::CopySpec::IsCopyPossible() const {
     // we're experimentally adding a "IsWriteable(source)" to this
     // condition, in hopes of detecting any such locks early enough to
     // abort.
-	return exists(source) & IsWriteable(source) && IsWriteable(dest);
+    return exists(source) & IsWriteable(source) && IsWriteable(dest);
 }
 
 void UpdateInstaller::CopySpec::CopyOverwriting() const {
-	if (exists(dest)) 
-		remove(dest);
-	CopyFileWithRetries(source, dest);
-	TouchFile(dest);
+    if (exists(dest))
+        remove(dest);
+    CopyFileWithRetries(source, dest);
+    TouchFile(dest);
 }
 
 bool IsWriteable(const path &name) {
-	if (exists(name)) {
-		// If we can't open the file, keep trying every 1/5th of a second
-		// for 10 seconds.
-		for (int i = 0; i < 50; i++) {
-			FILE *file = fopen(name.native_file_string().c_str(), "a");
-			if (file != NULL) {
-				fclose(file);
-				return true;
-			}
-			Sleep(200);
-		}
-		return false;
-	}
+    if (exists(name)) {
+        // If we can't open the file, keep trying every 1/5th of a second
+        // for 10 seconds.
+        for (int i = 0; i < 50; i++) {
+            FILE *file = fopen(name.native_file_string().c_str(), "a");
+            if (file != NULL) {
+                fclose(file);
+                return true;
+            }
+            Sleep(200);
+        }
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 /// Copy a file, retrying several times if the copy fails.
@@ -205,5 +205,5 @@ void CopyFileWithRetries(const path &source, const path &dest) {
 }
 
 void TouchFile(const path &name) {
-	utime(name.native_file_string().c_str(), NULL);
+    utime(name.native_file_string().c_str(), NULL);
 }

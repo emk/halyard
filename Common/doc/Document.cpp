@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -59,7 +59,7 @@ using FileSystem::Path;
 //  for a longer explanation.
 
 BEGIN_MODEL_CLASSES()
-	REGISTER_MODEL_CLASS(HalyardProgram)
+    REGISTER_MODEL_CLASS(HalyardProgram)
 END_MODEL_CLASSES()
 
 
@@ -79,75 +79,69 @@ enum {
 };
 
 const static ModelFormat gHalyardFormat("HalyardProgram", CURRENT_FORMAT,
-									   COMPATIBLE_BACK_TO);
+                                       COMPATIBLE_BACK_TO);
 
 
 //=========================================================================
 //  Document Methods
 //=========================================================================
 
-std::string Document::SetBaseAndGetFilePath(const std::string &inDirectory)
-{
+std::string Document::SetBaseAndGetFilePath(const std::string &inDirectory) {
     FileSystem::SetBaseDirectory(inDirectory);
-	FileSystem::Path path =
+    FileSystem::Path path =
         FileSystem::GetBaseDirectory().AddComponent("application.halyard");
-	return path.ToNativePathString();
+    return path.ToNativePathString();
 }
 
-void Document::CheckStructure()
-{
-	// Sanity-check our directory structure.
-	Path base = FileSystem::GetBaseDirectory();
-	Path runtime = FileSystem::GetRuntimeCollectsDirectory();
-	CheckDirectory(runtime);
+void Document::CheckStructure() {
+    // Sanity-check our directory structure.
+    Path base = FileSystem::GetBaseDirectory();
+    Path runtime = FileSystem::GetRuntimeCollectsDirectory();
+    CheckDirectory(runtime);
     Path halyard = runtime.AddComponent("halyard");
-	CheckDirectory(halyard);
-	CheckDirectory(halyard.AddComponent("loader"));
-	CheckFile(halyard.AddComponent("loader").AddComponent("stage1.ss"));
-	CheckDirectory(FileSystem::GetFontDirectory());
-	CheckDirectory(FileSystem::GetScriptsDirectory());
-	CheckFile(FileSystem::GetScriptFilePath("start.ss"));
+    CheckDirectory(halyard);
+    CheckDirectory(halyard.AddComponent("loader"));
+    CheckFile(halyard.AddComponent("loader").AddComponent("stage1.ss"));
+    CheckDirectory(FileSystem::GetFontDirectory());
+    CheckDirectory(FileSystem::GetScriptsDirectory());
+    CheckFile(FileSystem::GetScriptFilePath("start.ss"));
 }
 
-void Document::CheckDirectory(Path inPath)
-{
-	CHECK(inPath.DoesExist() && inPath.IsDirectory(),
-		  ("Cannot find directory " + inPath.ToNativePathString() +
-		   " in Halyard program").c_str());
+void Document::CheckDirectory(Path inPath) {
+    CHECK(inPath.DoesExist() && inPath.IsDirectory(),
+          ("Cannot find directory " + inPath.ToNativePathString() +
+           " in Halyard program").c_str());
 }
 
-void Document::CheckFile(Path inPath)
-{
-	CHECK(inPath.DoesExist() && inPath.IsRegularFile(),
-		  ("Cannot find file " + inPath.ToNativePathString() +
-		   " in Halyard program").c_str());
+void Document::CheckFile(Path inPath) {
+    CHECK(inPath.DoesExist() && inPath.IsRegularFile(),
+          ("Cannot find file " + inPath.ToNativePathString() +
+           " in Halyard program").c_str());
 }
 
 Document::Document(const std::string &inDirectory)
     : Model(gHalyardFormat)
 {
-	std::string data_file = SetBaseAndGetFilePath(inDirectory);
-	CheckStructure();
+    std::string data_file = SetBaseAndGetFilePath(inDirectory);
+    CheckStructure();
     SaveAs(data_file.c_str());
     TInterpreterManager *manager = TInterpreterManager::GetInstance();
-	manager->BeginScript();
+    manager->BeginScript();
 }
 
 Document::Document(const std::string &inDirectory, Flag inOpen)
     : Model(gHalyardFormat, EARLIEST_READABLE,
-			SetBaseAndGetFilePath(inDirectory).c_str())
+            SetBaseAndGetFilePath(inDirectory).c_str())
 {
-	CheckStructure();
+    CheckStructure();
     TInterpreterManager *manager = TInterpreterManager::GetInstance();
-	manager->BeginScript();    
+    manager->BeginScript();    
 }
 
-Document::~Document()
-{
+Document::~Document() {
     
 }
 
-HalyardProgram *Document::GetHalyardProgram()
-{
-	return cast<HalyardProgram>(GetRoot());
+HalyardProgram *Document::GetHalyardProgram() {
+    return cast<HalyardProgram>(GetRoot());
 }

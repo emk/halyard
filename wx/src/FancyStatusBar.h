@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -26,19 +26,18 @@
 class ProgressMeter;
 
 /// Custom wxStatusBar subclass used by StageFrame window.
-class FancyStatusBar : public wxStatusBar
-{
-	ProgressMeter *mProgressMeter;
-	
+class FancyStatusBar : public wxStatusBar {
+    ProgressMeter *mProgressMeter;
+    
     void OnSize(wxSizeEvent& event);
 
 public:
-	FancyStatusBar(wxWindow *inParent);
+    FancyStatusBar(wxWindow *inParent);
 
-	static wxColour DEFAULT_PROGRESS_COLOR;
+    static wxColour DEFAULT_PROGRESS_COLOR;
 
-	void SetProgressColor(const wxColour &inColor);
-	void SetProgress(float inValue);
+    void SetProgressColor(const wxColour &inColor);
+    void SetProgress(float inValue);
 
     DECLARE_EVENT_TABLE()
 };

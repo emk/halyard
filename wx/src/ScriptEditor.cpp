@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -168,7 +168,7 @@ class ScriptTextCtrl : public wxStyledTextCtrl {
     bool mReplaceStateUseRegex;
     wxString mReplaceStateText;
     
-public:    
+public:
     ScriptTextCtrl(wxWindow *parent, wxWindowID id = -1, int font_size = 10);
     void GotoLineEnsureVisible(int line);
     void UpdateIdentifierInformation();
@@ -576,7 +576,7 @@ void ScriptTextCtrl::SetKeywordLists() {
 }
 
 wxString ScriptTextCtrl::GetKeywords(TScriptIdentifier::Type type) {
-	std::string result;
+    std::string result;
     IdentifierList::iterator i = mIdentifiers.begin();
     for (; i != mIdentifiers.end(); ++i) {
         if (i->GetType() == type) {
@@ -652,7 +652,7 @@ void ScriptTextCtrl::OnMarginClick(wxStyledTextEvent &event) {
 void ScriptTextCtrl::OnCharAdded(wxStyledTextEvent &event) {
     // Sanity-check our buffer position--we should be immediately
     // *after* the inserted character.
-	int pos = GetCurrentPos();
+    int pos = GetCurrentPos();
     if (pos < 1)
         return;
 
@@ -710,7 +710,7 @@ void ScriptTextCtrl::OnKeyDown(wxKeyEvent &event) {
         /// \todo Move this code up to ScriptEditor class?
         int id = (event.ShiftDown()) ? wxID_REPLACE_ALL : wxID_REPLACE;
         wxUpdateUIEvent update(id);
-        if (ProcessEvent(update) && update.GetEnabled()) {            
+        if (ProcessEvent(update) && update.GetEnabled()) {
             wxCommandEvent command(wxEVT_COMMAND_MENU_SELECTED, id);
             ProcessEvent(command);
         }
@@ -794,7 +794,7 @@ void ScriptTextCtrl::OnShowWhitespace(wxCommandEvent &event) {
 
 void ScriptTextCtrl::OnUpdateUiShowWhitespace(wxUpdateUIEvent &event) {
     event.Enable(true);
-	event.Check(GetViewWhiteSpace() ? true : false);
+    event.Check(GetViewWhiteSpace() ? true : false);
 }
 
 void ScriptTextCtrl::OnShowLineNums(wxCommandEvent &event) {
@@ -939,8 +939,7 @@ void ScriptTextCtrl::PutCursorAtBottomOfSelection() {
     SetCurrentPos(end);
 }
 
-void ScriptTextCtrl::InitializeFindState()
-{
+void ScriptTextCtrl::InitializeFindState() {
     // Set up some basic search parameters.
     if (FindDlg::GetSearchArea() == FindDlg::SELECTION_ONLY) {
         mSpans.SetSpan(BufferSpan(SPAN_SEARCH_LIMITS,
@@ -1021,7 +1020,7 @@ bool ScriptTextCtrl::DoFind(const SearchRange &range, bool interactive) {
 
     // Run the Find command.
     wxString text = FindDlg::GetSearchText();
-	int match_start = wxSTC_INVALID_POSITION,
+    int match_start = wxSTC_INVALID_POSITION,
         match_end = wxSTC_INVALID_POSITION;
     if (range.start1 != wxSTC_INVALID_POSITION)
         FindText(range.start1, range.end1, text, flags,
@@ -1145,8 +1144,7 @@ void ScriptTextCtrl::GotoLineEnsureVisible(int line) {
     SetFocus();
 }
 
-wxString ScriptTextCtrl::GetWordAt(int pos, int *outBegin, int *outEnd)
-{
+wxString ScriptTextCtrl::GetWordAt(int pos, int *outBegin, int *outEnd) {
     int line_number = LineFromPosition(pos);
     int line_start = PositionFromLine(line_number);
     wxString line = GetLine(line_number);
@@ -1156,7 +1154,7 @@ wxString ScriptTextCtrl::GetWordAt(int pos, int *outBegin, int *outEnd)
         word_begin--;
     int word_end = pos - line_start;
     while (static_cast<size_t>(word_end) < line.length() &&
-		   IsIdentifierChar(line[word_end]))
+           IsIdentifierChar(line[word_end]))
         word_end++;
     if (word_begin == word_end ||
         !IsIdentifierStartChar(line[word_begin]))
@@ -1257,8 +1255,7 @@ void ScriptTextCtrl::IndentLine(int inLine) {
     int parent_pos = wxSTC_INVALID_POSITION;
     std::vector<int> sibling_pos;
     bool done = false;
-    for (int rpos = PositionFromLine(inLine); !done && rpos > 0; rpos--)
-    {
+    for (int rpos = PositionFromLine(inLine); !done && rpos > 0; rpos--) {
         int pos = rpos - 1;
         if (IsBraceAt(pos)) {
             char c = GetCharAt(pos);
@@ -1322,7 +1319,7 @@ int ScriptTextCtrl::CalculateIndentation(int inParentPos,
             // These *might* be function calls, so use the standard rule.
             case wxSTC_LISP_IDENTIFIER:
             case wxSTC_LISP_OPERATOR:
-			default:
+            default:
                 return CalculateFunctionIndentation(inParentPos, inSiblingPos);
         }
     }
@@ -1384,7 +1381,7 @@ int ScriptTextCtrl::GetBaseIndentFromPosition(int inPos) {
 void ScriptTextCtrl::MaybeShowCallTip() {
     // Try to extract a function name.  If we can't, give up.
     int pos = GetCurrentPos();
-    if (pos < 2) 
+    if (pos < 2)
         return;
     ASSERT(GetCharAt(pos - 1) == ' ');
     int word_begin;
@@ -1740,7 +1737,7 @@ FileTreeItemData::FileTreeItemData(CustomTreeCtrl *inTreeCtrl,
 }
 
 void FileTreeItemData::OnLeftDClick(wxMouseEvent& event) {
-	ScriptEditor::OpenDocument(ToWxString(mPath));
+    ScriptEditor::OpenDocument(ToWxString(mPath));
 }
 
 
@@ -1790,7 +1787,7 @@ public:
     /// path.  May not succeed.
     void HighlightFile(const wxString &path);
 
-private:    
+private:
     void NotifyReloadScriptSucceeded();
 
     void FileChanged(const std::string &relpath);
@@ -2019,7 +2016,7 @@ BEGIN_EVENT_TABLE(ScriptEditor, AuiFrame)
     EVT_UPDATE_UI(wxID_CLEAR, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(wxID_SELECTALL, ScriptEditor::DisableUiItem)
 
-	EVT_UPDATE_UI(wxID_FIND, ScriptEditor::DisableUiItem)
+    EVT_UPDATE_UI(wxID_FIND, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(HALYARD_FIND_AGAIN, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(HALYARD_FIND_SELECTION, ScriptEditor::DisableUiItem)
     EVT_UPDATE_UI(HALYARD_FIND_IN_NEXT_FILE, ScriptEditor::DisableUiItem)
@@ -2093,7 +2090,7 @@ ScriptEditor::ScriptEditor()
     ASSERT(!sFrame);
     sFrame = this;
 
-	// Get an appropriate icon for this window.
+    // Get an appropriate icon for this window.
     SetIcon(wxICON(ic_scripts));
 
     // Add a status bar to our frame.
@@ -2386,13 +2383,13 @@ bool ScriptEditor::ProcessEvent(wxEvent& event) {
 
 int ScriptEditor::GetTextSize() {
     int size = 10;
-	shared_ptr<wxConfigBase> config(new wxConfig);
-	config->Read(wxT("/ScriptEditor/TextSize"), &size);
+    shared_ptr<wxConfigBase> config(new wxConfig);
+    config->Read(wxT("/ScriptEditor/TextSize"), &size);
     return size;
 }
 
 void ScriptEditor::SetTextSize(int size) {
-	shared_ptr<wxConfigBase> config(new wxConfig);
+    shared_ptr<wxConfigBase> config(new wxConfig);
     config->Write(wxT("/ScriptEditor/TextSize"), size);
     
     // Push our change to all open documents.

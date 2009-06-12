@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -29,24 +29,24 @@ using namespace boost::filesystem;
 
 class UpdateInstaller {
 public:
-	UpdateInstaller(const path &src_root, const path &dst_root);
-	
-	bool IsUpdatePossible();
-	void InstallUpdate();
+    UpdateInstaller(const path &src_root, const path &dst_root);
+    
+    bool IsUpdatePossible();
+    void InstallUpdate();
 
     static void DeleteLockFileForUninstall(const path &root);
 
 private:
-	struct CopySpec {
-		CopySpec(path inSource, path inDest) 
-			: source(inSource), dest(inDest) { }
-		path source, dest;
+    struct CopySpec {
+        CopySpec(path inSource, path inDest) 
+            : source(inSource), dest(inDest) { }
+        path source, dest;
 
-		bool IsCopyPossible() const;
-		void CopyOverwriting() const;
-	};
+        bool IsCopyPossible() const;
+        void CopyOverwriting() const;
+    };
     path mDestRoot;
-	std::vector<CopySpec> mCopies;
+    std::vector<CopySpec> mCopies;
 
     void LockDestinationDirectory();
     void UnlockDestinationDirectory();

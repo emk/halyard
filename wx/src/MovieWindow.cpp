@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -26,22 +26,22 @@
 #include "MovieWindow.h"
 
 MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
-						 const wxPoint &inPos,
-						 const wxSize &inSize,
-						 long inWindowStyle,
-						 MovieWindowStyle inMovieWindowStyle,
-						 const wxString &inName)
+                         const wxPoint &inPos,
+                         const wxSize &inSize,
+                         long inWindowStyle,
+                         MovieWindowStyle inMovieWindowStyle,
+                         const wxString &inName)
     : wxWindow(), // Must use empty constructor; see below.
       mMovieWindowStyle(inMovieWindowStyle)
 {
-	// If this is an audio-only movie, hide the widget.
-	if (mMovieWindowStyle & MOVIE_AUDIO_ONLY)
-		Hide();
+    // If this is an audio-only movie, hide the widget.
+    if (mMovieWindowStyle & MOVIE_AUDIO_ONLY)
+        Hide();
 
     // Ideally, we would Create() our actual window *after* all our options
     // are set up.  But that crashes hard on the Mac.
     Create(inParent, inID, inPos, inSize, inWindowStyle, inName);
-	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Created movie window."));
+    wxLogTrace(TRACE_STAGE_DRAWING, wxT("Created movie window."));
 
     // Turn off background repainting completely.  (Theoretically, if we do
     // this here, we don't need to override EVT_ERASE_BACKGROUND and throw
@@ -53,25 +53,22 @@ MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
     SetBackgroundColour(MOVIE_WINDOW_COLOR);
 }
 
-MovieWindow::~MovieWindow()
-{
-	wxLogTrace(TRACE_STAGE_DRAWING, wxT("Destroyed movie window."));
+MovieWindow::~MovieWindow() {
+    wxLogTrace(TRACE_STAGE_DRAWING, wxT("Destroyed movie window."));
 }
 
-void MovieWindow::SetMovie(const wxString &inName)
-{
+void MovieWindow::SetMovie(const wxString &inName) {
     // Here, we use wxString::c_str(), because we want to return either a
     // const char * or a const wchar_t *, depending on whether or not we
     // are in Unicode mode.  I can't find any documentation on wxLogWarning
     // in Unicode mode, but I Googled around and found the following code
     // which uses wxLogDebug with c_str:
     // http://wxcode.sourceforge.net/components/wxmswres/src/wxmswres.cpp
-	wxLogWarning(wxT("Movies not supported; skipping \"%s\"."), inName.c_str());
+    wxLogWarning(wxT("Movies not supported; skipping \"%s\"."), inName.c_str());
 }
 
-MovieFrame MovieWindow::GetFrame()
-{
-	return 0;
+MovieFrame MovieWindow::GetFrame() {
+    return 0;
 }
 
 bool MovieWindow::WantsCursor() const {
@@ -80,22 +77,18 @@ bool MovieWindow::WantsCursor() const {
     return (flags ? true : false);
 }
 
-bool MovieWindow::IsDone()
-{
-	return true;
+bool MovieWindow::IsDone() {
+    return true;
 }
 
-void MovieWindow::Pause()
-{
-	return;
+void MovieWindow::Pause() {
+    return;
 }
 
-void MovieWindow::Resume()
-{
-	return;
+void MovieWindow::Resume() {
+    return;
 }
 
-void MovieWindow::SetVolume(const std::string &inChannel, double inVolume)
-{
+void MovieWindow::SetVolume(const std::string &inChannel, double inVolume) {
     return;
 }

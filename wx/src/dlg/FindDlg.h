@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -29,8 +29,7 @@
 /// This is the dialog which pops up at startup time and asks you whether
 /// you want to open an existing program or create a new one.
 ///
-class FindDlg : public XrcDlg
-{
+class FindDlg : public XrcDlg {
 public:
     enum SearchArea {
         CURRENT_SCRIPT,
@@ -43,7 +42,7 @@ public:
 
 private:
     DECLARE_EVENT_TABLE();
-	
+    
     wxCheckBox *mUseRegex;
     wxTextCtrl *mSearchText;
     wxCheckBox *mStartAtTop;
@@ -77,7 +76,7 @@ private:
     static wxString GetKeyString(const wxString &key);
 
 public:
-	FindDlg(wxWindow *inParent, bool haveSelection);
+    FindDlg(wxWindow *inParent, bool haveSelection);
 
     virtual void EndModal(int retCode);
 

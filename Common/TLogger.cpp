@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -34,7 +34,7 @@
 #include "TSystem.h"
 
 #ifdef HAVE__VSNPRINTF
-#	define vsnprintf _vsnprintf
+#   define vsnprintf _vsnprintf
 #endif
 
 using namespace Halyard;
@@ -51,9 +51,9 @@ TLogger Halyard::gLog;
 void HalyardCheckAssertion(int inTest, const char *inDescription,
                            const char *inFile, int inLine)
 {
-	if (!inTest)
-		// Log a fatal error and bail.
-		gLog.Fatal("halyard", "ASSERTION FAILURE: %s:%d: %s",
+    if (!inTest)
+        // Log a fatal error and bail.
+        gLog.Fatal("halyard", "ASSERTION FAILURE: %s:%d: %s",
                    inFile, inLine, inDescription);
 }
 
@@ -63,17 +63,17 @@ void HalyardCheckAssertion(int inTest, const char *inDescription,
 //=========================================================================
 
 TLogger::Level TLogger::LevelFromString(const std::string &inLevelStr) {
-	if (inLevelStr == "trace")
+    if (inLevelStr == "trace")
         return TLogger::kTrace;
-	else if (inLevelStr == "debug")
+    else if (inLevelStr == "debug")
         return TLogger::kDebug;
-	else if (inLevelStr == "info")
+    else if (inLevelStr == "info")
         return TLogger::kInfo;
-	else if (inLevelStr == "warn")
+    else if (inLevelStr == "warn")
         return TLogger::kWarn;
-	else if (inLevelStr == "error")
+    else if (inLevelStr == "error")
         return TLogger::kError;
-	else if (inLevelStr == "fatal")
+    else if (inLevelStr == "fatal")
         return TLogger::kFatal;
     else
         gLog.Fatal("halyard", "Unknown logging level: %s", inLevelStr.c_str());
@@ -367,38 +367,33 @@ std::ostream *TLogger::GetErrorOutput() {
 
 /// Display an alert on the console.  THIS ROUTINE MAY NOT USE 'ASSERT' OR
 /// 'FatalError', BECAUSE IS CALLED BY THE ERROR-LOGGING CODE!
-static void ConsoleAlert(TLogger::AlertType inType, const char *inMessage)
-{
-	std::ostream *out(TLogger::GetErrorOutput());
-	*out << std::endl;
+static void ConsoleAlert(TLogger::AlertType inType, const char *inMessage) {
+    std::ostream *out(TLogger::GetErrorOutput());
+    *out << std::endl;
     switch (inType) {
-		case TLogger::ALERT_INFO:    *out << "INFO: ";    break;
+        case TLogger::ALERT_INFO:    *out << "INFO: ";    break;
         case TLogger::ALERT_WARNING: *out << "WARN: ";    break;
         case TLogger::ALERT_ERROR:   *out << "ERROR: ";   break;
     }
-	*out << inMessage << std::endl << std::flush;
+    *out << inMessage << std::endl << std::flush;
 }
 
-void TLogger::DisplayAlert(AlertType inType, const char *inMessage)
-{
-	if (s_AlertDisplayFunction && !TInterpreterManager::IsInCommandLineMode())
-		(*s_AlertDisplayFunction)(inType, inMessage);
+void TLogger::DisplayAlert(AlertType inType, const char *inMessage) {
+    if (s_AlertDisplayFunction && !TInterpreterManager::IsInCommandLineMode())
+        (*s_AlertDisplayFunction)(inType, inMessage);
     else
         ConsoleAlert(inType, inMessage);
 }
 
-void TLogger::RegisterAlertDisplayFunction(AlertDisplayFunction inFunc)
-{
-	s_AlertDisplayFunction = inFunc;
+void TLogger::RegisterAlertDisplayFunction(AlertDisplayFunction inFunc) {
+    s_AlertDisplayFunction = inFunc;
 }
 
-void TLogger::PrepareToExit()
-{
-	if (s_ExitPrepFunction)
-		(*s_ExitPrepFunction)();	
+void TLogger::PrepareToExit() {
+    if (s_ExitPrepFunction)
+        (*s_ExitPrepFunction)();    
 }
 
-void TLogger::RegisterExitPrepFunction(ExitPrepFunction inFunc)
-{
-	s_ExitPrepFunction = inFunc;
+void TLogger::RegisterExitPrepFunction(ExitPrepFunction inFunc) {
+    s_ExitPrepFunction = inFunc;
 }

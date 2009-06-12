@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -65,10 +65,10 @@ private:
     /// reasonably sane thing to do.
     static bool IsRectOnDisplay(const wxRect &inRect);
 
-	/// We need to load this information *before* we load anything
-	/// else, because there's no portable way to change it once the window
-	/// is created.
-	static wxPoint LoadFramePosition(const wxString &inFrameName);
+    /// We need to load this information *before* we load anything
+    /// else, because there's no portable way to change it once the window
+    /// is created.
+    static wxPoint LoadFramePosition(const wxString &inFrameName);
 
     /// Recalculate the current frame's size.
     void UpdateMinimumFrameSize();
@@ -81,11 +81,11 @@ protected:
     /// value for this frame.
     shared_ptr<wxConfigBase> GetConfigForFrame();
 
-	/// Load the perspective for the current frame.
-	void LoadFramePerspective();
+    /// Load the perspective for the current frame.
+    void LoadFramePerspective();
 
-	/// Save the perspective for the current frame if it's safe to do so.
-	void MaybeSaveFramePerspective();
+    /// Save the perspective for the current frame if it's safe to do so.
+    void MaybeSaveFramePerspective();
 
     /// Call mAuiManager->Update() to lay out the frame, record
     /// mDefaultPerspective, and load any saved perspective.  Must be

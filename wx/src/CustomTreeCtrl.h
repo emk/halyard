@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -28,15 +28,14 @@
 class CustomTreeItemData;
 
 /// Subclass of wxTreeCtrl shared between StageFrame and ScriptEditor.
-class CustomTreeCtrl : public wxTreeCtrl
-{
-	DECLARE_EVENT_TABLE()
+class CustomTreeCtrl : public wxTreeCtrl {
+    DECLARE_EVENT_TABLE()
 
-	CustomTreeItemData *mDragItemData;
+    CustomTreeItemData *mDragItemData;
 
-	CustomTreeItemData *GetCustomTreeItemData(wxTreeItemId inId);
-	CustomTreeItemData *GetCustomTreeItemData(wxMouseEvent &inEvent);
-	CustomTreeItemData *GetCustomTreeItemData(wxTreeEvent &inEvent);
+    CustomTreeItemData *GetCustomTreeItemData(wxTreeItemId inId);
+    CustomTreeItemData *GetCustomTreeItemData(wxMouseEvent &inEvent);
+    CustomTreeItemData *GetCustomTreeItemData(wxTreeEvent &inEvent);
 
 public:
     /// Any of these icons may be used by nodes in the CustomTree.
@@ -70,39 +69,38 @@ public:
     void SetIcon(wxTreeItemId id, int closed_icon, int open_icon = -1);
 
 private:
-	void BuildIconList();
+    void BuildIconList();
 
-	void OnLeftDClick(wxMouseEvent& event);
-	void OnRightDown(wxMouseEvent& event);
-	void OnBeginLabelEdit(wxTreeEvent &event);
-	void OnEndLabelEdit(wxTreeEvent &event);
+    void OnLeftDClick(wxMouseEvent& event);
+    void OnRightDown(wxMouseEvent& event);
+    void OnBeginLabelEdit(wxTreeEvent &event);
+    void OnEndLabelEdit(wxTreeEvent &event);
     void OnExpanding(wxTreeEvent &event);
-	void OnBeginDrag(wxTreeEvent& event);
-	void OnEndDrag(wxTreeEvent& event);
-	void OnMouseMoved(wxMouseEvent& event);
+    void OnBeginDrag(wxTreeEvent& event);
+    void OnEndDrag(wxTreeEvent& event);
+    void OnMouseMoved(wxMouseEvent& event);
 };
 
 
 ///  This class respresents a "smart" node in our CustomTreeCtrl.  Most
 ///  node-specific events will be passed to a subclass of
 ///  CustomTreeItemData by our event handlers.
-class CustomTreeItemData : public wxTreeItemData
-{
-	CustomTreeCtrl *mTreeCtrl;
+class CustomTreeItemData : public wxTreeItemData {
+    CustomTreeCtrl *mTreeCtrl;
 
 public:
-	CustomTreeItemData(CustomTreeCtrl *inTreeCtrl);
-	CustomTreeCtrl *GetTree() { return mTreeCtrl; }
+    CustomTreeItemData(CustomTreeCtrl *inTreeCtrl);
+    CustomTreeCtrl *GetTree() { return mTreeCtrl; }
 
-	virtual void OnLeftDClick(wxMouseEvent& event) {}
-	virtual void OnRightDown(wxMouseEvent& event) {}
-	virtual void OnBeginLabelEdit(wxTreeEvent &event);
-	virtual void OnEndLabelEdit(wxTreeEvent &event) {}
+    virtual void OnLeftDClick(wxMouseEvent& event) {}
+    virtual void OnRightDown(wxMouseEvent& event) {}
+    virtual void OnBeginLabelEdit(wxTreeEvent &event);
+    virtual void OnEndLabelEdit(wxTreeEvent &event) {}
     virtual void OnExpanding(wxTreeEvent &event) {}
 
-	virtual bool CanBeDragged() { return false; }
-	virtual bool CanAcceptDrag(CustomTreeItemData *inItem) { return false; }
-	virtual void DragDone(CustomTreeItemData *inItem) {}
+    virtual bool CanBeDragged() { return false; }
+    virtual bool CanAcceptDrag(CustomTreeItemData *inItem) { return false; }
+    virtual void DragDone(CustomTreeItemData *inItem) {}
 };
 
 #endif // CustomTreeCtrl_H

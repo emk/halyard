@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -30,8 +30,8 @@ BEGIN_NAMESPACE_HALYARD
 /// Savable representation of a HalyardProgram.
 class HalyardProgram : public model::Object {
 public:
-	DECLARE_MODEL_CLASS(HalyardProgram);
-	virtual void Initialize();
+    DECLARE_MODEL_CLASS(HalyardProgram);
+    virtual void Initialize();
 
     std::string GetName();
     std::string GetCopyright();

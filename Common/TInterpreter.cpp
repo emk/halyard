@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -54,8 +54,7 @@ TInterpreter::TInterpreter()
     }
 }
 
-TInterpreter::~TInterpreter()
-{
+TInterpreter::~TInterpreter() {
     sInstance = NULL;
 }
 
@@ -141,76 +140,67 @@ TInterpreterManager::TInterpreterManager(SystemIdleProc inIdleProc)
     : mCachedConf(NULL), mIsInsideStackBase(false), 
       mIsLazyLoadingRequested(false), mShouldConsiderExiting(false)
 {
-	ASSERT(sHaveAlreadyCreatedSingleton == false);
-	sHaveAlreadyCreatedSingleton = true;
-	ASSERT(sInstance == NULL);
-	sInstance = this;
+    ASSERT(sHaveAlreadyCreatedSingleton == false);
+    sHaveAlreadyCreatedSingleton = true;
+    ASSERT(sInstance == NULL);
+    sInstance = this;
 
-	// Initialize our member variables.
-	mSystemIdleProc = inIdleProc;
-	mDone = false;
-	mExitedWithError = false;
-	mScriptHasBegun = false;
-	mLoadScriptFailed = false;
-	ResetInitialCardName();
+    // Initialize our member variables.
+    mSystemIdleProc = inIdleProc;
+    mDone = false;
+    mExitedWithError = false;
+    mScriptHasBegun = false;
+    mLoadScriptFailed = false;
+    ResetInitialCardName();
 }
 
-TInterpreterManager::~TInterpreterManager()
-{
-	sInstance = NULL;
+TInterpreterManager::~TInterpreterManager() {
+    sInstance = NULL;
 
-	// Don't clear sHaveAlreadyCreatedSingleton--we promise that only
-	// one TInterpreterManager can ever be created.
+    // Don't clear sHaveAlreadyCreatedSingleton--we promise that only
+    // one TInterpreterManager can ever be created.
 }
 
-void TInterpreterManager::Run()
-{
+void TInterpreterManager::Run() {
     // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
 
-	// WARNING - No Scheme function may ever be called above this
+    // WARNING - No Scheme function may ever be called above this
     // point on the stack!
     HALYARD_BEGIN_STACK_BASE();
     mIsInsideStackBase = true;
 
     InitialSetup();
 
-	// Loop until somebody calls RequestQuitApplication, or we exit
-	// because of an error (below).
-	while (!mDone)
-	{
-		mShouldConsiderExiting = false;
-		try
-		{
-			// Either create and run an interpreter, or just call the
-			// idle procedure.
-			if (mScriptHasBegun && !mLoadScriptFailed)
-				LoadAndRunScript();
-			else
-				(*mSystemIdleProc)(true);
-		}
-		catch (std::exception &e)
-		{
-			gLog.Error("halyard", "%s.", e.what());
-			mShouldConsiderExiting = true;
-		}
-		catch (...)
-		{
-			gLog.Fatal("halyard", "Unexpected internal error.");
-		}
+    // Loop until somebody calls RequestQuitApplication, or we exit
+    // because of an error (below).
+    while (!mDone) {
+        mShouldConsiderExiting = false;
+        try {
+            // Either create and run an interpreter, or just call the
+            // idle procedure.
+            if (mScriptHasBegun && !mLoadScriptFailed)
+                LoadAndRunScript();
+            else
+                (*mSystemIdleProc)(true);
+        } catch (std::exception &e) {
+            gLog.Error("halyard", "%s.", e.what());
+            mShouldConsiderExiting = true;
+        } catch (...) {
+            gLog.Fatal("halyard", "Unexpected internal error.");
+        }
 
-		// Handle any errors.
-		if (mShouldConsiderExiting)
-		{
+        // Handle any errors.
+        if (mShouldConsiderExiting) {
             // Always quit for non-load errors, but only quit for load
             // errors if we're not in authoring mode.
-			if (!mLoadScriptFailed ||
+            if (!mLoadScriptFailed ||
                 (mLoadScriptFailed && !IsInAuthoringMode()))
-			{
-				mDone = true; 
+            {
+                mDone = true; 
                 mExitedWithError = true;
-			}
-		}
-	}
+            }
+        }
+    }
 
     mIsInsideStackBase = false;
     HALYARD_END_STACK_BASE();
@@ -221,13 +211,11 @@ void TInterpreterManager::DoIdle(bool block) {
     (*mSystemIdleProc)(block);
 }
 
-void TInterpreterManager::BeginScript()
-{
-	mScriptHasBegun = true;
+void TInterpreterManager::BeginScript() {
+    mScriptHasBegun = true;
 }
 
-void TInterpreterManager::LoadAndRunScript()
-{
+void TInterpreterManager::LoadAndRunScript() {
     // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
     ASSERT(IsInsideStackBase());
 
@@ -235,7 +223,7 @@ void TInterpreterManager::LoadAndRunScript()
 
     // This outer try/catch block makes sure that we dispose of
     // TInterpreter before we leave this function.
-	try {
+    try {
         // This inner try/catch block cleans up after failed script
         // reloads, and rethrows any exceptions.
         try {
@@ -252,7 +240,7 @@ void TInterpreterManager::LoadAndRunScript()
         // Run the interpreter until it has finished.  The mDone flag
         // shouldn't be set at this point, because we haven't called
         // RunInitialCommands yet.
-		ASSERT(!mDone);
+        ASSERT(!mDone);
         TInterpreter::GetInstance()->Run();
 
         // If any lazy loads have failed, they'll call LoadScriptFailed,
@@ -262,15 +250,14 @@ void TInterpreterManager::LoadAndRunScript()
             mShouldConsiderExiting = true;
         }
 
-	} catch (...) {
+    } catch (...) {
         TInterpreter::DestroyInstance();
-		throw;
-	}
+        throw;
+    }
     TInterpreter::DestroyInstance();
 }
 
-void TInterpreterManager::RunInitialCommands()
-{
+void TInterpreterManager::RunInitialCommands() {
     ASSERT(IsInsideStackBase());
 
     TInterpreter *interp = TInterpreter::GetInstance();
@@ -327,20 +314,19 @@ void TInterpreterManager::LoadScriptFailed() {
 void TInterpreterManager::RequestQuitApplication() {
     // Be really paranoid about our current state, because we may be called
     // from GUI.
-	if (TInterpreter::HaveInstance()) {
+    if (TInterpreter::HaveInstance()) {
         ASSERT(IsInsideStackBase());
         TInterpreter::GetInstance()->KillInterpreter();
     }
-	mDone = true;
+    mDone = true;
 }
 
-void TInterpreterManager::RequestReloadScript(const char *inGotoCardName)
-{
+void TInterpreterManager::RequestReloadScript(const char *inGotoCardName) {
     ASSERT(IsInsideStackBase());
-	ASSERT(inGotoCardName != NULL);
-	ASSERT(TInterpreter::HaveInstance());
-	TInterpreter::GetInstance()->KillInterpreter();
-	mInitialCardName = inGotoCardName;
+    ASSERT(inGotoCardName != NULL);
+    ASSERT(TInterpreter::HaveInstance());
+    TInterpreter::GetInstance()->KillInterpreter();
+    mInitialCardName = inGotoCardName;
     sIsFirstLoad = false;
 }
 
@@ -348,17 +334,15 @@ bool TInterpreterManager::ScriptHasBegun() {
     return mScriptHasBegun;
 }
 
-bool TInterpreterManager::FailedToLoad()
-{
-	return mLoadScriptFailed;
+bool TInterpreterManager::FailedToLoad() {
+    return mLoadScriptFailed;
 }
 
-void TInterpreterManager::RequestRetryLoadScript()
-{
-	ASSERT(FailedToLoad());
+void TInterpreterManager::RequestRetryLoadScript() {
+    ASSERT(FailedToLoad());
 
-	// Turn off our load error flag, and Run will take care of the rest.
-	mLoadScriptFailed = false;
+    // Turn off our load error flag, and Run will take care of the rest.
+    mLoadScriptFailed = false;
 }
 
 bool TInterpreterManager::IsLazyLoadingEnabled() const {

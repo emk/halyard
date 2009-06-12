@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -27,34 +27,33 @@
 #include "CairoDrawing.h"
 
 /// A cache of recently displayed wxBitmap objects.
-class ImageCache : public Halyard::TReloadNotified
-{
-	struct CachedImage {
-		CairoSurfacePtr surface;
-		time_t          last_used;
-		int             count;
-	};
+class ImageCache : public Halyard::TReloadNotified {
+    struct CachedImage {
+        CairoSurfacePtr surface;
+        time_t          last_used;
+        int             count;
+    };
 
-	typedef std::map<std::string,CachedImage> Cache;
-	size_t mMaxBytes;
-	size_t mCurrentBytes;
-	Cache mCache;
+    typedef std::map<std::string,CachedImage> Cache;
+    size_t mMaxBytes;
+    size_t mCurrentBytes;
+    Cache mCache;
 
-	size_t SurfaceSize(CairoSurfacePtr inSurface);
-	Cache::iterator BetterToPurge(Cache::iterator inA, Cache::iterator inB);
-	void RequireFreeSpace(size_t inSpaceNeeded);
+    size_t SurfaceSize(CairoSurfacePtr inSurface);
+    Cache::iterator BetterToPurge(Cache::iterator inA, Cache::iterator inB);
+    void RequireFreeSpace(size_t inSpaceNeeded);
     CairoSurfacePtr SurfaceFromImage(wxImage &inImage);
 
 public:
-	ImageCache();
-	virtual ~ImageCache();
+    ImageCache();
+    virtual ~ImageCache();
 
-	size_t GetMaxCacheSize() { return mMaxBytes; }
-	void SetMaxCacheSize(size_t inMaxBytes) { mMaxBytes = inMaxBytes; }
+    size_t GetMaxCacheSize() { return mMaxBytes; }
+    void SetMaxCacheSize(size_t inMaxBytes) { mMaxBytes = inMaxBytes; }
 
-	CairoSurfacePtr GetImage(wxString inPath);
+    CairoSurfacePtr GetImage(wxString inPath);
 
-	void NotifyReloadScriptStarting();
+    void NotifyReloadScriptStarting();
 };
 
 #endif // ImageCache_H

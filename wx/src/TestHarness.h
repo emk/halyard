@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -29,22 +29,21 @@ class StageFrame;
 class FancyStatusBar;
 
 /// The GUI-based unit test driver.
-class TestHarness : public ITestProgressMeter
-{
-	static TestHarness *sInstance;
+class TestHarness : public ITestProgressMeter {
+    static TestHarness *sInstance;
 
-	StageFrame *mFrame;
-	FancyStatusBar *mStatusBar;
+    StageFrame *mFrame;
+    FancyStatusBar *mStatusBar;
 
 public:
-	static TestHarness *GetInstance();
+    static TestHarness *GetInstance();
 
-	TestHarness();
+    TestHarness();
 
-	void UpdateTestProgress(int inTestIndex, int inTestCount,
-							const TestCaseReport &inReport);
+    void UpdateTestProgress(int inTestIndex, int inTestCount,
+                            const TestCaseReport &inReport);
 
-	void RunTests();
+    void RunTests();
 
 };
 

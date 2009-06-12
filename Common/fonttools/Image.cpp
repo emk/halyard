@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -34,31 +34,27 @@ FIRST: <#include <stdio.h>
 
 #include "Image.h"
 
-PngImage::PngImage(int width, int height)
-{
+PngImage::PngImage(int width, int height) {
     m_image = gdImageCreateTrueColor(width, height);
     gdImageFilledRectangle(m_image, 0, 0, width, height,
-			   gdTrueColor(255, 240, 210));
+               gdTrueColor(255, 240, 210));
     gdImageAlphaBlending(m_image, 1);
 }
 
-PngImage::~PngImage()
-{
+PngImage::~PngImage() {
     gdImageDestroy(m_image);
 }
 
 void PngImage::DrawPixMap(GraphicsTools::Point inPoint,
-			  GraphicsTools::PixMap &inPixmap)
+              GraphicsTools::PixMap &inPixmap)
 {
-    for (int y = 0; y < inPixmap.height; y++)
-    {
-	for (int x = 0; x < inPixmap.width; x++)
-	{
-	    GraphicsTools::Color color = inPixmap.At(x, y);
-	    gdImageSetPixel(m_image, inPoint.x + x, inPoint.y + y,
-			    gdTrueColorAlpha(color.red, color.green,
-					     color.blue, color.alpha / 2));
-	}
+    for (int y = 0; y < inPixmap.height; y++) {
+    for (int x = 0; x < inPixmap.width; x++) {
+        GraphicsTools::Color color = inPixmap.At(x, y);
+        gdImageSetPixel(m_image, inPoint.x + x, inPoint.y + y,
+                gdTrueColorAlpha(color.red, color.green,
+                         color.blue, color.alpha / 2));
+    }
     }
 }
 

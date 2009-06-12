@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -51,8 +51,8 @@ inline bool operator==(const TNull &inV1, const TNull &inV2) {
 }
 
 inline std::ostream &operator<<(std::ostream &out, const TNull &inV) {
-	out << "#<void>";
-	return out;
+    out << "#<void>";
+    return out;
 }
 
 
@@ -109,7 +109,7 @@ extern std::ostream &operator<<(std::ostream &out, const TPercent &inPercent);
 /// \see TValue
 typedef shared_ptr<TCallback> TCallbackPtr;
 extern std::ostream &operator<<(std::ostream &out,
-								const TCallbackPtr &inCallback);
+                                const TCallbackPtr &inCallback);
 
 
 //=========================================================================
@@ -181,15 +181,13 @@ public:
 
     /// Normal casting from a TValue to a TCallbackPtr does not work
     /// so need to explicitly extract TCallbackPtr.
-	TCallbackPtr GetCallbackPtr();
+    TCallbackPtr GetCallbackPtr();
 
 private:
-    //////////
     /// Because we want TValue to have "value" semantics, we need to
     /// use the "pimpl" idiom, where we maintain a pointer to our
     /// implementation.  This class defines the abstract interface
     /// to our internal implementation.
-    ///
     struct Impl {
         virtual ~Impl() {}
         virtual Type GetType() = 0;
@@ -197,13 +195,11 @@ private:
         virtual void Write(std::ostream &out) = 0;
     };
     
-    //////////
     /// This template generates a whole family all classes, all derived from
     /// Impl.  There is one template instantiation for each specialization
     /// of FindType above.
     ///
     /// The type T must have value semantics!  See the note on FindType.
-    ///
     template <typename T>
     struct TemplateImpl : public Impl {
         T mValue;
@@ -230,13 +226,11 @@ private:
 
     ImplPtr mPtr;
 
-    //////////
     /// Extract a value from the underlying TemplateImpl, performing a type
     /// check.  This function has two oddities dictated by MSVC++ 6.0 bugs:
     /// (a) it's in the header, where MSVC++ will be able to instantiate it
     /// and (b) it takes a gratuitous argument of type T so MSVC++ can
     /// determine what type we want to bind to T.
-    ///
     template <typename T>
     inline const T &Get(T &outVal, const char *inExpectedTypeName) const {
         const TemplateImpl<T> *impl =
@@ -273,15 +267,11 @@ public:
     TValue(const TValueList &inValue);
     TValue(const TCallbackPtr &inValue);
 
-    //////////
     /// Has this TValue been initialized?
-    ///
     bool IsInitialized() const { return mPtr.get() != NULL; }
 
-    ////////
     /// Get the type of this TValue.  Only valid if the value is
     /// initialized.
-    ///
     Type GetType() const;
 
     friend bool operator==(const TValue &inV1, const TValue &inV2);
@@ -297,11 +287,9 @@ public:
     /// manual instantiations.
     template <typename T> friend T tvalue_cast(const TValue &v);
 
-    //////////
     /// Return a string representing this TValue.  This should only be
     /// used for error messages or logging, as the format is not
     /// suitable for parsing.
-    ///
     std::string ToDisplayValue() const;
 };
 

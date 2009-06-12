@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -52,8 +52,7 @@ extern int gTSchemePointerCount;
 /// functions that take pointers as arguments.
 ///
 template <class Type>
-class TSchemePtr
-{
+class TSchemePtr {
     // mBox points to an immobile, non-collectable Scheme object (the
     // "box").  The box, in turn, contains a single pointer.  The pointer
     // in the box will be updated as needed by the GC.
@@ -61,8 +60,8 @@ class TSchemePtr
     // It's important to remember that the pointer, once remove from the
     // box, has a very short shelf life--any function which allocates
     // memory may cause the GC to move the underlying object.
-	Type **mBox;
-	
+    Type **mBox;
+    
     void CreateBox(const Type *inPtr) {
         // Make sure we register inPtr locally before attempting to store
         // it in our box, in case allocating the box moves the pointer.
@@ -84,11 +83,11 @@ class TSchemePtr
         --gTSchemePointerCount;
     }
 
-	void Set(Type *inPtr) { *mBox = inPtr; }
-	Type *Get() const { return *mBox; }
+    void Set(Type *inPtr) { *mBox = inPtr; }
+    Type *Get() const { return *mBox; }
 
 public:
-	TSchemePtr() { CreateBox(NULL); }
+    TSchemePtr() { CreateBox(NULL); }
 
     // Create a TSchemePtr.
     //
@@ -109,17 +108,17 @@ public:
     //   fn_with_tschemeptr_args(TSchemePtr(obj1), TSchemePtr(obj2));
     //
     // ...which may not be safe if TSchemePtr(...) triggers a collection.
-	TSchemePtr(Type *inPtr) { CreateBox(inPtr); }
+    TSchemePtr(Type *inPtr) { CreateBox(inPtr); }
 
-	TSchemePtr(const TSchemePtr &inSchemePtr) { CreateBox(inSchemePtr); }
-	~TSchemePtr() { DestroyBox(); }
+    TSchemePtr(const TSchemePtr &inSchemePtr) { CreateBox(inSchemePtr); }
+    ~TSchemePtr() { DestroyBox(); }
 
     /// Convert a non-const TSchemePtr<Type> to Type *.
-	operator Type*() { return Get(); }
+    operator Type*() { return Get(); }
     /// Convert a const TSchemePtr<Type> to const Type *.
-	operator const Type*() const { return Get(); }
-	TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); return *this; }
-	TSchemePtr<Type> &operator=(const TSchemePtr<Type> &inSchemePtr)
+    operator const Type*() const { return Get(); }
+    TSchemePtr<Type> &operator=(Type *inPtr) { Set(inPtr); return *this; }
+    TSchemePtr<Type> &operator=(const TSchemePtr<Type> &inSchemePtr)
         { Set(inSchemePtr); return *this; }
 };
 

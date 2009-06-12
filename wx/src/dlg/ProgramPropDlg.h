@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -31,13 +31,12 @@ namespace model { class Object; }
 /// This is the dialog which allows you to edit the name and other properties
 /// of a Halyard program.
 ///
-class ProgramPropDlg : public PropertyDlg
-{
+class ProgramPropDlg : public PropertyDlg {
     DECLARE_EVENT_TABLE();
-	DECLARE_PROPERTY_DIALOG();
+    DECLARE_PROPERTY_DIALOG();
 
 public:
-	ProgramPropDlg(wxWindow *inParent, model::Object *inObject);
+    ProgramPropDlg(wxWindow *inParent, model::Object *inObject);
 };
 
 #endif // ProgramPropDlg_H

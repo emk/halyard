@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -39,44 +39,44 @@ REFERENCE_TEST_CASE_FILE(BufferSpan);
 
 /// A simple window for displaying a TestRunReport.
 class TestReportFrame : public wxFrame {
-	wxTextCtrl *mOutput;
+    wxTextCtrl *mOutput;
 
 public:
-	TestReportFrame(wxFrame *inParent, TestRunReport::ptr inReport);
+    TestReportFrame(wxFrame *inParent, TestRunReport::ptr inReport);
 };
 
 TestReportFrame::TestReportFrame(wxFrame *inParent,
-								 TestRunReport::ptr inReport)
-	: wxFrame(inParent, -1, wxT("Test Results"))
+                                 TestRunReport::ptr inReport)
+    : wxFrame(inParent, -1, wxT("Test Results"))
 {
     mOutput = new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
-							 wxDefaultSize,
-							 wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
-	
+                             wxDefaultSize,
+                             wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
+    
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(mOutput, 1 /* stretch */, wxGROW, 0);
     SetSizer(sizer);
     sizer->SetSizeHints(this);
 
-    SetClientSize(640, 240);	
+    SetClientSize(640, 240);    
 
-	mOutput->AppendText(wxString(inReport->GetSummary().c_str(), wxConvLocal));
-	mOutput->AppendText(wxT("\n"));
-	TestRunReport::iterator i = inReport->begin();
-	for (; i != inReport->end(); ++i) {
-		if ((*i)->GetTestResult() == TEST_FAILED) {
-			wxString str;
+    mOutput->AppendText(wxString(inReport->GetSummary().c_str(), wxConvLocal));
+    mOutput->AppendText(wxT("\n"));
+    TestRunReport::iterator i = inReport->begin();
+    for (; i != inReport->end(); ++i) {
+        if ((*i)->GetTestResult() == TEST_FAILED) {
+            wxString str;
             wxString error_file( (*i)->GetErrorFile().c_str(),    wxConvLocal);
             wxString name(       (*i)->GetName().c_str(),         wxConvLocal);
             wxString message(    (*i)->GetErrorMessage().c_str(), wxConvLocal);
-			str.Printf(wxT("%s:%d: %s: %s\n"),
-					   error_file.c_str(),
-					   (*i)->GetErrorLine(),
-					   name.c_str(),
-					   message.c_str());
-			mOutput->AppendText(str);
-		}
-	}
+            str.Printf(wxT("%s:%d: %s: %s\n"),
+                       error_file.c_str(),
+                       (*i)->GetErrorLine(),
+                       name.c_str(),
+                       message.c_str());
+            mOutput->AppendText(str);
+        }
+    }
 }
 
 //=========================================================================
@@ -85,44 +85,41 @@ TestReportFrame::TestReportFrame(wxFrame *inParent,
 
 TestHarness *TestHarness::sInstance = NULL;
 
-TestHarness *TestHarness::GetInstance()
-{
-	if (!sInstance)
-		sInstance = new TestHarness();
-	return sInstance;
+TestHarness *TestHarness::GetInstance() {
+    if (!sInstance)
+        sInstance = new TestHarness();
+    return sInstance;
 }
 
-TestHarness::TestHarness()
-{
-	mFrame = wxGetApp().GetStageFrame();
-	mStatusBar = dynamic_cast<FancyStatusBar*>(mFrame->GetStatusBar());
-	ASSERT(mStatusBar);
+TestHarness::TestHarness() {
+    mFrame = wxGetApp().GetStageFrame();
+    mStatusBar = dynamic_cast<FancyStatusBar*>(mFrame->GetStatusBar());
+    ASSERT(mStatusBar);
 }
 
 void TestHarness::UpdateTestProgress(int inTestIndex, int inTestCount,
-									 const TestCaseReport &inReport)
+                                     const TestCaseReport &inReport)
 {
-	mStatusBar->SetProgress((inTestIndex + 1.0) / inTestCount);
-	if (inReport.GetTestResult() == TEST_FAILED)
-		mStatusBar->SetProgressColor(*wxRED);
+    mStatusBar->SetProgress((inTestIndex + 1.0) / inTestCount);
+    if (inReport.GetTestResult() == TEST_FAILED)
+        mStatusBar->SetProgressColor(*wxRED);
 }
 
-void TestHarness::RunTests()
-{
-	// Prepare to run tests.
-	mFrame->SetStatusText(wxT("Running tests..."));
-	mStatusBar->SetProgress(0.0);
-	mStatusBar->SetProgressColor(FancyStatusBar::DEFAULT_PROGRESS_COLOR);
+void TestHarness::RunTests() {
+    // Prepare to run tests.
+    mFrame->SetStatusText(wxT("Running tests..."));
+    mStatusBar->SetProgress(0.0);
+    mStatusBar->SetProgressColor(FancyStatusBar::DEFAULT_PROGRESS_COLOR);
 
-	// Run all the tests in the global registry.
-	TestRegistry *registry = TestRegistry::GetGlobalRegistry();
-	TestRunReport::ptr report = registry->RunAllTests();
+    // Run all the tests in the global registry.
+    TestRegistry *registry = TestRegistry::GetGlobalRegistry();
+    TestRunReport::ptr report = registry->RunAllTests();
 
-	// Display the results of the tests to the user.
-	mStatusBar->SetProgress(1.0);
-	mFrame->SetStatusText(wxString(report->GetSummary().c_str(), wxConvLocal));
-	if (!report->AnyTestFailed())
-		mStatusBar->SetProgressColor(*wxGREEN);
-	else
-		(new TestReportFrame(mFrame, report))->Show();
+    // Display the results of the tests to the user.
+    mStatusBar->SetProgress(1.0);
+    mFrame->SetStatusText(wxString(report->GetSummary().c_str(), wxConvLocal));
+    if (!report->AnyTestFailed())
+        mStatusBar->SetProgressColor(*wxGREEN);
+    else
+        (new TestReportFrame(mFrame, report))->Show();
 }

@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -29,14 +29,12 @@ using namespace Halyard;
 
 extern void test_TVectorDiff (void);
 
-static void fill_vec(const char *inData, std::vector<char> &outVec)
-{
+static void fill_vec(const char *inData, std::vector<char> &outVec) {
     for (int i = 0; inData[i] != 0; i++)
-		outVec.push_back(inData[i]);
+        outVec.push_back(inData[i]);
 }
 
-static void TEST_LCS(const char *v1, const char *v2, const char *lcs)
-{
+static void TEST_LCS(const char *v1, const char *v2, const char *lcs) {
     std::vector<char> v_v1, v_v2, v_lcs, result;
     fill_vec(v1, v_v1);
     fill_vec(v2, v_v2);
@@ -46,15 +44,14 @@ static void TEST_LCS(const char *v1, const char *v2, const char *lcs)
     TEST(v_lcs == result);
 }
 
-void test_TVectorDiff (void)
-{
-	TEST_LCS("", "", "");
-	TEST_LCS("a", "", "");
-	TEST_LCS("", "a", "");
-	TEST_LCS("a", "a", "a");
-	TEST_LCS("ab", "ac", "a");
-	TEST_LCS("abcdef", "abfcde", "abcde");
-	TEST_LCS("abXcdXef", "YYabcdeYYYf", "abcdef");
+void test_TVectorDiff (void) {
+    TEST_LCS("", "", "");
+    TEST_LCS("a", "", "");
+    TEST_LCS("", "a", "");
+    TEST_LCS("a", "a", "a");
+    TEST_LCS("ab", "ac", "a");
+    TEST_LCS("abcdef", "abfcde", "abcde");
+    TEST_LCS("abXcdXef", "YYabcdeYYYf", "abcdef");
 }
 
 

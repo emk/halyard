@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -32,13 +32,12 @@
 //=========================================================================
 
 PropertyDlg::Description::Description(const char *inName)
-	: name(inName)
+    : name(inName)
 {
 }
 
-void PropertyDlg::Description::AddField(const Field &inField)
-{
-	fields.push_back(inField);
+void PropertyDlg::Description::AddField(const Field &inField) {
+    fields.push_back(inField);
 }
 
 
@@ -48,67 +47,62 @@ void PropertyDlg::Description::AddField(const Field &inField)
 
 /// Used to transfer data to and from a model::Object (does no actual
 /// validation!).
-class ModelStringValidator : public wxValidator
-{
-	model::Object *mObject;
-	std::string mMember;
+class ModelStringValidator : public wxValidator {
+    model::Object *mObject;
+    std::string mMember;
 
 public:
-	ModelStringValidator(model::Object *inObject, const std::string &inMember);
-	ModelStringValidator(const ModelStringValidator &inValidator);
+    ModelStringValidator(model::Object *inObject, const std::string &inMember);
+    ModelStringValidator(const ModelStringValidator &inValidator);
 
-	virtual wxObject *Clone() const;
-	virtual bool TransferToWindow();	
-	virtual bool TransferFromWindow();
-	virtual bool Validate(wxWindow* inParent);
+    virtual wxObject *Clone() const;
+    virtual bool TransferToWindow();    
+    virtual bool TransferFromWindow();
+    virtual bool Validate(wxWindow* inParent);
 };
 
 ModelStringValidator::ModelStringValidator(model::Object *inObject,
-										   const std::string &inMember)
-	: mObject(inObject), mMember(inMember)
+                                           const std::string &inMember)
+    : mObject(inObject), mMember(inMember)
 {
 }
 
 ModelStringValidator::ModelStringValidator(
-	const ModelStringValidator &inValidator)
-	: // XXX - wxValidator(inValidator) is private!
-	  mObject(inValidator.mObject),
-	  mMember(inValidator.mMember)
+    const ModelStringValidator &inValidator)
+    : // XXX - wxValidator(inValidator) is private!
+      mObject(inValidator.mObject),
+      mMember(inValidator.mMember)
 {
 }
 
-wxObject *ModelStringValidator::Clone() const
-{
-	return new ModelStringValidator(*this);
+wxObject *ModelStringValidator::Clone() const {
+    return new ModelStringValidator(*this);
 }
 
-bool ModelStringValidator::TransferToWindow()
-{
-	wxTextCtrl *text_ctrl = dynamic_cast<wxTextCtrl*>(GetWindow());
-	wxASSERT(text_ctrl);
+bool ModelStringValidator::TransferToWindow() {
+    wxTextCtrl *text_ctrl = dynamic_cast<wxTextCtrl*>(GetWindow());
+    wxASSERT(text_ctrl);
     wxString value(mObject->GetString(mMember).c_str(), wxConvLocal);
-	text_ctrl->SetValue(value);
-	return true;
+    text_ctrl->SetValue(value);
+    return true;
 }
 
-bool ModelStringValidator::TransferFromWindow()
-{
-	wxTextCtrl *text_ctrl = dynamic_cast<wxTextCtrl*>(GetWindow());
-	wxASSERT(text_ctrl);
+bool ModelStringValidator::TransferFromWindow() {
+    wxTextCtrl *text_ctrl = dynamic_cast<wxTextCtrl*>(GetWindow());
+    wxASSERT(text_ctrl);
 
-	// Only transfer the text back if something has changed; this
-	// avoids garbaging up our Undo history and dirty bit with
-	// pointless changes.
-	std::string old_string(mObject->GetString(mMember));
-	std::string new_string(text_ctrl->GetValue().mb_str());
-	if (new_string != old_string)
-		mObject->SetString(mMember, new_string);
-	return true;
+    // Only transfer the text back if something has changed; this
+    // avoids garbaging up our Undo history and dirty bit with
+    // pointless changes.
+    std::string old_string(mObject->GetString(mMember));
+    std::string new_string(text_ctrl->GetValue().mb_str());
+    if (new_string != old_string)
+        mObject->SetString(mMember, new_string);
+    return true;
 }
 
-bool ModelStringValidator::Validate(wxWindow* inParent)
-{
-	return true;
+bool ModelStringValidator::Validate(wxWindow* inParent) {
+    return true;
 }
 
 
@@ -120,64 +114,60 @@ BEGIN_EVENT_TABLE(PropertyDlg, wxDialog)
 END_EVENT_TABLE()
 
 PropertyDlg::PropertyDlg(wxWindow *inParent,
-						 Description *inDescription,
-						 model::Object *inObject)
+                         Description *inDescription,
+                         model::Object *inObject)
     : wxDialog(inParent, -1, wxString(inDescription->name, wxConvLocal),
                wxDefaultPosition),
-	  mObject(inObject)
+      mObject(inObject)
 {
-	// Configure our sizers.
-	wxBoxSizer *master_sizer = new wxBoxSizer(wxVERTICAL);
-	mPropSizer = new wxFlexGridSizer(inDescription->fields.size(), 2, 10, 10);
-	wxFlexGridSizer *bttn_sizer = new wxFlexGridSizer(1, 4, 10, 10);
-	master_sizer->Add(mPropSizer, 0 /* stretch */, wxEXPAND|wxALL, 10);
-	master_sizer->Add(bttn_sizer, 0 /* no stretch */,
-					  wxALIGN_RIGHT|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+    // Configure our sizers.
+    wxBoxSizer *master_sizer = new wxBoxSizer(wxVERTICAL);
+    mPropSizer = new wxFlexGridSizer(inDescription->fields.size(), 2, 10, 10);
+    wxFlexGridSizer *bttn_sizer = new wxFlexGridSizer(1, 4, 10, 10);
+    master_sizer->Add(mPropSizer, 0 /* stretch */, wxEXPAND|wxALL, 10);
+    master_sizer->Add(bttn_sizer, 0 /* no stretch */,
+                      wxALIGN_RIGHT|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
-	// Add our property controls.
-	std::vector<Field> *fields = &inDescription->fields;
-	std::vector<Field>::iterator i = fields->begin();
-	for (; i != fields->end(); ++i)
-		AddField(*i);
+    // Add our property controls.
+    std::vector<Field> *fields = &inDescription->fields;
+    std::vector<Field>::iterator i = fields->begin();
+    for (; i != fields->end(); ++i)
+        AddField(*i);
 
-	// Add our buttons.
-	mOkButton = new wxButton(this, wxID_OK, wxT("OK"));
-	mCancelButton = new wxButton(this, wxID_CANCEL, wxT("Cancel"));
-	mApplyButton = new wxButton(this, wxID_APPLY, wxT("&Apply"));
-	mHelpButton = new wxButton(this, wxID_HELP, wxT("&Help"));
-	bttn_sizer->Add(mOkButton, 0, 0, 0);
-	bttn_sizer->Add(mCancelButton, 0, 0, 0);
-	bttn_sizer->Add(mApplyButton, 0, 0, 0);
-	bttn_sizer->Add(mHelpButton, 0, 0, 0);
-	mOkButton->SetDefault();
-	mHelpButton->Disable();
+    // Add our buttons.
+    mOkButton = new wxButton(this, wxID_OK, wxT("OK"));
+    mCancelButton = new wxButton(this, wxID_CANCEL, wxT("Cancel"));
+    mApplyButton = new wxButton(this, wxID_APPLY, wxT("&Apply"));
+    mHelpButton = new wxButton(this, wxID_HELP, wxT("&Help"));
+    bttn_sizer->Add(mOkButton, 0, 0, 0);
+    bttn_sizer->Add(mCancelButton, 0, 0, 0);
+    bttn_sizer->Add(mApplyButton, 0, 0, 0);
+    bttn_sizer->Add(mHelpButton, 0, 0, 0);
+    mOkButton->SetDefault();
+    mHelpButton->Disable();
 
-	SetSizer(master_sizer);
-	Layout();
-	master_sizer->SetSizeHints(this);
+    SetSizer(master_sizer);
+    Layout();
+    master_sizer->SetSizeHints(this);
     Centre();
 }
 
-void PropertyDlg::AddField(Field &inField)
-{
+void PropertyDlg::AddField(Field &inField) {
     wxString label_text(inField.label, wxConvLocal);
     wxStaticText *label = new wxStaticText(this, -1, label_text);
-	if (inField.flags == MULTILINE)
-	{
-		wxTextCtrl *edit =
-			new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
+    if (inField.flags == MULTILINE) {
+        wxTextCtrl *edit =
+            new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
                            wxSize(300, 200), wxTE_MULTILINE,
-						   ModelStringValidator(mObject, inField.name));
-		mPropSizer->Add(label, 0, 0, 0);
-		mPropSizer->Add(edit, 1, wxEXPAND, 0);
-	}
-	else
-	{
-		wxTextCtrl *edit =
-			new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
+                           ModelStringValidator(mObject, inField.name));
+        mPropSizer->Add(label, 0, 0, 0);
+        mPropSizer->Add(edit, 1, wxEXPAND, 0);
+    } else {
+        wxTextCtrl *edit =
+            new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
                            wxSize(300, -1), 0,
-						   ModelStringValidator(mObject, inField.name));
-		mPropSizer->Add(label, 0, wxALIGN_CENTRE_VERTICAL, 0);
-		mPropSizer->Add(edit, 1, wxEXPAND, 0);
-	}
+                           ModelStringValidator(mObject, inField.name));
+        mPropSizer->Add(label, 0, wxALIGN_CENTRE_VERTICAL, 0);
+        mPropSizer->Add(edit, 1, wxEXPAND, 0);
+    }
 }

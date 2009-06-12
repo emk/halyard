@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -28,182 +28,121 @@
 //////////
 /// This class passes events from our GUI to the interpreter.
 ///
-class EventDispatcher : boost::noncopyable, public Halyard::TReloadNotified
-{
+class EventDispatcher : boost::noncopyable, public Halyard::TReloadNotified {
     static bool sMaxStaleTimeInitialized;
     static wxLongLong sMaxStaleTime;
-	static bool sEnableExpensiveEvents;
+    static bool sEnableExpensiveEvents;
 
     Halyard::TCallbackPtr mDispatcher;
 
-	bool EventSetup();
-	bool EventCleanup();
+    bool EventSetup();
+    bool EventCleanup();
     void CheckForVeto(bool &outWasVetoed);
 
     bool IsEventStale(const wxEvent &event);
-	bool DoSimpleEvent(const char *inType);
-	bool DoSimpleMouseEvent(const char *inType, wxPoint inPosition,
+    bool DoSimpleEvent(const char *inType);
+    bool DoSimpleMouseEvent(const char *inType, wxPoint inPosition,
                             bool inIsStale = false);
 
 public:
-	EventDispatcher();
-	~EventDispatcher();
+    EventDispatcher();
+    ~EventDispatcher();
 
-    //////////
     /// Mark all events which were generated before this moment--but which
     /// have not yet been processed--as "stale".
-    ///
     static void UpdateMaxStaleTime();
 
-	//////////
-	/// Set the event-dispatching callback.
-	///
-	void SetDispatcher(Halyard::TCallbackPtr inCallback);
+    /// Set the event-dispatching callback.
+    void SetDispatcher(Halyard::TCallbackPtr inCallback);
 
-	//////////
-	/// Notify the EventDispatcher that script is being reloaded.
-	///
+    /// Notify the EventDispatcher that script is being reloaded.
     void NotifyReloadScriptStarting();
 
-	//////////
-	/// Turn "expensive" events--idle events, mouse moved events--on or
-	/// off.  These tend to generate a lot of garbage for the Scheme
-	/// GC to clean up.
-	///
-	static void EnableExpensiveEvents(bool inEnable);
+    /// Turn "expensive" events--idle events, mouse moved events--on or
+    /// off.  These tend to generate a lot of garbage for the Scheme
+    /// GC to clean up.
+    static void EnableExpensiveEvents(bool inEnable);
 
-    //////////
     /// Dispatch an event asking for menus and buttons related to
     /// inCommandName to be updated.  Similar to wxWindows EVT_UPDATE_UI.
-    ///
     bool DoEventUpdateUI(const wxString &inCommandName);
 
-	//////////
-	/// Dispatch a mouse-down event.
-	///
-	bool DoEventLeftDown(wxMouseEvent &inEvent, bool inIsDoubleClick);
+    /// Dispatch a mouse-down event.
+    bool DoEventLeftDown(wxMouseEvent &inEvent, bool inIsDoubleClick);
 
-	///////////
-	/// Dispatch a mouse-up event.
-	///
-	bool DoEventLeftUp(wxMouseEvent &inEvent);
+    /// Dispatch a mouse-up event.
+    bool DoEventLeftUp(wxMouseEvent &inEvent);
 
-	//////////
-	/// Dispatch a mouse-enter event.
-	///
-	bool DoEventMouseEnter(wxPoint inPosition);
+    /// Dispatch a mouse-enter event.
+    bool DoEventMouseEnter(wxPoint inPosition);
 
-	//////////
-	/// Dispatch a mouse-leave event.
-	///
-	bool DoEventMouseLeave(wxPoint inPosition);
+    /// Dispatch a mouse-leave event.
+    bool DoEventMouseLeave(wxPoint inPosition);
 
-	//////////
-	/// Dispatch a character event.  Return true if the event was handled.
-	///
-	bool DoEventChar(wxKeyEvent &inEvent);
+    /// Dispatch a character event.  Return true if the event was handled.
+    bool DoEventChar(wxKeyEvent &inEvent);
 
-	//////////
-	/// Dispatch an idle event.
-	///
-	bool DoEventIdle();
-	
-	//////////
-	/// Dispatch a mouse move event.
-	///
-	bool DoEventMouseMoved(wxMouseEvent &inEvent);
+    /// Dispatch an idle event.
+    bool DoEventIdle();
+    
+    /// Dispatch a mouse move event.
+    bool DoEventMouseMoved(wxMouseEvent &inEvent);
 
-    //////////
     /// Dispatch a TextChanged event.
-    ///
     bool DoEventTextChanged(wxCommandEvent &inEvent);
 
-    //////////
     /// Dispatch a TextEnter event.
-    ///
     bool DoEventTextEnter(wxCommandEvent &inEvent);
 
-    //////////
     /// Dispatch a BrowserNavigate event.  This occurs before loading a new
     /// page, and it may be vetoed.
-    ///
     bool DoEventBrowserNavigate(const wxString &inUrl, bool &outWasVetoed);
 
-    //////////
     /// Dispatch a PageChanged event.  This occurs whenever the browser
     /// has loaded a new page, or accomplished some similar task.
-    ///
     bool DoEventBrowserPageChanged(const wxString &inUrl);
 
-    //////////
     /// Dispatch a TitleChanged event.  This occurs whenever the browser
     /// window title changes.
-    ///
     bool DoEventBrowserTitleChanged(const wxString &inTitle);
 
-    //////////
     /// Dispatch a SetStatusText event.
-    ///
     bool DoEventStatusTextChanged(const wxString &inText);
     
-    //////////
     /// Dispatch a ProgressChanged event.
-    ///
     bool DoEventProgressChanged(bool inIsDone, double inPortionCompleted);
 
-    //////////
     /// Dispatch a PlaybackTimer event.
-    ///
     bool DoEventPlaybackTimer();
 
-    //////////
     /// Dispatch a MediaFinished event.
-    ///
     bool DoEventMediaFinished();
 
-    //////////
     /// Dispatch a MediaLocalError event.
-    ///
     bool DoEventMediaLocalError();
 
-    //////////
     /// Dispatch a MediaNeworkError event.
-    ///
     bool DoEventMediaNetworkError();
 
-    //////////
     /// Dispatch a MediaNeworkTimeout event.
-    ///
     bool DoEventMediaNetworkTimeout();
 
-    //////////
     /// Dispatch a MediaCaption event.
-    ///
     bool DoEventMediaCaption(const std::string &caption);
 
-    //////////
     /// Dispatch a CursorMoved event.
-    ///
     bool DoEventCursorMoved(const wxPoint &point);
 
-    //////////
     /// Dispatch a CursorShown event.
-    ///
     bool DoEventCursorShown();
 
-    //////////
     /// Dispatch a CursorHidden event.
-    ///
     bool DoEventCursorHidden();
 
-    //////////
     /// Dispatch a DataReceived event.
-    ///
     bool DoEventDataReceived(const std::string &data);
 
-    //////////
     /// Dispatch a TransferFinished event.
-    ///
     bool DoEventTransferFinished(bool success, const std::string &message);
     
 private:

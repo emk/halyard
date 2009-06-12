@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -42,14 +42,13 @@ class TPercent;
 /// reloading scripts and other fun stuff that involves creating
 /// and destroying interpreters.
 ///
-class TSchemeInterpreterManager : public TInterpreterManager
-{
+class TSchemeInterpreterManager : public TInterpreterManager {
     bool mHaveInitializedScheme;
-	TSchemePtr<Scheme_Env> mGlobalEnv;
+    TSchemePtr<Scheme_Env> mGlobalEnv;
     shared_ptr<ScriptEditorDB> mScriptEditorDB;
 
 public:
-	TSchemeInterpreterManager(SystemIdleProc inIdleProc);
+    TSchemeInterpreterManager(SystemIdleProc inIdleProc);
 
     virtual void InitialSetup();
     virtual ScriptEditorDB *GetScriptEditorDBInternal();
@@ -59,10 +58,10 @@ private:
     static Scheme_Object *GetRuntimeDirectory(int inArgc,
                                               Scheme_Object **inArgv);
     static Scheme_Object *SetCollectsPath(int inArgc, Scheme_Object **inArgv);
-	void LoadFile(const FileSystem::Path &inFile);
+    void LoadFile(const FileSystem::Path &inFile);
 
 protected:
-	virtual void MakeInterpreter();
+    virtual void MakeInterpreter();
 };
 
 
@@ -70,15 +69,14 @@ protected:
 /// The interface to our Scheme interpreter.  Since this is a singleton
 /// class, we store a lot of variables as static data to ease implementation.
 ///
-class TSchemeInterpreter : public TInterpreter
-{
-	friend class TSchemeInterpreterManager;
-	friend class TSchemeCallback;
+class TSchemeInterpreter : public TInterpreter {
+    friend class TSchemeInterpreterManager;
+    friend class TSchemeCallback;
 
-	TSchemePtr<Scheme_Env> mGlobalEnv;
-	TSchemePtr<Scheme_Env> mScriptEnv;
-	TSchemePtr<Scheme_Object> mLoaderModule;
-	TSchemePtr<Scheme_Object> mKernelModule;
+    TSchemePtr<Scheme_Env> mGlobalEnv;
+    TSchemePtr<Scheme_Env> mScriptEnv;
+    TSchemePtr<Scheme_Object> mLoaderModule;
+    TSchemePtr<Scheme_Object> mKernelModule;
 
     typedef Scheme_Env *EnvPtr;
 
@@ -133,7 +131,7 @@ class TSchemeInterpreter : public TInterpreter
 
     bool mScriptIsLoaded;
 
-	void InitializeModuleNames();
+    void InitializeModuleNames();
 
     Scheme_Bucket *FindBucket(Scheme_Env *inEnv,
                               Scheme_Object *inModule,
@@ -141,7 +139,7 @@ class TSchemeInterpreter : public TInterpreter
 
     /// Call a primitive function.  This function may only use PLT-style
     /// error handling, *not* C++ exceptions.
-	static Scheme_Object *CallPrim(int inArgc, Scheme_Object **inArgv);
+    static Scheme_Object *CallPrim(int inArgc, Scheme_Object **inArgv);
     /// This function may only use C++ exceptions, *not* PLT-style error
     /// handling.
     bool CallPrimInternal(const char *inPrimName,
@@ -154,47 +152,47 @@ class TSchemeInterpreter : public TInterpreter
     Scheme_Object *LoadScript();
 
 public:
-	TSchemeInterpreter(Scheme_Env *inGlobalEnv);
-	virtual ~TSchemeInterpreter();
+    TSchemeInterpreter(Scheme_Env *inGlobalEnv);
+    virtual ~TSchemeInterpreter();
 
     static TSchemeInterpreter *GetSchemeInterpreter();
 
-	Scheme_Object *CallSchemeEx(Scheme_Env *inEnv,
+    Scheme_Object *CallSchemeEx(Scheme_Env *inEnv,
                                 Scheme_Object *inModule,
                                 const char *inFuncName,
                                 int inArgc, Scheme_Object **inArgv);
     Scheme_Object *CallSchemeExHelper(Scheme_Object *inFunc,
                                       int inArgc,
                                       Scheme_Object **inArgv);
-	Scheme_Object *CallScheme(const char *inFuncName,
-									 int inArgc, Scheme_Object **inArgv);
-	Scheme_Object *CallSchemeSimple(const char *inFuncName);
+    Scheme_Object *CallScheme(const char *inFuncName,
+                                     int inArgc, Scheme_Object **inArgv);
+    Scheme_Object *CallSchemeSimple(const char *inFuncName);
 
     /// A static version of CallScheme for use by other classes.  This cuts
     /// down on the number of times we need to look up our singleton object
     /// elsewhere in the codebase.
-	static Scheme_Object *CallSchemeStatic(const char *inFuncName,
+    static Scheme_Object *CallSchemeStatic(const char *inFuncName,
                                            int inArgc, Scheme_Object **inArgv);
 
-	// For documentation of these virtual methods, see TInterpreter.h.
-	virtual void Run();
-	virtual void KillInterpreter();
-	virtual void Stop();
-	virtual bool IsStopped();
-	virtual void Go(const char *inCard);
+    // For documentation of these virtual methods, see TInterpreter.h.
+    virtual void Run();
+    virtual void KillInterpreter();
+    virtual void Stop();
+    virtual bool IsStopped();
+    virtual void Go(const char *inCard);
     virtual bool CanSuspend();
-	virtual void Pause(void);
-	virtual void WakeUp(void);
+    virtual void Pause(void);
+    virtual void WakeUp(void);
     virtual void SetShouldWakeUp();
-	virtual bool Paused(void);
-	virtual void KillCurrentCard(void);
-	virtual void JumpToCardByName(const char *inName);
-	virtual void LoadGroup(const char *inName);
-	virtual std::string CurCardName(void);
-	virtual bool IsValidCard(const char *inCardName);
-	virtual bool Eval(const std::string &inExpression,
-					  std::string &outResultText);
-	virtual bool MaybeHandleLogMessage(const std::string &inLevel,
+    virtual bool Paused(void);
+    virtual void KillCurrentCard(void);
+    virtual void JumpToCardByName(const char *inName);
+    virtual void LoadGroup(const char *inName);
+    virtual std::string CurCardName(void);
+    virtual bool IsValidCard(const char *inCardName);
+    virtual bool Eval(const std::string &inExpression,
+                      std::string &outResultText);
+    virtual bool MaybeHandleLogMessage(const std::string &inLevel,
                                        const std::string &inCategory,
                                        const std::string &inMessage);
     virtual IdentifierList GetBuiltInIdentifiers();

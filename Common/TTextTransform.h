@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -42,31 +42,24 @@ BEGIN_NAMESPACE_HALYARD
 /// this routine can be more-or-less safely applied to XML text, and won't
 /// do anything particularly useful to non-XML text.
 ///
-namespace TTextTransform
-{
-	//////////
-	/// Transform double hyphens into m-dash entities (a dash the
-	/// width of the capital letter 'M'), and '...' sequences into
-	/// horizontal ellipsis entities.
-	///
-	/// \param inString  The string to transform.
-	/// \return  The transformed string.
-	///
-	utf8_string FixSpecials(const utf8_string& inString);
+namespace TTextTransform {
+    /// Transform double hyphens into m-dash entities (a dash the
+    /// width of the capital letter 'M'), and '...' sequences into
+    /// horizontal ellipsis entities.
+    ///
+    /// \param inString  The string to transform.
+    /// \return  The transformed string.
+    utf8_string FixSpecials(const utf8_string& inString);
 
-	//////////
-	/// Transform \' and \" characters into appropriate left and right
-	/// quote entities.
-	///
-	/// \param inString  The string to transform.
-	/// \return  The transformed string.
-	///
-	utf8_string FixQuotes(const utf8_string& inString);
+    /// Transform \' and \" characters into appropriate left and right
+    /// quote entities.
+    ///
+    /// \param inString  The string to transform.
+    /// \return  The transformed string.
+    utf8_string FixQuotes(const utf8_string& inString);
 
-	//////////
-   	/// Apply all transformations to a string.
-	///
-	utf8_string TransformString(const utf8_string& inString);
+    /// Apply all transformations to a string.
+    utf8_string TransformString(const utf8_string& inString);
 };
 
 END_NAMESPACE_HALYARD

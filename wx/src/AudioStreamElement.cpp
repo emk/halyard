@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -31,15 +31,14 @@
 //=========================================================================
 
 AudioStreamElement::AudioStreamElement(Stage *inStage, const wxString &inName,
-									   AudioStream *inStream,
+                                       AudioStream *inStream,
                                        Halyard::TCallbackPtr inDispatcher)
     : InvisibleElement(inStage, inName, inDispatcher), mStream(inStream)
 {
     mStream->Start();
 }
 
-AudioStreamElement::~AudioStreamElement()
-{
+AudioStreamElement::~AudioStreamElement() {
     mStream->Stop();
     mStream->Delete();
 }
@@ -56,29 +55,25 @@ void AudioStreamElement::Idle() {
     MediaElementIdle();
 }
 
-bool AudioStreamElement::IsLooping()
-{
+bool AudioStreamElement::IsLooping() {
     return mStream->IsLooping();
 }
 
-void AudioStreamElement::EndPlayback()
-{
+void AudioStreamElement::EndPlayback() {
     MediaElement::EndPlayback();
-	mStream->Stop();
-}
-
-void AudioStreamElement::Pause()
-{
     mStream->Stop();
 }
 
-void AudioStreamElement::Resume()
-{
+void AudioStreamElement::Pause() {
+    mStream->Stop();
+}
+
+void AudioStreamElement::Resume() {
     mStream->Start();
 }
 
 void AudioStreamElement::SetVolume(const std::string &inChannel,
-								   double inVolume)
+                                   double inVolume)
 {
     mStream->SetChannelVolume(inChannel, inVolume);
 }

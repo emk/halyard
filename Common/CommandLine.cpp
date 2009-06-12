@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -24,52 +24,52 @@
 #include "CommandLine.h"
 
 CommandLine::CommandLine(int argc, char **argv) {
-	for (int i = 0; i < argc; i++) {
-		mArgs.push_back(std::string(argv[i]));
-	}
+    for (int i = 0; i < argc; i++) {
+        mArgs.push_back(std::string(argv[i]));
+    }
 }
 
 std::string CommandLine::WindowsQuotedString() const {
-	std::string result("");
-	
-	std::vector<std::string>::const_iterator iter = mArgs.begin();
-	for(; iter != mArgs.end(); ++iter) {
-		if (iter != mArgs.begin()) 
-			result += " ";
-		result += WindowsQuoteArgument(*iter);
-	}
+    std::string result("");
+    
+    std::vector<std::string>::const_iterator iter = mArgs.begin();
+    for(; iter != mArgs.end(); ++iter) {
+        if (iter != mArgs.begin())
+            result += " ";
+        result += WindowsQuoteArgument(*iter);
+    }
 
-	return result;
+    return result;
 }
 
 std::string CommandLine::WindowsQuoteArgument(std::string arg) const {
-	std::string result("");
-	
-	result += "\"";
+    std::string result("");
+    
+    result += "\"";
 
-	size_t backslash_count = 0;
-	std::string::const_iterator iter = arg.begin();
-	for (; iter != arg.end(); ++iter) {
-		switch (*iter) {
-		case '"':
-			result += std::string(2*backslash_count+1, '\\');
-			backslash_count = 0;
-			result += '"';
-			break;
-		case '\\':
-			++backslash_count;
-			break;
-		default:
-			if (backslash_count != 0) {
-				result += std::string(backslash_count, '\\');
-				backslash_count = 0;
-			}
-			result += *iter;
-		}
-	}
+    size_t backslash_count = 0;
+    std::string::const_iterator iter = arg.begin();
+    for (; iter != arg.end(); ++iter) {
+        switch (*iter) {
+        case '"':
+            result += std::string(2*backslash_count+1, '\\');
+            backslash_count = 0;
+            result += '"';
+            break;
+        case '\\':
+            ++backslash_count;
+            break;
+        default:
+            if (backslash_count != 0) {
+                result += std::string(backslash_count, '\\');
+                backslash_count = 0;
+            }
+            result += *iter;
+        }
+    }
 
-	result += "\"";
-	return result;
+    result += "\"";
+    return result;
 }
 
 #ifdef WIN32

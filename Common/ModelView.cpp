@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -33,48 +33,42 @@ using namespace model;
 //=========================================================================
 
 View::View()
-	: mObject(NULL), mObjectIsLive(false)
+    : mObject(NULL), mObjectIsLive(false)
 {
 }
 
-View::~View()
-{
-	if (mObject)
-		mObject->UnregisterView(this);
+View::~View() {
+    if (mObject)
+        mObject->UnregisterView(this);
 }
 
-void View::SetObject(Object *inObject)
-{
-	ASSERT(inObject);
-	ASSERT(!mObject);
-	mObject = inObject;
-	mObject->RegisterView(this);
-	CallObjectChanged();
+void View::SetObject(Object *inObject) {
+    ASSERT(inObject);
+    ASSERT(!mObject);
+    mObject = inObject;
+    mObject->RegisterView(this);
+    CallObjectChanged();
 }
 
-Object *View::GetObject()
-{
-	ASSERT(mObject && ObjectIsLive());
-	return mObject;
+Object *View::GetObject() {
+    ASSERT(mObject && ObjectIsLive());
+    return mObject;
 }
 
-void View::CallObjectChanged()
-{
-	mObjectIsLive = true;
-	ObjectChanged();
+void View::CallObjectChanged() {
+    mObjectIsLive = true;
+    ObjectChanged();
 }
 
-void View::CallObjectDeleted()
-{
-	mObjectIsLive = false;
-	ObjectDeleted();
+void View::CallObjectDeleted() {
+    mObjectIsLive = false;
+    ObjectDeleted();
 }
 
-void View::ClearObject()
-{
-	// We are called by the destructor of Object, and we should set any
-	// out-of-date pointers to NULL.
-	ASSERT(mObject);
-	mObject = NULL;
-	CallObjectDeleted();
+void View::ClearObject() {
+    // We are called by the destructor of Object, and we should set any
+    // out-of-date pointers to NULL.
+    ASSERT(mObject);
+    mObject = NULL;
+    CallObjectDeleted();
 }

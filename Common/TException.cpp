@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -26,33 +26,31 @@
 
 using namespace Halyard;
 
-const char* TException::what () const throw ()
-{
-	std::ostringstream s;
-	s << GetClassName() << ": " << GetErrorMessage() << " (";
-	if (GetErrorCode() != kNoErrorCode)
-	{
-		s << "error " << GetErrorCode() << " ";
-	}
+const char* TException::what () const throw () {
+    std::ostringstream s;
+    s << GetClassName() << ": " << GetErrorMessage() << " (";
+    if (GetErrorCode() != kNoErrorCode) {
+        s << "error " << GetErrorCode() << " ";
+    }
 #ifdef DEBUG
-	s << "at " << mErrorFile << ":" << mErrorLine << ")";
+    s << "at " << mErrorFile << ":" << mErrorLine << ")";
 #endif // DEBUG
-	const_cast<TException*>(this)->mWhatCache = s.str();
-	return mWhatCache.c_str();
+    const_cast<TException*>(this)->mWhatCache = s.str();
+    return mWhatCache.c_str();
 }
 
 void TException::ReportException(std::exception &e) {
-	gLog.Error("halyard", "Error: %s", e.what());
+    gLog.Error("halyard", "Error: %s", e.what());
 }
 
 void TException::ReportException() {
-	ReportFatalException();
+    ReportFatalException();
 }
 
 void TException::ReportFatalException(std::exception &e) {
-	gLog.Fatal("halyard", "Error: %s", e.what());
+    gLog.Fatal("halyard", "Error: %s", e.what());
 }
 
 void TException::ReportFatalException() {
-	gLog.Fatal("halyard", "An unexpected internal error occurred, quitting now.");
+    gLog.Fatal("halyard", "An unexpected internal error occurred, quitting now.");
 }

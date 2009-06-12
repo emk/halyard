@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -28,15 +28,14 @@ using namespace Halyard;
 
 
 //=========================================================================
-//	TSchemeCallback Methods
+//  TSchemeCallback Methods
 //=========================================================================
 
-TValue TSchemeCallback::Run(const TValueList &inArguments)
-{
+TValue TSchemeCallback::Run(const TValueList &inArguments) {
 
-	// Make sure we have a Scheme interpreter and that it isn't stopped.
-	ASSERT(TSchemeInterpreter::HaveInstance());
-	ASSERT(!TSchemeInterpreter::GetInstance()->IsStopped());
+    // Make sure we have a Scheme interpreter and that it isn't stopped.
+    ASSERT(TSchemeInterpreter::HaveInstance());
+    ASSERT(!TSchemeInterpreter::GetInstance()->IsStopped());
 
     Scheme_Object *result = NULL;
     TSchemeArgs<2> args;
@@ -46,10 +45,10 @@ TValue TSchemeCallback::Run(const TValueList &inArguments)
     reg.args(args);
     reg.done();
 
-	// TODO - I wish we could do this without consing, at least in the case
-	// where we have simple arguments.
-	args[0] = mCallback;
-	args[1] = TValueToScheme(inArguments);
+    // TODO - I wish we could do this without consing, at least in the case
+    // where we have simple arguments.
+    args[0] = mCallback;
+    args[1] = TValueToScheme(inArguments);
     result = TSchemeInterpreter::CallSchemeStatic("%kernel-run-callback",
                                                   args.size(), args.get());
     return SchemeToTValue(result);

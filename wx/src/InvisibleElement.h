@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -32,7 +32,7 @@
 ///
 class InvisibleElement : public Element {
 public:
-	InvisibleElement(Stage *inStage, const wxString &inName,
+    InvisibleElement(Stage *inStage, const wxString &inName,
                      Halyard::TCallbackPtr inDispatcher =
                          Halyard::TCallbackPtr())
         : Element(inStage, inName, inDispatcher) {}

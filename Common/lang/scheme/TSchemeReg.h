@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -70,7 +70,7 @@ class TSchemeReg : boost::noncopyable {
 
 public:
     /// Equivalent to MZ_GC_DECL_REG.
-	TSchemeReg() throw () {
+    TSchemeReg() throw () {
         mReg[0] = NULL;
         mReg[1] = reinterpret_cast<void*>(VARS + 3*ARRAYS);
         mOffset = 2;

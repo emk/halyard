@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -54,8 +54,7 @@ bool Halyard::operator!=(const TPercent &inP1, const TPercent &inP2) {
     return !(inP1 == inP2);
 }
 
-std::ostream &Halyard::operator<<(std::ostream &out, const TPercent &inPercent)
-{
+std::ostream &Halyard::operator<<(std::ostream &out, const TPercent &inPercent) {
     out << inPercent.GetValue() << "%";
     return out;
 }
@@ -66,10 +65,10 @@ std::ostream &Halyard::operator<<(std::ostream &out, const TPercent &inPercent)
 //=========================================================================
 
 std::ostream &Halyard::operator<<(std::ostream &out,
-								  const TCallbackPtr &inCallback)
+                                  const TCallbackPtr &inCallback)
 {
-	out << inCallback->PrintableRepresentation();
-	return out;
+    out << inCallback->PrintableRepresentation();
+    return out;
 }
 
 
@@ -144,7 +143,7 @@ template <> TPoint tvalue_cast(const TValue &v)
 template <> TRect tvalue_cast(const TValue &v)
     { TRect r; return v.Get(r, "a rectangle"); }
 template <> GraphicsTools::Color tvalue_cast(const TValue &v)
-	{ GraphicsTools::Color r; return v.Get(r, "a color"); }
+    { GraphicsTools::Color r; return v.Get(r, "a color"); }
 template <> TValueList tvalue_cast(const TValue &v)
     { TValueList r; return v.Get(r, "a list"); }
 template <> TPolygon tvalue_cast(const TValue &v)
@@ -153,48 +152,48 @@ template <> TPercent tvalue_cast(const TValue &v)
     { TPercent r; return v.Get(r, "a percent"); }
 
 template <> int32 tvalue_cast(const TValue &v) {
-	int32 r; 
-	// Convert to int32 if TValue is a unint32
-	// but only if the unint32 is less than MAX_INT32.
-	if (v.GetType() == TValue::TYPE_ULONG) {
-		uint32 rUInt;
-		rUInt = v.Get(rUInt, "<SHOULD NOT HAPPEN: int32>"); 
-		if (rUInt <= MAX_INT32)
-			return rUInt;
-		THROW("Expected a signed 32-bit integer, got <" + 
+    int32 r; 
+    // Convert to int32 if TValue is a unint32
+    // but only if the unint32 is less than MAX_INT32.
+    if (v.GetType() == TValue::TYPE_ULONG) {
+        uint32 rUInt;
+        rUInt = v.Get(rUInt, "<SHOULD NOT HAPPEN: int32>"); 
+        if (rUInt <= MAX_INT32)
+            return rUInt;
+        THROW("Expected a signed 32-bit integer, got <" + 
               v.ToDisplayValue() + ">");
-	}
-	return v.Get(r, "a signed 32-bit integer");
+    }
+    return v.Get(r, "a signed 32-bit integer");
 }
 
-template <> uint32 tvalue_cast(const TValue &v) { 
-	uint32 r;
-	// Convert to uint32 if TValue is an int32
-	// but only if the int32 is non-negative.
-	if (v.GetType() == TValue::TYPE_LONG) {
-		int32 rInt;
-		rInt = v.Get(rInt, "<SHOULD NOT HAPPEN: uint32>");
-		if (rInt >= 0)
-			return rInt;
-		THROW("Expected an unsigned 32-bit integer, got <" + 
+template <> uint32 tvalue_cast(const TValue &v) {
+    uint32 r;
+    // Convert to uint32 if TValue is an int32
+    // but only if the int32 is non-negative.
+    if (v.GetType() == TValue::TYPE_LONG) {
+        int32 rInt;
+        rInt = v.Get(rInt, "<SHOULD NOT HAPPEN: uint32>");
+        if (rInt >= 0)
+            return rInt;
+        THROW("Expected an unsigned 32-bit integer, got <" + 
               v.ToDisplayValue() + ">");
-	}
-	return v.Get(r, "an unsigned 32-bit integer");
+    }
+    return v.Get(r, "an unsigned 32-bit integer");
 }
 
 template <> double tvalue_cast(const TValue &v) {
-	double r;
-	// Convert to a double if TValue is an int32
-	// or a unint32.
-	if (v.GetType() == TValue::TYPE_LONG) {
-		int32 rInt;
-		return v.Get(rInt, "<SHOULD NOT HAPPEN: double>");
-	}
-	if (v.GetType() == TValue::TYPE_ULONG) {
-		uint32 rUInt;
-		return v.Get(rUInt, "<SHOULD NOT HAPPEN: double>");
-	}
-	return v.Get(r, "a floating-point number");
+    double r;
+    // Convert to a double if TValue is an int32
+    // or a unint32.
+    if (v.GetType() == TValue::TYPE_LONG) {
+        int32 rInt;
+        return v.Get(rInt, "<SHOULD NOT HAPPEN: double>");
+    }
+    if (v.GetType() == TValue::TYPE_ULONG) {
+        uint32 rUInt;
+        return v.Get(rUInt, "<SHOULD NOT HAPPEN: double>");
+    }
+    return v.Get(r, "a floating-point number");
 }
 
 END_NAMESPACE_HALYARD
@@ -206,13 +205,13 @@ std::string TValue::ToDisplayValue() const {
 }
 
 TCallbackPtr TValue::GetCallbackPtr() {
-	TCallbackPtr ptr;
-	return Get(ptr, "a callback");
+    TCallbackPtr ptr;
+    return Get(ptr, "a callback");
 }
 
 TValue::Type TValue::GetType() const {
     if (!IsInitialized())
-		THROW("Cannot get type of uninitialized TValue");
+        THROW("Cannot get type of uninitialized TValue");
     return mPtr->GetType();
 }
 
@@ -242,12 +241,12 @@ std::ostream &Halyard::operator<<(std::ostream &out, const TValue &inV) {
 }
 
 std::ostream &Halyard::operator<<(std::ostream &out, const TValueList &l) {
-	out << "(list";
-	TValueList::const_iterator i = l.begin();
-	for (; i != l.end(); ++i)
-		out << " " << *i;
+    out << "(list";
+    TValueList::const_iterator i = l.begin();
+    for (; i != l.end(); ++i)
+        out << " " << *i;
     out << ")";
-	return out;
+    return out;
 }
 
 
@@ -264,11 +263,11 @@ void CHECK_TVALUE_TYPE(TValue::Type inType, const Type &v1, const Type &v2) {
     CHECK_EQ(value.GetType(), inType);
     CHECK_EQ(value, TValue(v1));
     CHECK_NE(value, TValue(v2));
-	
-	// Check to make sure this runs without crashing or infinitely
-	// recursing.  We don't care what it actually returns.
-	std::ostringstream out;
-	out << value;
+    
+    // Check to make sure this runs without crashing or infinitely
+    // recursing.  We don't care what it actually returns.
+    std::ostringstream out;
+    out << value;
 }
 
 template <typename Type>
@@ -298,12 +297,12 @@ BEGIN_TEST_CASE(TestTPercent, TestCase) {
 BEGIN_TEST_CASE(TestTValue, TestCase) {
     // Uninitialized values.
     TValue v1;
-	CHECK_EQ(v1.IsInitialized(), false);
+    CHECK_EQ(v1.IsInitialized(), false);
     CHECK_THROWN(std::exception, v1.GetType());
 
     // Check Null.  We use assignment notation here, because the constructor
     // notation would be mistaken for a function declaration.  Strange.
-	TValue value = TNull();
+    TValue value = TNull();
     CHECK_EQ(value.IsInitialized(), true);
     CHECK_EQ(value.GetType(), TValue::TYPE_NULL);
     CHECK_EQ(value, TValue(TNull()));
@@ -367,8 +366,8 @@ BEGIN_TEST_CASE(TestTValue, TestCase) {
     CHECK_TVALUE_GET(list1);
 
     // Conversion operator sanity checks.
-	double foo;
-	CHECK_THROWN(std::exception, foo = tvalue_cast<double>(TValue()));
+    double foo;
+    CHECK_THROWN(std::exception, foo = tvalue_cast<double>(TValue()));
     CHECK_THROWN(std::exception, tvalue_cast<double>(TValue("foo")));
 
     // operator== special cases
@@ -380,23 +379,23 @@ BEGIN_TEST_CASE(TestTValue, TestCase) {
     CHECK_NE(TValue(1), TValue(true));
     CHECK_NE(TValue(0), TValue(false));
 
-	// TValue autoconversions.
-	CHECK_EQ(tvalue_cast<uint32>(TValue(MAX_INT32)), uint32(MAX_INT32));
-	CHECK_THROWN(std::exception, tvalue_cast<uint32>(TValue(-1)));
-	CHECK_EQ(tvalue_cast<int32>(TValue(uint32(MAX_INT32))), MAX_INT32);
-	CHECK_THROWN(std::exception,
+    // TValue autoconversions.
+    CHECK_EQ(tvalue_cast<uint32>(TValue(MAX_INT32)), uint32(MAX_INT32));
+    CHECK_THROWN(std::exception, tvalue_cast<uint32>(TValue(-1)));
+    CHECK_EQ(tvalue_cast<int32>(TValue(uint32(MAX_INT32))), MAX_INT32);
+    CHECK_THROWN(std::exception,
                  tvalue_cast<int32>(TValue(uint32(MAX_INT32) + 1)));
     CHECK_EQ(tvalue_cast<double>(TValue(1)), 1.0); 
-	CHECK_EQ(tvalue_cast<double>(TValue(MAX_UINT32)), double(MAX_UINT32)); 
-	CHECK_EQ(tvalue_cast<double>(TValue(MIN_INT32)), double(MIN_INT32)); 
-	CHECK_EQ(tvalue_cast<double>(TValue(-1)), -1.0);
+    CHECK_EQ(tvalue_cast<double>(TValue(MAX_UINT32)), double(MAX_UINT32)); 
+    CHECK_EQ(tvalue_cast<double>(TValue(MIN_INT32)), double(MIN_INT32)); 
+    CHECK_EQ(tvalue_cast<double>(TValue(-1)), -1.0);
 
     // Test output of TValues.
     CHECK_TVALUE_DISPLAY("\"foo\"", "foo");
     CHECK_TVALUE_DISPLAY("10", 10);
     CHECK_TVALUE_DISPLAY("#t", true);
     CHECK_TVALUE_DISPLAY("#f", false);
-	
+    
 } END_TEST_CASE(TestTValue);
 
 BEGIN_TEST_CASE(TestTValueTypeChecks, TestCase) {

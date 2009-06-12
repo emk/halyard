@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -119,8 +119,7 @@ wxAccStatus LightweightAccessible::GetState(int childId, long* state) {
 }
 
 /// Return the currently-focused child of this object.
-wxAccStatus LightweightAccessible::GetFocus(int* childId, wxAccessible** child)
-{
+wxAccStatus LightweightAccessible::GetFocus(int* childId, wxAccessible** child) {
     ASSERT(*childId == 0);
     *child = NULL;
     return wxACC_OK;

@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -26,9 +26,9 @@
 using namespace Halyard;
 
 BEGIN_EVENT_TABLE(AdjustScreenConfirmDlg, XrcDlg)
-	EVT_IDLE(AdjustScreenConfirmDlg::OnIdle)
-	EVT_BUTTON(wxID_YES, XrcDlg::OnSimpleButton)
-	EVT_BUTTON(wxID_NO, XrcDlg::OnSimpleButton)
+    EVT_IDLE(AdjustScreenConfirmDlg::OnIdle)
+    EVT_BUTTON(wxID_YES, XrcDlg::OnSimpleButton)
+    EVT_BUTTON(wxID_NO, XrcDlg::OnSimpleButton)
 END_EVENT_TABLE()
 
 AdjustScreenConfirmDlg::AdjustScreenConfirmDlg(wxWindow *inParent)

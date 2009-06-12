@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -27,7 +27,7 @@
 //////////
 /// \defgroup platform Platform-Specific Configuration
 ///
-///	Platform-specific configuration code.
+/// Platform-specific configuration code.
 ///
 /// \author Chuck Officer
 /// \author ...and others

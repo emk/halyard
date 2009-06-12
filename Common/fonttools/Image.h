@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -37,7 +37,7 @@ public:
     ~PngImage();
 
     virtual void DrawPixMap(GraphicsTools::Point inPoint,
-			    GraphicsTools::PixMap &inPixmap);
+                GraphicsTools::PixMap &inPixmap);
 
     void save(const char *filename);
 };

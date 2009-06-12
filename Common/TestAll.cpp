@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -49,11 +49,11 @@ static bool gShouldWait = false;
 /// should_wait is needed on Windows NT, 2000, etc., when running under
 /// Visual Studio.
 static __attribute__((noreturn)) void finished(int status) {
-	if (gShouldWait) {
-		std::cerr << "Press enter to continue.";
-		char c;
-		std::cin >> std::noskipws >> c;
-	}
+    if (gShouldWait) {
+        std::cerr << "Press enter to continue.";
+        char c;
+        std::cin >> std::noskipws >> c;
+    }
     exit(status);
 }
 
@@ -61,14 +61,14 @@ static __attribute__((noreturn)) void finished(int status) {
     try {
 
 #define END_TEST_EXCEPTION_TRAPPER \
-	} catch (std::exception &error) { \
-		std::cerr << std::endl << "Exception: " << error.what() << std::endl; \
+    } catch (std::exception &error) { \
+        std::cerr << std::endl << "Exception: " << error.what() << std::endl; \
         finished(1); \
-	} catch (...) { \
-		std::cerr << std::endl << "An unknown exception occurred!" \
-				  << std::endl; \
+    } catch (...) { \
+        std::cerr << std::endl << "An unknown exception occurred!" \
+                  << std::endl; \
         finished(1); \
-	}
+    }
 
 
 //=========================================================================
@@ -98,14 +98,14 @@ REFERENCE_TEST_CASE_FILE(ScriptEditorDB);
 REFERENCE_TEST_CASE_FILE(TTextConv);
 
 static void run_imlunit_tests() {
-	test_TTextTransform();
-	test_FileSystem();
-	test_Model();
-	test_Typography();
-	test_TStyleSheet();
-	test_TVectorDiff();
-	test_TPolygon();
-	tests_finished();	
+    test_TTextTransform();
+    test_FileSystem();
+    test_Model();
+    test_Typography();
+    test_TStyleSheet();
+    test_TVectorDiff();
+    test_TPolygon();
+    tests_finished();   
 }
 
 
@@ -116,37 +116,37 @@ static void run_imlunit_tests() {
 /// Output for a command-line-based unit test run.
 class ConsoleMeter : public ITestProgressMeter {
 public:
-	void UpdateTestProgress(int inTestIndex, int inTestCount,
-							const TestCaseReport &inReport);
+    void UpdateTestProgress(int inTestIndex, int inTestCount,
+                            const TestCaseReport &inReport);
 };
 
 void ConsoleMeter::UpdateTestProgress(int inTestIndex,int inTestCount,
-									  const TestCaseReport &inReport)
+                                      const TestCaseReport &inReport)
 {
-	switch (inReport.GetTestResult()) {
-		case TEST_PASSED:
-			std::cout << ".";
-			break;
-		case TEST_FAILED:
-			std::cout << "F";
-			break;
-		case TEST_SKIPPED:
-			std::cout << "S";
-			break;
-		default:
-			std::cout << "?";
-			break;
-	}
+    switch (inReport.GetTestResult()) {
+        case TEST_PASSED:
+            std::cout << ".";
+            break;
+        case TEST_FAILED:
+            std::cout << "F";
+            break;
+        case TEST_SKIPPED:
+            std::cout << "S";
+            break;
+        default:
+            std::cout << "?";
+            break;
+    }
 }
 
 static void run_testcase_tests() {
-	TestRegistry *registry = TestRegistry::GetGlobalRegistry();
-	ConsoleMeter meter;
-	TestRunReport::ptr report = registry->RunAllTests(&meter);
-	std::cout << std::endl << report->GetSummary() << std::endl;
-	TestRunReport::iterator i = report->begin();
-	for (; i != report->end(); ++i)
-		std::cout << (*i)->GetSummaryIfInteresting();
+    TestRegistry *registry = TestRegistry::GetGlobalRegistry();
+    ConsoleMeter meter;
+    TestRunReport::ptr report = registry->RunAllTests(&meter);
+    std::cout << std::endl << report->GetSummary() << std::endl;
+    TestRunReport::iterator i = report->begin();
+    for (; i != report->end(); ++i)
+        std::cout << (*i)->GetSummaryIfInteresting();
 }
 
 
@@ -155,10 +155,10 @@ static void run_testcase_tests() {
 //=========================================================================
 
 DEFINE_PRIMITIVE(Test) {
-	std::string info;
-	bool result;
-	inArgs >> info >> result;
-	TEST_WITH_LABEL(info.c_str(), result);
+    std::string info;
+    bool result;
+    inArgs >> info >> result;
+    TEST_WITH_LABEL(info.c_str(), result);
 }
 
 DEFINE_PRIMITIVE(RunAllCppTests) {
@@ -175,7 +175,7 @@ DEFINE_PRIMITIVE(RunAllCppTests) {
 }
 
 static void RegisterTestPrimitives() {
-	REGISTER_PRIMITIVE(Test);
+    REGISTER_PRIMITIVE(Test);
     REGISTER_PRIMITIVE(RunAllCppTests);
     RegisterTSchemeInterpreterTestPrimitives();
 }
@@ -186,8 +186,8 @@ static void RegisterTestPrimitives() {
 //=========================================================================
 
 int main(int argc, char **argv) {
-	if (argc == 2 && std::string(argv[1]) == "--wait")
-		gShouldWait = true;
+    if (argc == 2 && std::string(argv[1]) == "--wait")
+        gShouldWait = true;
 
     RegisterTestPrimitives();
     
@@ -197,11 +197,11 @@ int main(int argc, char **argv) {
     FileSystem::Path root_dir(current_dir.ParentDirectory().ParentDirectory());
     FileSystem::SetRuntimeDirectory(root_dir.AddComponent("runtime"));
 
-	FileSystem::SetScriptDataDirectoryName("Halyard Common Test");
+    FileSystem::SetScriptDataDirectoryName("Halyard Common Test");
 
     BEGIN_TEST_EXCEPTION_TRAPPER
 
-	Halyard::InitializeCommonCode(new CrashReporter());
+    Halyard::InitializeCommonCode(new CrashReporter());
     TInterpreterManager::SetMode(TInterpreterManager::COMMAND_LINE);
 
     std::cout << "Scheme Interpreter Tests" << std::endl;

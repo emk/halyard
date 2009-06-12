@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -52,10 +52,9 @@ class NodeItemData;
 //=========================================================================
 
 /// Tree widget showing structure of Halyard script.
-class ProgramTreeCtrl : public CustomTreeCtrl
-{
+class ProgramTreeCtrl : public CustomTreeCtrl {
 public:
-	ProgramTreeCtrl(wxWindow *inParent);
+    ProgramTreeCtrl(wxWindow *inParent);
     NodeItemData *GetNodeItemData(wxTreeItemId inId);
 };
 
@@ -134,7 +133,7 @@ void NodeItemData::UpdateIsLoaded(bool inNewValue) {
 /// Sequences of cards can be nested within each other.
 class GroupItemData : public NodeItemData {
 public:
-	GroupItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
+    GroupItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
                   const wxString &inName, bool inIsLoaded);
 
     /// Called when the user attempts to expand a folder.
@@ -146,7 +145,7 @@ GroupItemData::GroupItemData(ProgramTreeCtrl *inTreeCtrl,
                              wxTreeItemId inItemId,
                              const wxString &inName,
                              bool inIsLoaded)
-	: NodeItemData(inTreeCtrl, inItemId, inName, inIsLoaded)
+    : NodeItemData(inTreeCtrl, inItemId, inName, inIsLoaded)
 {
     UpdateChildrenState();
 }
@@ -183,23 +182,22 @@ void GroupItemData::UpdateChildrenState() {
 /// Representation of a card in our ProgramTreeCtrl.
 class CardItemData : public NodeItemData {
 public:
-	CardItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
+    CardItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
                  wxString inName, bool inIsLoaded);
     virtual bool IsCard() const { return true; }
-	virtual void OnLeftDClick(wxMouseEvent& event);
+    virtual void OnLeftDClick(wxMouseEvent& event);
 };
 
 CardItemData::CardItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
                            wxString inName, bool inIsLoaded)
-	: NodeItemData(inTreeCtrl, inItemId, inName, inIsLoaded)
+    : NodeItemData(inTreeCtrl, inItemId, inName, inIsLoaded)
 {
 }
 
-void CardItemData::OnLeftDClick(wxMouseEvent& event)
-{
-	Stage *stage = wxGetApp().GetStage();
-	if (stage->CanJump())
-		stage->TryJumpTo(GetName());
+void CardItemData::OnLeftDClick(wxMouseEvent& event) {
+    Stage *stage = wxGetApp().GetStage();
+    if (stage->CanJump())
+        stage->TryJumpTo(GetName());
 }
 
 
@@ -368,35 +366,32 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 //=========================================================================
 
 /// Right-click menu for the HalyardProgramItemData in our ProgramTreeCtrl.
-class HalyardProgramMenu : public wxMenu
-{
-	DECLARE_EVENT_TABLE();
+class HalyardProgramMenu : public wxMenu {
+    DECLARE_EVENT_TABLE();
 
-	wxWindow *mParent;
-	model::Object *mObject;
+    wxWindow *mParent;
+    model::Object *mObject;
 
-    void OnProperties(wxCommandEvent &inEvent);	
+    void OnProperties(wxCommandEvent &inEvent); 
 
 public:
-	HalyardProgramMenu(wxWindow *inParent, model::Object *inObject);
+    HalyardProgramMenu(wxWindow *inParent, model::Object *inObject);
 };
 
 BEGIN_EVENT_TABLE(HalyardProgramMenu, wxMenu)
     EVT_MENU(HALYARD_PROPERTIES, HalyardProgramMenu::OnProperties)
 END_EVENT_TABLE()
 
-HalyardProgramMenu::HalyardProgramMenu(wxWindow *inParent, model::Object *inObject)
-{
-	mParent = inParent;
-	mObject = inObject;
-	Append(HALYARD_PROPERTIES, wxT("Properties..."),
-		   wxT("Edit the properties for this program."));
+HalyardProgramMenu::HalyardProgramMenu(wxWindow *inParent, model::Object *inObject) {
+    mParent = inParent;
+    mObject = inObject;
+    Append(HALYARD_PROPERTIES, wxT("Properties..."),
+           wxT("Edit the properties for this program."));
 }
 
-void HalyardProgramMenu::OnProperties(wxCommandEvent &inEvent)
-{
-	ProgramPropDlg prop_dlg(mParent, mObject);
-	prop_dlg.ShowModal();
+void HalyardProgramMenu::OnProperties(wxCommandEvent &inEvent) {
+    ProgramPropDlg prop_dlg(mParent, mObject);
+    prop_dlg.ShowModal();
 }
 
 
@@ -405,33 +400,29 @@ void HalyardProgramMenu::OnProperties(wxCommandEvent &inEvent)
 //=========================================================================
 
 /// Representation of the entire Halyard script in our ProgramTreeCtrl.
-class HalyardProgramItemData : public GroupItemData, public model::View
-{
+class HalyardProgramItemData : public GroupItemData, public model::View {
 public:
-	HalyardProgramItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId)
-		: GroupItemData(inTreeCtrl, inItemId, wxT("/"), true) {}
+    HalyardProgramItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId)
+        : GroupItemData(inTreeCtrl, inItemId, wxT("/"), true) {}
 
-	virtual void OnRightDown(wxMouseEvent& event);
+    virtual void OnRightDown(wxMouseEvent& event);
 
-	virtual void ObjectChanged();
-	virtual void ObjectDeleted();
+    virtual void ObjectChanged();
+    virtual void ObjectDeleted();
 };
 
-void HalyardProgramItemData::OnRightDown(wxMouseEvent& event)
-{
-	HalyardProgramMenu popup(GetTree(), GetObject());
-	GetTree()->PopupMenu(&popup, event.GetPosition());
+void HalyardProgramItemData::OnRightDown(wxMouseEvent& event) {
+    HalyardProgramMenu popup(GetTree(), GetObject());
+    GetTree()->PopupMenu(&popup, event.GetPosition());
 }
 
-void HalyardProgramItemData::ObjectChanged()
-{
-	wxASSERT(GetId());
-	wxString name(GetObject()->GetString("name").c_str(), wxConvLocal);
-	GetTree()->SetItemText(GetId(), wxT("Program '") + name + wxT("'"));
+void HalyardProgramItemData::ObjectChanged() {
+    wxASSERT(GetId());
+    wxString name(GetObject()->GetString("name").c_str(), wxConvLocal);
+    GetTree()->SetItemText(GetId(), wxT("Program '") + name + wxT("'"));
 }
 
-void HalyardProgramItemData::ObjectDeleted()
-{
+void HalyardProgramItemData::ObjectDeleted() {
 }
 
 
@@ -440,7 +431,7 @@ void HalyardProgramItemData::ObjectDeleted()
 //=========================================================================
 
 ProgramTreeCtrl::ProgramTreeCtrl(wxWindow *inParent)
-	: CustomTreeCtrl(inParent, HALYARD_PROGRAM_TREE_CTRL,
+    : CustomTreeCtrl(inParent, HALYARD_PROGRAM_TREE_CTRL,
                      wxDefaultPosition, wxDefaultSize,
                      wxTR_DEFAULT_STYLE|wxTR_EDIT_LABELS)
 {
@@ -465,26 +456,25 @@ BEGIN_EVENT_TABLE(ProgramTree, wxWindow)
 END_EVENT_TABLE()
 
 ProgramTree::ProgramTree(StageFrame *inStageFrame, int inID)
-	: wxWindow(inStageFrame, inID),
-	  mHaveLastHighlightedItem(false)
+    : wxWindow(inStageFrame, inID),
+      mHaveLastHighlightedItem(false)
 {
-	// Set up our tree control.
-	mTree = new ProgramTreeCtrl(this);
+    // Set up our tree control.
+    mTree = new ProgramTreeCtrl(this);
 }
 
-void ProgramTree::RegisterDocument(Document *inDocument)
-{
-	// Set up our root node, but which also represents the root node named
-	// "/".  Note that this persists even when we're in the middle of
-	// reloading the script, which isn't (currently) a problem since loaded
-	// GroupItemData objects don't actually do anything.
-	mRootID = mTree->AddRoot(wxT("Program"));
-	mTree->SetIcon(mRootID, ProgramTreeCtrl::ICON_DOCUMENT,
-				   ProgramTreeCtrl::ICON_DOCUMENT);
-	HalyardProgramItemData *item_data =
+void ProgramTree::RegisterDocument(Document *inDocument) {
+    // Set up our root node, but which also represents the root node named
+    // "/".  Note that this persists even when we're in the middle of
+    // reloading the script, which isn't (currently) a problem since loaded
+    // GroupItemData objects don't actually do anything.
+    mRootID = mTree->AddRoot(wxT("Program"));
+    mTree->SetIcon(mRootID, ProgramTreeCtrl::ICON_DOCUMENT,
+                   ProgramTreeCtrl::ICON_DOCUMENT);
+    HalyardProgramItemData *item_data =
         new HalyardProgramItemData(mTree, mRootID);
-	mTree->SetItemData(mRootID, item_data);
-	item_data->SetObject(inDocument->GetRoot());
+    mTree->SetItemData(mRootID, item_data);
+    item_data->SetObject(inDocument->GetRoot());
 }
 
 bool ProgramTree::IsCardItem(wxTreeItemId inItemId) {
@@ -516,13 +506,13 @@ void ProgramTree::AnalyzeNodeName(const std::string &inName,
             outLocalName  = std::string(inName, 1, std::string::npos);
         }
     } else if (slashpos == std::string::npos || slashpos == inName.size() - 1) {
-		// Either we have no slash, or we have a slash at the end of the
+        // Either we have no slash, or we have a slash at the end of the
         // name.  Either way, we don't like it.
-		gLog.Fatal("halyard", "Illegal card name: \"%s\"", inName.c_str());
+        gLog.Fatal("halyard", "Illegal card name: \"%s\"", inName.c_str());
     } else {
         outIsRootNode = false;
         outParentName = std::string(inName, 0, slashpos);
-		outLocalName  = std::string(inName, slashpos + 1, std::string::npos);
+        outLocalName  = std::string(inName, slashpos + 1, std::string::npos);
 
         // Make sure that the newly-split parent name is reasonable.  This
         // is necessary if we're going to detect malformed names like
@@ -570,10 +560,10 @@ wxTreeItemId ProgramTree::FindOrCreateGroupMember(const std::string &inName,
                            ProgramTreeCtrl::ICON_CARD);
             
         } else {
-			mTree->SetItemData(result, new GroupItemData(mTree, result, name_wx,
+            mTree->SetItemData(result, new GroupItemData(mTree, result, name_wx,
                                                          inIsLoaded));
-			mTree->SetIcon(result, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
-						   ProgramTreeCtrl::ICON_FOLDER_OPEN);
+            mTree->SetIcon(result, ProgramTreeCtrl::ICON_FOLDER_CLOSED,
+                           ProgramTreeCtrl::ICON_FOLDER_OPEN);
             
         }
 
@@ -602,33 +592,31 @@ void ProgramTree::RegisterGroupMember(const wxString &inName, bool inIsCard,
                                    inIsLoaded);
 }
 
-void ProgramTree::NotifyReloadScriptStarting()
-{
+void ProgramTree::NotifyReloadScriptStarting() {
     ASSERT(mRootID.IsOk());
-	mGroupMemberMap.clear();
+    mGroupMemberMap.clear();
     mHaveLastHighlightedItem = false;
-	mTree->CollapseAndReset(mRootID);
+    mTree->CollapseAndReset(mRootID);
 
     // Register our root node in mGroupMemberMap so that FindGroupMember
     // is guaranteed to have a recursive base case.
     mGroupMemberMap.insert(ItemMap::value_type("/", mRootID));
 }
 
-void ProgramTree::NotifyEnterCard(const wxString &inName)
-{
-	// Look up the ID corresponding to this card.
-	ItemMap::iterator found =
+void ProgramTree::NotifyEnterCard(const wxString &inName) {
+    // Look up the ID corresponding to this card.
+    ItemMap::iterator found =
         mGroupMemberMap.find(std::string(inName.mb_str()));
-	wxASSERT(found != mGroupMemberMap.end());
+    wxASSERT(found != mGroupMemberMap.end());
     ASSERT(IsCardItem(found->second));
 
-	// Move the highlighting to the appropriate card.
-	if (mHaveLastHighlightedItem)
-		mTree->SetItemBold(mLastHighlightedItem, FALSE);
-	mTree->SetItemBold(found->second);
-	mHaveLastHighlightedItem = true;
-	mLastHighlightedItem = found->second;
-	mTree->EnsureVisible(found->second);
+    // Move the highlighting to the appropriate card.
+    if (mHaveLastHighlightedItem)
+        mTree->SetItemBold(mLastHighlightedItem, FALSE);
+    mTree->SetItemBold(found->second);
+    mHaveLastHighlightedItem = true;
+    mLastHighlightedItem = found->second;
+    mTree->EnsureVisible(found->second);
 }
 
 void ProgramTree::OnSize(wxSizeEvent &inEvent) {

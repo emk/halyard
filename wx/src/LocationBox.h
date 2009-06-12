@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -33,36 +33,33 @@
 #include "AppConfig.h"
 
 #if CONFIG_LOCATION_BOX_IS_COMBO
-#	define LOCATION_BOX_PARENT_CLASS wxComboBox
+#   define LOCATION_BOX_PARENT_CLASS wxComboBox
 #else
-#	define LOCATION_BOX_PARENT_CLASS wxTextCtrl
+#   define LOCATION_BOX_PARENT_CLASS wxTextCtrl
 #endif
 
 /// The browser-like text-entry box on the StageFrame.
-class LocationBox : public LOCATION_BOX_PARENT_CLASS
-{
+class LocationBox : public LOCATION_BOX_PARENT_CLASS {
 public:
-	LocationBox(wxToolBar *inParent);
-	
-	void NotifyEnterCard(const wxString &inName);
+    LocationBox(wxToolBar *inParent);
+    
+    void NotifyEnterCard(const wxString &inName);
 
-	void RegisterCard(const wxString &inCardName);
-	void TryJump(const wxString &inCardName);
+    void RegisterCard(const wxString &inCardName);
+    void TryJump(const wxString &inCardName);
 
-	void UpdateUiLocationBox(wxUpdateUIEvent &inEvent);
-	void OnChar(wxKeyEvent &inEvent);
+    void UpdateUiLocationBox(wxUpdateUIEvent &inEvent);
+    void OnChar(wxKeyEvent &inEvent);
 
 #if CONFIG_LOCATION_BOX_IS_COMBO
-	void OnComboBoxSelected(wxCommandEvent &inEvent);
+    void OnComboBoxSelected(wxCommandEvent &inEvent);
 #endif
 
-	//////////
-	/// Call this function to focus the location box and prepare for the
-	/// user to enter a card name.
-	///
-	void Prompt();
+    /// Call this function to focus the location box and prepare for the
+    /// user to enter a card name.
+    void Prompt();
 
-	DECLARE_EVENT_TABLE();
+    DECLARE_EVENT_TABLE();
 };
 
 #endif // LocationBox_H

@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -29,24 +29,23 @@
 /// interactive command line for a running application.  In other systems,
 /// it's also known as an "interactor" or "message box".
 ///
-class Listener : public wxWindow
-{
+class Listener : public wxWindow {
     bool mIsFirstLine;
 
-	wxTextCtrl *mHistory;
-	wxTextCtrl *mInput;
+    wxTextCtrl *mHistory;
+    wxTextCtrl *mInput;
 
-	wxFont mNormalFont;
-	wxFont mBoldFont;
+    wxFont mNormalFont;
+    wxFont mBoldFont;
 
 public:
-	Listener(StageFrame *inStageFrame);
+    Listener(StageFrame *inStageFrame);
 
     /// Focus the listener's text input area.
     void FocusInput();
 
-	void UpdateUiInput(wxUpdateUIEvent &inEvent);
-	void OnTextEnter(wxCommandEvent &inEvent);
+    void UpdateUiInput(wxUpdateUIEvent &inEvent);
+    void OnTextEnter(wxCommandEvent &inEvent);
     void OnSize(wxSizeEvent &inEvent);
 
     DECLARE_EVENT_TABLE();

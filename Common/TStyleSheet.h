@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -38,132 +38,105 @@ class xml_node;
 
 /// A stylesheet for text displayed by a script.
 class TStyleSheet {
-	// (defstyle STYLENAME FONTNAME SIZE FLAGS JUSTIFICATION COLOR HIGHCOLOR
-	//           [LEADING [SHADOWOFFSET SHADOWCOLOR [SHADOWHIGHCOLOR]]])
-	std::string          mStyleName;
-	std::string          mFontName;
-	int                  mSize;
-	Typography::FaceStyle mFaceStyle;
-	Typography::Justification mJustification;
-	GraphicsTools::Color mColor;
-	GraphicsTools::Color mHighlightColor;
-	Typography::Distance mLeading;
-	Typography::Distance mShadowOffset;
-	GraphicsTools::Color mShadowColor;
-	GraphicsTools::Color mHighlightShadowColor;
+    // (defstyle STYLENAME FONTNAME SIZE FLAGS JUSTIFICATION COLOR HIGHCOLOR
+    //           [LEADING [SHADOWOFFSET SHADOWCOLOR [SHADOWHIGHCOLOR]]])
+    std::string          mStyleName;
+    std::string          mFontName;
+    int                  mSize;
+    Typography::FaceStyle mFaceStyle;
+    Typography::Justification mJustification;
+    GraphicsTools::Color mColor;
+    GraphicsTools::Color mHighlightColor;
+    Typography::Distance mLeading;
+    Typography::Distance mShadowOffset;
+    GraphicsTools::Color mShadowColor;
+    GraphicsTools::Color mHighlightShadowColor;
 
-	//////////
-	/// Get a Typography::Style object corresponding to unhighlighted
-	/// text.
-	///
-	Typography::Style GetBaseStyle();
+    /// Get a Typography::Style object corresponding to unhighlighted
+    /// text.
+    Typography::Style GetBaseStyle();
 
-    //////////
     /// Convert all the children of an XML node to styled text.
-    ///
     void ProcessNodeChildren(xml_node inNode,
                              std::vector<Typography::Style> &ioStyleStack,
-							 Typography::StyledText &outText) const;
+                             Typography::StyledText &outText) const;
 
-    //////////
     /// Convert an XML node to styled text.
-    ///
     void ProcessNode(xml_node inNode,
                      std::vector<Typography::Style> &ioStyleStack,
                      Typography::StyledText &outText) const;
 
 public:
-	//////////
-	/// Create a new style sheet from an argument list.
-	///
-	TStyleSheet(TArgumentList &inArgs);
-	
-	//////////
-	/// Get the name of this style sheet.
-	///
-	std::string GetName() const { return mStyleName; }
+    /// Create a new style sheet from an argument list.
+    TStyleSheet(TArgumentList &inArgs);
+    
+    /// Get the name of this style sheet.
+    std::string GetName() const { return mStyleName; }
 
-	//////////
-	/// Convert an XML-formatted string into a StyledText object, using the
-	/// data stored in this style.  This is a pretty nasty formatting
-	/// system, and it handles a lot of escapes which should be processed
-	/// by TStream instead.
+    /// Convert an XML-formatted string into a StyledText object, using the
+    /// data stored in this style.  This is a pretty nasty formatting
+    /// system, and it handles a lot of escapes which should be processed
+    /// by TStream instead.
+    Typography::StyledText MakeStyledText(const std::string& inText);
+    
+    /// Draw text onto the specified image.
     ///
-	Typography::StyledText MakeStyledText(const std::string& inText);
-	
-	//////////
-	/// Draw text onto the specified image.
-	///
-	/// \param inText  The text to draw, with standard XML formatting.
-	/// \param inPosition  The upper-left corner of the text box.
-	/// \param inLineLength  The maximum number of pixels available for
-	///                     a line.  This is (I hope) a hard limit,
-	///                     and no pixels should ever be drawn beyond it.
-	/// \param inImage  The image into which we should draw.
-	///                     This must not be deallocated until the
-	///                     TextRendering engine is destroyed.  May be
-	///                     NULL if we only want to measure the text.
-	///
-	TRect Draw(const std::string& inText,
+    /// \param inText  The text to draw, with standard XML formatting.
+    /// \param inPosition  The upper-left corner of the text box.
+    /// \param inLineLength  The maximum number of pixels available for
+    ///                     a line.  This is (I hope) a hard limit,
+    ///                     and no pixels should ever be drawn beyond it.
+    /// \param inImage  The image into which we should draw.
+    ///                     This must not be deallocated until the
+    ///                     TextRendering engine is destroyed.  May be
+    ///                     NULL if we only want to measure the text.
+    TRect Draw(const std::string& inText,
                GraphicsTools::Point inPosition,
                GraphicsTools::Distance inLineLength,
                GraphicsTools::Image *inImage);
 
-	//////////
-	/// Get the height of a single line of text drawn in this style.
-	///
-	int GetLineHeight();
+    /// Get the height of a single line of text drawn in this style.
+    int GetLineHeight();
 };
 
 /// Centralized manager class for TStyleSheet objects.
-class TStyleSheetManager
-{
-	std::map<std::string,TStyleSheet*> mStyleSheetMap;
+class TStyleSheetManager {
+    std::map<std::string,TStyleSheet*> mStyleSheetMap;
 
 public:
-	virtual ~TStyleSheetManager() { RemoveAll(); }
+    virtual ~TStyleSheetManager() { RemoveAll(); }
 
-	//////////
-	/// Return the specified stylesheet, or NULL.
-	///
-	TStyleSheet *Find(const std::string &inName);
+    /// Return the specified stylesheet, or NULL.
+    TStyleSheet *Find(const std::string &inName);
 
-	//////////
-	/// Create a new style sheet using the supplied parameters.
-	///
-	void AddStyleSheet(TArgumentList &inArgs);
+    /// Create a new style sheet using the supplied parameters.
+    void AddStyleSheet(TArgumentList &inArgs);
 
-	//////////
-	/// Remove all the stylesheets from this object.
-	///
-	void RemoveAll();
+    /// Remove all the stylesheets from this object.
+    void RemoveAll();
 
-	//////////
-	/// Draw text onto the specified image, using the specified
-	/// style sheet.
-	///
-	/// \param inStyleSheet  The name of the style sheet to use.
-	/// \param inText  The text to draw, with standard XML formatting.
-	/// \param inPosition  The upper-left corner of the text box.
-	/// \param inLineLength  The maximum number of pixels available for
-	///                     a line.  This is (I hope) a hard limit,
-	///                     and no pixels should ever be drawn beyond it.
-	/// \param inImage  The image into which we should draw.
-	///                     This must not be deallocated until the
-	///                     TextRendering engine is destroyed.  May be
-	///                     NULL if we only want to measure the text.
-	///
-	TRect Draw(const std::string &inStyleSheet,
+    /// Draw text onto the specified image, using the specified
+    /// style sheet.
+    ///
+    /// \param inStyleSheet  The name of the style sheet to use.
+    /// \param inText  The text to draw, with standard XML formatting.
+    /// \param inPosition  The upper-left corner of the text box.
+    /// \param inLineLength  The maximum number of pixels available for
+    ///                     a line.  This is (I hope) a hard limit,
+    ///                     and no pixels should ever be drawn beyond it.
+    /// \param inImage  The image into which we should draw.
+    ///                     This must not be deallocated until the
+    ///                     TextRendering engine is destroyed.  May be
+    ///                     NULL if we only want to measure the text.
+    TRect Draw(const std::string &inStyleSheet,
                const std::string &inText,
                GraphicsTools::Point inPosition,
                GraphicsTools::Distance inLineLength,
                GraphicsTools::Image *inImage);
 
-	//////////
-	/// Compatibility function.  Get the height of the first line of
-	/// the text.
-	///
-	int GetLineHeight(const char *inStyleSheet);
+    /// Compatibility function.  Get the height of the first line of
+    /// the text.
+    int GetLineHeight(const char *inStyleSheet);
 };
 
 extern TStyleSheetManager gStyleSheetManager;

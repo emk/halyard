@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -27,54 +27,47 @@
 
 class Download {
 public:
-	Download(const std::string &url, const std::string &file, 
-			 CURL *request);
-	bool Perform();
-	void Cancel();
+    Download(const std::string &url, const std::string &file, 
+             CURL *request);
+    bool Perform();
+    void Cancel();
 protected:
-	wxFileOutputStream m_out;
-	std::string m_url;
-	CURL *m_request;
-	bool m_shouldCancel;
-	
-	friend size_t WriteToFile(char* ptr, size_t size, size_t nmemb, 
-							  void *data);
-	friend int ProgressCallback(void *data, double dltotal, double dlnow, 
-								double ultotal, double ulnow);
+    wxFileOutputStream m_out;
+    std::string m_url;
+    CURL *m_request;
+    bool m_shouldCancel;
+    
+    friend size_t WriteToFile(char* ptr, size_t size, size_t nmemb, 
+                              void *data);
+    friend int ProgressCallback(void *data, double dltotal, double dlnow, 
+                                double ultotal, double ulnow);
 };
 
-class Downloader
-{
+class Downloader {
 public:
-	Downloader();
-	~Downloader();
+    Downloader();
+    ~Downloader();
 
-	//////////
-	/// Download the given URL to the given filename.
-	/// 
-	/// \param URL  The URL to download from.
-	/// \param file  The file to download to. 
-	/// \return  False if the download succeeds, true if there are errors. 
-	///
-	bool Get(const std::string &URL, const std::string &file);
+    /// Download the given URL to the given filename.
+    /// 
+    /// \param URL  The URL to download from.
+    /// \param file  The file to download to. 
+    /// \return  False if the download succeeds, true if there are errors. 
+    bool Get(const std::string &URL, const std::string &file);
 
-	//////////
-	/// Get the singleton downloader object.
-	///
-	static Downloader *GetInstance() 
-	    { ASSERT(s_instance); return s_instance; };
+    /// Get the singleton downloader object.
+    static Downloader *GetInstance() 
+        { ASSERT(s_instance); return s_instance; };
 
-	//////////
-	/// Cancel the download in progress. 
-	///
-	void CancelDownload();
+    /// Cancel the download in progress. 
+    void CancelDownload();
 
 protected:
-	static Downloader *s_instance;
-	static bool s_haveAlreadyCreatedSingleton;
+    static Downloader *s_instance;
+    static bool s_haveAlreadyCreatedSingleton;
 
-	CURL * m_request;
-	Download * m_currentDownload;
+    CURL * m_request;
+    Download * m_currentDownload;
 };
 
 #endif // Downloader_H

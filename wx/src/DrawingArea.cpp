@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -42,18 +42,18 @@ using namespace Halyard;
 //=========================================================================
 
 DrawingArea::DrawingArea(Stage *inStage, int inWidth, int inHeight,
-						 bool inHasAlpha)
-	: mStage(inStage), mBounds(wxPoint(0, 0), wxSize(inWidth, inHeight)),
+                         bool inHasAlpha)
+    : mStage(inStage), mBounds(wxPoint(0, 0), wxSize(inWidth, inHeight)),
       mIsShown(true), mHasAlpha(inHasAlpha)
 {
-	InitializeSurface();
+    InitializeSurface();
 }
 
 DrawingArea::DrawingArea(Stage *inStage, const wxRect &inBounds,
-						 bool inHasAlpha)
-	: mStage(inStage), mBounds(inBounds), mIsShown(true), mHasAlpha(inHasAlpha)
+                         bool inHasAlpha)
+    : mStage(inStage), mBounds(inBounds), mIsShown(true), mHasAlpha(inHasAlpha)
 {
-	InitializeSurface();
+    InitializeSurface();
 }
 
 DrawingArea::~DrawingArea() {
@@ -67,7 +67,7 @@ bool DrawingArea::HasAreaOfZero() const {
     // named *Opt), call this function and immediately give up if it
     // returns false.
     // TODO - Do we still need this for cairo_image_surface?
-	return (mBounds.GetWidth() == 0 || mBounds.GetHeight() == 0);
+    return (mBounds.GetWidth() == 0 || mBounds.GetHeight() == 0);
 }
 
 void DrawingArea::InitializeSurface() {
@@ -152,16 +152,16 @@ void DrawingArea::InvalidateRect(const wxRect &inRect, int inInflate,
     // TODO - We can probably get away with less invalidation if this
     // DrawingArea isn't shown, but keep a careful eye on the Quake
     // overlays.
-	wxRect r(inRect);
-	r.Inflate(inInflate);
+    wxRect r(inRect);
+    r.Inflate(inInflate);
     r.Intersect(wxRect(wxPoint(0, 0),
                        mBounds.GetSize()));
-	if (!r.IsEmpty()) {
+    if (!r.IsEmpty()) {
         if (inHasSurfaceChanged)
             GameOverlayDirtyRect(r);
-	    r.Offset(mBounds.GetPosition());
-	    mStage->InvalidateRect(r);
-	}
+        r.Offset(mBounds.GetPosition());
+        mStage->InvalidateRect(r);
+    }
 }
 
 void DrawingArea::InvalidateDrawingArea(bool inHasSurfaceChanged) {
@@ -202,11 +202,11 @@ void DrawingArea::MoveTo(const wxPoint &inPoint) {
 }
 
 void DrawingArea::Clear() {
-	if (mHasAlpha) {
-		Clear(GraphicsTools::Color(0x00, 0x00, 0x00, 0x00));
-	} else {
-		Clear(GraphicsTools::Color(0x00, 0x00, 0x00));
-	}
+    if (mHasAlpha) {
+        Clear(GraphicsTools::Color(0x00, 0x00, 0x00, 0x00));
+    } else {
+        Clear(GraphicsTools::Color(0x00, 0x00, 0x00));
+    }
 }
 
 void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
@@ -216,7 +216,7 @@ void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
     // Actually, I have no idea what Cairo would do in this case, but this
     // rule was enforced by the old code.
     if (!mHasAlpha && !inColor.IsCompletelyOpaque())
-		THROW("Cannot clear opaque overlay with transparent color.");
+        THROW("Cannot clear opaque overlay with transparent color.");
     
     CairoContext cr(mSurface);
     cr.SetSourceColor(inColor);
@@ -227,7 +227,7 @@ void DrawingArea::Clear(const GraphicsTools::Color &inColor) {
 }
 
 void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
-						   const GraphicsTools::Color &inColor, int inWidth)
+                           const GraphicsTools::Color &inColor, int inWidth)
 {
     if (HasAreaOfZero())
         return;
@@ -269,7 +269,7 @@ void DrawingArea::DrawLine(const wxPoint &inFrom, const wxPoint &inTo,
 }
 
 void DrawingArea::FillBox(const wxRect &inBounds,
-						  const GraphicsTools::Color &inColor)
+                          const GraphicsTools::Color &inColor)
 {
     if (HasAreaOfZero())
         return;
@@ -286,7 +286,7 @@ void DrawingArea::FillBox(const wxRect &inBounds,
 
 void DrawingArea::OutlineBox(const wxRect &inBounds,
                              const GraphicsTools::Color &inColor,
-							 int inWidth)
+                             int inWidth)
 {
     if (HasAreaOfZero())
         return;
@@ -306,7 +306,7 @@ void DrawingArea::OutlineBox(const wxRect &inBounds,
     InvalidateRect(inBounds);
 }
 
-void DrawingArea::FillOval(const wxRect &inBounds, 
+void DrawingArea::FillOval(const wxRect &inBounds,
                            const GraphicsTools::Color &inColor)
 {
     if (HasAreaOfZero())
@@ -371,8 +371,8 @@ void DrawingArea::DrawGreyMap(GraphicsTools::Point inPoint,
 
     cairo_surface_destroy(greymap_surface);
 
-	InvalidateRect(wxRect(inPoint.x, inPoint.y,
-						  inGreyMap->width, inGreyMap->height));
+    InvalidateRect(wxRect(inPoint.x, inPoint.y,
+                          inGreyMap->width, inGreyMap->height));
 }
 
 wxSize DrawingArea::MeasureImage(CairoSurfacePtr inImage,
@@ -413,8 +413,7 @@ wxRect DrawingArea::DrawImage(CairoSurfacePtr inImage,
     return bounds;
 }
 
-void DrawingArea::Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY)
-{
+void DrawingArea::Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY) {
     // If either bitmap has an area of 0, give up immediately.
     if (HasAreaOfZero() || inMask.GetWidth() == 0 || inMask.GetHeight() == 0)
         return;
@@ -435,8 +434,7 @@ void DrawingArea::Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY)
     InvalidateRect(wxRect(inX, inY, inMask.GetWidth(), inMask.GetHeight()));
 }
 
-void DrawingArea::DrawDCContents(wxDC &inDC)
-{
+void DrawingArea::DrawDCContents(wxDC &inDC) {
     if (HasAreaOfZero())
         return;
     
@@ -447,7 +445,7 @@ void DrawingArea::DrawDCContents(wxDC &inDC)
     // TODO - If the blit fails for some reason, call:
     //Clear(GraphicsTools::Color(0, 0, 0));
 
-	InvalidateDrawingArea();
+    InvalidateDrawingArea();
 }
 
 void DrawingArea::DrawSimpleText(GraphicsTools::Point inAt, wxString inText,
@@ -459,7 +457,7 @@ void DrawingArea::DrawSimpleText(GraphicsTools::Point inAt, wxString inText,
     style.SetColor(inColor);
 
     // Build a styled string.
-	Typography::StyledText text(style);
+    Typography::StyledText text(style);
     text.AppendText(inText.wc_str());
     text.EndConstruction();
 
@@ -468,13 +466,13 @@ void DrawingArea::DrawSimpleText(GraphicsTools::Point inAt, wxString inText,
                                            mBounds.GetWidth() - inAt.x,
                                            Typography::kLeftJustification,
                                            this);
-	engine.RenderText();
+    engine.RenderText();
 }
 
 GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
-	wxRect local_bounds(0, 0, GetBounds().width, GetBounds().height);
-	if (!local_bounds.Contains(wxPoint(inX, inY)) || HasAreaOfZero())
-		THROW("Can't get color of point outside of current drawing area");
+    wxRect local_bounds(0, 0, GetBounds().width, GetBounds().height);
+    if (!local_bounds.Contains(wxPoint(inX, inY)) || HasAreaOfZero())
+        THROW("Can't get color of point outside of current drawing area");
 
     // Recover the actual pixel data.  Note that the pixel is stored using
     // native endianness, so we need to treat it as a uint32 and extract
@@ -488,10 +486,10 @@ GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
     unsigned char green = (pixel >>  8) & 0xFF;
     unsigned char blue  = (pixel >>  0) & 0xFF;
     
-	if (!HasAlpha()) {
+    if (!HasAlpha()) {
         return GraphicsTools::Color(red, green, blue);
-	} else {
-		// Attempt to reverse pre-multiplications, avoiding division by 0.
+    } else {
+        // Attempt to reverse pre-multiplications, avoiding division by 0.
         if (alpha)
             return GraphicsTools::Color((red   * 255) / alpha,
                                         (green * 255) / alpha,
@@ -499,7 +497,7 @@ GraphicsTools::Color DrawingArea::GetPixel(wxCoord inX, wxCoord inY) {
                                         alpha);
         else
             return GraphicsTools::Color(0, 0, 0, 0);
-	}
+    }
 }
 
 void DrawingArea::CompositeInto(CairoContext &inCr) {

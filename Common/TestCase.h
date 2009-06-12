@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -42,7 +42,7 @@ class TestRunReport;
 /// BUILD_TEST_CASES.
 ///
 #ifndef BUILD_TEST_CASES
-#	define BUILD_TEST_CASES 1
+#   define BUILD_TEST_CASES 1
 #endif // ndef BUILD_TEST_CASES
 
 //////////
@@ -54,24 +54,23 @@ class TestRunReport;
 /// of any useful output.
 ///
 enum TestResult {
-	TEST_PASSED,
-	TEST_FAILED,
-	TEST_SKIPPED,
-	TEST_RESULT_MAX
+    TEST_PASSED,
+    TEST_FAILED,
+    TEST_SKIPPED,
+    TEST_RESULT_MAX
 };
 
 //////////
 /// If a test case fails explicity (by calling FAIL, or violating a CHECK_*
 /// assertion), we throw a TestFailed exception.
 ///
-class TestFailed : public Halyard::TException
-{
-	std::string mMessage;
+class TestFailed : public Halyard::TException {
+    std::string mMessage;
 
 public:
-	TestFailed(const char *inErrorFile, int inErrorLine,
-			   const std::string &inMessage)
-	    : TException(inErrorFile, inErrorLine, inMessage.c_str()) {}
+    TestFailed(const char *inErrorFile, int inErrorLine,
+               const std::string &inMessage)
+        : TException(inErrorFile, inErrorLine, inMessage.c_str()) {}
     virtual ~TestFailed() throw () {}
 };
 
@@ -87,15 +86,14 @@ public:
 /// This is the closest C++ adaptation I can achieve of the standard
 /// xUnit TestCase class.
 ///
-class TestCase
-{
+class TestCase {
 public:
     virtual ~TestCase() {}
 
-	void Run();
-	virtual void SetUp() {}
-	virtual void Test() = 0;
-	virtual void TearDown() {}
+    void Run();
+    virtual void SetUp() {}
+    virtual void Test() = 0;
+    virtual void TearDown() {}
 };
 
 //////////
@@ -105,14 +103,14 @@ public:
 /// REGISTER_TEST_CASE.
 ///
 class TestCaseFactory {
-	std::string mName;
+    std::string mName;
 
 public:
-	TestCaseFactory(const char *inName, TestRegistry *inRegistry);
-	virtual ~TestCaseFactory() {}
+    TestCaseFactory(const char *inName, TestRegistry *inRegistry);
+    virtual ~TestCaseFactory() {}
 
-	std::string GetName() { return mName; }
-	virtual shared_ptr<TestCase> Create() = 0;
+    std::string GetName() { return mName; }
+    virtual shared_ptr<TestCase> Create() = 0;
 };
 
 //////////
@@ -121,12 +119,11 @@ public:
 /// primarily by REGISTER_TEST_CASE.
 ///
 template <class TestCaseType>
-class TestCaseFactoryImpl : public TestCaseFactory
-{
+class TestCaseFactoryImpl : public TestCaseFactory {
 public:
-	TestCaseFactoryImpl(const char *inName, TestRegistry *inRegistry)
-		: TestCaseFactory(inName, inRegistry) { }
-	shared_ptr<TestCase> Create() { return shared_ptr<TestCase>(new TestCaseType()); }
+    TestCaseFactoryImpl(const char *inName, TestRegistry *inRegistry)
+        : TestCaseFactory(inName, inRegistry) { }
+    shared_ptr<TestCase> Create() { return shared_ptr<TestCase>(new TestCaseType()); }
 };
 
 //////////
@@ -135,35 +132,35 @@ public:
 ///
 class TestCaseReport {
 public:
-	typedef shared_ptr<TestCaseReport> ptr;
+    typedef shared_ptr<TestCaseReport> ptr;
 
 private:
-	std::string mName;
-	TestResult mTestResult;
+    std::string mName;
+    TestResult mTestResult;
 
-	std::string mErrorMessage;
-	std::string mErrorFile;
-	int mErrorLine;
+    std::string mErrorMessage;
+    std::string mErrorFile;
+    int mErrorLine;
 
 public:
-	// This object must be created with 'new', and it immediately becomes
-	// the property of inReport.
-	// XXX - Wrap constructor in factory function.
-	TestCaseReport(TestRunReport *inReport,
-				   std::string inName, TestResult inTestResult,
-				   const std::string &inErrorMessage = "",
-				   const std::string &inErrorFile = "unknown",
-				   int inErrorLine = 0);
+    // This object must be created with 'new', and it immediately becomes
+    // the property of inReport.
+    // XXX - Wrap constructor in factory function.
+    TestCaseReport(TestRunReport *inReport,
+                   std::string inName, TestResult inTestResult,
+                   const std::string &inErrorMessage = "",
+                   const std::string &inErrorFile = "unknown",
+                   int inErrorLine = 0);
 
-	std::string GetName() const { return mName; }
-	TestResult GetTestResult() const { return mTestResult; }
+    std::string GetName() const { return mName; }
+    TestResult GetTestResult() const { return mTestResult; }
 
-	std::string GetErrorMessage() const
-		{ ASSERT(mErrorMessage != ""); return mErrorMessage; }
-	std::string GetErrorFile() const { return mErrorFile; }
-	int GetErrorLine() const { return mErrorLine; }
+    std::string GetErrorMessage() const
+        { ASSERT(mErrorMessage != ""); return mErrorMessage; }
+    std::string GetErrorFile() const { return mErrorFile; }
+    int GetErrorLine() const { return mErrorLine; }
 
-	std::string GetSummaryIfInteresting() const;
+    std::string GetSummaryIfInteresting() const;
 };
 
 //////////
@@ -171,40 +168,38 @@ public:
 /// This is basically a collection of TestCaseReport objects with
 /// some summary statistics.
 ///
-class TestRunReport
-{
-	typedef std::vector<TestCaseReport::ptr> TestCaseReportVector;
+class TestRunReport {
+    typedef std::vector<TestCaseReport::ptr> TestCaseReportVector;
 
-	TestCaseReportVector mTestCaseReports;
-	std::vector<int> mResultCount;
+    TestCaseReportVector mTestCaseReports;
+    std::vector<int> mResultCount;
 
 public:
-	typedef TestCaseReportVector::iterator iterator;
-	typedef shared_ptr<TestRunReport> ptr;
+    typedef TestCaseReportVector::iterator iterator;
+    typedef shared_ptr<TestRunReport> ptr;
 
-	TestRunReport() : mResultCount(TEST_RESULT_MAX, 0) {}
+    TestRunReport() : mResultCount(TEST_RESULT_MAX, 0) {}
 
-	void AddTestCaseReport(TestCaseReport::ptr inTestCaseReport);
+    void AddTestCaseReport(TestCaseReport::ptr inTestCaseReport);
 
-	iterator begin() { return mTestCaseReports.begin(); }
-	iterator end() { return mTestCaseReports.end(); }
+    iterator begin() { return mTestCaseReports.begin(); }
+    iterator end() { return mTestCaseReports.end(); }
 
-	int GetTestResultCount(TestResult inType)
-		{ return mResultCount[inType]; }
+    int GetTestResultCount(TestResult inType)
+        { return mResultCount[inType]; }
 
-	int GetNumTestsPassed() { return GetTestResultCount(TEST_PASSED); }
-	int GetNumTestsFailed() { return GetTestResultCount(TEST_FAILED); }
-	int GetNumTestsSkipped() { return GetTestResultCount(TEST_SKIPPED); }
+    int GetNumTestsPassed() { return GetTestResultCount(TEST_PASSED); }
+    int GetNumTestsFailed() { return GetTestResultCount(TEST_FAILED); }
+    int GetNumTestsSkipped() { return GetTestResultCount(TEST_SKIPPED); }
 
-	bool AnyTestFailed() { return GetNumTestsFailed() != 0; }
-	
-	std::string GetSummary();
+    bool AnyTestFailed() { return GetNumTestsFailed() != 0; }
+    
+    std::string GetSummary();
 };
 
-inline std::ostream &operator<<(std::ostream &out, TestRunReport::iterator i)
-{
-	out << "<iterator>";
-	return out;
+inline std::ostream &operator<<(std::ostream &out, TestRunReport::iterator i) {
+    out << "<iterator>";
+    return out;
 }
 
 //////////
@@ -216,15 +211,13 @@ class ITestProgressMeter {
 public:
     virtual ~ITestProgressMeter() {}
 
-	//////////
-	/// Override this method to report status.
-	///
-	/// \param inTestIndex  The zero-based index of the test just run.
-	/// \param inTestCount  The total number of tests to run.
-	/// \param inReport  The results of running the test.
-	///
-	virtual void UpdateTestProgress(int inTestIndex, int inTestCount,
-									const TestCaseReport &inReport) = 0;
+    /// Override this method to report status.
+    ///
+    /// \param inTestIndex  The zero-based index of the test just run.
+    /// \param inTestCount  The total number of tests to run.
+    /// \param inReport  The results of running the test.
+    virtual void UpdateTestProgress(int inTestIndex, int inTestCount,
+                                    const TestCaseReport &inReport) = 0;
 };
 
 //////////
@@ -235,32 +228,31 @@ public:
 /// REGISTER_TEST_CASE.  This is the only registry which you will
 /// normally need to use.
 ///
-class TestRegistry
-{
-	// The REGISTER_TEST_CASE macro uses this global registry for
-	// registering test cases.
-	static TestRegistry *sGlobalRegistry;
+class TestRegistry {
+    // The REGISTER_TEST_CASE macro uses this global registry for
+    // registering test cases.
+    static TestRegistry *sGlobalRegistry;
 
-	// We're not responsible for deleting these pointers--they typically
-	// point to global variables.
-	std::vector<TestCaseFactory*> mTestCaseFactories;
+    // We're not responsible for deleting these pointers--they typically
+    // point to global variables.
+    std::vector<TestCaseFactory*> mTestCaseFactories;
 
 public:
-	static TestRegistry *GetGlobalRegistry();
+    static TestRegistry *GetGlobalRegistry();
 
-	typedef std::vector<TestCaseFactory*>::iterator iterator;
+    typedef std::vector<TestCaseFactory*>::iterator iterator;
 
-	void RegisterTestCaseFactory(TestCaseFactory *inFactory);
+    void RegisterTestCaseFactory(TestCaseFactory *inFactory);
 
-	iterator begin() { return mTestCaseFactories.begin(); }
-	iterator end() { return mTestCaseFactories.end(); }
+    iterator begin() { return mTestCaseFactories.begin(); }
+    iterator end() { return mTestCaseFactories.end(); }
 
-	TestRunReport::ptr RunAllTests(ITestProgressMeter *inMeter = NULL);
+    TestRunReport::ptr RunAllTests(ITestProgressMeter *inMeter = NULL);
 };
 
 inline std::ostream &operator<<(std::ostream &out, TestRegistry::iterator i) {
-	out << "<iterator>";
-	return out;
+    out << "<iterator>";
+    return out;
 }
 
 //////////
@@ -312,29 +304,29 @@ inline std::ostream &operator<<(std::ostream &out, TestRegistry::iterator i) {
 ///
 #define DEFINE_CHECK_OP_HELPER(NAME, OP) \
     template <class Type1, class Type2> \
-	void NAME(const char *inErrorFile, int inErrorLine, \
-			  const char *inExpr1, const char *inExpr2, \
-			  const Type1 &inVal1, const Type2 &inVal2) { \
-		if (!(inVal1 OP inVal2)) { \
-			std::ostringstream out; \
-			out << "expected " << inExpr1 << " " << #OP << " " << inExpr2 \
-				<< ", got: " << inVal1 << ", " << inVal2; \
-			throw TestFailed(inErrorFile, inErrorLine, out.str()); \
-		} \
-	}
+    void NAME(const char *inErrorFile, int inErrorLine, \
+              const char *inExpr1, const char *inExpr2, \
+              const Type1 &inVal1, const Type2 &inVal2) { \
+        if (!(inVal1 OP inVal2)) { \
+            std::ostringstream out; \
+            out << "expected " << inExpr1 << " " << #OP << " " << inExpr2 \
+                << ", got: " << inVal1 << ", " << inVal2; \
+            throw TestFailed(inErrorFile, inErrorLine, out.str()); \
+        } \
+    }
 
 template <typename Functor, class Type1, class Type2>
 void CheckFuncHelper(const char *inErrorFile, int inErrorLine,
-					 const char *inCompName,
-					 const char *inExpr1, const char *inExpr2,
-					 Functor inComp,
-					 const Type1 &inVal1, const Type2 &inVal2) {
-	if (!inComp(inVal1, inVal2)) {
-		std::ostringstream out;
-		out << "expected " << inCompName << "(" << inExpr1 << ", " << inExpr2
-			<< "), got: " << inVal1 << ", " << inVal2;
-		throw TestFailed(inErrorFile, inErrorLine, out.str());
-	}
+                     const char *inCompName,
+                     const char *inExpr1, const char *inExpr2,
+                     Functor inComp,
+                     const Type1 &inVal1, const Type2 &inVal2) {
+    if (!inComp(inVal1, inVal2)) {
+        std::ostringstream out;
+        out << "expected " << inCompName << "(" << inExpr1 << ", " << inExpr2
+            << "), got: " << inVal1 << ", " << inVal2;
+        throw TestFailed(inErrorFile, inErrorLine, out.str());
+    }
 }
 
 
@@ -387,17 +379,17 @@ DEFINE_CHECK_OP_HELPER(CheckNotEqualHelper, !=)
     BEGIN_UNREGISTERED_TEST_CASE(NAME, SUPERCLASS)
 #define END_TEST_CASE(NAME) \
     END_UNREGISTERED_TEST_CASE(NAME); \
-	REGISTER_TEST_CASE(NAME)
+    REGISTER_TEST_CASE(NAME)
 
 //////////
 ///
 ///
 #define REGISTER_TEST_CASE_FILE(NAME) \
-	char test_registration_ ## NAME = '\0'
+    char test_registration_ ## NAME = '\0'
 
 #define REFERENCE_TEST_CASE_FILE(NAME) \
-	extern char test_registration_ ## NAME; \
-	static char *test_reference_ ## NAME __attribute__((unused)) = \
+    extern char test_registration_ ## NAME; \
+    static char *test_reference_ ## NAME __attribute__((unused)) = \
         &test_registration_ ## NAME
 
 #endif // TestCase_H

@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -38,22 +38,22 @@ enum {
     HALYARD_SAVE_PROGRAM,
     HALYARD_EDIT_SCRIPTS,
     HALYARD_RELOAD_SCRIPTS,
-	HALYARD_EDIT_MODE,
+    HALYARD_EDIT_MODE,
     HALYARD_EDIT_CARD_SCRIPT,
-	HALYARD_JUMP_CARD,
-	HALYARD_STOP_MOVIES,
+    HALYARD_JUMP_CARD,
+    HALYARD_STOP_MOVIES,
 
     HALYARD_RESET_PERSPECTIVE = 300,
-	HALYARD_SHOW_LISTENER,
+    HALYARD_SHOW_LISTENER,
     HALYARD_SHOW_MEDIA_INFO,
     HALYARD_FULL_SCREEN,
     HALYARD_DISPLAY_XY,
-	HALYARD_DISPLAY_GRID,
-	HALYARD_DISPLAY_BORDERS,
+    HALYARD_DISPLAY_GRID,
+    HALYARD_DISPLAY_BORDERS,
     HALYARD_ERRORTRACE_COMPILE,
-	HALYARD_PROPERTIES,
-	HALYARD_INSERT_BACKGROUND,
-	HALYARD_RUN_TESTS,
+    HALYARD_PROPERTIES,
+    HALYARD_INSERT_BACKGROUND,
+    HALYARD_RUN_TESTS,
 
     // From the script editor.
     HALYARD_CLOSE_TAB,
@@ -71,11 +71,11 @@ enum {
     HALYARD_TEXT_SIZE_INC,
     HALYARD_TEXT_SIZE_DEC,
 
-	HALYARD_STATUS_BAR = 1000,
-	HALYARD_LOCATION_BOX,
-	HALYARD_LISTENER_TEXT_ENTRY,
-	HALYARD_PROGRAM_TREE,
-	HALYARD_PROGRAM_TREE_CTRL,
+    HALYARD_STATUS_BAR = 1000,
+    HALYARD_LOCATION_BOX,
+    HALYARD_LISTENER_TEXT_ENTRY,
+    HALYARD_PROGRAM_TREE,
+    HALYARD_PROGRAM_TREE_CTRL,
     HALYARD_STAGE_TIMER
 };
 
@@ -85,19 +85,15 @@ enum {
 typedef long MovieFrame;
 
 enum /* MovieFrame */ {
-	//////////
-	/// A constant representing the last frame of a movie.
-	///
-	LAST_FRAME = -1
+    /// A constant representing the last frame of a movie.
+    LAST_FRAME = -1
 };
 
 enum {
-	//////////
-	/// The nominal number of frames/second in a movie.  The real number of
-	/// frames/second might be higher or lower, but we try to insulate
-	/// scripts from this fact.
-	///
-	FRAMES_PER_SECOND = 30
+    /// The nominal number of frames/second in a movie.  The real number of
+    /// frames/second might be higher or lower, but we try to insulate
+    /// scripts from this fact.
+    FRAMES_PER_SECOND = 30
 };
 
 // Define this symbol to 1 to help debug redraw problems by making each

@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -29,14 +29,13 @@
 /// This is the dialog which asks you whether you want to change your
 /// screen resolution.
 ///
-class AdjustScreenDlg : public XrcDlg
-{
+class AdjustScreenDlg : public XrcDlg {
     DECLARE_EVENT_TABLE();
 
     wxButton *mYesButton;
-	
+    
 public:
-	AdjustScreenDlg(wxWindow *inParent);
+    AdjustScreenDlg(wxWindow *inParent);
 };
 
 #endif // AdjustScreenDlg_H

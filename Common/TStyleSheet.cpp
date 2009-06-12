@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -119,127 +119,123 @@ const char *STANDARD_ENTITIES =
 //  TStyleSheet Methods
 //=========================================================================
 
-TStyleSheet::TStyleSheet(TArgumentList &inArgs)
-{
+TStyleSheet::TStyleSheet(TArgumentList &inArgs) {
     // (defstyle STYLENAME FONTNAME SIZE FLAGS JUSTIFICATION COLOR HIGHCOLOR...
     std::string flags, justification;
     uint32 size;
     inArgs >> SymbolName(mStyleName) >> mFontName >> size >> SymbolName(flags)
-		   >> SymbolName(justification) >> mColor >> mHighlightColor;
+           >> SymbolName(justification) >> mColor >> mHighlightColor;
     mSize = size;
-	mStyleName = MakeStringLowercase(mStyleName);
+    mStyleName = MakeStringLowercase(mStyleName);
 
-	// Parse our flags value.
-	mFaceStyle = Typography::kRegularFaceStyle;
-	if (flags == "r")
-		mFaceStyle = Typography::kRegularFaceStyle;
-	else if (flags == "b")
-		mFaceStyle = Typography::kBoldFaceStyle;
-	else if (flags == "i")
-		mFaceStyle = Typography::kItalicFaceStyle;
-	else if (flags == "bi")
-		mFaceStyle = Typography::kBoldItalicFaceStyle;
-	else
-		gLog.Error("halyard", "Invalid face style '%s'", flags.c_str());
+    // Parse our flags value.
+    mFaceStyle = Typography::kRegularFaceStyle;
+    if (flags == "r")
+        mFaceStyle = Typography::kRegularFaceStyle;
+    else if (flags == "b")
+        mFaceStyle = Typography::kBoldFaceStyle;
+    else if (flags == "i")
+        mFaceStyle = Typography::kItalicFaceStyle;
+    else if (flags == "bi")
+        mFaceStyle = Typography::kBoldItalicFaceStyle;
+    else
+        gLog.Error("halyard", "Invalid face style '%s'", flags.c_str());
 
     // Parse our justification value.
-	justification = MakeStringLowercase(justification);
+    justification = MakeStringLowercase(justification);
     if (justification == "center")
-		mJustification = Typography::kCenterJustification;
+        mJustification = Typography::kCenterJustification;
     else if (justification == "right")
-		mJustification = Typography::kRightJustification;
+        mJustification = Typography::kRightJustification;
     else
-		mJustification = Typography::kLeftJustification;
-	
+        mJustification = Typography::kLeftJustification;
+    
     // ...LEADING...
     if (inArgs.HasMoreArguments())
-		inArgs >> ValueOrPercent(mSize, &mLeading);
-	else
-		mLeading = 0;
-	
+        inArgs >> ValueOrPercent(mSize, &mLeading);
+    else
+        mLeading = 0;
+    
     // ...SHADOWOFFSET...
     if (inArgs.HasMoreArguments())
-		inArgs >> mShadowOffset;
-	else
-		mShadowOffset = 0;
-	
+        inArgs >> mShadowOffset;
+    else
+        mShadowOffset = 0;
+    
     // ...SHADOWCOLOR...
     if (inArgs.HasMoreArguments())
-		inArgs >> mShadowColor;
-	else
-		mShadowColor = Color(0, 0, 0);
+        inArgs >> mShadowColor;
+    else
+        mShadowColor = Color(0, 0, 0);
 
     // ...SHADOWHIGHCOLOR...
     if (inArgs.HasMoreArguments())
-		inArgs >> mHighlightShadowColor;
-	else
-		mHighlightShadowColor = mShadowColor;
+        inArgs >> mHighlightShadowColor;
+    else
+        mHighlightShadowColor = mShadowColor;
 }
 
-Typography::Style TStyleSheet::GetBaseStyle()
-{
-	// Build a Typography::Style object based on our style sheet.
-	// We'll use this as our "base style" when drawing.
+Typography::Style TStyleSheet::GetBaseStyle() {
+    // Build a Typography::Style object based on our style sheet.
+    // We'll use this as our "base style" when drawing.
     Typography::Style base_style(mFontName, mSize);
-	std::list<std::string> backups;
-	backups.push_back("Standard Symbols L");
-	backups.push_back("Dingbats");
-	base_style.SetBackupFamilies(backups);
-	base_style.SetFaceStyle(mFaceStyle);
+    std::list<std::string> backups;
+    backups.push_back("Standard Symbols L");
+    backups.push_back("Dingbats");
+    base_style.SetBackupFamilies(backups);
+    base_style.SetFaceStyle(mFaceStyle);
     base_style.SetColor(mColor);
     base_style.SetShadowColor(mShadowColor);
     base_style.SetLeading(mLeading);
-    if (mShadowOffset != 0)
-    {
-		base_style.ToggleFaceStyle(Typography::kShadowFaceStyle);
-		base_style.SetShadowOffset(mShadowOffset);
+    if (mShadowOffset != 0) {
+        base_style.ToggleFaceStyle(Typography::kShadowFaceStyle);
+        base_style.SetShadowOffset(mShadowOffset);
     }
-	return base_style;
+    return base_style;
 }
 
-Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
-{
-	// Convert string to Unicode, and handle smart quotes, em-dashes, etc.
-	utf8_string expanded = utf8_from_multibyte(inText);
-	utf8_string xformed = TTextTransform::TransformString(expanded);
+Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText) {
+    // Convert string to Unicode, and handle smart quotes, em-dashes, etc.
+    utf8_string expanded = utf8_from_multibyte(inText);
+    utf8_string xformed = TTextTransform::TransformString(expanded);
 
     // Build a plausible-looking XML document.
     utf8_string doc_src =
         "<?xml version='1.0' encoding='utf-8' ?>\n"
-		"<!DOCTYPE text [\n" + utf8_string(STANDARD_ENTITIES) + "]>\n"
+        "<!DOCTYPE text [\n" + utf8_string(STANDARD_ENTITIES) + "]>\n"
         "<text>" + xformed + "</text>";
 
     // Create a styled text object, and initialize our stack of active text
     // styles.  Note that we never pop this first element.
-	Typography::Style base_style = GetBaseStyle();
+    Typography::Style base_style = GetBaseStyle();
     StyledText text(base_style);
     std::vector<Style> style_stack;
     style_stack.push_back(base_style);
 
     // Parse our XML document.
     xmlDocPtr doc = xmlParseMemory(&doc_src[0], doc_src.size());
-	try {
+    try {
         CHECK(doc, "Can't parse text: {{" + inText + "}}");
 
-		// Get the root element.
-		xmlNodePtr root_node = xmlDocGetRootElement(doc);
-		CHECK(root_node, "No document root in XML file");
-		xml_node root(root_node);
+        // Get the root element.
+        xmlNodePtr root_node = xmlDocGetRootElement(doc);
+        CHECK(root_node, "No document root in XML file");
+        xml_node root(root_node);
         ASSERT(root.name() == "text");
         
         // Turn the root's child nodes into a styled text string.
         ProcessNodeChildren(root, style_stack, text);
     } catch (...) {
-		if (doc)
-			xmlFreeDoc(doc);
-		throw;
-	}
-	xmlFreeDoc(doc);
+        if (doc)
+            xmlFreeDoc(doc);
+        throw;
+    }
+    xmlFreeDoc(doc);
 
     // Finish constructing our styled text and return it.
     ASSERT(style_stack.size() == 1);
-	text.EndConstruction();
-	return text;
+    text.EndConstruction();
+    return text;
 }
 
 void TStyleSheet::ProcessNodeChildren(xml_node inNode,
@@ -247,7 +243,7 @@ void TStyleSheet::ProcessNodeChildren(xml_node inNode,
                                       StyledText &outText) const
 {
     xml_node::iterator i = inNode.begin_mixed();
-	for (; i != inNode.end_mixed(); ++i)
+    for (; i != inNode.end_mixed(); ++i)
         ProcessNode(*i, ioStyleStack, outText);
 }
 
@@ -302,10 +298,10 @@ TRect TStyleSheet::Draw(const std::string& inText,
                         GraphicsTools::Distance inLineLength,
                         GraphicsTools::Image *inImage)
 {
-	StyledText text = MakeStyledText(inText);
-	TextRenderingEngine engine(text, inPosition, inLineLength,
-							   mJustification, inImage);
-	engine.RenderText();
+    StyledText text = MakeStyledText(inText);
+    TextRenderingEngine engine(text, inPosition, inLineLength,
+                               mJustification, inImage);
+    engine.RenderText();
 
     // Return the bounding box of the text we drew.
     Typography::BoundingBox bounds = engine.GetBounds();
@@ -313,12 +309,11 @@ TRect TStyleSheet::Draw(const std::string& inText,
                  bounds.GetRight(), bounds.GetBottom());
 }
 
-int TStyleSheet::GetLineHeight()
-{
-	// Return the height of the first line.
+int TStyleSheet::GetLineHeight() {
+    // Return the height of the first line.
     Typography::Style base(GetBaseStyle());
-	StyledText::value_type dummy(L' ', &base);
-	return dummy.GetLineHeight(true);
+    StyledText::value_type dummy(L' ', &base);
+    return dummy.GetLineHeight(true);
 }
 
 
@@ -326,44 +321,40 @@ int TStyleSheet::GetLineHeight()
 //  TStyleSheetManager Methods
 //=========================================================================
 
-TStyleSheet *TStyleSheetManager::Find(const std::string &inName)
-{
-	std::string name = MakeStringLowercase(inName);
-	std::map<std::string,TStyleSheet*>::iterator found =
-		mStyleSheetMap.find(name);
-	if (found != mStyleSheetMap.end())
-		return found->second;
-	else
-		return NULL;
+TStyleSheet *TStyleSheetManager::Find(const std::string &inName) {
+    std::string name = MakeStringLowercase(inName);
+    std::map<std::string,TStyleSheet*>::iterator found =
+        mStyleSheetMap.find(name);
+    if (found != mStyleSheetMap.end())
+        return found->second;
+    else
+        return NULL;
 }
 
-void TStyleSheetManager::AddStyleSheet(TArgumentList &inArgs)
-{
-	// Create the stylesheet and get the name.
-	std::auto_ptr<TStyleSheet> sheet =
-		std::auto_ptr<TStyleSheet>(new TStyleSheet(inArgs));
-	std::string name = sheet->GetName();
+void TStyleSheetManager::AddStyleSheet(TArgumentList &inArgs) {
+    // Create the stylesheet and get the name.
+    std::auto_ptr<TStyleSheet> sheet =
+        std::auto_ptr<TStyleSheet>(new TStyleSheet(inArgs));
+    std::string name = sheet->GetName();
 
-	// Check for an exiting stylesheet with the same name.
-	if (Find(name))
-	{
-		gLog.Error("halyard", "Can't redefine style sheet <%s>.", name.c_str());
-		return;
-	}
+    // Check for an exiting stylesheet with the same name.
+    if (Find(name)) {
+        gLog.Error("halyard", "Can't redefine style sheet <%s>.", name.c_str());
+        return;
+    }
 
-	// Insert the new stylesheet in our map.
-	mStyleSheetMap.insert(std::pair<std::string,TStyleSheet*>(name,
-															  sheet.release()));
+    // Insert the new stylesheet in our map.
+    mStyleSheetMap.insert(std::pair<std::string,TStyleSheet*>(name,
+                                                              sheet.release()));
 }
 
-void TStyleSheetManager::RemoveAll()
-{
-	// Delete the individual stylesheets and empty the map.
-	std::map<std::string,TStyleSheet*>::iterator iter =
-		mStyleSheetMap.begin();
-	for (; iter != mStyleSheetMap.end(); ++iter)
-		delete iter->second;
-	mStyleSheetMap.clear();
+void TStyleSheetManager::RemoveAll() {
+    // Delete the individual stylesheets and empty the map.
+    std::map<std::string,TStyleSheet*>::iterator iter =
+        mStyleSheetMap.begin();
+    for (; iter != mStyleSheetMap.end(); ++iter)
+        delete iter->second;
+    mStyleSheetMap.clear();
 }
 
 TRect TStyleSheetManager::Draw(const std::string &inStyleSheet,
@@ -372,21 +363,19 @@ TRect TStyleSheetManager::Draw(const std::string &inStyleSheet,
                                GraphicsTools::Distance inLineLength,
                                GraphicsTools::Image *inImage)
 {
-	TStyleSheet *style_sheet = Find(inStyleSheet);
-	if (!style_sheet)
-	{
-		gLog.Error("halyard", "Tried to draw text using non-existant style "
-				   "sheet <%s>", inStyleSheet.c_str());
-		return TRect(0, 0, 0, 0);
-	}
-	return style_sheet->Draw(inText, inPosition, inLineLength, inImage);
+    TStyleSheet *style_sheet = Find(inStyleSheet);
+    if (!style_sheet) {
+        gLog.Error("halyard", "Tried to draw text using non-existant style "
+                   "sheet <%s>", inStyleSheet.c_str());
+        return TRect(0, 0, 0, 0);
+    }
+    return style_sheet->Draw(inText, inPosition, inLineLength, inImage);
 }
 
-int TStyleSheetManager::GetLineHeight(const char *inStyleSheet)
-{
-	TStyleSheet *style_sheet = Find(inStyleSheet);
-	if (!style_sheet)
-		gLog.Fatal("halyard", "Tried to measure height of non-existant style "
-						"sheet <%s>", inStyleSheet);
-	return style_sheet->GetLineHeight();
+int TStyleSheetManager::GetLineHeight(const char *inStyleSheet) {
+    TStyleSheet *style_sheet = Find(inStyleSheet);
+    if (!style_sheet)
+        gLog.Fatal("halyard", "Tried to measure height of non-existant style "
+                        "sheet <%s>", inStyleSheet);
+    return style_sheet->GetLineHeight();
 }

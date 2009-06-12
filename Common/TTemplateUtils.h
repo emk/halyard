@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -39,8 +39,8 @@ extern void StringLTrim(std::string &ioStr);
 /// Return true if inStr1 starts with inStr2. Do a case sensitive 
 /// comparison by default.
 ///
-extern bool StringStartsWith(const std::string &inStr1, 
-							 const std::string &inStr2);
+extern bool StringStartsWith(const std::string &inStr1,
+                             const std::string &inStr2);
 
 //////////
 /// Convert an STL string to lowercase.
@@ -57,7 +57,7 @@ extern std::string MakeStringLowercase(std::string inString);
 /// \param inString  the string to convert
 /// \return  the input string, with escaped quotes
 ///
-extern std::string MakeQuotedString(const std::string &inString); 
+extern std::string MakeQuotedString(const std::string &inString);
 
 //////////
 /// This functor can be used to delete all the pointers in a container
@@ -69,11 +69,11 @@ extern std::string MakeQuotedString(const std::string &inString);
 /// to use the appropriate boost deletion operators.
 ///
 struct DeletePointer {
-	template <typename T>
-	void operator() (T* ptr) const
-	{
-		boost::checked_delete<T>(ptr);
-	}
+    template <typename T>
+    void operator() (T* ptr) const
+    {
+        boost::checked_delete<T>(ptr);
+    }
 };
 
 //////////
@@ -81,11 +81,11 @@ struct DeletePointer {
 /// TO ARRAYS.
 ///
 struct DeleteArray {
-	template <typename T>
-	void operator() (T* ptr) const
-	{
-		boost::checked_array_delete<T>(ptr);
-	}
+    template <typename T>
+    void operator() (T* ptr) const
+    {
+        boost::checked_array_delete<T>(ptr);
+    }
 };
 
 //////////
@@ -98,15 +98,14 @@ struct DeleteArray {
 /// When restore_i goes out of scope, i will be reset to its original value.
 ///
 template<class Type>
-class StValueRestorer : boost::noncopyable
-{
-	Type &mLocation;
-	Type mSaved;
+class StValueRestorer : boost::noncopyable {
+    Type &mLocation;
+    Type mSaved;
 
 public:
-	explicit StValueRestorer(Type &inVariable)
-		: mLocation(inVariable), mSaved(inVariable) { }
-	~StValueRestorer() { mLocation = mSaved; }
+    explicit StValueRestorer(Type &inVariable)
+        : mLocation(inVariable), mSaved(inVariable) { }
+    ~StValueRestorer() { mLocation = mSaved; }
 };
 
 END_NAMESPACE_HALYARD

@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -29,8 +29,7 @@ class CursorElement;
 
 /// Centralized manager class for cursor resources.  See the notes in
 /// Cursor.h on the ownership of Cursor pointers.
-class CursorManager
-{
+class CursorManager {
     typedef std::map<std::string,Halyard::Cursor *> CursorMap;
 
     CursorMap mCursors;
@@ -45,9 +44,9 @@ public:
                         Halyard::Cursor *inCursor);
     void RegisterCursor(const std::string &inName, const wxCursor &inCursor);
     void RegisterImageCursor(const std::string &inName,
-							 const std::string &inPath,
-							 int inHotSpotX = -1,
-							 int inHotSpotY = -1);
+                             const std::string &inPath,
+                             int inHotSpotX = -1,
+                             int inHotSpotY = -1);
 
     void RegisterElementCursor(const std::string &inName,
                                CursorElement *inCursor);

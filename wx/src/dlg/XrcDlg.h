@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -26,21 +26,20 @@
 //////////
 /// This abstract class displays a dialog defined in our XRC resources file.
 ///
-class XrcDlg : public wxDialog
-{
+class XrcDlg : public wxDialog {
     DECLARE_EVENT_TABLE();
 
 protected:
-	XrcDlg(wxWindow *inParent, const wxString &inResourceName);
+    XrcDlg(wxWindow *inParent, const wxString &inResourceName);
 
     template <class T>
-	void Bind(T* &outVar, long inID)
-	{ outVar = dynamic_cast<T*>(FindWindow(inID)); wxASSERT(outVar); }
+    void Bind(T* &outVar, long inID)
+    { outVar = dynamic_cast<T*>(FindWindow(inID)); wxASSERT(outVar); }
 
 public:
     /// Generic handler which dismisses the dialog and returns the
     /// button ID.
-	void OnSimpleButton(wxCommandEvent &inEvent);
+    void OnSimpleButton(wxCommandEvent &inEvent);
 };
 
 

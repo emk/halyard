@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -39,14 +39,12 @@ GreyMap::GreyMap(Distance inWidth, Distance inHeight)
     // All done.
 }
 
-GreyMap::~GreyMap()
-{
+GreyMap::~GreyMap() {
     delete [] pixels;
 }
 
-void GreyMap::Clear(Channel inColor)
-{
-	Channel *end = pixels + stride * height;
-	for (Channel *cursor = pixels; cursor < end; cursor++)
-		*cursor = inColor;
+void GreyMap::Clear(Channel inColor) {
+    Channel *end = pixels + stride * height;
+    for (Channel *cursor = pixels; cursor < end; cursor++)
+        *cursor = inColor;
 }

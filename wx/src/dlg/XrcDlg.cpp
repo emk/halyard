@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -26,8 +26,7 @@
 BEGIN_EVENT_TABLE(XrcDlg, wxDialog)
 END_EVENT_TABLE()
 
-XrcDlg::XrcDlg(wxWindow *inParent, const wxString &inResourceName)
-{
+XrcDlg::XrcDlg(wxWindow *inParent, const wxString &inResourceName) {
     wxXmlResource::Get()->LoadDialog(this, inParent, inResourceName);
 
     // This seems to help...

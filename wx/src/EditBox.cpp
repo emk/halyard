@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -80,7 +80,7 @@ void CustomTextCtrl::OnTextEnter(wxCommandEvent &inEvent) {
 //  EditBox Methods
 //=========================================================================
 
-EditBox::EditBox(Stage *inStage, const wxString &inName, 
+EditBox::EditBox(Stage *inStage, const wxString &inName,
                  Halyard::TCallbackPtr inDispatch,
                  const wxRect &inBounds, const wxString inText,
                  uint32 inSize, bool inIsMultiline, bool inEnterIsEvent)

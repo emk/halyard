@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -118,8 +118,7 @@ void AuiFrame::LoadFramePerspective() {
     mHaveLoadedFramePerspective = true;
 }
 
-void AuiFrame::MaybeSaveFramePerspective()
-{
+void AuiFrame::MaybeSaveFramePerspective() {
     // Don't save the frame perspective if we haven't loaded it yet, or if
     // we're in full-screen mode (which has an automatically-chosen
     // perspective).
@@ -193,14 +192,14 @@ void AuiFrame::FinishSettingUpAuiManager() {
     // Record our default perspective so we can reset it later if asked.
     mDefaultPerspective = mAuiManager->SavePerspective();
 
-	// Re-load our saved frame perspective.  We can't do this until after
-	// our setup is completed.
-	LoadFramePerspective();
+    // Re-load our saved frame perspective.  We can't do this until after
+    // our setup is completed.
+    LoadFramePerspective();
 }
 
 void AuiFrame::ShutDownAuiManager() {
     // Save our perspective one last time.
-	MaybeSaveFramePerspective();
+    MaybeSaveFramePerspective();
 
     // Turn off our wxAuiManager.
     mAuiManager->UnInit();

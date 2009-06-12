@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -30,23 +30,22 @@
 //////////
 /// A overlay is the simplest form of lightweight element.
 ///
-class Overlay : public LightweightElement
-{
-	DrawingArea mDrawingArea;
+class Overlay : public LightweightElement {
+    DrawingArea mDrawingArea;
     bool mAreTransparentAreasClickable;
-	
+    
 public:
-	Overlay(Stage *inStage, const wxString &inName, const wxRect &inBounds,
-			Halyard::TCallbackPtr inDispatch, const std::string &inCursorName,
-			bool inHasAlpha, bool inAreTransparentAreasClickable = false);
+    Overlay(Stage *inStage, const wxString &inName, const wxRect &inBounds,
+            Halyard::TCallbackPtr inDispatch, const std::string &inCursorName,
+            bool inHasAlpha, bool inAreTransparentAreasClickable = false);
 
     virtual void Show(bool inShow);
-	virtual bool IsPointInElement(const wxPoint &inPoint);
+    virtual bool IsPointInElement(const wxPoint &inPoint);
     virtual void MoveTo(const wxPoint &inPoint);
-	virtual void DrawElementBorder(wxDC &inDC);
-	virtual DrawingArea *GetDrawingArea() { return &mDrawingArea; }
+    virtual void DrawElementBorder(wxDC &inDC);
+    virtual DrawingArea *GetDrawingArea() { return &mDrawingArea; }
     virtual void SetInDragLayer(bool inDragLayer);
-	virtual void CompositeInto(CairoContext &inCr);
+    virtual void CompositeInto(CairoContext &inCr);
 
     /// Set the size of this overlay.  Erases all contents.
     void SetSize(const wxSize &inSize);

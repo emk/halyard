@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -51,33 +51,23 @@ class TStateListenerManager : public TReloadNotified  {
     typedef std::multimap<std::string,CallbackListenerPtr> ListenerMap;
 
     ListenerMap mListeners;
-	
+    
 public:
-    //////////
     /// Unregister all TStateListeners in the manager.
-    ///
     void NotifyReloadScriptStarting();
 
-    //////////
     /// When we go into edit mode, unregister all TStateListeners in the
     /// manager.
-    ///
     void NotifyInterpreterStopped();
 
-    //////////
     /// Register inListener under inName.  You may use inName for more
     /// than one listener; all listeners will be stored.
-    ///
     void RegisterListener(const std::string &inName, TCallbackPtr inListener);
 
-    //////////
     /// Unregister all listeners matching inName.
-    ///
     void UnregisterListeners(const std::string &inName);
 
-    //////////
     /// Find the listener with the specified name and serial number.
-    ///
     shared_ptr<TStateListener> FindListener(const std::string &inName,
                                             uint32 inSerialNumber);
 };

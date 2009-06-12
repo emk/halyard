@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -30,73 +30,66 @@ class Transition;
 /// transition.  We stick these in a class so we don't need to pass
 /// them around as separate parameters everywhere.
 ///
-class TransitionResources
-{
-	wxDC &mOutputDC;
-	wxBitmap &mBeforeBmp;
-	wxBitmap &mAfterBmp;
-	wxBitmap &mScratchBmp;
+class TransitionResources {
+    wxDC &mOutputDC;
+    wxBitmap &mBeforeBmp;
+    wxBitmap &mAfterBmp;
+    wxBitmap &mScratchBmp;
     wxRect &mDirtyRect;
 
 public:
-	//////////
-	/// Create a new set of TransitionResources.
-	///
-	/// \param inOutputDC  The DC to which we should draw our output.
-	/// \param inBeforeBmp  What the screen looks like before our
-	///        transition.
-	/// \param inAfterBmp  What the screen looks like after our transition.
-	/// \param inScratchBmp  A bitmap which we can use for building
-	///        intermediate stages, if we wish.
+    /// Create a new set of TransitionResources.
+    ///
+    /// \param inOutputDC  The DC to which we should draw our output.
+    /// \param inBeforeBmp  What the screen looks like before our
+    ///        transition.
+    /// \param inAfterBmp  What the screen looks like after our transition.
+    /// \param inScratchBmp  A bitmap which we can use for building
+    ///        intermediate stages, if we wish.
     /// \param inDirtyRect A bounding rectangle containing all pixels
     ///        which vary between inBeforeBmp and inAfterBmp.  Some
     ///        transitions can use this for optimization.
-	TransitionResources(wxDC &inOutputDC, wxBitmap &inBeforeBmp,
-						wxBitmap &inAfterBmp, wxBitmap &inScratchBmp,
+    TransitionResources(wxDC &inOutputDC, wxBitmap &inBeforeBmp,
+                        wxBitmap &inAfterBmp, wxBitmap &inScratchBmp,
                         wxRect &inDirtyRect)
-		: mOutputDC(inOutputDC), mBeforeBmp(inBeforeBmp),
-		  mAfterBmp(inAfterBmp), mScratchBmp(inScratchBmp),
+        : mOutputDC(inOutputDC), mBeforeBmp(inBeforeBmp),
+          mAfterBmp(inAfterBmp), mScratchBmp(inScratchBmp),
           mDirtyRect(inDirtyRect) {}
-	
-	wxDC &GetOutputDC() { return mOutputDC; }
-	wxBitmap &GetBeforeBmp() { return mBeforeBmp; }
-	wxBitmap &GetAfterBmp() { return mAfterBmp; }
-	wxBitmap &GetScratchBmp() { return mScratchBmp; }
-	wxRect &GetDirtyRect() { return mDirtyRect; }
+    
+    wxDC &GetOutputDC() { return mOutputDC; }
+    wxBitmap &GetBeforeBmp() { return mBeforeBmp; }
+    wxBitmap &GetAfterBmp() { return mAfterBmp; }
+    wxBitmap &GetScratchBmp() { return mScratchBmp; }
+    wxRect &GetDirtyRect() { return mDirtyRect; }
 };
 
 //////////
 /// This class holds all known transitions, and performs them upon request.
 ///
-class TransitionManager
-{
-	typedef std::map<std::string,Transition*> TransitionMap;
+class TransitionManager {
+    typedef std::map<std::string,Transition*> TransitionMap;
 
-	TransitionMap mTransitions;
+    TransitionMap mTransitions;
 
-	//////////
-	/// Register a transition with the transition manager.
-	///
-	void RegisterTransition(const std::string &inName,
-							Transition *inTransition);
+    /// Register a transition with the transition manager.
+    void RegisterTransition(const std::string &inName,
+                            Transition *inTransition);
 
 public:
-	TransitionManager();
-	~TransitionManager();
+    TransitionManager();
+    ~TransitionManager();
 
-	//////////
-	/// Draw the intermediate steps of the specified transition.  Do
-	/// not display the first or last step; assume these are handled for
-	/// us by our caller.
-	///
-	/// \param inName  The transition to use.
-	/// \param inMilliseconds  The amount of time the transition should
-	///        ideally take.  The transition may take slightly more or
-	///        less time.
-	/// \param inResources  Resources to use for the transition.
-	///
-	void RunTransition(const std::string &inName, int inMilliseconds,
-					   TransitionResources &inResources);
+    /// Draw the intermediate steps of the specified transition.  Do
+    /// not display the first or last step; assume these are handled for
+    /// us by our caller.
+    ///
+    /// \param inName  The transition to use.
+    /// \param inMilliseconds  The amount of time the transition should
+    ///        ideally take.  The transition may take slightly more or
+    ///        less time.
+    /// \param inResources  Resources to use for the transition.
+    void RunTransition(const std::string &inName, int inMilliseconds,
+                       TransitionResources &inResources);
 };
 
 #endif // Transition_H

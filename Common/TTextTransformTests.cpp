@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -37,8 +37,7 @@ using namespace TTextTransform;
 
 extern void test_TTextTransform (void);
 
-void test_TTextTransform (void) 
-{
+void test_TTextTransform (void) {
     // A null transformation.
     TEST(TransformString("Hello!") == "Hello!");
     

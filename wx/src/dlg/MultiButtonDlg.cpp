@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -26,9 +26,9 @@
 using namespace Halyard;
 
 BEGIN_EVENT_TABLE(MultiButtonDlg, XrcDlg)
-	EVT_BUTTON(XRCID("ID_BUTTON1"), MultiButtonDlg::OnButton)
-	EVT_BUTTON(XRCID("ID_BUTTON2"), MultiButtonDlg::OnButton)
-	EVT_BUTTON(XRCID("ID_BUTTON3"), MultiButtonDlg::OnButton)
+    EVT_BUTTON(XRCID("ID_BUTTON1"), MultiButtonDlg::OnButton)
+    EVT_BUTTON(XRCID("ID_BUTTON2"), MultiButtonDlg::OnButton)
+    EVT_BUTTON(XRCID("ID_BUTTON3"), MultiButtonDlg::OnButton)
 END_EVENT_TABLE()
 
 MultiButtonDlg::MultiButtonDlg(wxWindow *inParent, const wxString &inTitle,
@@ -43,11 +43,11 @@ MultiButtonDlg::MultiButtonDlg(wxWindow *inParent, const wxString &inTitle,
     wxASSERT(inButton1 != wxT(""));
 
     Bind(mMessage, XRCID("ID_MESSAGE"));
-	Bind(mButton1, XRCID("ID_BUTTON1"));
-	Bind(mButton2, XRCID("ID_BUTTON2"));
-	Bind(mButton3, XRCID("ID_BUTTON3"));
+    Bind(mButton1, XRCID("ID_BUTTON1"));
+    Bind(mButton2, XRCID("ID_BUTTON2"));
+    Bind(mButton3, XRCID("ID_BUTTON3"));
 
-	// Fill in our various fields.
+    // Fill in our various fields.
     SetTitle(inTitle);
     mMessage->SetLabel(inMessage);
     mButton1->SetLabel(inButton1);
@@ -68,9 +68,8 @@ void MultiButtonDlg::LabelOrHideButton(wxButton *inButton,
         inButton->Hide();
 }
 
-void MultiButtonDlg::OnButton(wxCommandEvent &inEvent)
-{
-	Hide();
+void MultiButtonDlg::OnButton(wxCommandEvent &inEvent) {
+    Hide();
 
     int id = inEvent.GetId();
     int result = 0;
@@ -82,5 +81,5 @@ void MultiButtonDlg::OnButton(wxCommandEvent &inEvent)
         result = 3;
     ASSERT(result);
 
-	EndModal(result);
+    EndModal(result);
 }

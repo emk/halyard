@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -29,8 +29,7 @@
 /// This is the dialog which asks you whether you want to keep the changed
 /// screen resolution.
 ///
-class AdjustScreenConfirmDlg : public XrcDlg
-{
+class AdjustScreenConfirmDlg : public XrcDlg {
     DECLARE_EVENT_TABLE();
 
     enum { EXPIRE_SECONDS = 15 };
@@ -40,7 +39,7 @@ class AdjustScreenConfirmDlg : public XrcDlg
     long mExpireTime;
 
     void OnIdle(wxIdleEvent &inEvent);
-	
+    
 public:
     AdjustScreenConfirmDlg(wxWindow *inParent);
 };

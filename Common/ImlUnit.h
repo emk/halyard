@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -44,9 +44,9 @@ extern int total_tests;
 extern int total_failures;
 
 extern void test_failure (const char *file,
-						  int line,
-						  const char *label,
-						  const char *statement);
+                          int line,
+                          const char *label,
+                          const char *statement);
 
 // Public API
 
@@ -56,32 +56,32 @@ extern int tests_finished (void);
 // needs to be here.  You are not expected to understand it.  But you are
 // expected *not* to change it unless you do understand it.
 #define TEST_WITH_LABEL(label, statement) \
-	do { \
-		total_tests++; \
-		if ((statement)) { \
-			std::cout << "." << std::flush; \
-		} else { \
-			test_failure(__FILE__, __LINE__, "expected", label); \
-		} \
-	} while (0)
+    do { \
+        total_tests++; \
+        if ((statement)) { \
+            std::cout << "." << std::flush; \
+        } else { \
+            test_failure(__FILE__, __LINE__, "expected", label); \
+        } \
+    } while (0)
 
 #define TEST(statement) \
-	TEST_WITH_LABEL(#statement, statement)
+    TEST_WITH_LABEL(#statement, statement)
 
 // Test whether 'STATEMENT' throws an exception of class 'ETYPE'.
 #define TEST_EXCEPTION(STATEMENT,ETYPE) \
-	do { \
-		total_tests++; \
-		try { \
-			(STATEMENT); \
-			test_failure(__FILE__, __LINE__, "didn't throw", #ETYPE); \
-		} catch (ETYPE &e) { \
-			/* We're OK. */ \
-			(void) e; /* Avoid compiler warning. */ \
-			std::cout << "." << std::flush; \
-		} catch (...) { \
-			test_failure(__FILE__, __LINE__, "exception wasn't", #ETYPE); \
-		} \
-	} while (0)
+    do { \
+        total_tests++; \
+        try { \
+            (STATEMENT); \
+            test_failure(__FILE__, __LINE__, "didn't throw", #ETYPE); \
+        } catch (ETYPE &e) { \
+            /* We're OK. */ \
+            (void) e; /* Avoid compiler warning. */ \
+            std::cout << "." << std::flush; \
+        } catch (...) { \
+            test_failure(__FILE__, __LINE__, "exception wasn't", #ETYPE); \
+        } \
+    } while (0)
 
 #endif // IMLUNIT_H

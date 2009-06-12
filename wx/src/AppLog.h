@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -28,14 +28,12 @@
 /// This is a wxWindows log target which knows how to write messages to
 /// the Halyard logging subsystem.
 ///
-class AppLog : public wxLog
-{
+class AppLog : public wxLog {
     bool mShouldSilentlyLogNonFatalErrors;
 
 public:
-	AppLog();
+    AppLog();
 
-    //////////
     /// Call this function to prevent the display of any further wxWidgets
     /// errors to the user.  This is needed when processing crash reports,
     /// because if the wxWidgets crash reporter encounters any non-fatal
@@ -47,11 +45,10 @@ public:
     /// Errors which were displayed to the user (and which were potentially
     /// fatal if we were in runtime mode), are just silently logged after
     /// this function is called.
-    ///
     void SilentlyLogNonFatalErrors();
-	
-	virtual void DoLog(wxLogLevel inLevel, const wxChar *inMsg,
-					   time_t inTimeStamp);
+    
+    virtual void DoLog(wxLogLevel inLevel, const wxChar *inMsg,
+                       time_t inTimeStamp);
 };
 
 #endif // AppLog_H

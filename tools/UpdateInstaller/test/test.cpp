@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -37,11 +37,11 @@
 using boost::filesystem::path;
 
 void UpdateProgressRange(size_t step_count) {
-	// Do nothing.
+    // Do nothing.
 }
 
 void UpdateProgress(size_t steps_completed) {
-	// Do nothing.
+    // Do nothing.
 }
 
 #define CHECK_ENTRY(DIGEST,SIZE,PATH,ENTRY) \
@@ -64,36 +64,36 @@ BOOST_AUTO_UNIT_TEST(test_parse_diff) {
 }
 
 BOOST_AUTO_UNIT_TEST(test_parse_spec) {
-	SpecFile spec(path("Updates/release.spec"));
-	BOOST_CHECK("http://www.example.com/updates/" == spec.url());
-	BOOST_CHECK("update" == spec.build());
-	BOOST_CHECK(2 == spec.manifest().entries().size());
+    SpecFile spec(path("Updates/release.spec"));
+    BOOST_CHECK("http://www.example.com/updates/" == spec.url());
+    BOOST_CHECK("update" == spec.build());
+    BOOST_CHECK(2 == spec.manifest().entries().size());
 }
 
 BOOST_AUTO_UNIT_TEST(test_windows_command_line_quoting) {
-	char *test[5] = { "C:\\Program Files\\foo.exe",
-					  "Something with spaces",
-					  "Something\" with\" quotes",
-					  "Something with \\\" backslash quotes",
-					  "Big\\\" old\" mix \\of \\\\\" stuff" };
-					  
-	CommandLine cl(5, test); 
-	BOOST_CHECK_EQUAL(std::string("\"C:\\Program Files\\foo.exe\" ") 
-					  + "\"Something with spaces\" " 
-					  + "\"Something\\\" with\\\" quotes\" " 
-					  + "\"Something with \\\\\\\" backslash quotes\" " 
-					  + "\"Big\\\\\\\" old\\\" mix \\of \\\\\\\\\\\" stuff\"",
-					  cl.WindowsQuotedString());
+    char *test[5] = { "C:\\Program Files\\foo.exe",
+                      "Something with spaces",
+                      "Something\" with\" quotes",
+                      "Something with \\\" backslash quotes",
+                      "Big\\\" old\" mix \\of \\\\\" stuff" };
+                      
+    CommandLine cl(5, test); 
+    BOOST_CHECK_EQUAL(std::string("\"C:\\Program Files\\foo.exe\" ") 
+                      + "\"Something with spaces\" " 
+                      + "\"Something\\\" with\\\" quotes\" " 
+                      + "\"Something with \\\\\\\" backslash quotes\" " 
+                      + "\"Big\\\\\\\" old\\\" mix \\of \\\\\\\\\\\" stuff\"",
+                      cl.WindowsQuotedString());
 }
 
 BOOST_AUTO_UNIT_TEST(test_is_update_possible) {
-	UpdateInstaller installer = UpdateInstaller(path("."), path("."));
-	
-	rename(path("Updates/pool/da39a3ee5e6b4b0d3255bfef95601890afd80709"), 
-		   path("Updates/pool/temp"));
-	BOOST_CHECK(!installer.IsUpdatePossible());
-	
-	rename(path("Updates/pool/temp"),
-		   path("Updates/pool/da39a3ee5e6b4b0d3255bfef95601890afd80709"));
-	BOOST_CHECK(installer.IsUpdatePossible());
+    UpdateInstaller installer = UpdateInstaller(path("."), path("."));
+    
+    rename(path("Updates/pool/da39a3ee5e6b4b0d3255bfef95601890afd80709"), 
+           path("Updates/pool/temp"));
+    BOOST_CHECK(!installer.IsUpdatePossible());
+    
+    rename(path("Updates/pool/temp"),
+           path("Updates/pool/da39a3ee5e6b4b0d3255bfef95601890afd80709"));
+    BOOST_CHECK(installer.IsUpdatePossible());
 }

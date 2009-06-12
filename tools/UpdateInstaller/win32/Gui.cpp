@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -56,8 +56,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
                        LPTSTR    lpCmdLine,
                        int       nCmdShow)
 {
-	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
 
     // Make sure our progress bar control is properly loaded, or dialog
     // box creation will fail.
@@ -92,8 +92,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     args.push_back("UpdateInstaller.exe");
     for (int i = 0; i < argc; ++i)
         args.push_back(FromUnicode(wargv[i]));
-	for (size_t j = 0; j < args.size(); ++j)
-		argv.push_back(args[j].c_str());
+    for (size_t j = 0; j < args.size(); ++j)
+        argv.push_back(args[j].c_str());
 
     // See the CommandLineToArgv documentation for a discussion of how to
     // dispose of wargv--we supposedly only need a single LocalFree call.
@@ -121,21 +121,21 @@ void UpdateProgress(size_t steps_completed) {
     // return to our caller as soon as our Windows event processing is
     // done.  Note that modeless dialog messages need special handling (in
     // a fashion which is nearly identical to MacOS 9 and earlier!).
-	MSG msg;
-	while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-		if (!::IsWindow(gDialog) || !::IsDialogMessage(gDialog, &msg)) {
-			::TranslateMessage(&msg);
-			::DispatchMessage(&msg);
-		}
-	}
+    MSG msg;
+    while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+        if (!::IsWindow(gDialog) || !::IsDialogMessage(gDialog, &msg)) {
+            ::TranslateMessage(&msg);
+            ::DispatchMessage(&msg);
+        }
+    }
 }
 
 /// Dialog callback handler for our progress dialog.
 INT_PTR CALLBACK ProgressDialogCallback(HWND hDlg, UINT message,
                                         WPARAM wParam, LPARAM lParam)
 {
-	UNREFERENCED_PARAMETER(lParam);
-	switch (message) {
+    UNREFERENCED_PARAMETER(lParam);
+    switch (message) {
         case WM_INITDIALOG:
             return (INT_PTR) TRUE;
 
@@ -147,8 +147,8 @@ INT_PTR CALLBACK ProgressDialogCallback(HWND hDlg, UINT message,
             if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
                 return (INT_PTR) TRUE;
             break;
-	}
-	return (INT_PTR)FALSE;
+    }
+    return (INT_PTR)FALSE;
 }
 
 /// Convert the error message to Unicode, and display a simple error dialog
@@ -244,7 +244,7 @@ std::wstring ToApproximateUnicode(LPCSTR input) {
     int bytes_converted =
         ::MultiByteToWideChar(CP_ACP, 0, input, -1,
                               const_cast<LPWSTR>(result.c_str()),
-							  size_needed);
+                              size_needed);
     if (bytes_converted == 0)
         ReportWindowsError();
     return result;
@@ -276,7 +276,7 @@ std::string FromUnicode(LPCWSTR input) {
     int bytes_converted =
         ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS,
                               input, -1, const_cast<LPSTR>(result.c_str()),
-							  size_needed, NULL, &used_default_char);
+                              size_needed, NULL, &used_default_char);
     if (bytes_converted == 0)
         ReportWindowsError();
     if (used_default_char)

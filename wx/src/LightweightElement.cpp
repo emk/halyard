@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -33,13 +33,13 @@ using namespace Halyard;
 
 
 LightweightElement::LightweightElement(Stage *inStage, const wxString &inName,
-									   Halyard::TCallbackPtr inDispatch,
+                                       Halyard::TCallbackPtr inDispatch,
                                        const std::string &inCursorName)
     : Element(inStage, inName, inDispatch), mCursorName(inCursorName),
       mIsShown(true), mWantsCursor(false), mIsInDragLayer(false)
 {
 #if wxUSE_ACCESSIBILITY
-	mAccessible = shared_ptr<wxAccessible>(new LightweightAccessible(this));
+    mAccessible = shared_ptr<wxAccessible>(new LightweightAccessible(this));
 #endif // wxUSE_ACCESSIBILITY
 }
 
@@ -51,7 +51,7 @@ void LightweightElement::Show(bool inShow) {
     }
 }
 
-void LightweightElement::SetCursorName(const std::string &inCursorName) { 
+void LightweightElement::SetCursorName(const std::string &inCursorName) {
     mCursorName = inCursorName; 
     // We need to notify the stage that elements have changed so it can
     // update our current cursor.

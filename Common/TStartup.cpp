@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -29,8 +29,7 @@
 
 using namespace Halyard;
 
-void Halyard::InitializeCommonCode(CrashReporter *inReporter)
-{
+void Halyard::InitializeCommonCode(CrashReporter *inReporter) {
     // Initialize our CrashReporter.
     CrashReporter::InitializeCrashReporting(inReporter);
 
@@ -43,21 +42,20 @@ void Halyard::InitializeCommonCode(CrashReporter *inReporter)
 }
 
 TInterpreterManager *Halyard::
-GetSchemeInterpreterManager(TInterpreterManager::SystemIdleProc inIdleProc)
-{
-	// Create and return a new Scheme interpreter manager.
-	return new TSchemeInterpreterManager(inIdleProc);
+GetSchemeInterpreterManager(TInterpreterManager::SystemIdleProc inIdleProc) {
+    // Create and return a new Scheme interpreter manager.
+    return new TSchemeInterpreterManager(inIdleProc);
 }
 
 TInterpreterManager *Halyard::
 MaybeGetSchemeInterpreterManager(
     TInterpreterManager::SystemIdleProc inIdleProc)
 {
-	// If we can't find ./Scripts/start.ss, assume this is a legacy script.
-	if (!FileSystem::GetScriptsDirectory().DoesExist() ||
-		!FileSystem::GetScriptFilePath("start.ss").DoesExist())
-		return NULL;
+    // If we can't find ./Scripts/start.ss, assume this is a legacy script.
+    if (!FileSystem::GetScriptsDirectory().DoesExist() ||
+        !FileSystem::GetScriptFilePath("start.ss").DoesExist())
+        return NULL;
 
-	// Create and return a new Scheme interpreter manager.
-	return GetSchemeInterpreterManager(inIdleProc);
+    // Create and return a new Scheme interpreter manager.
+    return GetSchemeInterpreterManager(inIdleProc);
 }

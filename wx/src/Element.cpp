@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -34,7 +34,7 @@ using namespace Halyard;
 
 Element::Element(Stage *inStage, const wxString &inName,
                  Halyard::TCallbackPtr inDispatcher)
-	: mStage(inStage), mName(inName), mLogName(inName.mb_str())
+    : mStage(inStage), mName(inName), mLogName(inName.mb_str())
 {
     ASSERT(mStage);
     ASSERT(mName != wxT(""));

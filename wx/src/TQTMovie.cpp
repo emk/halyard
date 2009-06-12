@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -60,7 +60,7 @@ void TMacError::Check(const char *inFile, int inLine,
                       ComponentResult inErrorCode)
 {
     if (inErrorCode != noErr)
-		throw TMacError(inFile, inLine, inErrorCode);
+        throw TMacError(inFile, inLine, inErrorCode);
 }
 
 
@@ -88,18 +88,17 @@ static void TerminateQTML() {
 // TQTMovie Static Methods
 //=========================================================================
 
-void TQTMovie::InitializeMovies()
-{
-	ASSERT(sIsQuickTimeInitialized == false);
+void TQTMovie::InitializeMovies() {
+    ASSERT(sIsQuickTimeInitialized == false);
 
-	// Start up the portions of the Macintosh Toolbox included with
-	// QuickTime for Windows.
-	//
-	// Old comment from Win32/FiveL/FiveL.cpp: Use the
-	// kInitializeQTMLUseGDIFlag as we have seen flashes on startup of
-	// certain movies on certain platforms (Dell laptops and Win98).
-	//
-	// kInitializeQTMLUseGDIFlag breaks VP3.2 with QT6.  But if we don't
+    // Start up the portions of the Macintosh Toolbox included with
+    // QuickTime for Windows.
+    //
+    // Old comment from Win32/FiveL/FiveL.cpp: Use the
+    // kInitializeQTMLUseGDIFlag as we have seen flashes on startup of
+    // certain movies on certain platforms (Dell laptops and Win98).
+    //
+    // kInitializeQTMLUseGDIFlag breaks VP3.2 with QT6.  But if we don't
     // use it, QuickTime interacts horribly with the Boehm GC, causing
     // the performance of both to plummet.  So let's hope our VP3 codec
     // is up to date.
@@ -124,59 +123,54 @@ void TQTMovie::InitializeMovies()
     // Update (December 2008): Internal testing reveals that not all
     // machines can run QuickTime in GDI mode.  In particular, Robinson's
     // XP latop refuses to play video.  So we're switching back.
-	//CHECK_MAC_ERROR(::InitializeQTML(kInitializeQTMLUseGDIFlag));
-	CHECK_MAC_ERROR(::InitializeQTML(0));
+    //CHECK_MAC_ERROR(::InitializeQTML(kInitializeQTMLUseGDIFlag));
+    CHECK_MAC_ERROR(::InitializeQTML(0));
 
-	// As Chuck discovered, QuickTime likes to draw movies to 
-	// inappropriate places on the screen, and to engage in other bits
-	// of graphic weirdness during the startup process.
-	Rect rect = {0, 0, 1, 1};
-	CHECK_MAC_ERROR(::NewGWorld(&sDummyGWorld, 8, &rect, NULL, NULL, 0));
-	
-	// Initialize QuickTime.
-	::EnterMovies();
-	sIsQuickTimeInitialized = true;
+    // As Chuck discovered, QuickTime likes to draw movies to 
+    // inappropriate places on the screen, and to engage in other bits
+    // of graphic weirdness during the startup process.
+    Rect rect = {0, 0, 1, 1};
+    CHECK_MAC_ERROR(::NewGWorld(&sDummyGWorld, 8, &rect, NULL, NULL, 0));
+    
+    // Initialize QuickTime.
+    ::EnterMovies();
+    sIsQuickTimeInitialized = true;
 }
 
-void TQTMovie::ShutDownMovies()
-{
-	ASSERT(sIsQuickTimeInitialized == true);
-	if (sIsQuickTimeInitialized)
-	{
-		::ExitMovies();
-		if (sDummyGWorld)
-			::DisposeGWorld(sDummyGWorld);
-		::TerminateQTML();
-		sIsQuickTimeInitialized = false;
-	}
+void TQTMovie::ShutDownMovies() {
+    ASSERT(sIsQuickTimeInitialized == true);
+    if (sIsQuickTimeInitialized) {
+        ::ExitMovies();
+        if (sDummyGWorld)
+            ::DisposeGWorld(sDummyGWorld);
+        ::TerminateQTML();
+        sIsQuickTimeInitialized = false;
+    }
 }
 
 #if defined __WXMSW__
 
-void TQTMovie::RegisterWindowForMovies(HWND inWindow)
-{
-	ASSERT(sIsQuickTimeInitialized);
+void TQTMovie::RegisterWindowForMovies(HWND inWindow) {
+    ASSERT(sIsQuickTimeInitialized);
 
-	// Tell QuickTime to bind a CGrafPort to the window.
-	// This also configures the window to receive idle events,
-	// so we'll be able to do our movie processing.
-	// TODO - Can an error happen here?
-	::CreatePortAssociation(inWindow, NULL, 0);
+    // Tell QuickTime to bind a CGrafPort to the window.
+    // This also configures the window to receive idle events,
+    // so we'll be able to do our movie processing.
+    // TODO - Can an error happen here?
+    ::CreatePortAssociation(inWindow, NULL, 0);
 }
 
-void TQTMovie::UnregisterWindowForMovies(HWND inWindow)
-{
-	ASSERT(sIsQuickTimeInitialized);
+void TQTMovie::UnregisterWindowForMovies(HWND inWindow) {
+    ASSERT(sIsQuickTimeInitialized);
 
-	// Dispose of the Macintosh drawing context associated with inWindow.
-	CGrafPtr port = GetPortFromHWND(inWindow);
-	if (port)
-		::DestroyPortAssociation(port);
+    // Dispose of the Macintosh drawing context associated with inWindow.
+    CGrafPtr port = GetPortFromHWND(inWindow);
+    if (port)
+        ::DestroyPortAssociation(port);
 }
 
-CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow)
-{
-	return reinterpret_cast<CGrafPtr>(::GetNativeWindowPort(inWindow));
+CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow) {
+    return reinterpret_cast<CGrafPtr>(::GetNativeWindowPort(inWindow));
 }
 
 #endif // defined __WXMSW__
@@ -196,18 +190,18 @@ bool TQTMovie::IsRemoteMoviePath(const std::string &inMoviePath) {
 
 TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     : mState(MOVIE_UNINITIALIZED), mCanGetMovieProperties(false),
-	  mPort(inPort), mMovie(NULL), mMovieController(NULL),
+      mPort(inPort), mMovie(NULL), mMovieController(NULL),
       mVolume(1.0f), mShouldStartWhenReady(false),
       mShouldPauseWhenStarted(false),
       mTimeoutStarted(false), mTimeoutDisabled(false),
       mTimeoutBase(0), mLastSeenTimeValue(0)
 {
-	ASSERT(sIsQuickTimeInitialized);
+    ASSERT(sIsQuickTimeInitialized);
 
     OSErr err;
     OSType data_ref_type;
 
-	// If we allocate these resources, we must free them before exiting.
+    // If we allocate these resources, we must free them before exiting.
     CFStringRef path_ref = NULL;
     Handle data_ref = NULL;
 
@@ -216,19 +210,18 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     mMovieOpenTime = ::time(NULL);
     //gLog.Debug("halyard", "Starting %s at %d.", inMoviePath.c_str(), mMovieOpenTime);
 
-	// We pass these flags to all the various NewMovieFrom... functions.
-	// newMovieAsyncOK tells QuickTime to immediately return an
-	// empty movie, and to load our data in the background.
+    // We pass these flags to all the various NewMovieFrom... functions.
+    // newMovieAsyncOK tells QuickTime to immediately return an
+    // empty movie, and to load our data in the background.
     //
     // XXX - newMovieAsyncOK is necessary for asynchronous background
     // loading of movies.  Unfortunately, it makes certain audio and
     // video clips take vastly longer to reach kMovieLoadStatePlayable
     // for no obvious reason.  For now, I'm disabling it, and breaking
     // preloading.
-	short load_flags = newMovieActive /*| newMovieAsyncOK*/;
-	
-    try
-    {
+    short load_flags = newMovieActive /*| newMovieAsyncOK*/;
+    
+    try {
         // Build a CFStringRef version of inMoviePath for use with the
         // toolbox APIs.
         path_ref = CFStringCreateWithCString(NULL, inMoviePath.c_str(),
@@ -236,11 +229,11 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
         if (!path_ref)
             THROW("Can't convert movie path to Unicode");
 
-		// Determine whether we're processing a URL or a local file name,
-		// and build an appropriate data reference for our movie.  This is
-		// adapted from the example code at
-		// http://developer.apple.com/samplecode/QuickTimeMovieControl/ .
-		if (IsRemoteMoviePath(inMoviePath)) {
+        // Determine whether we're processing a URL or a local file name,
+        // and build an appropriate data reference for our movie.  This is
+        // adapted from the example code at
+        // http://developer.apple.com/samplecode/QuickTimeMovieControl/ .
+        if (IsRemoteMoviePath(inMoviePath)) {
             err = ::QTNewDataReferenceFromURLCFString(path_ref, 0, &data_ref,
                                                       &data_ref_type);
             CHECK_MAC_ERROR(err);
@@ -249,58 +242,54 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
                 path_ref, (QTPathStyle) kQTNativeDefaultPathStyle, 0,
                 &data_ref, &data_ref_type);
             CHECK_MAC_ERROR(err);
-		}
+        }
 
         // Create our movie from the data reference.
         CHECK_MAC_ERROR(::NewMovieFromDataRef(&mMovie, load_flags,
                                               NULL, data_ref, data_ref_type));
 
-		// Hide our movie safely out of the way until we preroll it. 
-		// This prevents certain codecs from drawing random cruft on
-		// screen.  I learned this trick from Chuck's code.
-		CGrafPtr safe_port = reinterpret_cast<CGrafPtr>(sDummyGWorld);
-		::SetMovieGWorld(mMovie, safe_port, NULL);
-		CHECK_MAC_ERROR(::GetMoviesError());
+        // Hide our movie safely out of the way until we preroll it. 
+        // This prevents certain codecs from drawing random cruft on
+        // screen.  I learned this trick from Chuck's code.
+        CGrafPtr safe_port = reinterpret_cast<CGrafPtr>(sDummyGWorld);
+        ::SetMovieGWorld(mMovie, safe_port, NULL);
+        CHECK_MAC_ERROR(::GetMoviesError());
 
-		// Wait for our "newMovieAsync" open to complete.  (Actually, it
-		// may have *already* completed, but we want to have a single,
-		// ultra-simple code path for all of our asynchronous work, so
-		// we'll assume the worst-case scenario.)
-		UpdateMovieState(MOVIE_INCOMPLETE);
+        // Wait for our "newMovieAsync" open to complete.  (Actually, it
+        // may have *already* completed, but we want to have a single,
+        // ultra-simple code path for all of our asynchronous work, so
+        // we'll assume the worst-case scenario.)
+        UpdateMovieState(MOVIE_INCOMPLETE);
 
-		// NEXT: Our Idle method will call ProcessAsyncLoad repeatedly.
-	}
-	catch (std::exception &)
-    {
-		// We failed, so clean up everything.
-		UpdateMovieState(MOVIE_BROKEN);
-		ReleaseResources();
+        // NEXT: Our Idle method will call ProcessAsyncLoad repeatedly.
+    } catch (std::exception &) {
+        // We failed, so clean up everything.
+        UpdateMovieState(MOVIE_BROKEN);
+        ReleaseResources();
         if (path_ref)
             ::CFRelease(path_ref);
-		if (data_ref)
-			::DisposeHandle(data_ref);
-		throw;
+        if (data_ref)
+            ::DisposeHandle(data_ref);
+        throw;
     }
 
     // We succeeded, so clean up our temporary data only.
     if (path_ref)
         ::CFRelease(path_ref);
     if (data_ref)
-		::DisposeHandle(data_ref);
+        ::DisposeHandle(data_ref);
 }
 
-void TQTMovie::Idle() throw ()
-{
-	// Keep event-loop processing simple for our callers.
-	if (IsBroken())
-		return;
+void TQTMovie::Idle() throw () {
+    // Keep event-loop processing simple for our callers.
+    if (IsBroken())
+        return;
 
-	try
-	{
-		// Give QuickTime some time to run.
-		if (mMovieController)
-			CHECK_MAC_ERROR(::MCIdle(mMovieController));
-		else
+    try {
+        // Give QuickTime some time to run.
+        if (mMovieController)
+            CHECK_MAC_ERROR(::MCIdle(mMovieController));
+        else
             // Give MoviesTask up to 1000 milliseconds to process movies
             // (normally, we'd pass in 0, which means to give every movie
             // exactly one timeslice).  This code is from the
@@ -308,24 +297,21 @@ void TQTMovie::Idle() throw ()
             // don't know how it affects animation responsiveness and other
             // script-based tasks.  But if I recall correctly, this did
             // improve streaming performance in QT 6 for some clips.
-			::MoviesTask(mMovie, 1000);
+            ::MoviesTask(mMovie, 1000);
 
-		// See if we need to finish an asynchronous load.
-		if (mState == MOVIE_INCOMPLETE)
-			ProcessAsyncLoad();
+        // See if we need to finish an asynchronous load.
+        if (mState == MOVIE_INCOMPLETE)
+            ProcessAsyncLoad();
 
         // Maybe update our timeout.
         UpdateTimeout();
-	}
-	catch (...)
-	{
-		UpdateMovieState(MOVIE_BROKEN);
-	}
+    } catch (...) {
+        UpdateMovieState(MOVIE_BROKEN);
+    }
 }
 
-void TQTMovie::ProcessAsyncLoad()
-{
-	ASSERT(mState == MOVIE_INCOMPLETE);
+void TQTMovie::ProcessAsyncLoad() {
+    ASSERT(mState == MOVIE_INCOMPLETE);
 
     // XXX - Give QuickTime plenty of idles to get this movie off the
     // ground.  This seems to be necessary if we want to avoid inexplicable
@@ -335,139 +321,135 @@ void TQTMovie::ProcessAsyncLoad()
     for (int i = 0; i < 100; i++)
         ::MoviesTask(mMovie, 0);
 
-	// Inside Macintosh says this function is expensive, and that
-	// we shouldn't call it more than every 1/4 second or so.  For
-	// now, we'll call it constantly, and see if that causes problems.
-	long load_state = GetMovieLoadState();
+    // Inside Macintosh says this function is expensive, and that
+    // we shouldn't call it more than every 1/4 second or so.  For
+    // now, we'll call it constantly, and see if that causes problems.
+    long load_state = GetMovieLoadState();
 
-	// Check for loading errors.  We don't really know if GetMoviesError
-	// returns the correct error value, so we'll just take a guess.
-	if (load_state == kMovieLoadStateError)
-		throw TMacError(__FILE__, __LINE__, ::GetMoviesError());
-	
-	// We don't advance to the next stage until the movie is playable.
+    // Check for loading errors.  We don't really know if GetMoviesError
+    // returns the correct error value, so we'll just take a guess.
+    if (load_state == kMovieLoadStateError)
+        throw TMacError(__FILE__, __LINE__, ::GetMoviesError());
+    
+    // We don't advance to the next stage until the movie is playable.
     if (SafeToStart(load_state))
-		AsyncLoadComplete();
+        AsyncLoadComplete();
 }
 
-void TQTMovie::AsyncLoadComplete()
-{
-	ASSERT(mState == MOVIE_INCOMPLETE);
+void TQTMovie::AsyncLoadComplete() {
+    ASSERT(mState == MOVIE_INCOMPLETE);
 
-	// "hintsScrubMode" tells QuickTime to jump to the nearest keyframe
-	// when moving the controller bar.  It's a nice feature, but not
-	// necessary, and it may cause some crashes with the QT6 preview
-	// and/or VP3 network streaming.  I'm too lazy to test it for now.
-	//::SetMoviePlayHints(mMovie, hintsScrubMode, hintsScrubMode);
-	
-	// Mark ourselves as ready to go.
-	UpdateMovieState(MOVIE_READY);
-	if (mShouldStartWhenReady == true)
-		Start(mOptions, mPosition);
+    // "hintsScrubMode" tells QuickTime to jump to the nearest keyframe
+    // when moving the controller bar.  It's a nice feature, but not
+    // necessary, and it may cause some crashes with the QT6 preview
+    // and/or VP3 network streaming.  I'm too lazy to test it for now.
+    //::SetMoviePlayHints(mMovie, hintsScrubMode, hintsScrubMode);
+    
+    // Mark ourselves as ready to go.
+    UpdateMovieState(MOVIE_READY);
+    if (mShouldStartWhenReady == true)
+        Start(mOptions, mPosition);
 }
 
-void TQTMovie::StartWhenReady(PlaybackOptions inOptions, Point inPosition)
-{
-	if (mState == MOVIE_READY)
-		Start(inOptions, inPosition);
-	else
-	{
-		// We can't just busy-loop on Idle until mState == MOVIE_READY,
-		// because it deadlocks the application.  I'm guessing that
-		// not all of our callbacks get run unless we go back to the
-		// Windows event loop.
-		mShouldStartWhenReady = true;
-		mOptions = inOptions;
-		mPosition = inPosition;
+void TQTMovie::StartWhenReady(PlaybackOptions inOptions, Point inPosition) {
+    if (mState == MOVIE_READY)
+        Start(inOptions, inPosition);
+    else
+    {
+        // We can't just busy-loop on Idle until mState == MOVIE_READY,
+        // because it deadlocks the application.  I'm guessing that
+        // not all of our callbacks get run unless we go back to the
+        // Windows event loop.
+        mShouldStartWhenReady = true;
+        mOptions = inOptions;
+        mPosition = inPosition;
 
         // This is a good time to activate the timeout.
         UpdateTimeout(true);
-	}
+    }
 }
 
-void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
-{
-	ASSERT(mState == MOVIE_READY);
+void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition) {
+    ASSERT(mState == MOVIE_READY);
 
-	// Store our options so other routines can find them.
-	mOptions = inOptions;
-	mPosition = inPosition;
+    // Store our options so other routines can find them.
+    mOptions = inOptions;
+    mPosition = inPosition;
 
     // Activate our timeout, if we haven't already.
     if (!mTimeoutStarted)
         UpdateTimeout(true);
 
-	// The movie should be done flashing (and drawing in awkward places),
-	// so we should attach it to the correct port (if it has any graphics
-	// we care about).
-	if (!(mOptions & kAudioOnly))
-	{
+    // The movie should be done flashing (and drawing in awkward places),
+    // so we should attach it to the correct port (if it has any graphics
+    // we care about).
+    if (!(mOptions & kAudioOnly)) {
         // See IsReadyToHandleOwnDrawing(), below, which needs to start
         // returning true as soon as we set up our new GWorld.
-		::SetMovieGWorld(mMovie, mPort, NULL);
-		CHECK_MAC_ERROR(::GetMoviesError());
-	}
+        ::SetMovieGWorld(mMovie, mPort, NULL);
+        CHECK_MAC_ERROR(::GetMoviesError());
+    }
 
     // If we've been asked to use the text track as captions, do that
     // before computing the movie bounds (since disabling the text track
     // may make the movie smaller).
     if (mOptions & kUseTextTrackAsCaptions)
         DivertTextTrackToCaptions();
-		
-	// Figure out where to put our movie on the screen.  (We hope enough
-	// of our movie is loaded by now to calculate the box accurately!)
-	// TODO - Should this take the controller itself into account?  And if
-	// so, how?
-	Rect bounds;
-	::GetMovieBox(mMovie, &bounds);
+        
+    // Figure out where to put our movie on the screen.  (We hope enough
+    // of our movie is loaded by now to calculate the box accurately!)
+    // TODO - Should this take the controller itself into account?  And if
+    // so, how?
+    Rect bounds;
+    ::GetMovieBox(mMovie, &bounds);
     // According to MacTech, the bounds rectangle may be offset from 0,0
     // for unspecified reasons.  I've only ever seen this happen for
     // QuickTime movies with text tracks.  MacTech suggests we just correct
     // for the offset and go about our business: <http://www.mactech.com/
     // articles/mactech/Vol.15/15.12/Dec99GettingStarted/index.html>.
     ::MacOffsetRect(&bounds, -bounds.left, -bounds.top);
-	if (mOptions & kCenterMovie)
-		::MacOffsetRect(&bounds,
-						mPosition.h - (bounds.right / 2),
-						mPosition.v - (bounds.bottom / 2));
-	else
-		::MacOffsetRect(&bounds, mPosition.h, mPosition.v);
+    if (mOptions & kCenterMovie)
+        ::MacOffsetRect(&bounds,
+                        mPosition.h - (bounds.right / 2),
+                        mPosition.v - (bounds.bottom / 2));
+    else
+        ::MacOffsetRect(&bounds, mPosition.h, mPosition.v);
 
-	// Pick an appropriate set of controller options.
-	long controller_flags = mcTopLeftMovie;
-	if (!(mOptions & kEnableMovieController))
-		controller_flags |= mcNotVisible;
+    // Pick an appropriate set of controller options.
+    long controller_flags = mcTopLeftMovie;
+    if (!(mOptions & kEnableMovieController))
+        controller_flags |= mcNotVisible;
 
-	// Attach a movie controller to our movie.
-	mMovieController = ::NewMovieController(mMovie, &bounds, controller_flags);
-	CHECK_MAC_ERROR(::GetMoviesError());
-	
-	// Install our action filter.
-	long refcon = reinterpret_cast<long>(this);
-	CHECK_MAC_ERROR(::MCSetActionFilterWithRefCon(mMovieController,
-												  &ActionFilterCallback,
-												  refcon));
+    // Attach a movie controller to our movie.
+    mMovieController = ::NewMovieController(mMovie, &bounds, controller_flags);
+    CHECK_MAC_ERROR(::GetMoviesError());
+    
+    // Install our action filter.
+    long refcon = reinterpret_cast<long>(this);
+    CHECK_MAC_ERROR(::MCSetActionFilterWithRefCon(mMovieController,
+                                                  &ActionFilterCallback,
+                                                  refcon));
 
-	// If interaction is enabled, pass keyboard events to the movie.
-	if (mOptions & kEnableInteraction)
-		DoAction(mcActionSetKeysEnabled, reinterpret_cast<void*>(true));
+    // If interaction is enabled, pass keyboard events to the movie.
+    if (mOptions & kEnableInteraction)
+        DoAction(mcActionSetKeysEnabled, reinterpret_cast<void*>(true));
 
-	// Handle our other controller options.
-	if (mOptions & kLoopMovie)
-		DoAction(mcActionSetLooping, reinterpret_cast<void*>(true));
-	if (mOptions & kPlayEveryFrame)
-		DoAction(mcActionSetPlayEveryFrame, reinterpret_cast<void*>(true));
+    // Handle our other controller options.
+    if (mOptions & kLoopMovie)
+        DoAction(mcActionSetLooping, reinterpret_cast<void*>(true));
+    if (mOptions & kPlayEveryFrame)
+        DoAction(mcActionSetPlayEveryFrame, reinterpret_cast<void*>(true));
 
     // Now that we have a controller, we can finally set the volume.
     SetMovieVolume(mVolume);
 
-	// Figure out our preferred playback rate.  We used to store this
-	// in a member variable, but it's *much* safer to ask for it just
-	// before you use it.
-	Fixed rate = ::GetMoviePreferredRate(mMovie);
-	
-	// Start the movie.
-	UpdateMovieState(MOVIE_STARTED);
+    // Figure out our preferred playback rate.  We used to store this
+    // in a member variable, but it's *much* safer to ask for it just
+    // before you use it.
+    Fixed rate = ::GetMoviePreferredRate(mMovie);
+    
+    // Start the movie.
+    UpdateMovieState(MOVIE_STARTED);
     if (!mShouldPauseWhenStarted)
         DoAction(mcActionPrerollAndPlay, reinterpret_cast<void*>(rate));
 }
@@ -489,7 +471,7 @@ void TQTMovie::DivertTextTrackToCaptions() {
     // http://developer.apple.com/technotes/tn/tn1087.html
     Track track = ::GetMovieIndTrackType(mMovie, 1, TextMediaType,
                                          movieTrackMediaType);
-	CHECK_MAC_ERROR(::GetMoviesError());
+    CHECK_MAC_ERROR(::GetMoviesError());
     if (!track)
         return;
 
@@ -512,10 +494,10 @@ void TQTMovie::DivertTextTrackToCaptions() {
 }
 
 long TQTMovie::GetMovieLoadState() {
-	// Inside Macintosh says this function is expensive, and that
-	// we shouldn't call it more than every 1/4 second or so.  For
-	// now, we'll call it constantly, and see if that causes problems.
-	long load_state = ::GetMovieLoadState(mMovie);
+    // Inside Macintosh says this function is expensive, and that
+    // we shouldn't call it more than every 1/4 second or so.  For
+    // now, we'll call it constantly, and see if that causes problems.
+    long load_state = ::GetMovieLoadState(mMovie);
     if (load_state >= kMovieLoadStatePlayable)
         mCanGetMovieProperties = true;
     return load_state;
@@ -546,43 +528,40 @@ bool TQTMovie::SafeToStart(long inLoadState) {
 // Regular TQTMovie Methods
 //=========================================================================
 
-TQTMovie::~TQTMovie() throw ()
-{
-	ReleaseResources();
+TQTMovie::~TQTMovie() throw () {
+    ReleaseResources();
 }
 
-bool TQTMovie::IsDone() throw ()
-{
-	if (mState == MOVIE_BROKEN)
-		return true;
-	else if (mState < MOVIE_STARTED)
-		return false;
-	else if (mOptions & kLoopMovie)
-		return false;
-	else
-	{
-		// Get the current time in the movie.  As Yijin discovered, we
-		// can't use ::IsMovieDone on streaming movies--it doesn't know how
-		// to recognize the existance of anything beyond what's already
-		// been loaded.
-		TimeValue current_time = ::GetMovieTime(mMovie, NULL);
-		// XXX - I don't seriously expect this error to occur, and I don't
-		// want to have to catch it.
-		//CHECK_MAC_ERROR(::GetMoviesError());
+bool TQTMovie::IsDone() throw () {
+    if (mState == MOVIE_BROKEN)
+        return true;
+    else if (mState < MOVIE_STARTED)
+        return false;
+    else if (mOptions & kLoopMovie)
+        return false;
+    else
+    {
+        // Get the current time in the movie.  As Yijin discovered, we
+        // can't use ::IsMovieDone on streaming movies--it doesn't know how
+        // to recognize the existance of anything beyond what's already
+        // been loaded.
+        TimeValue current_time = ::GetMovieTime(mMovie, NULL);
+        // XXX - I don't seriously expect this error to occur, and I don't
+        // want to have to catch it.
+        //CHECK_MAC_ERROR(::GetMoviesError());
 
-		// Get the movie's duration.  Unknown/indefinite duration is
-		// represented as INDEFINITE_DURATION, a very large number.
-		TimeValue duration = ::GetMovieDuration(mMovie);
-		// XXX - I don't seriously expect this error to occur, and I don't
-		// want to have to catch it.
-		//CHECK_MAC_ERROR(::GetMoviesError());
+        // Get the movie's duration.  Unknown/indefinite duration is
+        // represented as INDEFINITE_DURATION, a very large number.
+        TimeValue duration = ::GetMovieDuration(mMovie);
+        // XXX - I don't seriously expect this error to occur, and I don't
+        // want to have to catch it.
+        //CHECK_MAC_ERROR(::GetMoviesError());
 
-		return duration <= current_time;
-	}
+        return duration <= current_time;
+    }
 }
 
-bool TQTMovie::IsPaused()
-{
+bool TQTMovie::IsPaused() {
     if (mState == MOVIE_BROKEN)
         return true;
     else if (mState < MOVIE_STARTED)
@@ -596,8 +575,7 @@ bool TQTMovie::IsPaused()
     }
 }
 
-void TQTMovie::Pause()
-{
+void TQTMovie::Pause() {
     if (mState == MOVIE_BROKEN)
         return;
 
@@ -613,8 +591,7 @@ void TQTMovie::Pause()
     }
 }
 
-void TQTMovie::Unpause()
-{
+void TQTMovie::Unpause() {
     if (mState == MOVIE_BROKEN)
         return;
 
@@ -623,72 +600,65 @@ void TQTMovie::Unpause()
     else
     {
         ASSERT(mState == MOVIE_STARTED);        
-        if (IsPaused() && !IsDone())
-        {
+        if (IsPaused() && !IsDone()) {
             Fixed rate = ::GetMoviePreferredRate(mMovie);
             DoAction(mcActionPlay, reinterpret_cast<void*>(rate));
         }
     }
 }
 
-TimeValue TQTMovie::GetMovieTime()
-{
-	ASSERT(CanGetMovieProperties());
-	TimeValue current_time = ::GetMovieTime(mMovie, NULL);
-	CHECK_MAC_ERROR(::GetMoviesError());
-	return current_time;
+TimeValue TQTMovie::GetMovieTime() {
+    ASSERT(CanGetMovieProperties());
+    TimeValue current_time = ::GetMovieTime(mMovie, NULL);
+    CHECK_MAC_ERROR(::GetMoviesError());
+    return current_time;
 }
 
-void TQTMovie::SetMovieVolume(float inVolume)
-{
+void TQTMovie::SetMovieVolume(float inVolume) {
     // Store the volume.  We'll need this later if we don't have an
     // mMovieController yet.
     mVolume = inVolume;
-	if (mMovieController) {
+    if (mMovieController) {
         // Movie volume is allegedly a 16-bit fixed point number with the
         // lower 8 bits determining the fraction, the upper 8 bits
         // determining the integer part, and a value between -1.0 and 1.0,
         // where negative volumes are muted.  However, investigation reveals
         // that newly-created movies have a typical volume of 255, *not*
         // 256, so that's what we multiply by.
-		//
-		// Also, the documentation claims that we're supposed to pass
-		// in a pointer to 'volume', but that doesn't work.  Instead, we
-		// need to pass in 'volume' itself.
+        //
+        // Also, the documentation claims that we're supposed to pass
+        // in a pointer to 'volume', but that doesn't work.  Instead, we
+        // need to pass in 'volume' itself.
         SInt16 volume = static_cast<SInt16>(inVolume * 255);
-		DoAction(mcActionSetVolume, reinterpret_cast<void*>(volume));
+        DoAction(mcActionSetVolume, reinterpret_cast<void*>(volume));
     }
 }
 
-TimeScale TQTMovie::GetTimeScale()
-{
-	ASSERT(CanGetMovieProperties());
-	TimeScale scale = ::GetMovieTimeScale(mMovie);
-	CHECK_MAC_ERROR(::GetMoviesError());
-	return scale;
+TimeScale TQTMovie::GetTimeScale() {
+    ASSERT(CanGetMovieProperties());
+    TimeScale scale = ::GetMovieTimeScale(mMovie);
+    CHECK_MAC_ERROR(::GetMoviesError());
+    return scale;
 }
 
-TimeValue TQTMovie::GetDuration()
-{
-	ASSERT(CanGetMovieProperties());
-	TimeValue duration = ::GetMovieDuration(mMovie);
-	CHECK_MAC_ERROR(::GetMoviesError());
-	return duration;	
+TimeValue TQTMovie::GetDuration() {
+    ASSERT(CanGetMovieProperties());
+    TimeValue duration = ::GetMovieDuration(mMovie);
+    CHECK_MAC_ERROR(::GetMoviesError());
+    return duration;    
 }
 
-TimeValue TQTMovie::GetMaxLoadedTimeInMovie()
-{
-	ASSERT(CanGetMovieProperties());
+TimeValue TQTMovie::GetMaxLoadedTimeInMovie() {
+    ASSERT(CanGetMovieProperties());
     TimeValue max_loaded;
     CHECK_MAC_ERROR(::GetMaxLoadedTimeInMovie(mMovie, &max_loaded));
     return max_loaded;
 }
 
-void TQTMovie::ThrowIfBroken()
-{
-	if (IsBroken())
-		// XXX - Find a better error to throw.
-		throw TMacError(__FILE__, __LINE__, noErr);
+void TQTMovie::ThrowIfBroken() {
+    if (IsBroken())
+        // XXX - Find a better error to throw.
+        throw TMacError(__FILE__, __LINE__, noErr);
 }
 
 unsigned int TQTMovie::GetTimeoutEllapsed() {
@@ -728,124 +698,112 @@ void TQTMovie::UpdateTimeout(bool inStart) {
     }
 }
 
-bool TQTMovie::GetNextCaption(std::string &outCaption)
-{
+bool TQTMovie::GetNextCaption(std::string &outCaption) {
     if (mCaptionsToDisplay.empty())
         return false;
     outCaption = mCaptionsToDisplay.front();
-	mCaptionsToDisplay.pop_front();
+    mCaptionsToDisplay.pop_front();
     return true;
 }
 
 #if defined __WXMSW__
 
 void TQTMovie::FillOutMSG(HWND inHWND, UINT inMessage, WPARAM inWParam,
-						  LPARAM inLParam, MSG *outMessage)
+                          LPARAM inLParam, MSG *outMessage)
 {
-	// Build a Windows MSG object.  This code is from Apple's
-	// sample SimplePlayerSDI application.
-	outMessage->hwnd = inHWND;
-	outMessage->message = inMessage;
-	outMessage->wParam = inWParam;
-	outMessage->lParam = inLParam;
-	outMessage->time = ::GetMessageTime();
+    // Build a Windows MSG object.  This code is from Apple's
+    // sample SimplePlayerSDI application.
+    outMessage->hwnd = inHWND;
+    outMessage->message = inMessage;
+    outMessage->wParam = inWParam;
+    outMessage->lParam = inLParam;
+    outMessage->time = ::GetMessageTime();
 
-	// Fetch the point associated with the most recent message, and use it.
-	// TODO - Is this safe in an environment such as wxWindows?
-	LONG thePoints = ::GetMessagePos();
-	outMessage->pt.x = LOWORD(thePoints);
-	outMessage->pt.y = HIWORD(thePoints);	
+    // Fetch the point associated with the most recent message, and use it.
+    // TODO - Is this safe in an environment such as wxWindows?
+    LONG thePoints = ::GetMessagePos();
+    outMessage->pt.x = LOWORD(thePoints);
+    outMessage->pt.y = HIWORD(thePoints);   
 }
 
 void TQTMovie::FillOutEvent(HWND inHWND, UINT inMessage, WPARAM inWParam,
-							LPARAM inLParam, EventRecord *outEvent)
+                            LPARAM inLParam, EventRecord *outEvent)
 {
-	MSG msg;
-	FillOutMSG(inHWND, inMessage, inWParam, inLParam, &msg);
-	::WinEventToMacEvent(&msg, outEvent);
+    MSG msg;
+    FillOutMSG(inHWND, inMessage, inWParam, inLParam, &msg);
+    ::WinEventToMacEvent(&msg, outEvent);
 }
 
 #endif // defined __WXMSW__
 
-void TQTMovie::Redraw() throw ()
-{
-	if (IsBroken() || !mMovieController)
-		return;
-	::MCDraw(mMovieController, GetMacWindow());
+void TQTMovie::Redraw() throw () {
+    if (IsBroken() || !mMovieController)
+        return;
+    ::MCDraw(mMovieController, GetMacWindow());
 }
 
-void TQTMovie::Activate(bool inIsActivating) throw ()
-{
-	if (IsBroken() || !mMovieController)
-		return;
-	::MCActivate(mMovieController, GetMacWindow(), inIsActivating);
+void TQTMovie::Activate(bool inIsActivating) throw () {
+    if (IsBroken() || !mMovieController)
+        return;
+    ::MCActivate(mMovieController, GetMacWindow(), inIsActivating);
 }
 
-void TQTMovie::Click(Point inWhere, long inWhen, long inModifiers) throw ()
-{
-	if (IsBroken() || !mMovieController)
-		return;
-	::MCClick(mMovieController, GetMacWindow(), inWhere, inWhen, inModifiers);
+void TQTMovie::Click(Point inWhere, long inWhen, long inModifiers) throw () {
+    if (IsBroken() || !mMovieController)
+        return;
+    ::MCClick(mMovieController, GetMacWindow(), inWhere, inWhen, inModifiers);
 }
 
 
-void TQTMovie::Key(SInt8 inKey, long inModifiers) throw ()
-{
-	if (IsBroken() || !mMovieController)
-		return;
-	::MCKey(mMovieController, inKey, inModifiers);	
+void TQTMovie::Key(SInt8 inKey, long inModifiers) throw () {
+    if (IsBroken() || !mMovieController)
+        return;
+    ::MCKey(mMovieController, inKey, inModifiers);  
 }
 
-void TQTMovie::DoAction(mcAction inAction, void *inParam)
-{
-	ASSERT(mMovieController);
-	CHECK_MAC_ERROR(::MCDoAction(mMovieController, inAction, inParam));
+void TQTMovie::DoAction(mcAction inAction, void *inParam) {
+    ASSERT(mMovieController);
+    CHECK_MAC_ERROR(::MCDoAction(mMovieController, inAction, inParam));
 }
 
-void TQTMovie::ReleaseResources() throw ()
-{
-	if (mMovieController)
-		::DisposeMovieController(mMovieController);
-	if (mMovie)
-		::DisposeMovie(mMovie);
+void TQTMovie::ReleaseResources() throw () {
+    if (mMovieController)
+        ::DisposeMovieController(mMovieController);
+    if (mMovie)
+        ::DisposeMovie(mMovie);
 }
 
-void TQTMovie::UpdateMovieState(MovieState inNewState)
-{
-	// Sanity-check our new state.
-	ASSERT(inNewState == MOVIE_BROKEN || (inNewState - 1 == mState));
+void TQTMovie::UpdateMovieState(MovieState inNewState) {
+    // Sanity-check our new state.
+    ASSERT(inNewState == MOVIE_BROKEN || (inNewState - 1 == mState));
 
-	// Actually update our state.
-	mState = inNewState;
+    // Actually update our state.
+    mState = inNewState;
 }
 
-bool TQTMovie::ActionFilter(short inAction, void* inParams)
-{
-	switch (inAction)
-	{
-		case mcActionMovieEdited:
-		case mcActionControllerSizeChanged:
-			// We'll eventually want to do stuff here.
-			break;
+bool TQTMovie::ActionFilter(short inAction, void* inParams) {
+    switch (inAction) {
+        case mcActionMovieEdited:
+        case mcActionControllerSizeChanged:
+            // We'll eventually want to do stuff here.
+            break;
 
-		case mcActionMovieClick:
-			if (!(mOptions & kEnableInteraction))
-			{
-				// Devour mouse clicks using the trick recommended by
-				// Inside Macintosh.
-				EventRecord* evt = reinterpret_cast<EventRecord*>(inParams);
-				evt->what = nullEvent;
-			}
-			break;
-	}
+        case mcActionMovieClick:
+            if (!(mOptions & kEnableInteraction)) {
+                // Devour mouse clicks using the trick recommended by
+                // Inside Macintosh.
+                EventRecord* evt = reinterpret_cast<EventRecord*>(inParams);
+                evt->what = nullEvent;
+            }
+            break;
+    }
 
-	// This return value is officially undocumented, but 'false' is
-	// used in all the sample code.
-	return false;
+    // This return value is officially undocumented, but 'false' is
+    // used in all the sample code.
+    return false;
 }
 
-void TQTMovie::Caption(const std::string &inText)
-{
+void TQTMovie::Caption(const std::string &inText) {
     // Queue the caption.
     mCaptionsToDisplay.push_back(inText);
 }
@@ -865,8 +823,8 @@ void TQTMovie::Caption(const std::string &inText)
 
 #define END_QT_CALLBACK(RESULT_IF_FAILED) \
         } catch (...) { \
-			/* If something throws an exception, scrap our movie. */ \
-			movie->UpdateMovieState(MOVIE_BROKEN); \
+            /* If something throws an exception, scrap our movie. */ \
+            movie->UpdateMovieState(MOVIE_BROKEN); \
             return (RESULT_IF_FAILED); \
         } \
     } else { \
@@ -874,11 +832,11 @@ void TQTMovie::Caption(const std::string &inText)
     }
 
 Boolean TQTMovie::ActionFilterCallback(MovieController inController,
-									   short inAction, void *inParams,
-									   long inRefCon)
-	throw ()
+                                       short inAction, void *inParams,
+                                       long inRefCon)
+    throw ()
 {
-	bool result;
+    bool result;
     BEGIN_QT_CALLBACK();
 
     // Try to run our object's action filter.
@@ -899,7 +857,7 @@ OSErr TQTMovie::CaptionCallback(Handle inText, Movie inMovie,
     // http://www.mactech.com/articles/develop/issue_20/20quicktime.html
     // However, we also need to swap the byte order, as shown here:
     // http://developer.apple.com/samplecode/qttext.win/listing11.html
-	size_t text_length = EndianU16_BtoN(*reinterpret_cast<short*>(*inText));
+    size_t text_length = EndianU16_BtoN(*reinterpret_cast<short*>(*inText));
     char *text_data = reinterpret_cast<char*>(*inText + sizeof(short));
     std::string text(text_data, text_data + text_length);
 
@@ -929,54 +887,50 @@ OSErr TQTMovie::CaptionCallback(Handle inText, Movie inMovie,
 //
 // TYPE and SUBTYPE are four-character, case-sensitive strings.
 
-DEFINE_PRIMITIVE(QTComponentVersion)
-{
-	long version = 0;
-	OSType type, subtype;
-	ComponentInstance ci = NULL;
-	OSErr err = noErr;
+DEFINE_PRIMITIVE(QTComponentVersion) {
+    long version = 0;
+    OSType type, subtype;
+    ComponentInstance ci = NULL;
+    OSErr err = noErr;
 
-	// Get our type & subtype.
-	std::string type_str, subtype_str;
-	inArgs >> type_str >> subtype_str;
-	if (type_str.length() != 4 || subtype_str.length() != 4)
-	{
-		gLog.Warn("halyard", "QTComponent type and subtype must be four characters.");
-		goto done;
-	}
-	
-	// Convert them to OSType values.  We use << to avoid endianness problems.
-	type = (type_str[0] << 24 | type_str[1] << 16 |
-			type_str[2] << 8 | type_str[3]);
-	subtype = (subtype_str[0] << 24 | subtype_str[1] << 16 |
-			   subtype_str[2] << 8 | subtype_str[3]);
-	
-	// Open the component.
-	ci = ::OpenDefaultComponent(type, subtype);
-	if (!ci)
-	{
-		gLog.Info("halyard", "Can't open component %s/%s",
-				 type_str.c_str(), subtype_str.c_str());
-		goto done;
-	}
+    // Get our type & subtype.
+    std::string type_str, subtype_str;
+    inArgs >> type_str >> subtype_str;
+    if (type_str.length() != 4 || subtype_str.length() != 4) {
+        gLog.Warn("halyard", "QTComponent type and subtype must be four characters.");
+        goto done;
+    }
+    
+    // Convert them to OSType values.  We use << to avoid endianness problems.
+    type = (type_str[0] << 24 | type_str[1] << 16 |
+            type_str[2] << 8 | type_str[3]);
+    subtype = (subtype_str[0] << 24 | subtype_str[1] << 16 |
+               subtype_str[2] << 8 | subtype_str[3]);
+    
+    // Open the component.
+    ci = ::OpenDefaultComponent(type, subtype);
+    if (!ci) {
+        gLog.Info("halyard", "Can't open component %s/%s",
+                 type_str.c_str(), subtype_str.c_str());
+        goto done;
+    }
 
-	// Get the version number.
-	version = ::GetComponentVersion(ci);
-	if (::GetComponentInstanceError(ci) != noErr)
-	{
-		gLog.Info("halyard", "Can't get component version for %s/%s",
-				 type_str.c_str(), subtype_str.c_str());
-		version = 0;
-	}
-	
-	// Close the component.
-	err = ::CloseComponent(ci);
-	if (err != noErr)
-		gLog.Info("halyard", "Can't close component %s/%s",
-				 type_str.c_str(), subtype_str.c_str());
+    // Get the version number.
+    version = ::GetComponentVersion(ci);
+    if (::GetComponentInstanceError(ci) != noErr) {
+        gLog.Info("halyard", "Can't get component version for %s/%s",
+                 type_str.c_str(), subtype_str.c_str());
+        version = 0;
+    }
+    
+    // Close the component.
+    err = ::CloseComponent(ci);
+    if (err != noErr)
+        gLog.Info("halyard", "Can't close component %s/%s",
+                 type_str.c_str(), subtype_str.c_str());
 
 done:
-	::SetPrimitiveResult(version);
+    ::SetPrimitiveResult(version);
 }
 
 
@@ -986,7 +940,7 @@ done:
 //  Install our QuickTime primitives.
 
 void RegisterQuickTimePrimitives() {
-	REGISTER_PRIMITIVE(QTComponentVersion);
+    REGISTER_PRIMITIVE(QTComponentVersion);
 }
 
 #endif // CONFIG_HAVE_QUICKTIME

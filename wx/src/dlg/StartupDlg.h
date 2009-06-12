@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -30,20 +30,19 @@
 /// This is the dialog which pops up at startup time and asks you whether
 /// you want to open an existing program or create a new one.
 ///
-class StartupDlg : public XrcDlg
-{
+class StartupDlg : public XrcDlg {
     DECLARE_EVENT_TABLE();
-	
+    
     wxFileHistory mHistory;
-	wxRadioButton *mRadioRecent;
-	wxRadioButton *mRadioOpen;
-	wxRadioButton *mRadioNew;
-	wxListBox *mRecentList;
+    wxRadioButton *mRadioRecent;
+    wxRadioButton *mRadioOpen;
+    wxRadioButton *mRadioNew;
+    wxListBox *mRecentList;
 
-	void OnOK(wxCommandEvent &inEvent);
+    void OnOK(wxCommandEvent &inEvent);
 
 public:
-	StartupDlg(wxWindow *inParent);
+    StartupDlg(wxWindow *inParent);
 };
 
 #endif // StartupDlg_H

@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -32,11 +32,10 @@
 ///
 /// TODO - Make a typedef for Frame counts.
 ///
-class MovieElement : public Widget, public MediaElement
-{
+class MovieElement : public Widget, public MediaElement {
     wxString mLocationInfo;
     MovieWindow *mMovieWindow;
-	bool mEndPlaybackWasCalled;
+    bool mEndPlaybackWasCalled;
     bool mHaveSentMediaErrorEvent;
     bool mHaveSentMediaTimeoutEvent;
 
@@ -47,24 +46,24 @@ protected:
 public:
     MovieElement(Stage *inStage, const wxString &inName,
                  Halyard::TCallbackPtr inDispatcher,
-				 const wxRect &inBounds, const wxString &inLocation,
-				 long inWindowStyle, MovieWindowStyle inMovieWindowStyle,
+                 const wxRect &inBounds, const wxString &inLocation,
+                 long inWindowStyle, MovieWindowStyle inMovieWindowStyle,
                  float inVolume = 1.0f);
 
-	virtual bool HasVisibleRepresentation();
+    virtual bool HasVisibleRepresentation();
     virtual bool WantsCursor() const;
 
     virtual void Idle();
     virtual bool ApplyClippingToStage(wxRegion &ioRegion);
 
-	// Note: Some of these methods may not be happy if the underlying movie
-	// code does not like to be paused.
+    // Note: Some of these methods may not be happy if the underlying movie
+    // code does not like to be paused.
     virtual bool IsLooping();
-	virtual void EndPlayback();
-	virtual void Pause();
-	virtual void Resume();
-	virtual void SetVolume(const std::string &inChannel, double inVolume);
-	virtual void SetTimeout(unsigned int timeout);
+    virtual void EndPlayback();
+    virtual void Pause();
+    virtual void Resume();
+    virtual void SetVolume(const std::string &inChannel, double inVolume);
+    virtual void SetTimeout(unsigned int timeout);
     virtual wxString GetLocationInfo() { return mLocationInfo; }
 };
 

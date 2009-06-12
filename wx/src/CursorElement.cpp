@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -73,7 +73,7 @@ void CursorElement::SetStageCursor(const wxPoint &point) {
 void CursorElement::MoveCursor(const wxPoint &point) {
     ASSERT(mIsRegistered);
     GetEventDispatcher()->DoEventCursorMoved(point);
-	wxGetApp().GetStage()->RefreshStage("none", 0);
+    wxGetApp().GetStage()->RefreshStage("none", 0);
 }
 
 void CursorElement::UnsetStageCursor() {

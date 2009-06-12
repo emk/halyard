@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -76,70 +76,61 @@ public:
 };
 
 /// An AudioStream which reads from a VorbisFile.
-class VorbisAudioStream : public AudioStream
-{
-	std::string mFileName;
-	bool mShouldLoop;
-	shared_ptr<VorbisFile> mFile;
-	shared_array<Halyard::int16> mBuffer;
-	size_t mBufferSize;
-	IntuitiveVolatile<size_t> mDataBegin;
-	IntuitiveVolatile<size_t> mDataEnd;
-	IntuitiveVolatile<bool> mDoneWithFile;
+class VorbisAudioStream : public AudioStream {
+    std::string mFileName;
+    bool mShouldLoop;
+    shared_ptr<VorbisFile> mFile;
+    shared_array<Halyard::int16> mBuffer;
+    size_t mBufferSize;
+    IntuitiveVolatile<size_t> mDataBegin;
+    IntuitiveVolatile<size_t> mDataEnd;
+    IntuitiveVolatile<bool> mDoneWithFile;
     /// \todo Big enough data type?
     size_t mSamplesLoaded;
     /// \todo Big enough data type?
-	size_t mUnderrunCount;
+    size_t mUnderrunCount;
 
-	enum {
-		CHANNELS = 2
-	};
+    enum {
+        CHANNELS = 2
+    };
 
-	void InitializeFile();
+    void InitializeFile();
 
-	//////////
-	/// If we're supposed to be looping, and we're out of data, re-open
-	/// our file and read it from the beginning.
-	///
-	void RestartFileIfLoopingAndDone();
+    /// If we're supposed to be looping, and we're out of data, re-open
+    /// our file and read it from the beginning.
+    void RestartFileIfLoopingAndDone();
 
-	size_t ReadIntoBlock(Halyard::int16 *inSpace, size_t inLength);
-	bool DoneReadingData() const;
+    size_t ReadIntoBlock(Halyard::int16 *inSpace, size_t inLength);
+    bool DoneReadingData() const;
 
-	//////////
-	/// Return true if the circular buffer is full.
-	///
-	bool IsBufferFull() const;
+    /// Return true if the circular buffer is full.
+    bool IsBufferFull() const;
 
-	//////////
-	/// Get pointers to the free space in the buffer.  Because the buffer is
-	/// circular, the free space may be discontiguous.  If the space is
-	/// contiguous, *outSpace2 will be NULL.  If no space is available, both
-	/// *outSpace1 and *outSpace2 will be NULL.
-	///
-	/// This API is inspired by some interfaces in DirectSound.
-	///
-	void GetFreeBlocks(Halyard::int16 **outSpace1, size_t *outLength1,
+    /// Get pointers to the free space in the buffer.  Because the buffer is
+    /// circular, the free space may be discontiguous.  If the space is
+    /// contiguous, *outSpace2 will be NULL.  If no space is available, both
+    /// *outSpace1 and *outSpace2 will be NULL.
+    ///
+    /// This API is inspired by some interfaces in DirectSound.
+    void GetFreeBlocks(Halyard::int16 **outSpace1, size_t *outLength1,
                        Halyard::int16 **outSpace2, size_t *outLength2);
 
-	//////////
-	/// Mark the specified number of samples as written.
-	///
-	void MarkAsWritten(size_t inSize);
+    /// Mark the specified number of samples as written.
+    void MarkAsWritten(size_t inSize);
 
 public:
-	VorbisAudioStream(const char *inFileName, size_t inBufferSize,
-					  bool inShouldLoop, float inVolume = 1.0f);
+    VorbisAudioStream(const char *inFileName, size_t inBufferSize,
+                      bool inShouldLoop, float inVolume = 1.0f);
     virtual void LogFinalStreamInfo();
 
     virtual bool IsDone() const;
     virtual bool IsLooping() { return mShouldLoop; }
-	virtual void Idle();
+    virtual void Idle();
 
 protected:
     virtual double GetSamplesPlayed() const;
-	virtual bool FillBuffer(void *outBuffer, unsigned long inFrames,
-                            PaTimestamp inTime);	
+    virtual bool FillBuffer(void *outBuffer, unsigned long inFrames,
+                            PaTimestamp inTime);    
 };
 
 

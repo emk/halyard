@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -33,52 +33,51 @@ TPrimitiveManager Halyard::gPrimitiveManager;
 //=========================================================================
 
 std::string TArgumentList::GetSymbolArg() {
-	TValue arg = GetNextArg(); 
-	return tvalue_cast<TSymbol>(arg).GetName();
+    TValue arg = GetNextArg(); 
+    return tvalue_cast<TSymbol>(arg).GetName();
 }
 
 void TArgumentList::GetValueOrPercentArg(bool &outIsPercent,
-										 int32 &outValue)
+                                         int32 &outValue)
 {
-	TValue arg = GetNextArg(); 
+    TValue arg = GetNextArg(); 
 
-	if(arg.GetType() != TValue::TYPE_PERCENT) {
-		outIsPercent = false;
-		outValue = tvalue_cast<int32>(arg);
-	} else {
-		outIsPercent = true;
-		outValue = tvalue_cast<TPercent>(arg).GetValue();
-	}
+    if(arg.GetType() != TValue::TYPE_PERCENT) {
+        outIsPercent = false;
+        outValue = tvalue_cast<int32>(arg);
+    } else {
+        outIsPercent = true;
+        outValue = tvalue_cast<TPercent>(arg).GetValue();
+    }
 }
 
 TCallbackPtr TArgumentList::GetCallbackArg() {
-	TValue arg = GetNextArg();
-	return arg.GetCallbackPtr();
+    TValue arg = GetNextArg();
+    return arg.GetCallbackPtr();
 }
 
 TArgumentList::TArgumentList(TValueList inVal) {
-	mArgList = TValueList(inVal);
-	mArgPtr = mArgList.begin();
+    mArgList = TValueList(inVal);
+    mArgPtr = mArgList.begin();
 }
 
 /*
 template<typename T> 
 TArgumentList &operator>>(TArgumentList &args, T &out) {
     TValue arg = args.GetNextArg(); 
-	out = tvalue_cast<T>(arg);
+    out = tvalue_cast<T>(arg);
     return args;
 }
 */
 
-TArgumentList &Halyard::operator>>(TArgumentList &args, TCallbackPtr &out)
-{
+TArgumentList &Halyard::operator>>(TArgumentList &args, TCallbackPtr &out) {
     out = args.GetCallbackArg();
     return args;
 }
 
 TArgumentList &Halyard::operator>>(TArgumentList &args, TValue &out) {
-	out = args.GetNextArg();
-	return args;
+    out = args.GetNextArg();
+    return args;
 }
 
 
@@ -87,11 +86,11 @@ TArgumentList &Halyard::operator>>(TArgumentList &args, TValue &out) {
 //=========================================================================
 
 TArgumentList &Halyard::operator>>(TArgumentList &inArgs,
-								   const SymbolName &inSymbolName)
+                                   const SymbolName &inSymbolName)
 {
-	std::string name = inArgs.GetSymbolArg();
-	inSymbolName.mName = name;
-	return inArgs;
+    std::string name = inArgs.GetSymbolArg();
+    inSymbolName.mName = name;
+    return inArgs;
 }
 
 
@@ -100,28 +99,25 @@ TArgumentList &Halyard::operator>>(TArgumentList &inArgs,
 //=========================================================================
 
 TArgumentList &Halyard::operator>>(TArgumentList &inArgs,
-								   const ValueOrPercent &inVoP)
+                                   const ValueOrPercent &inVoP)
 {
-	// Fetch the value.
-	bool is_percent;
-	int32 value;
-	inArgs.GetValueOrPercentArg(is_percent, value);
+    // Fetch the value.
+    bool is_percent;
+    int32 value;
+    inArgs.GetValueOrPercentArg(is_percent, value);
 
-	// Interpret it.
-	if (is_percent)
-	{
-		double result = (inVoP.mBaseValue * value) / 100.0;
-		if (result < 0)
-			result -= 0.5;
-		else
-			result += 0.5;
-		*inVoP.mOutputValue = static_cast<int>(result);
-	}
-	else
-	{
-		*inVoP.mOutputValue = value;
-	}
-	return inArgs;
+    // Interpret it.
+    if (is_percent) {
+        double result = (inVoP.mBaseValue * value) / 100.0;
+        if (result < 0)
+            result -= 0.5;
+        else
+            result += 0.5;
+        *inVoP.mOutputValue = static_cast<int>(result);
+    } else {
+        *inVoP.mOutputValue = value;
+    }
+    return inArgs;
 }
 
 
@@ -129,8 +125,7 @@ TArgumentList &Halyard::operator>>(TArgumentList &inArgs,
 //  Debugging output
 //=========================================================================
 
-std::ostream &Halyard::operator<<(std::ostream &out, TArgumentList &args)
-{
+std::ostream &Halyard::operator<<(std::ostream &out, TArgumentList &args) {
     TValueList::iterator arg = args.mArgList.begin();
     if (arg == args.mArgList.end())
         return out;
@@ -146,38 +141,36 @@ std::ostream &Halyard::operator<<(std::ostream &out, TArgumentList &args)
 //=========================================================================
 
 void TPrimitiveManager::RegisterPrimitive(const std::string &inName,
-										  PrimitiveFunc inFunc)
+                                          PrimitiveFunc inFunc)
 {
     ASSERT(inName != "");
     ASSERT(inFunc != NULL);
 
     // Erase any existing primitive with this name.
     std::map<std::string,PrimitiveFunc>::iterator existing =
-		mPrimitiveMap.find(inName);
-    if (existing != mPrimitiveMap.end())
-    {
-		gLog.Debug("halyard", "Replacing primitive <%s>", inName.c_str());
-		mPrimitiveMap.erase(existing);
+        mPrimitiveMap.find(inName);
+    if (existing != mPrimitiveMap.end()) {
+        gLog.Debug("halyard", "Replacing primitive <%s>", inName.c_str());
+        mPrimitiveMap.erase(existing);
     }
     
     // Insert the new entry.
     mPrimitiveMap.insert(std::pair<std::string,PrimitiveFunc>(inName, inFunc));
 }
 
-bool TPrimitiveManager::DoesPrimitiveExist(const std::string &inName)
-{
+bool TPrimitiveManager::DoesPrimitiveExist(const std::string &inName) {
     ASSERT(inName != "");
 
     std::map<std::string,PrimitiveFunc>::iterator found =
-		mPrimitiveMap.find(inName);
+        mPrimitiveMap.find(inName);
     if (found != mPrimitiveMap.end())
-		return true;
+        return true;
     else
-		return false;
+        return false;
 }
 
 void TPrimitiveManager::CallPrimitive(const std::string &inName,
-									  TArgumentList &inArgs)
+                                      TArgumentList &inArgs)
 {
     ASSERT(inName != "");
     
@@ -187,10 +180,10 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
 
     // Find the primitive.
     std::map<std::string,PrimitiveFunc>::iterator found =
-		mPrimitiveMap.find(inName);
+        mPrimitiveMap.find(inName);
     if (found == mPrimitiveMap.end())
-		throw TException(__FILE__, __LINE__,
-						 ("Unknown primitive: " + inName).c_str());
+        throw TException(__FILE__, __LINE__,
+                         ("Unknown primitive: " + inName).c_str());
     PrimitiveFunc primitive = found->second;
 
     // Log the primitive before executing, so we know what was
@@ -203,14 +196,14 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
         gLog.Trace(log_category, "%s", out.str().c_str());
     }
 
-	// Clear the result value and logging flag.
-	gVariableManager.MakeNull("_result");
+    // Clear the result value and logging flag.
+    gVariableManager.MakeNull("_result");
     
     // Call it.
     (*primitive)(inArgs);
 
     // Log primitive and return value after executing.
-    if (should_log) { 
+    if (should_log) {
         std::ostringstream out;
         out << "<<< " << inName;
         if (!gVariableManager.IsNull("_result")) {

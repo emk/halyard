@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -29,30 +29,29 @@
 /// currently typing is added to the history, which can be navigated using 
 /// the arrow keys or CTRL-P and CTRL-N.
 ///
-class HistoryTextCtrl : public wxTextCtrl
-{
-	std::vector<wxString> mHistoryItems;
-	size_t mHistoryCurrent;
+class HistoryTextCtrl : public wxTextCtrl {
+    std::vector<wxString> mHistoryItems;
+    size_t mHistoryCurrent;
 
 public:
-	HistoryTextCtrl(wxWindow* parent, 
-					wxWindowID id, 
-					const wxString& value = wxT(""), 
-					const wxPoint& pos = wxDefaultPosition, 
-					const wxSize& size = wxDefaultSize, 
-					long style = 0, 
-					const wxValidator& validator = wxDefaultValidator,
-					const wxString& name = wxTextCtrlNameStr);
-		
-	void OnKeyDown(wxKeyEvent &inEvent);
-	void OnTextEnter(wxCommandEvent &inEvent);
+    HistoryTextCtrl(wxWindow* parent, 
+                    wxWindowID id, 
+                    const wxString& value = wxT(""), 
+                    const wxPoint& pos = wxDefaultPosition, 
+                    const wxSize& size = wxDefaultSize, 
+                    long style = 0, 
+                    const wxValidator& validator = wxDefaultValidator,
+                    const wxString& name = wxTextCtrlNameStr);
+        
+    void OnKeyDown(wxKeyEvent &inEvent);
+    void OnTextEnter(wxCommandEvent &inEvent);
 
-	void SaveCurrHist();
-	void DisplayCurrHist();
-	void HistPrev();
-	void HistNext();
-	
-	DECLARE_EVENT_TABLE();
+    void SaveCurrHist();
+    void DisplayCurrHist();
+    void HistPrev();
+    void HistNext();
+    
+    DECLARE_EVENT_TABLE();
 };
 
 #endif // HistoryText_H

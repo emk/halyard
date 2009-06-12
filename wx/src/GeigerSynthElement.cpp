@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -48,8 +48,7 @@ GeigerSynthElement::~GeigerSynthElement() {
     mGeigerAudioStream->Stop();
 }
 
-void GeigerSynthElement::AddLoop(double inLoopCps, const char *inLoopLocation)
-{
+void GeigerSynthElement::AddLoop(double inLoopCps, const char *inLoopLocation) {
     // We need to pass a custom cleanup function to shared_ptr because we're
     // not allowed to simply 'delete' AudioStream elements.
     VorbisAudioStreamPtr stream(new VorbisAudioStream(inLoopLocation,
@@ -85,19 +84,16 @@ void GeigerSynthElement::Idle() {
     MediaElementIdle();
 }
 
-void GeigerSynthElement::EndPlayback()
-{
+void GeigerSynthElement::EndPlayback() {
     MediaElement::EndPlayback();
     mGeigerAudioStream->Stop();
 }
 
-void GeigerSynthElement::Pause()
-{
+void GeigerSynthElement::Pause() {
     mGeigerAudioStream->Stop();
 }
 
-void GeigerSynthElement::Resume()
-{
+void GeigerSynthElement::Resume() {
     mGeigerAudioStream->Start();
 }
 

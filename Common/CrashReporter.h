@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -41,7 +41,7 @@ public:
     virtual ~CrashReporter() {}
 
     virtual void BeginInterceptingCrashes();
-	virtual void RegisterDocument(Document *inDocument);
+    virtual void RegisterDocument(Document *inDocument);
     virtual void AddDiagnosticFile(const std::string &inFileName,
                                    const std::string &inDescription);
     virtual void SetCurrentCard(const std::string &inCardName);

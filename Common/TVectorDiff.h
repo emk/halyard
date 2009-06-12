@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -99,8 +99,7 @@ void LargestCommonSubsequence(const std::vector<T> &v1,
     i = size1;
     j = size2;
     size_t cur = lcs_len[i][j];
-    while (cur > 0)
-    {
+    while (cur > 0) {
         size_t prev1 = lcs_len[i-1][j];
         size_t prev2 = lcs_len[i][j-1];
         if (cur == prev1)

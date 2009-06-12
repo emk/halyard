@@ -1,4 +1,4 @@
-// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; -*-
+// -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 // @BEGIN_LICENSE
 //
 // Halyard - Multimedia authoring and playback system
@@ -30,18 +30,17 @@
 /// This is the dialog which pops up if there's multiple candidates
 /// for looking up a definition with Alt-Period.
 ///
-class MetaDotDlg : public XrcDlg
-{
+class MetaDotDlg : public XrcDlg {
     DECLARE_EVENT_TABLE();
-	
+    
     Halyard::ScriptEditorDB::Definitions mDefinitions;
-	wxListBox *mDefinitionsListBox;
+    wxListBox *mDefinitionsListBox;
     size_t mChosenDefIndex;
 
-	void OnOK(wxCommandEvent &inEvent);
+    void OnOK(wxCommandEvent &inEvent);
 
 public:
-	MetaDotDlg(wxWindow *inParent,
+    MetaDotDlg(wxWindow *inParent,
                const Halyard::ScriptEditorDB::Definitions &defs);
     Halyard::ScriptEditorDB::Definition GetChosenDef();
 };
