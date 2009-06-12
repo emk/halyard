@@ -48,7 +48,7 @@ TLogger Halyard::gLog;
 //=========================================================================
 
 // This routine is declared in TCommon.h.
-void HalyardCheckAssertion(int inTest, const char *inDescription,
+void HalyardCheckAssertion(unsigned long inTest, const char *inDescription,
                            const char *inFile, int inLine)
 {
     if (!inTest)
