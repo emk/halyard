@@ -27,7 +27,8 @@
   (provide (all-from (lib "mizzen-unit.ss" "mizzen")))
 
   (provide %test-suite% $halyard-unit-style run-all-test-suites
-           stop-running-test-suites! resume-running-test-suites!)
+           stop-running-test-suites! resume-running-test-suites!
+           running-all-tests?)
   
   (define-stylesheet $halyard-unit-style
     :family "Nimbus Sans L"
@@ -52,7 +53,11 @@
   ;; Are we current attempting to run through all the test cards
   ;; automatically?
   (define *running-all-tests?* #f)
-
+  
+  ;; Public wrapper function for *running-all-tests?*.
+  (define (running-all-tests?)
+    *running-all-tests?*)
+  
   ;; An optional thunk to run when we're done with the tests.  Takes one
   ;; argument, a boolean indication whether the tests succeeded.
   (define *run-when-done-with-tests* #f)
