@@ -39,8 +39,7 @@
 #endif
 
 /// The browser-like text-entry box on the StageFrame.
-class LocationBox : public LOCATION_BOX_PARENT_CLASS
-{
+class LocationBox : public LOCATION_BOX_PARENT_CLASS {
 public:
     LocationBox(wxToolBar *inParent);
     

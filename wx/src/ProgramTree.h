@@ -34,8 +34,7 @@ class StageFrame;
 class ProgramTreeCtrl;
 
 /// Public interface to tree widget describing a Halyard script.
-class ProgramTree : public wxWindow, public Halyard::TReloadNotified
-{
+class ProgramTree : public wxWindow, public Halyard::TReloadNotified {
     DECLARE_EVENT_TABLE()
 
     typedef std::map<std::string,wxTreeItemId> ItemMap;

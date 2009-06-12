@@ -32,8 +32,7 @@
 ///
 /// TODO - Make a typedef for Frame counts.
 ///
-class MovieElement : public Widget, public MediaElement
-{
+class MovieElement : public Widget, public MediaElement {
     wxString mLocationInfo;
     MovieWindow *mMovieWindow;
     bool mEndPlaybackWasCalled;

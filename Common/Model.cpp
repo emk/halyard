@@ -41,14 +41,12 @@ using boost::lexical_cast;
 //  Private Data Types
 //=========================================================================
 
-DatumMap::~DatumMap()
-{
+DatumMap::~DatumMap() {
     for (iterator i = begin(); i != end(); i++)
         delete i->second;
 }
 
-DatumVector::~DatumVector()
-{
+DatumVector::~DatumVector() {
     for (iterator i = begin(); i != end(); i++)
         delete *i;  
 }
@@ -80,13 +78,11 @@ Class::Class(const std::string &inName, CreatorFunction inCreator)
     sClasses->insert(ClassMap::value_type(mName, this));
 }
 
-Object *Class::CreateInstance() const
-{
+Object *Class::CreateInstance() const {
     return (*mCreator)();
 }
 
-Class *Class::FindByName(const std::string &inClass)
-{
+Class *Class::FindByName(const std::string &inClass) {
     ASSERT(sClasses);
     ClassMap::iterator found = sClasses->find(inClass);
     if (found == sClasses->end())
@@ -99,8 +95,7 @@ Class *Class::FindByName(const std::string &inClass)
 //  Datum Methods
 //=========================================================================
 
-Datum *Datum::CreateFromXML(xml_node inNode)
-{
+Datum *Datum::CreateFromXML(xml_node inNode) {
     std::string type  = inNode.attribute("type");
     if (type == "int")
         return new Integer(boost::lexical_cast<int>(inNode.text()));
@@ -121,14 +116,12 @@ Datum *Datum::CreateFromXML(xml_node inNode)
 //  ValueDatum Implementation
 //=========================================================================
 
-void Integer::Write(xml_node inContainer)
-{
+void Integer::Write(xml_node inContainer) {
     inContainer.set_attribute("type", "int");
     inContainer.append_text(boost::lexical_cast<std::string>(mValue));
 }
 
-void String::Write(xml_node inContainer)
-{
+void String::Write(xml_node inContainer) {
     inContainer.set_attribute("type", "str");
     inContainer.append_text(mValue);
 }
@@ -143,8 +136,7 @@ MutableDatum::MutableDatum(Type inType)
 {
 }
 
-void MutableDatum::NotifyChanged()
-{
+void MutableDatum::NotifyChanged() {
     // We propagate change notifications up to our parent.  The change
     // notifications will propagate until they reach an Object, which will
     // notify any Views attached to it.  The top-most node in the tree is
@@ -154,22 +146,19 @@ void MutableDatum::NotifyChanged()
     mParent->NotifyChanged();
 }
 
-void MutableDatum::ApplyChange(Change *inChange)
-{
+void MutableDatum::ApplyChange(Change *inChange) {
     ASSERT(mModel != NULL);
     ASSERT(inChange != NULL);
     mModel->ApplyChange(inChange);
 }
 
-void MutableDatum::RegisterChildWithModel(Datum *inDatum)
-{
+void MutableDatum::RegisterChildWithModel(Datum *inDatum) {
     ASSERT(mModel != NULL);
     ASSERT(inDatum != NULL);
     inDatum->RegisterWithModel(mModel, this);
 }
 
-void MutableDatum::RegisterWithModel(Model *inModel, MutableDatum *inParent)
-{
+void MutableDatum::RegisterWithModel(Model *inModel, MutableDatum *inParent) {
     ASSERT(mModel == NULL);
     ASSERT(mParent == NULL);
     ASSERT(inModel != NULL);
@@ -238,15 +227,13 @@ void MutableDatum::RegisterWithModel(Model *inModel, MutableDatum *inParent)
 //=========================================================================
 
 template <typename KeyType>
-void CollectionDatum<KeyType>::PerformSet(ConstKeyType &inKey, Datum *inValue)
-{
+void CollectionDatum<KeyType>::PerformSet(ConstKeyType &inKey, Datum *inValue) {
     RegisterChildWithModel(inValue);
     ApplyChange(new SetChange<KeyType>(this, inKey, inValue));
 }
 
 template <typename KeyType>
-void CollectionDatum<KeyType>::PerformDelete(ConstKeyType &inKey)
-{
+void CollectionDatum<KeyType>::PerformDelete(ConstKeyType &inKey) {
     ApplyChange(new DeleteChange<KeyType>(this, inKey));
 }
 
@@ -258,45 +245,39 @@ template class model::CollectionDatum<size_t>;
 //  HashDatum Methods
 //=========================================================================
 
-void HashDatum::NotifyDeleted()
-{
+void HashDatum::NotifyDeleted() {
     DatumMap::iterator i = mMap.begin();
     for (; i != mMap.end(); ++i)
         i->second->NotifyDeleted();
 }
 
-void HashDatum::NotifyUndeleted()
-{
+void HashDatum::NotifyUndeleted() {
     DatumMap::iterator i = mMap.begin();
     for (; i != mMap.end(); ++i)
         i->second->NotifyUndeleted();   
 }
 
-Datum *HashDatum::DoGet(ConstKeyType &inKey)
-{
+Datum *HashDatum::DoGet(ConstKeyType &inKey) {
     DatumMap::iterator found = mMap.find(inKey);
     CHECK(found != mMap.end(), "Map::Get: Can't find key");
     return found->second;
 }
 
-Datum *HashDatum::DoFind(ConstKeyType &inKey)
-{
+Datum *HashDatum::DoFind(ConstKeyType &inKey) {
     DatumMap::iterator found = mMap.find(inKey);
     if (found == mMap.end())
         return NULL;
     return found->second;
 }
 
-void HashDatum::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
-{
+void HashDatum::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum) {
     DatumMap::iterator found = mMap.find(inKey);
     ASSERT(found != mMap.end());
     ASSERT(found->second == inDatum);
     mMap.erase(found);
 }
 
-void HashDatum::DoInsert(ConstKeyType &inKey, Datum *inDatum)
-{
+void HashDatum::DoInsert(ConstKeyType &inKey, Datum *inDatum) {
     mMap.insert(DatumMap::value_type(inKey, inDatum));
 }
 
@@ -305,23 +286,19 @@ void HashDatum::DoInsert(ConstKeyType &inKey, Datum *inDatum)
 //  Map Methods
 //=========================================================================
 
-void Map::Write(xml_node inContainer)
-{
+void Map::Write(xml_node inContainer) {
     inContainer.set_attribute("type", "map");
     DatumMap::iterator i = begin();
-    for (; i != end(); ++i)
-    {
+    for (; i != end(); ++i) {
         xml_node item = inContainer.new_child("item");
         item.set_attribute("key", i->first);
         i->second->Write(item);
     }
 }
 
-void Map::Fill(xml_node inNode)
-{
+void Map::Fill(xml_node inNode) {
     xml_node::iterator i = inNode.begin();
-    for (; i != inNode.end(); ++i)
-    {
+    for (; i != inNode.end(); ++i) {
         xml_node node = *i;
         XML_CHECK_NAME(node, "item");
         std::string key = node.attribute("key");
@@ -336,30 +313,26 @@ void Map::Fill(xml_node inNode)
 //  Object Methods
 //=========================================================================
 
-Object::~Object()
-{
+Object::~Object() {
     std::vector<View*>::iterator i = mViews.begin();
     for (; i != mViews.end(); ++i)
         (*i)->ClearObject();
 }
 
-void Object::NotifyChanged()
-{
+void Object::NotifyChanged() {
     std::vector<View*>::iterator i = mViews.begin();
     for (; i != mViews.end(); ++i)
         (*i)->CallObjectChanged();
 }
 
-void Object::NotifyDeleted()
-{
+void Object::NotifyDeleted() {
     HashDatum::NotifyDeleted();
     std::vector<View*>::iterator i = mViews.begin();
     for (; i != mViews.end(); ++i)
         (*i)->CallObjectDeleted();  
 }
 
-void Object::NotifyUndeleted()
-{
+void Object::NotifyUndeleted() {
     // We're careful to translate NotifyUndeleted in ObjectChanged only for
     // members of the class Object, so we don't propogate NotifyChanged
     // messages back up the tree.
@@ -367,27 +340,22 @@ void Object::NotifyUndeleted()
     NotifyChanged();
 }
 
-void Object::Initialize()
-{
+void Object::Initialize() {
 }
 
-void Object::Write(xml_node inContainer)
-{
+void Object::Write(xml_node inContainer) {
     inContainer.set_attribute("type", "object");
     inContainer.set_attribute("class", mClass->GetName());
     DatumMap::iterator i = begin();
-    for (; i != end(); ++i)
-    {
+    for (; i != end(); ++i) {
         xml_node item = inContainer.new_child(i->first.c_str());
         i->second->Write(item);
     }
 }
 
-void Object::Fill(xml_node inNode)
-{
+void Object::Fill(xml_node inNode) {
     xml_node::iterator i = inNode.begin();
-    for (; i != inNode.end(); ++i)
-    {
+    for (; i != inNode.end(); ++i) {
         xml_node node = *i;
         std::string key = node.name();
         Datum *value = CreateFromXML(node);
@@ -399,14 +367,12 @@ void Object::Fill(xml_node inNode)
     Migrate();
 }
 
-void Object::RegisterView(View *inView)
-{
+void Object::RegisterView(View *inView) {
     if (std::count(mViews.begin(), mViews.end(), inView) == 0)
         mViews.push_back(inView);
 }
 
-void Object::UnregisterView(View *inView)
-{
+void Object::UnregisterView(View *inView) {
     std::vector<View*>::iterator found =
         std::find(mViews.begin(), mViews.end(), inView);
     ASSERT(found != mViews.end());
@@ -418,28 +384,23 @@ void Object::UnregisterView(View *inView)
 //  List Methods
 //=========================================================================
 
-void List::PerformInsert(ConstKeyType &inKey, Datum *inValue)
-{
+void List::PerformInsert(ConstKeyType &inKey, Datum *inValue) {
     RegisterChildWithModel(inValue);
     ApplyChange(new InsertChange(this, inKey, inValue));
 }
 
-void List::Write(xml_node inContainer)
-{
+void List::Write(xml_node inContainer) {
     inContainer.set_attribute("type", "list");
     DatumVector::iterator i = mVector.begin();
-    for (; i != mVector.end(); ++i)
-    {
+    for (; i != mVector.end(); ++i) {
         xml_node node = inContainer.new_child("item");
         (*i)->Write(node);
     }
 }
 
-void List::Fill(xml_node inNode)
-{
+void List::Fill(xml_node inNode) {
     xml_node::iterator i = inNode.begin();
-    for (; i != inNode.end(); ++i)
-    {
+    for (; i != inNode.end(); ++i) {
         xml_node node = *i;
         XML_CHECK_NAME(node, "item");
         Datum *value = CreateFromXML(node);
@@ -448,36 +409,31 @@ void List::Fill(xml_node inNode)
     }
 }
 
-void List::NotifyDeleted()
-{
+void List::NotifyDeleted() {
     DatumVector::iterator i = mVector.begin();
     for (; i != mVector.end(); ++i)
         (*i)->NotifyDeleted();
 }
 
-void List::NotifyUndeleted()
-{
+void List::NotifyUndeleted() {
     DatumVector::iterator i = mVector.begin();
     for (; i != mVector.end(); ++i)
         (*i)->NotifyUndeleted();
 }
 
-Datum *List::DoGet(ConstKeyType &inKey)
-{
+Datum *List::DoGet(ConstKeyType &inKey) {
     CHECK(inKey < mVector.size(), "No such key in List::DoGet");
     return mVector[inKey];
 }
 
-Datum *List::DoFind(ConstKeyType &inKey)
-{
+Datum *List::DoFind(ConstKeyType &inKey) {
     if (inKey < mVector.size())
         return mVector[inKey];
     else
         return NULL;
 }
 
-void List::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
-{
+void List::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum) {
     // This runs in O(N) time, which isn't great.
     ASSERT(inKey < mVector.size());
     ASSERT(inDatum != NULL);
@@ -485,8 +441,7 @@ void List::DoRemoveKnown(ConstKeyType &inKey, Datum *inDatum)
     mVector.erase(mVector.begin() + inKey);
 }
 
-void List::DoInsert(ConstKeyType &inKey, Datum *inDatum)
-{
+void List::DoInsert(ConstKeyType &inKey, Datum *inDatum) {
     // This runs in O(N) time, which isn't great.
     ASSERT(inKey <= mVector.size());
     ASSERT(inDatum != NULL);
@@ -535,16 +490,14 @@ MoveChange<DestKeyType,SrcKeyType>::MoveChange(DestCollection *inDest,
 {
     mReplacedDatum = mNewCollection->DoFind(mNewKey);
     mMovedDatum = mOldCollection->DoFind(mOldKey);
-    if (!mMovedDatum)
-    {
+    if (!mMovedDatum) {
         ConstructorFailing();
         THROW("DeleteChange: No such key");
     }
 }
 
 template <typename DestKeyType, typename SrcKeyType>
-void MoveChange<DestKeyType,SrcKeyType>::DoApply()
-{
+void MoveChange<DestKeyType,SrcKeyType>::DoApply() {
     if (mReplacedDatum)
         mNewCollection->DoRemoveKnown(mNewKey, mReplacedDatum);
     mOldCollection->DoRemoveKnown(mOldKey, mMovedDatum);
@@ -552,8 +505,7 @@ void MoveChange<DestKeyType,SrcKeyType>::DoApply()
 }
 
 template <typename DestKeyType, typename SrcKeyType>
-void MoveChange<DestKeyType,SrcKeyType>::DoRevert()
-{
+void MoveChange<DestKeyType,SrcKeyType>::DoRevert() {
     mNewCollection->DoRemoveKnown(mNewKey, mMovedDatum);
     mOldCollection->DoInsert(mOldKey, mMovedDatum);
     if (mReplacedDatum)
@@ -561,15 +513,12 @@ void MoveChange<DestKeyType,SrcKeyType>::DoRevert()
 }
 
 template <typename DestKeyType, typename SrcKeyType>
-void MoveChange<DestKeyType,SrcKeyType>::DoFreeApplyResources()
-{
+void MoveChange<DestKeyType,SrcKeyType>::DoFreeApplyResources() {
 }
 
 template <typename DestKeyType, typename SrcKeyType>
-void MoveChange<DestKeyType,SrcKeyType>::DoFreeRevertResources()
-{
-    if (mReplacedDatum)
-    {
+void MoveChange<DestKeyType,SrcKeyType>::DoFreeRevertResources() {
+    if (mReplacedDatum) {
         delete mReplacedDatum;
         mReplacedDatum = NULL;
     }
@@ -602,8 +551,7 @@ template void model::Move(Map*, Map::ConstKeyType&,
 //  Model Methods
 //=========================================================================
 
-void Model::Initialize()
-{
+void Model::Initialize() {
     mChangePosition = mChanges.begin();
     Class *c = Class::FindByName(mFormat.GetName());
     mRoot = std::auto_ptr<Object>(c->CreateInstance());
@@ -664,47 +612,39 @@ Model::Model(const ModelFormat &inCurrentFormat,
     ClearDirty();
 }
 
-Model::~Model()
-{
+Model::~Model() {
     ClearRedoList();
     ClearUndoList();
 }
 
-bool Model::CanUndo()
-{
+bool Model::CanUndo() {
     return mChangePosition != mChanges.begin();
 }
 
-void Model::Undo()
-{
+void Model::Undo() {
     ASSERT(CanUndo());
     (*--mChangePosition)->Revert();
 }
 
-void Model::ClearUndoList()
-{
+void Model::ClearUndoList() {
     ChangeList::iterator i = mChanges.begin();
-    for (; i != mChangePosition; i = mChanges.erase(i))
-    {
+    for (; i != mChangePosition; i = mChanges.erase(i)) {
         (*i)->FreeResources();
         delete *i;
     }
     ASSERT(!CanUndo());
 }
 
-bool Model::CanRedo()
-{
+bool Model::CanRedo() {
     return mChangePosition != mChanges.end();
 }
 
-void Model::Redo()
-{
+void Model::Redo() {
     ASSERT(CanRedo());
     (*mChangePosition++)->Apply();
 }
 
-void Model::ClearRedoList()
-{
+void Model::ClearRedoList() {
     // If there's no redo list, give up now.
     if (!CanRedo())
         return;
@@ -712,8 +652,7 @@ void Model::ClearRedoList()
     // Walk the redo list backwards, destroying the Change objects
     // pointed to by each list element.
     ChangeList::iterator i = mChanges.end();
-    do
-    {
+    do {
         --i;
         (*i)->FreeResources();
         delete *i;
@@ -725,8 +664,7 @@ void Model::ClearRedoList()
     ASSERT(!CanRedo()); 
 }
 
-void Model::ApplyChange(Change *inChange)
-{
+void Model::ApplyChange(Change *inChange) {
     ClearRedoList();
     inChange->Apply();
     mChangePosition = mChanges.insert(mChangePosition, inChange);
@@ -734,8 +672,7 @@ void Model::ApplyChange(Change *inChange)
     mIsDirty = true;
 }
 
-void Model::SaveAs(const std::string &inFile)
-{
+void Model::SaveAs(const std::string &inFile) {
     // Create a tree.
     xmlDocPtr doc = xmlNewDoc(xml_node::to_utf8("1.0"));
     doc->children =
@@ -759,8 +696,7 @@ void Model::SaveAs(const std::string &inFile)
     ClearDirty();
 }
 
-void Model::Save()
-{
+void Model::Save() {
     CHECK(mSavePath != "", "No save path associated with document.");
     SaveAs(mSavePath);
     ClearDirty();

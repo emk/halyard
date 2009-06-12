@@ -32,19 +32,16 @@ static const size_t DEFAULT_MAX_BYTES = 2 * 1024 * 1024; // 2 megabytes
 static const time_t AGE_MARGIN = 120;                    // in seconds
 static const size_t SIZE_FACTOR = 3;
 
-ImageCache::ImageCache()
-{
+ImageCache::ImageCache() {
     mMaxBytes = DEFAULT_MAX_BYTES;
     mCurrentBytes = 0;
 }
 
-ImageCache::~ImageCache()
-{
+ImageCache::~ImageCache() {
     // Do nothing, for now.
 }
 
-size_t ImageCache::SurfaceSize(CairoSurfacePtr inSurface)
-{
+size_t ImageCache::SurfaceSize(CairoSurfacePtr inSurface) {
     // It wouldn't hurt to throw in an overhead factor for the
     // cairo_surface_t object, too.
     int height = cairo_image_surface_get_height(inSurface.get());
@@ -53,8 +50,7 @@ size_t ImageCache::SurfaceSize(CairoSurfacePtr inSurface)
 }
 
 ImageCache::Cache::iterator
-ImageCache::BetterToPurge(Cache::iterator inA, Cache::iterator inB)
-{
+ImageCache::BetterToPurge(Cache::iterator inA, Cache::iterator inB) {
     size_t size_a = SurfaceSize(inA->second.surface);
     size_t size_b = SurfaceSize(inB->second.surface);
 
@@ -78,13 +74,11 @@ ImageCache::BetterToPurge(Cache::iterator inA, Cache::iterator inB)
     return (inA->second.count > inB->second.count) ? inA : inB;
 }
 
-void ImageCache::RequireFreeSpace(size_t inSpaceNeeded)
-{
+void ImageCache::RequireFreeSpace(size_t inSpaceNeeded) {
     ASSERT(inSpaceNeeded <= GetMaxCacheSize());
 
     // Loop until we've got enough space.
-    while (mCurrentBytes + inSpaceNeeded > mMaxBytes)
-    {
+    while (mCurrentBytes + inSpaceNeeded > mMaxBytes) {
         ASSERT(mCache.begin() != mCache.end());
 
         // Loop through the cache, looking for something to purge.
@@ -100,8 +94,7 @@ void ImageCache::RequireFreeSpace(size_t inSpaceNeeded)
     }
 }
 
-CairoSurfacePtr ImageCache::GetImage(wxString inPath)
-{
+CairoSurfacePtr ImageCache::GetImage(wxString inPath) {
     std::string path(inPath.mb_str());
     
     // Look for the image in our cache.
@@ -139,8 +132,7 @@ CairoSurfacePtr ImageCache::GetImage(wxString inPath)
     return surface;
 }
 
-void ImageCache::NotifyReloadScriptStarting()
-{
+void ImageCache::NotifyReloadScriptStarting() {
     // Dump our entire cache when the script gets reloaded.
     mCache.clear();
     mCurrentBytes = 0;

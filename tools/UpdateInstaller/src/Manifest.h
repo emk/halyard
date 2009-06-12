@@ -65,7 +65,7 @@ private:
 };
 
 class SpecFile {
-public: 
+public:
     SpecFile(const boost::filesystem::path &path);
 
     std::string url() const { return mUrl; }

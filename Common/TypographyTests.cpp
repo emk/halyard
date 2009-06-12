@@ -37,8 +37,7 @@ extern void test_Typography (void);
 //  Style Tests
 //=========================================================================
 
-static void test_Typography_Style (void)
-{
+static void test_Typography_Style (void) {
     // Test constructor
     Style s1("Nimbus Roman No9 L", 14);
     TEST(s1.GetFamily() == "Nimbus Roman No9 L");
@@ -120,8 +119,7 @@ static void test_Typography_Style (void)
 //  Style Information Tests
 //=========================================================================
 
-static void test_Typography_StyledText (void)
-{
+static void test_Typography_StyledText (void) {
     Style base("Nimbus Roman No9 L", 12);
     StyledText info(base);
     info.AppendText(L"xy");
@@ -164,8 +162,7 @@ static void test_Typography_StyledText (void)
 //  LineSegment Tests
 //=========================================================================
 
-static const StyledText *make_text(const std::wstring &inString)
-{
+static const StyledText *make_text(const std::wstring &inString) {
     StyledText *styledText = new StyledText(Style("Nimbus Roman No9 L", 12));
     styledText->AppendText(inString);
     styledText->EndConstruction();
@@ -187,8 +184,7 @@ static LineSegment make_test_seg(const StyledText *inText,
 #define TEST_SEGMENT(seg,text,from,to,b1,b2,b3) \
     TEST(seg == make_test_seg(text, from, to, b1, b2, b3))
 
-static void test_Typography_LineSegment (void) 
-{
+static void test_Typography_LineSegment (void) {
     // Simple words & whitespace.
     std::wstring text1 = L"abc def  ghi";
     const StyledText *styledtext1 = make_text(text1);
@@ -255,8 +251,7 @@ static void test_Typography_LineSegment (void)
 
     // Soft hyphens.
     std::wstring text4 = L"abcXdefX ghi\nXjklXXX\n X ";
-    for (size_t i = 0; i < text4.length(); i++)
-    {
+    for (size_t i = 0; i < text4.length(); i++) {
         // Convert 'X' to a soft hyphen.
         if (text4[i] == 'X')
             text4[i] = kSoftHyphen;
@@ -302,8 +297,7 @@ static void test_Typography_LineSegment (void)
     TEST((BOX).GetRight()  == (RIGHT)); \
     TEST((BOX).GetBottom() == (BOTTOM))
 
-static void test_Typography_BoundingBox (void) 
-{
+static void test_Typography_BoundingBox (void) {
     BoundingBox box, box2;
     TEST(box.HasValue() == false);
     TEST(!box2.ExtendsBeyond(box));
@@ -338,8 +332,7 @@ static void test_Typography_BoundingBox (void)
 //  around with bitmaps.  We don't test the 'inPrevious' argument of
 //  'MeasureSegment', which is used for intersegment-kerning.
 
-class TestTextRenderingEngine : public GenericTextRenderingEngine
-{
+class TestTextRenderingEngine : public GenericTextRenderingEngine {
 private:
     Distance mMinBearing;
     std::basic_string<wchar_t> mRenderedText;
@@ -373,8 +366,7 @@ protected:
 
 // Since nobody seems to print wchar_t strings correctly,
 // convert them to ASCII.
-static std::string to_ascii (const std::wstring &input)
-{
+static std::string to_ascii (const std::wstring &input) {
     std::string result;
     for (std::basic_string<wchar_t>::const_iterator i = input.begin();
          i < input.end(); i++)
@@ -388,11 +380,9 @@ static std::string to_ascii (const std::wstring &input)
     return result;
 }
 
-void TestTextRenderingEngine::Test (const wchar_t *result)
-{
+void TestTextRenderingEngine::Test (const wchar_t *result) {
     RenderText();
-    if (mRenderedText != result)
-    {
+    if (mRenderedText != result) {
         // Many debuggers can't print whcar_t* and/or string<wchar_t>
         // data correctly, so display some more data about the test failure.
         std::cout << "\n--- Result:\n" << to_ascii(mRenderedText).c_str()
@@ -402,8 +392,7 @@ void TestTextRenderingEngine::Test (const wchar_t *result)
 }
 
 Distance
-TestTextRenderingEngine::GetMinimumLeftBearing(const StyledText &inText) const
-{
+TestTextRenderingEngine::GetMinimumLeftBearing(const StyledText &inText) const {
     return mMinBearing;
 }
 
@@ -493,8 +482,7 @@ void rendering_test(const wchar_t *in, Distance width,
 #define RTEST_R(in,width,out) \
     rendering_test(in,width,kRightJustification,0,out)
 
-static void test_Typography_GenericTextRenderingEngine (void) 
-{
+static void test_Typography_GenericTextRenderingEngine (void) {
     // Simple words.
     RTEST_L(L"abc defg", 5, L"|abc|\n|defg|\n");
     RTEST_C(L"abc defg", 5, L" |abc|\n|defg|\n");
@@ -578,15 +566,11 @@ static void test_Typography_GenericTextRenderingEngine (void)
 //  GenericTextRenderingEngine Tests
 //=========================================================================
 
-static void test_Typography_FamilyDatabase (void)
-{
+static void test_Typography_FamilyDatabase (void) {
     // Delete the cache file.
-    try
-    {
+    try {
         FileSystem::ResolveFontPath("fontcache.dat").RemoveFile();
-    }
-    catch (FileSystem::Error)
-    {
+    } catch (FileSystem::Error) {
         // Ignore errors.
     }
 
@@ -652,8 +636,7 @@ static void test_Typography_FamilyDatabase (void)
 //  Test Driver
 //=========================================================================
 
-void test_Typography (void)
-{
+void test_Typography (void) {
     test_Typography_Style();
     test_Typography_StyledText();
     test_Typography_LineSegment();

@@ -201,14 +201,10 @@ int main (int argc, char **argv) {
 #ifdef HAVE_EYE_OF_GNOME
     system("eog visual-test.png");
 #endif
-    }
-    catch (std::exception &error)
-    {
+    } catch (std::exception &error) {
     std::cerr << std::endl << error.what() << std::endl;
     return 1;
-    }
-    catch (...)
-    {
+    } catch (...) {
     std::cerr << std::endl
           << "An unknown exception occurred!" << std::endl;
     return 1;

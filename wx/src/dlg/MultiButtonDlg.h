@@ -28,8 +28,7 @@
 //////////
 /// This dialog shows the specified title, messages, and buttons.
 ///
-class MultiButtonDlg : public XrcDlg
-{
+class MultiButtonDlg : public XrcDlg {
     DECLARE_EVENT_TABLE();
     
     wxStaticText *mMessage;

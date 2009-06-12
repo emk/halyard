@@ -32,8 +32,7 @@ enum {
 };
 
 /// Reads and decodes a file containing Ogg Vorbis audio data.
-class VorbisFile
-{
+class VorbisFile {
     OggVorbis_File mVF;
     
     int mWantedFrequency;

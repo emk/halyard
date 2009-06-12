@@ -40,8 +40,7 @@ using namespace Halyard;
 #define RADIANS_PER_CYCLE    (M_2_PI)
 #define CYCLES_PER_SECOND_A  (440)
 
-static inline float note_amplitude(PaTimestamp sample, int cycles_per_second)
-{
+static inline float note_amplitude(PaTimestamp sample, int cycles_per_second) {
     return (float) sin((1.0 * sample / AudioStream::SAMPLES_PER_SECOND) *
                        cycles_per_second * RADIANS_PER_CYCLE);
 }
@@ -332,28 +331,22 @@ void AudioStream::ApplyChannelVolumes(void *ioOutputBuffer,
     if (mChannelVolumes[0] == 1.0 && mChannelVolumes[1] == 1.0)
         return;
 
-    if (mFormat == paInt16)
-    {
+    if (mFormat == paInt16) {
         int16 *buffer = (int16 *) ioOutputBuffer;
-        for (unsigned long i = 0; i < inFramesPerBuffer; i++)
-        {
+        for (unsigned long i = 0; i < inFramesPerBuffer; i++) {
             *buffer++ *= mChannelVolumes[(size_t) LEFT_CHANNEL];
             *buffer++ *= mChannelVolumes[(size_t) RIGHT_CHANNEL];
         }
-    }
-    else if (mFormat == paFloat32)
-    {
+    } else if (mFormat == paFloat32) {
         float *buffer = (float *) ioOutputBuffer;
-        for (unsigned long i = 0; i < inFramesPerBuffer; i++)
-        {
+        for (unsigned long i = 0; i < inFramesPerBuffer; i++) {
             *buffer++ *= mChannelVolumes[(size_t) LEFT_CHANNEL];
             *buffer++ *= mChannelVolumes[(size_t) RIGHT_CHANNEL];
         }       
     }
 }
 
-void AudioStream::SetChannelVolume(int inChannel, float inVolume)
-{
+void AudioStream::SetChannelVolume(int inChannel, float inVolume) {
     ASSERT(GetStreamState() != DELETING);
     ASSERT(0 <= inChannel && inChannel < GetChannelCount());
     mChannelVolumes[inChannel] = inVolume;
@@ -374,8 +367,7 @@ void AudioStream::SetChannelVolume(const std::string &inChannel,
         THROW("Tried to set volume on an unknown channel");
 }
 
-void AudioStream::SetVolume(float inVolume)
-{
+void AudioStream::SetVolume(float inVolume) {
     ASSERT(GetStreamState() != DELETING);
     for (int i = 0; i < GetChannelCount(); i++)
         SetChannelVolume(i, inVolume);
@@ -615,8 +607,7 @@ bool SineAudioStream::FillBuffer(void *outBuffer,
 {
     float *buffer = (float *) outBuffer;
     PaTimestamp time = inTime;
-    for (unsigned long i = 0; i < inFrames; i++)
-    {
+    for (unsigned long i = 0; i < inFrames; i++) {
         float sample = note_amplitude(time++, mFrequency) * 0.5;
         *buffer++ = sample;
         *buffer++ = sample;

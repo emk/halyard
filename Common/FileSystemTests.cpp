@@ -31,8 +31,7 @@ using namespace FileSystem;
 
 extern void test_FileSystem (void);
 
-void test_FileSystem (void)
-{
+void test_FileSystem (void) {
     std::string base(FileSystem::GetBaseDirectory().ToNativePathString());
     std::string runtime(FileSystem::GetRuntimeDirectory().ToNativePathString());
 

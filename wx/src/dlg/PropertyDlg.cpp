@@ -36,8 +36,7 @@ PropertyDlg::Description::Description(const char *inName)
 {
 }
 
-void PropertyDlg::Description::AddField(const Field &inField)
-{
+void PropertyDlg::Description::AddField(const Field &inField) {
     fields.push_back(inField);
 }
 
@@ -48,8 +47,7 @@ void PropertyDlg::Description::AddField(const Field &inField)
 
 /// Used to transfer data to and from a model::Object (does no actual
 /// validation!).
-class ModelStringValidator : public wxValidator
-{
+class ModelStringValidator : public wxValidator {
     model::Object *mObject;
     std::string mMember;
 
@@ -77,13 +75,11 @@ ModelStringValidator::ModelStringValidator(
 {
 }
 
-wxObject *ModelStringValidator::Clone() const
-{
+wxObject *ModelStringValidator::Clone() const {
     return new ModelStringValidator(*this);
 }
 
-bool ModelStringValidator::TransferToWindow()
-{
+bool ModelStringValidator::TransferToWindow() {
     wxTextCtrl *text_ctrl = dynamic_cast<wxTextCtrl*>(GetWindow());
     wxASSERT(text_ctrl);
     wxString value(mObject->GetString(mMember).c_str(), wxConvLocal);
@@ -91,8 +87,7 @@ bool ModelStringValidator::TransferToWindow()
     return true;
 }
 
-bool ModelStringValidator::TransferFromWindow()
-{
+bool ModelStringValidator::TransferFromWindow() {
     wxTextCtrl *text_ctrl = dynamic_cast<wxTextCtrl*>(GetWindow());
     wxASSERT(text_ctrl);
 
@@ -106,8 +101,7 @@ bool ModelStringValidator::TransferFromWindow()
     return true;
 }
 
-bool ModelStringValidator::Validate(wxWindow* inParent)
-{
+bool ModelStringValidator::Validate(wxWindow* inParent) {
     return true;
 }
 
@@ -158,21 +152,17 @@ PropertyDlg::PropertyDlg(wxWindow *inParent,
     Centre();
 }
 
-void PropertyDlg::AddField(Field &inField)
-{
+void PropertyDlg::AddField(Field &inField) {
     wxString label_text(inField.label, wxConvLocal);
     wxStaticText *label = new wxStaticText(this, -1, label_text);
-    if (inField.flags == MULTILINE)
-    {
+    if (inField.flags == MULTILINE) {
         wxTextCtrl *edit =
             new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
                            wxSize(300, 200), wxTE_MULTILINE,
                            ModelStringValidator(mObject, inField.name));
         mPropSizer->Add(label, 0, 0, 0);
         mPropSizer->Add(edit, 1, wxEXPAND, 0);
-    }
-    else
-    {
+    } else {
         wxTextCtrl *edit =
             new wxTextCtrl(this, -1, wxT(""), wxDefaultPosition,
                            wxSize(300, -1), 0,

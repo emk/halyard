@@ -29,7 +29,7 @@
 
 using namespace Halyard;
 
-Download::Download(const std::string &url, const std::string &file, 
+Download::Download(const std::string &url, const std::string &file,
                    CURL *request) 
     : m_out(wxString(file.c_str(), wxConvLocal)), m_url(url),
       m_request(request), m_shouldCancel(false)
@@ -43,11 +43,11 @@ size_t WriteToFile(char* ptr, size_t size, size_t nmemb, void *data) {
     return dl->m_out.LastWrite();
 }
 
-int ProgressCallback(void *data, double dltotal, double dlnow, 
+int ProgressCallback(void *data, double dltotal, double dlnow,
                      double ultotal, double ulnow) {
     Download *dl = (Download *) data; 
 
-    if (dl->m_shouldCancel) 
+    if (dl->m_shouldCancel)
         return 1;
     // Make sure any exceptions get caught here, because they can mess with 
     // cURL. Just die if an exception happens. 

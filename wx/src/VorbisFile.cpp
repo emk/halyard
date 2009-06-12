@@ -46,14 +46,12 @@ VorbisFile::VorbisFile(const char *inFileName, int inWantedFrequency,
         THROW("Bitstream is not a Vorbis bitstream");
 }
 
-VorbisFile::~VorbisFile()
-{
+VorbisFile::~VorbisFile() {
     // Shut down our decoding stream.
     ov_clear(&mVF);
 }
 
-bool VorbisFile::ReadChunk()
-{
+bool VorbisFile::ReadChunk() {
     ASSERT(mBufferBegin == mBufferEnd);
 
     int current_section;
@@ -78,27 +76,23 @@ bool VorbisFile::ReadChunk()
     }
 }
 
-void VorbisFile::TryToRefillBufferIfEmpty()
-{
+void VorbisFile::TryToRefillBufferIfEmpty() {
     if (mBufferBegin == mBufferEnd && !mDoneReading)
         mDoneReading = !ReadChunk();
 }
 
-bool VorbisFile::MoreDataIsAvailable()
-{
+bool VorbisFile::MoreDataIsAvailable() {
     TryToRefillBufferIfEmpty();
     return (mBufferBegin < mBufferEnd) || !mDoneReading;
 }
 
-void VorbisFile::CheckBufferFrequency()
-{
+void VorbisFile::CheckBufferFrequency() {
     // We only support 44.1 audio for now.
     if (mWantedFrequency != mBufferFrequency)
         THROW("Vorbis file has wrong frequency");
 }
 
-int VorbisFile::CheckBufferChannelCountAndGetStretchFactor()
-{
+int VorbisFile::CheckBufferChannelCountAndGetStretchFactor() {
     if (mWantedChannels == mBufferChannels)
         // If we have the right number of channels, we can use the data as is.
         return 1;
@@ -109,8 +103,7 @@ int VorbisFile::CheckBufferChannelCountAndGetStretchFactor()
         THROW("Vorbis file has wrong number of channels");
 }
 
-size_t VorbisFile::GetBufferedSampleCount()
-{
+size_t VorbisFile::GetBufferedSampleCount() {
     return mBufferEnd - mBufferBegin;
 }
 
@@ -119,20 +112,16 @@ void VorbisFile::GetSamplesFromBuffer(int16 *outOutputBuffer,
                                       int inStretchFactor)
 {
     // Copy the data, and update our pointers.
-    if (inStretchFactor == 1)
-    {
+    if (inStretchFactor == 1) {
         // The formats match exactly.  We can do a fast copy.
         memcpy(outOutputBuffer, mBufferBegin,
                inOutputSampleCount * sizeof(int16));
-    }
-    else
-    {
+    } else {
         // Duplicate each sample for the left and right channel.
         ASSERT(inStretchFactor == 2);
         ASSERT(inOutputSampleCount % inStretchFactor == 0);
         size_t out_idx = 0, in_idx = 0;
-        while (out_idx < inOutputSampleCount)
-        {
+        while (out_idx < inOutputSampleCount) {
             int16 sample = mBufferBegin[in_idx++];
             outOutputBuffer[out_idx++] = sample;
             outOutputBuffer[out_idx++] = sample;
@@ -142,13 +131,11 @@ void VorbisFile::GetSamplesFromBuffer(int16 *outOutputBuffer,
     mBufferBegin += inOutputSampleCount / inStretchFactor;
 }
 
-bool VorbisFile::Read(int16 *outData, size_t inMaxSize, size_t *outSizeUsed)
-{
+bool VorbisFile::Read(int16 *outData, size_t inMaxSize, size_t *outSizeUsed) {
     int16 *remaining_space_ptr  = outData;
 
     *outSizeUsed = 0;
-    while (*outSizeUsed < inMaxSize && MoreDataIsAvailable())
-    {
+    while (*outSizeUsed < inMaxSize && MoreDataIsAvailable()) {
         CheckBufferFrequency();
         int stretch = CheckBufferChannelCountAndGetStretchFactor();
 
@@ -171,13 +158,11 @@ bool VorbisFile::Read(int16 *outData, size_t inMaxSize, size_t *outSizeUsed)
         return true;
 }
 
-std::vector<int16> *VorbisFile::ReadAll()
-{
+std::vector<int16> *VorbisFile::ReadAll() {
     // Load our data from a file.
     std::vector<int16> *data = new std::vector<int16>(VORBIS_BUFFER_SIZE);
     size_t space_used = 0;
-    while (MoreDataIsAvailable())
-    {
+    while (MoreDataIsAvailable()) {
         // If we've run out of space to put the data in, double our vector
         // size (doubling gives us amortitized O(n) time).
         if (data->size() == space_used)

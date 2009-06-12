@@ -26,8 +26,7 @@
 class ProgressMeter;
 
 /// Custom wxStatusBar subclass used by StageFrame window.
-class FancyStatusBar : public wxStatusBar
-{
+class FancyStatusBar : public wxStatusBar {
     ProgressMeter *mProgressMeter;
     
     void OnSize(wxSizeEvent& event);

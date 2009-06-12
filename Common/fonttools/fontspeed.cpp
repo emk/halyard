@@ -41,8 +41,7 @@ class NullImage : public GraphicsTools::Image {
 
 NullImage gImage;
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     // Our resources are located relative to our parent directory.
     FileSystem::SetBaseDirectory(FileSystem::Path().AddParentComponent());
 

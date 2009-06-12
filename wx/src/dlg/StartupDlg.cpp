@@ -62,8 +62,7 @@ StartupDlg::StartupDlg(wxWindow *inParent)
     }
 }
 
-void StartupDlg::OnOK(wxCommandEvent &inEvent)
-{
+void StartupDlg::OnOK(wxCommandEvent &inEvent) {
     Hide();
 
     BEGIN_EXCEPTION_TRAPPER()

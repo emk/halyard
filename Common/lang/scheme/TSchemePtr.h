@@ -52,8 +52,7 @@ extern int gTSchemePointerCount;
 /// functions that take pointers as arguments.
 ///
 template <class Type>
-class TSchemePtr
-{
+class TSchemePtr {
     // mBox points to an immobile, non-collectable Scheme object (the
     // "box").  The box, in turn, contains a single pointer.  The pointer
     // in the box will be updated as needed by the GC.

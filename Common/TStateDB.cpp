@@ -129,7 +129,7 @@ void TStateDB::CheckForLegalKey(const std::string &inKey) {
     }
 }
 
-void TStateDB::UnregisterListener(TStateListener *inListener, 
+void TStateDB::UnregisterListener(TStateListener *inListener,
                                   std::vector<std::string> inKeyList) 
 {
     std::vector<std::string>::iterator iter = inKeyList.begin();
@@ -188,11 +188,10 @@ public:
     virtual void NotifyStateChanged() {}        
 };
 
-class TestListener : public TStateListener 
-{
+class TestListener : public TStateListener {
     int mUpdateCount;
     
-public: 
+public:
     TestListener() : mUpdateCount(0) {}
     
     virtual void NotifyStateChanged(){++mUpdateCount;}

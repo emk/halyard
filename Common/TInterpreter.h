@@ -88,8 +88,7 @@ typedef std::vector<TScriptIdentifier> IdentifierList;
 /// to change Halyard's scripting language by providing a new implementation
 /// of this class.
 ///
-class TInterpreter : boost::noncopyable
-{
+class TInterpreter : boost::noncopyable {
 public:
     /// Create a new TInterpreter object.  TInterpreter is a singleton
     /// class; only one such object may be created (at any given time).
@@ -226,8 +225,7 @@ private:
 /// object invalidates all TCallbacks; calling ReDoScript may or may
 /// not invalidate any given callback.
 ///
-class TCallback : boost::noncopyable
-{
+class TCallback : boost::noncopyable {
 public:
     TCallback() {}
     virtual ~TCallback() {}
@@ -284,8 +282,7 @@ public:
 /// Only one TInterpreterManager will ever be created, so feel free to
 /// install language-specific primitives in the constructor.
 ///
-class TInterpreterManager : boost::noncopyable
-{
+class TInterpreterManager : boost::noncopyable {
 public:
     /// Platform-specific idle procedures.  These procedures can be
     /// called from within the interpreter's idle loop to process

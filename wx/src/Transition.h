@@ -30,8 +30,7 @@ class Transition;
 /// transition.  We stick these in a class so we don't need to pass
 /// them around as separate parameters everywhere.
 ///
-class TransitionResources
-{
+class TransitionResources {
     wxDC &mOutputDC;
     wxBitmap &mBeforeBmp;
     wxBitmap &mAfterBmp;
@@ -67,8 +66,7 @@ public:
 //////////
 /// This class holds all known transitions, and performs them upon request.
 ///
-class TransitionManager
-{
+class TransitionManager {
     typedef std::map<std::string,Transition*> TransitionMap;
 
     TransitionMap mTransitions;

@@ -76,16 +76,14 @@ extern void HalyardCheckAssertion(int inTest, const char *inDescription,
 BEGIN_NAMESPACE_HALYARD
 
 //////////
-enum TriState
-{
+enum TriState {
     TriStateOff,
     TriStateOn,
     TriStateLatent
 };
 
 //////////
-enum Alignment 
-{
+enum Alignment {
     AlignLeft,
     AlignCenter,
     AlignRight

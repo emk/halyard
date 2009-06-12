@@ -119,8 +119,7 @@ const char *STANDARD_ENTITIES =
 //  TStyleSheet Methods
 //=========================================================================
 
-TStyleSheet::TStyleSheet(TArgumentList &inArgs)
-{
+TStyleSheet::TStyleSheet(TArgumentList &inArgs) {
     // (defstyle STYLENAME FONTNAME SIZE FLAGS JUSTIFICATION COLOR HIGHCOLOR...
     std::string flags, justification;
     uint32 size;
@@ -176,8 +175,7 @@ TStyleSheet::TStyleSheet(TArgumentList &inArgs)
         mHighlightShadowColor = mShadowColor;
 }
 
-Typography::Style TStyleSheet::GetBaseStyle()
-{
+Typography::Style TStyleSheet::GetBaseStyle() {
     // Build a Typography::Style object based on our style sheet.
     // We'll use this as our "base style" when drawing.
     Typography::Style base_style(mFontName, mSize);
@@ -189,16 +187,14 @@ Typography::Style TStyleSheet::GetBaseStyle()
     base_style.SetColor(mColor);
     base_style.SetShadowColor(mShadowColor);
     base_style.SetLeading(mLeading);
-    if (mShadowOffset != 0)
-    {
+    if (mShadowOffset != 0) {
         base_style.ToggleFaceStyle(Typography::kShadowFaceStyle);
         base_style.SetShadowOffset(mShadowOffset);
     }
     return base_style;
 }
 
-Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText)
-{
+Typography::StyledText TStyleSheet::MakeStyledText(const std::string& inText) {
     // Convert string to Unicode, and handle smart quotes, em-dashes, etc.
     utf8_string expanded = utf8_from_multibyte(inText);
     utf8_string xformed = TTextTransform::TransformString(expanded);
@@ -313,8 +309,7 @@ TRect TStyleSheet::Draw(const std::string& inText,
                  bounds.GetRight(), bounds.GetBottom());
 }
 
-int TStyleSheet::GetLineHeight()
-{
+int TStyleSheet::GetLineHeight() {
     // Return the height of the first line.
     Typography::Style base(GetBaseStyle());
     StyledText::value_type dummy(L' ', &base);
@@ -326,8 +321,7 @@ int TStyleSheet::GetLineHeight()
 //  TStyleSheetManager Methods
 //=========================================================================
 
-TStyleSheet *TStyleSheetManager::Find(const std::string &inName)
-{
+TStyleSheet *TStyleSheetManager::Find(const std::string &inName) {
     std::string name = MakeStringLowercase(inName);
     std::map<std::string,TStyleSheet*>::iterator found =
         mStyleSheetMap.find(name);
@@ -337,16 +331,14 @@ TStyleSheet *TStyleSheetManager::Find(const std::string &inName)
         return NULL;
 }
 
-void TStyleSheetManager::AddStyleSheet(TArgumentList &inArgs)
-{
+void TStyleSheetManager::AddStyleSheet(TArgumentList &inArgs) {
     // Create the stylesheet and get the name.
     std::auto_ptr<TStyleSheet> sheet =
         std::auto_ptr<TStyleSheet>(new TStyleSheet(inArgs));
     std::string name = sheet->GetName();
 
     // Check for an exiting stylesheet with the same name.
-    if (Find(name))
-    {
+    if (Find(name)) {
         gLog.Error("halyard", "Can't redefine style sheet <%s>.", name.c_str());
         return;
     }
@@ -356,8 +348,7 @@ void TStyleSheetManager::AddStyleSheet(TArgumentList &inArgs)
                                                               sheet.release()));
 }
 
-void TStyleSheetManager::RemoveAll()
-{
+void TStyleSheetManager::RemoveAll() {
     // Delete the individual stylesheets and empty the map.
     std::map<std::string,TStyleSheet*>::iterator iter =
         mStyleSheetMap.begin();
@@ -373,8 +364,7 @@ TRect TStyleSheetManager::Draw(const std::string &inStyleSheet,
                                GraphicsTools::Image *inImage)
 {
     TStyleSheet *style_sheet = Find(inStyleSheet);
-    if (!style_sheet)
-    {
+    if (!style_sheet) {
         gLog.Error("halyard", "Tried to draw text using non-existant style "
                    "sheet <%s>", inStyleSheet.c_str());
         return TRect(0, 0, 0, 0);
@@ -382,8 +372,7 @@ TRect TStyleSheetManager::Draw(const std::string &inStyleSheet,
     return style_sheet->Draw(inText, inPosition, inLineLength, inImage);
 }
 
-int TStyleSheetManager::GetLineHeight(const char *inStyleSheet)
-{
+int TStyleSheetManager::GetLineHeight(const char *inStyleSheet) {
     TStyleSheet *style_sheet = Find(inStyleSheet);
     if (!style_sheet)
         gLog.Fatal("halyard", "Tried to measure height of non-existant style "

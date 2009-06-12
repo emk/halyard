@@ -367,8 +367,7 @@ std::ostream *TLogger::GetErrorOutput() {
 
 /// Display an alert on the console.  THIS ROUTINE MAY NOT USE 'ASSERT' OR
 /// 'FatalError', BECAUSE IS CALLED BY THE ERROR-LOGGING CODE!
-static void ConsoleAlert(TLogger::AlertType inType, const char *inMessage)
-{
+static void ConsoleAlert(TLogger::AlertType inType, const char *inMessage) {
     std::ostream *out(TLogger::GetErrorOutput());
     *out << std::endl;
     switch (inType) {
@@ -379,26 +378,22 @@ static void ConsoleAlert(TLogger::AlertType inType, const char *inMessage)
     *out << inMessage << std::endl << std::flush;
 }
 
-void TLogger::DisplayAlert(AlertType inType, const char *inMessage)
-{
+void TLogger::DisplayAlert(AlertType inType, const char *inMessage) {
     if (s_AlertDisplayFunction && !TInterpreterManager::IsInCommandLineMode())
         (*s_AlertDisplayFunction)(inType, inMessage);
     else
         ConsoleAlert(inType, inMessage);
 }
 
-void TLogger::RegisterAlertDisplayFunction(AlertDisplayFunction inFunc)
-{
+void TLogger::RegisterAlertDisplayFunction(AlertDisplayFunction inFunc) {
     s_AlertDisplayFunction = inFunc;
 }
 
-void TLogger::PrepareToExit()
-{
+void TLogger::PrepareToExit() {
     if (s_ExitPrepFunction)
         (*s_ExitPrepFunction)();    
 }
 
-void TLogger::RegisterExitPrepFunction(ExitPrepFunction inFunc)
-{
+void TLogger::RegisterExitPrepFunction(ExitPrepFunction inFunc) {
     s_ExitPrepFunction = inFunc;
 }

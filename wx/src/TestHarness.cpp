@@ -85,15 +85,13 @@ TestReportFrame::TestReportFrame(wxFrame *inParent,
 
 TestHarness *TestHarness::sInstance = NULL;
 
-TestHarness *TestHarness::GetInstance()
-{
+TestHarness *TestHarness::GetInstance() {
     if (!sInstance)
         sInstance = new TestHarness();
     return sInstance;
 }
 
-TestHarness::TestHarness()
-{
+TestHarness::TestHarness() {
     mFrame = wxGetApp().GetStageFrame();
     mStatusBar = dynamic_cast<FancyStatusBar*>(mFrame->GetStatusBar());
     ASSERT(mStatusBar);
@@ -107,8 +105,7 @@ void TestHarness::UpdateTestProgress(int inTestIndex, int inTestCount,
         mStatusBar->SetProgressColor(*wxRED);
 }
 
-void TestHarness::RunTests()
-{
+void TestHarness::RunTests() {
     // Prepare to run tests.
     mFrame->SetStatusText(wxT("Running tests..."));
     mStatusBar->SetProgress(0.0);

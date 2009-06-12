@@ -30,8 +30,7 @@
 /// A widget represents a full-fledged wxWindow object hanging around on
 /// our stage.  It does its own event processing.
 ///
-class Widget : public Element
-{
+class Widget : public Element {
     /// The wxWindow implementing this widget.
     wxWindow *mWindow;
     

@@ -77,20 +77,18 @@ Error::Error(const char *inErrorFile, int inErrorLine, int inErrorCode)
 // This will zero any pre-existing errno value, and warn the programmer
 // about it.
 static void ResetErrno() {
-    if (errno != 0) 
+    if (errno != 0)
         Halyard::gLog.Trace("halyard", "Unexpected errno = %d (ERANGE)", errno);
     errno = 0;
 }
 
 // Call this function *after* making a system call which sets errno.
 // This will reset errno, and if errno is set, will throw an error.
-static void CheckErrno(const char *inFile, int inLine)
-{
+static void CheckErrno(const char *inFile, int inLine) {
     // Surprisingly, this function is threadsafe on most platforms.
     // 'errno' isn't really a variable; it's a magic pre-processor
     // define that accesses thread-local state.
-    if (errno != 0)
-    {
+    if (errno != 0) {
         int temp = (errno);
         errno = 0;
         throw Error(inFile, inLine, temp);
@@ -160,8 +158,7 @@ Path::Path(const std::string &inPath)
     ASSERT(inPath.find(PATH_SEPARATOR) == std::string::npos);
 }
 
-static std::string::size_type find_extension_dot(const std::string &inPath)
-{
+static std::string::size_type find_extension_dot(const std::string &inPath) {
     // Make sure we only find '.' characters in the filename, not in
     // the names of any parent directories.
     std::string::size_type dotpos = inPath.rfind('.');
@@ -172,8 +169,7 @@ static std::string::size_type find_extension_dot(const std::string &inPath)
         return std::string::npos;
 }
 
-std::string Path::GetExtension() const
-{
+std::string Path::GetExtension() const {
     std::string::size_type dotpos = find_extension_dot(mPath);
     if (dotpos == std::string::npos)
         return std::string("");
@@ -182,8 +178,7 @@ std::string Path::GetExtension() const
     return extension;
 }
 
-Path Path::ReplaceExtension(std::string inNewExtension) const
-{   
+Path Path::ReplaceExtension(std::string inNewExtension) const {
     std::string::size_type dotpos = find_extension_dot(mPath);
     std::string without_extension;
     if (dotpos == std::string::npos)
@@ -195,23 +190,17 @@ Path Path::ReplaceExtension(std::string inNewExtension) const
     return newPath;
 }
 
-bool Path::DoesExist() const
-{
+bool Path::DoesExist() const {
     struct stat info;
 
     ResetErrno();
     int result = stat(ToNativePathString().c_str(), &info);
-    if (result >= 0)
-    {
+    if (result >= 0) {
         return true;
-    }
-    else if (result < 0 && errno == ENOENT)
-    {
+    } else if (result < 0 && errno == ENOENT) {
         errno = 0;
         return false;
-    }
-    else
-    {
+    } else {
         throw Error(__FILE__, __LINE__, errno);
     }
 
@@ -219,8 +208,7 @@ bool Path::DoesExist() const
     return false;   
 }
 
-bool Path::IsRegularFile() const
-{
+bool Path::IsRegularFile() const {
     struct stat info;
     ResetErrno();
     stat(ToNativePathString().c_str(), &info);
@@ -228,8 +216,7 @@ bool Path::IsRegularFile() const
     return S_ISREG(info.st_mode) ? true : false;
 }
 
-bool Path::IsDirectory() const
-{
+bool Path::IsDirectory() const {
     struct stat info;
     ResetErrno();
     stat(ToNativePathString().c_str(), &info);
@@ -239,8 +226,7 @@ bool Path::IsDirectory() const
 
 #if APP_PLATFORM_WIN32
 
-std::list<std::string> Path::GetDirectoryEntries() const
-{
+std::list<std::string> Path::GetDirectoryEntries() const {
     // Allocate some storage.
     std::list<std::string> entries; 
 
@@ -253,10 +239,8 @@ std::list<std::string> Path::GetDirectoryEntries() const
         throw Error(__FILE__, __LINE__, "Can't open directory"); // TODO - GetLastError()
 
     // Make sure we close our WIN32_FIND_DATA correctly.
-    try
-    {
-        do
-        {
+    try {
+        do {
             // Add our directory entry to the list.
             std::string name = find_data.cFileName;
             if (name != "." && name != "..")
@@ -266,9 +250,7 @@ std::list<std::string> Path::GetDirectoryEntries() const
         // Check for any errors reading the directory.
         if (::GetLastError() != ERROR_NO_MORE_FILES)
             throw Error(__FILE__, __LINE__, "Error reading directory"); // TODO - GetLastError()
-    }
-    catch (...)
-    {
+    } catch (...) {
         ::FindClose(hFind);
         throw;
     }
@@ -280,8 +262,7 @@ std::list<std::string> Path::GetDirectoryEntries() const
 
 #elif (APP_PLATFORM_MACINTOSH || APP_PLATFORM_OTHER)
 
-std::list<std::string> Path::GetDirectoryEntries() const
-{
+std::list<std::string> Path::GetDirectoryEntries() const {
     ResetErrno();
     DIR *dir = opendir(ToNativePathString().c_str());
     CHECK_ERRNO();
@@ -308,15 +289,13 @@ std::list<std::string> Path::GetDirectoryEntries() const
 #   error "Unknown platform."
 #endif // APP_PLATFORM_*
 
-void Path::RemoveFile() const
-{
+void Path::RemoveFile() const {
     ResetErrno();
     remove(ToNativePathString().c_str());
     CHECK_ERRNO();
 }
 
-Path Path::AddComponent(const std::string &inFileName) const
-{
+Path Path::AddComponent(const std::string &inFileName) const {
     ASSERT(inFileName != "." && inFileName != "..");
     ASSERT(inFileName.find(PATH_SEPARATOR) == std::string::npos);
     Path newPath;
@@ -324,8 +303,7 @@ Path Path::AddComponent(const std::string &inFileName) const
     return newPath;
 }
 
-Path Path::AddParentComponent() const
-{
+Path Path::AddParentComponent() const {
     Path newPath;
     newPath.mPath = mPath + PATH_SEPARATOR + "..";
     return newPath; 
@@ -352,13 +330,11 @@ Path Path::ParentDirectory() const {
     return result;
 }
 
-std::string Path::ToNativePathString () const
-{
+std::string Path::ToNativePathString () const {
     return mPath;
 }
 
-void Path::RenameFile(const Path &inNewName) const
-{
+void Path::RenameFile(const Path &inNewName) const {
     ASSERT(!inNewName.DoesExist());
 
     ResetErrno();
@@ -367,8 +343,7 @@ void Path::RenameFile(const Path &inNewName) const
     CHECK_ERRNO();  
 }
 
-void Path::ReplaceWithTemporaryFile(const Path &inTemporaryFile) const
-{
+void Path::ReplaceWithTemporaryFile(const Path &inTemporaryFile) const {
     ASSERT(inTemporaryFile.DoesExist());
 
     if (DoesExist())
@@ -376,20 +351,17 @@ void Path::ReplaceWithTemporaryFile(const Path &inTemporaryFile) const
     inTemporaryFile.RenameFile(*this);
 }
 
-void Path::CreateWithMimeType(const std::string &inMimeType)
-{
+void Path::CreateWithMimeType(const std::string &inMimeType) {
     // This used to do something special on MacOS 9 and earlier.
     std::ofstream file(ToNativePathString().c_str());
     file.close();
 }
 
-bool FileSystem::operator==(const Path& inLeft, const Path& inRight)
-{
+bool FileSystem::operator==(const Path& inLeft, const Path& inRight) {
     return (inLeft.mPath == inRight.mPath);
 }
 
-Path Path::NativePath(const std::string &inPath)
-{
+Path Path::NativePath(const std::string &inPath) {
     CHECK(inPath != "", "Path cannot be an empty string");
     Path result;
 
@@ -409,9 +381,7 @@ Path Path::NativePath(const std::string &inPath)
         inPath[inPath.length()-2] != PATH_SEPARATOR)
     {
         result.mPath = inPath.substr(0, inPath.length() - 1);
-    }
-    else
-    {
+    } else {
         result.mPath = inPath;
     }
 
@@ -531,12 +501,9 @@ Path FileSystem::ResolveFontPath(const std::string &inRelPath) {
 //  Miscellaneous Utility Methods
 //=========================================================================
 
-void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir)
-{
-    if (inShouldBeDir)
-    {
-        if (!inPath.DoesExist() || !inPath.IsDirectory())
-        {
+void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir) {
+    if (inShouldBeDir) {
+        if (!inPath.DoesExist() || !inPath.IsDirectory()) {
             Halyard::
             gLog.Fatal("halyard", "Halyard was unable to open the directory \"%s\".  "
                             "Please make sure Halyard is running in the "
@@ -544,11 +511,8 @@ void FileSystem::ExistenceCheck(const Path &inPath, const bool &inShouldBeDir)
                             "available.",
                             inPath.ToNativePathString().c_str());
         }
-    }
-    else 
-    {   
-        if (!inPath.DoesExist() || !inPath.IsRegularFile())
-        {
+    } else {
+        if (!inPath.DoesExist() || !inPath.IsRegularFile()) {
             Halyard::
             gLog.Fatal("halyard", "Halyard was unable to open the file \"%s\".  "
                             "Please make sure Halyard is running in the "

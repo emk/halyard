@@ -306,7 +306,7 @@ void DrawingArea::OutlineBox(const wxRect &inBounds,
     InvalidateRect(inBounds);
 }
 
-void DrawingArea::FillOval(const wxRect &inBounds, 
+void DrawingArea::FillOval(const wxRect &inBounds,
                            const GraphicsTools::Color &inColor)
 {
     if (HasAreaOfZero())
@@ -413,8 +413,7 @@ wxRect DrawingArea::DrawImage(CairoSurfacePtr inImage,
     return bounds;
 }
 
-void DrawingArea::Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY)
-{
+void DrawingArea::Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY) {
     // If either bitmap has an area of 0, give up immediately.
     if (HasAreaOfZero() || inMask.GetWidth() == 0 || inMask.GetHeight() == 0)
         return;
@@ -435,8 +434,7 @@ void DrawingArea::Mask(CairoSurfacePtr inMask, wxCoord inX, wxCoord inY)
     InvalidateRect(wxRect(inX, inY, inMask.GetWidth(), inMask.GetHeight()));
 }
 
-void DrawingArea::DrawDCContents(wxDC &inDC)
-{
+void DrawingArea::DrawDCContents(wxDC &inDC) {
     if (HasAreaOfZero())
         return;
     

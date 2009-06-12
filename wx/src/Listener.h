@@ -29,8 +29,7 @@
 /// interactive command line for a running application.  In other systems,
 /// it's also known as an "interactor" or "message box".
 ///
-class Listener : public wxWindow
-{
+class Listener : public wxWindow {
     bool mIsFirstLine;
 
     wxTextCtrl *mHistory;

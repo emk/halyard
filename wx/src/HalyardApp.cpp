@@ -86,10 +86,9 @@ wxString HalyardCachedConf::CachedConfFilename() {
     return wxString(ToWxString(conf_filename.ToNativePathString()));
 }
 
-long HalyardCachedConf::ReadLong(const std::string inKey, const long inDefault) 
-{
+long HalyardCachedConf::ReadLong(const std::string inKey, const long inDefault) {
     // If we don't have a file here, just return the default value.
-    if (!::wxFileExists(CachedConfFilename())) 
+    if (!::wxFileExists(CachedConfFilename()))
         return inDefault;
 
     // Otherwise, open the file and get a wxFileConfig object for it
@@ -98,7 +97,7 @@ long HalyardCachedConf::ReadLong(const std::string inKey, const long inDefault)
 
     // If we got an object successfully, query it for the value, 
     // otherwise, return the default.
-    if (conf.get() != NULL) 
+    if (conf.get() != NULL)
         return conf->Read(ToWxString(inKey), inDefault);
     else
         return inDefault;
@@ -179,8 +178,7 @@ void HalyardApp::LaunchUpdateInstaller() {
         gLog.Fatal("halyard", "Error installing update.");
 }
 
-void HalyardApp::IdleProc(bool inBlock)
-{
+void HalyardApp::IdleProc(bool inBlock) {
     if (wxGetApp().HaveStage() && !wxGetApp().GetStage()->IsIdleAllowed())
         THROW("Tried to call (idle) at an unsafe time");
 
@@ -202,8 +200,7 @@ void HalyardApp::IdleProc(bool inBlock)
     // process user events, never going back to scheme until an event tells us
     // to.
 
-    if (inBlock)
-    {
+    if (inBlock) {
         while (!wxGetApp().Pending() && wxGetApp().ProcessIdle())
             ;
         wxGetApp().Dispatch();
@@ -219,8 +216,7 @@ void HalyardApp::IdleProc(bool inBlock)
     // ProcessIdle until the pending queue is drained.  See the ProcessIdle
     // documentation for an explanation of when and why we might need to
     // call it multiple times.
-    while (wxGetApp().Pending() || (wxGetApp().ProcessIdle() && --max_idles))
-    {
+    while (wxGetApp().Pending() || (wxGetApp().ProcessIdle() && --max_idles)) {
         if (wxGetApp().Pending())
             wxGetApp().Dispatch();
     }
@@ -233,8 +229,7 @@ void HalyardApp::PrepareForCrash() {
     ShowSystemWindows();
 }
 
-void HalyardApp::ErrorDialog(const wxString &inTitle, const wxString &inMessage)
-{
+void HalyardApp::ErrorDialog(const wxString &inTitle, const wxString &inMessage) {
     // TODO: Several of the callers of this function should probably
     // be talking to the logging framework instead.
     wxMessageDialog dlg(NULL, inMessage, inTitle, wxOK|wxICON_ERROR);
@@ -718,8 +713,7 @@ void HalyardApp::ExitMainLoop() {
     }
 }
 
-Stage *HalyardApp::GetStage()
-{
+Stage *HalyardApp::GetStage() {
     return GetStageFrame()->GetStage();
 }
 

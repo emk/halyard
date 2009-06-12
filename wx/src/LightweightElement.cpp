@@ -51,7 +51,7 @@ void LightweightElement::Show(bool inShow) {
     }
 }
 
-void LightweightElement::SetCursorName(const std::string &inCursorName) { 
+void LightweightElement::SetCursorName(const std::string &inCursorName) {
     mCursorName = inCursorName; 
     // We need to notify the stage that elements have changed so it can
     // update our current cursor.

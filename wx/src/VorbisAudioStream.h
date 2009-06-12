@@ -76,8 +76,7 @@ public:
 };
 
 /// An AudioStream which reads from a VorbisFile.
-class VorbisAudioStream : public AudioStream
-{
+class VorbisAudioStream : public AudioStream {
     std::string mFileName;
     bool mShouldLoop;
     shared_ptr<VorbisFile> mFile;

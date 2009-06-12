@@ -30,7 +30,7 @@ BEGIN_EVENT_TABLE(HistoryTextCtrl, wxTextCtrl)
     EVT_TEXT_ENTER(wxID_ANY, HistoryTextCtrl::OnTextEnter)
 END_EVENT_TABLE()
 
-HistoryTextCtrl::HistoryTextCtrl(wxWindow* parent, 
+HistoryTextCtrl::HistoryTextCtrl(wxWindow* parent,
                                  wxWindowID id, 
                                  const wxString& value, 
                                  const wxPoint& pos, 
@@ -48,8 +48,7 @@ HistoryTextCtrl::HistoryTextCtrl(wxWindow* parent,
 }
 
 // Handle the keystrokes used to navigate through the history
-void HistoryTextCtrl::OnKeyDown(wxKeyEvent &inEvent)
-{
+void HistoryTextCtrl::OnKeyDown(wxKeyEvent &inEvent) {
     int code = inEvent.GetKeyCode();
     if (code == WXK_UP)
         HistPrev(); 
@@ -60,8 +59,7 @@ void HistoryTextCtrl::OnKeyDown(wxKeyEvent &inEvent)
 }
 
 // Handle entering a value
-void HistoryTextCtrl::OnTextEnter(wxCommandEvent &inEvent)
-{
+void HistoryTextCtrl::OnTextEnter(wxCommandEvent &inEvent) {
     if (inEvent.GetString() == wxT(""))
         inEvent.Skip();
     else
@@ -82,21 +80,17 @@ void HistoryTextCtrl::OnTextEnter(wxCommandEvent &inEvent)
     
 
 // History manipulation functions.
-void HistoryTextCtrl::SaveCurrHist()
-{
+void HistoryTextCtrl::SaveCurrHist() {
     mHistoryItems[mHistoryCurrent] = GetValue();
 }
 
-void HistoryTextCtrl::DisplayCurrHist()
-{
+void HistoryTextCtrl::DisplayCurrHist() {
     SetValue(mHistoryItems[mHistoryCurrent]);
     SetInsertionPointEnd();
 }
 
-void HistoryTextCtrl::HistPrev() 
-{
-    if (mHistoryCurrent > 0)
-    {   
+void HistoryTextCtrl::HistPrev() {
+    if (mHistoryCurrent > 0) {
         // Note: This uses Bash's semantics, which are to save the current
         // value of the history item you are editing when you go to another
         // line. The probably more correct behavior would be to have two 
@@ -111,10 +105,8 @@ void HistoryTextCtrl::HistPrev()
     }
 }
 
-void HistoryTextCtrl::HistNext() 
-{
-    if (mHistoryCurrent+1 < mHistoryItems.size())
-    {   
+void HistoryTextCtrl::HistNext() {
+    if (mHistoryCurrent+1 < mHistoryItems.size()) {
         SaveCurrHist();
         mHistoryCurrent++;
         DisplayCurrHist();

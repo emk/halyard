@@ -33,7 +33,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CScormAiccGwCtl
-class ATL_NO_VTABLE CScormAiccGwCtl : 
+class ATL_NO_VTABLE CScormAiccGwCtl :
     public CComObjectRootEx<CComSingleThreadModel>,
     public IDispatchImpl<IScormAiccGwCtl, &IID_IScormAiccGwCtl, &LIBID_SCORMAICCGWLib>,
     public CComControl<CScormAiccGwCtl>,
@@ -113,7 +113,7 @@ BEGIN_MSG_MAP(CScormAiccGwCtl)
     MESSAGE_HANDLER(WM_CREATE, OnCreate)
     MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
     CHAIN_MSG_MAP(CComControl<CScormAiccGwCtl>)
-ALT_MSG_MAP(1)                   
+ALT_MSG_MAP(1)
    // alternate message map
    // This maps messages from contained window,
    // i.e. the button, to the parent control's

@@ -30,19 +30,17 @@
 #include "TCommon.h"
 #include "fade_asm.h"
 
-void OptimizedDrawingStart()
-{
+void OptimizedDrawingStart() {
     // Nothing to do.
 }
 
-void OptimizedDrawingEnd()
-{
+void OptimizedDrawingEnd() {
     __asm {
         emms                    // Make it safe to use floating point.
     }
 }
 
-void OptimizedFadePixels(wxRawBitmapPixelRef24 inPixelsBegin, 
+void OptimizedFadePixels(wxRawBitmapPixelRef24 inPixelsBegin,
                          wxRawBitmapPixelRef24 inPixelsEnd,
                          wxRawBitmapPixelRef24 outPixelsBegin,
                          uint16 inValue)

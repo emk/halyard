@@ -44,8 +44,7 @@ TPolygon::TPolygon(const std::vector<TPoint> &inVertices)
   right = mVertices[0].X();
 
   std::vector<TPoint>::iterator i;
-  for (i = mVertices.begin(); i != mVertices.end(); ++i)
-  {
+  for (i = mVertices.begin(); i != mVertices.end(); ++i) {
     TPoint pt = *i;
     if (pt.X() < left)
       left = pt.X();
@@ -53,7 +52,7 @@ TPolygon::TPolygon(const std::vector<TPoint> &inVertices)
       top = pt.Y();
     if (pt.X() > right)
       right = pt.X();
-    if (pt.Y() > bottom) 
+    if (pt.Y() > bottom)
       bottom = pt.Y();
   }
   
@@ -67,11 +66,10 @@ TPolygon::TPolygon(const std::vector<TPoint> &inVertices)
 // OK, now I've switched up and down and left and right enough that
 // I'm not sure which comments are right and which are not. Caveat
 // emptor!
-bool TPolygon::Contains(const TPoint &inPt)
-{
+bool TPolygon::Contains(const TPoint &inPt) {
   // First check to see if point is within bounding box, since that's
   // quick and simple.
-  if (inPt.X() < mBounds.Left() 
+  if (inPt.X() < mBounds.Left()
       || inPt.Y() < mBounds.Top()
       || inPt.X() > mBounds.Right()
       || inPt.Y() > mBounds.Bottom())
@@ -95,15 +93,13 @@ bool TPolygon::Contains(const TPoint &inPt)
   TPoint begin, end, tmp;
   float slope, rightVal;
   int count = 0;
-  for (i = mVertices.begin(); i != mVertices.end(); ++i)
-  {
+  for (i = mVertices.begin(); i != mVertices.end(); ++i) {
       // Get the endpoints of the current segment.
       begin = *i;
       end = (i+1) == mVertices.end() ? *(mVertices.begin()) : *(i+1);
     
       // Make sure our endpoints are in order from right to left
-      if (begin.X() < end.X()) 
-      { 
+      if (begin.X() < end.X()) {
           tmp = begin;
           begin = end;
           end = tmp;
@@ -116,15 +112,12 @@ bool TPolygon::Contains(const TPoint &inPt)
           
       // If our beginning point is to the right of the ray, compute
       // it's value at the start of the ray. 
-      if (begin.X() > inPt.X())
-      {
+      if (begin.X() > inPt.X()) {
           // Note: we can't be vertical, so this is OK.
           slope = (float) (end.Y() -  begin.Y()) 
               / (float) (end.X() - begin.X());
           rightVal = slope * (inPt.X() - begin.X()) + begin.Y();
-      }
-      else
-      {
+      } else {
           rightVal = (float) begin.Y();
       }
 
@@ -156,8 +149,7 @@ bool TPolygon::Contains(const TPoint &inPt)
   return count % 2 == 1;
 }
 
-void TPolygon::Offset(const TPoint &inPt)
-{
+void TPolygon::Offset(const TPoint &inPt) {
     std::vector<TPoint>::iterator i;
     
     for (i = mVertices.begin(); i != mVertices.end(); ++i)
@@ -166,19 +158,16 @@ void TPolygon::Offset(const TPoint &inPt)
     mBounds.Offset(inPt);
 }
 
-void TPolygon::MoveTo(const TPoint &inOrigin)
-{
+void TPolygon::MoveTo(const TPoint &inOrigin) {
     TPoint offsetDelta(inOrigin.X() - Origin().X(), inOrigin.Y() - Origin().Y());
     Offset(offsetDelta);
 }
 
-TPoint TPolygon::Origin() const
-{ 
+TPoint TPolygon::Origin() const {
     return TPoint(mBounds.Left(), mBounds.Top()); 
 }
 
-bool TPolygon::operator==(const TPolygon &inPoly) const
-{
+bool TPolygon::operator==(const TPolygon &inPoly) const {
     return mVertices == inPoly.Vertices();
 }
 

@@ -28,8 +28,7 @@ using namespace Halyard;
 
 extern void test_TPolygon (void);
 
-void test_TPolygon (void)
-{
+void test_TPolygon (void) {
   // Setup our polygons
     std::vector<TPoint> convex_pts, concave_pts, intersect_pts, rect_pts,
         empty_pts, single_pts, line_pts, intersect2_pts;

@@ -27,8 +27,7 @@
 #include "CairoDrawing.h"
 
 /// A cache of recently displayed wxBitmap objects.
-class ImageCache : public Halyard::TReloadNotified
-{
+class ImageCache : public Halyard::TReloadNotified {
     struct CachedImage {
         CairoSurfacePtr surface;
         time_t          last_used;

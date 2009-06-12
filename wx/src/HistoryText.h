@@ -29,8 +29,7 @@
 /// currently typing is added to the history, which can be navigated using 
 /// the arrow keys or CTRL-P and CTRL-N.
 ///
-class HistoryTextCtrl : public wxTextCtrl
-{
+class HistoryTextCtrl : public wxTextCtrl {
     std::vector<wxString> mHistoryItems;
     size_t mHistoryCurrent;
 

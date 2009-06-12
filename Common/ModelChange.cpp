@@ -37,29 +37,25 @@ Change::Change()
 {
 }
 
-Change::~Change()
-{
+Change::~Change() {
     ASSERT(mIsFreed);
 }
 
-void Change::Apply()
-{
+void Change::Apply() {
     ASSERT(mIsFreed == false);
     ASSERT(mIsApplied == false);
     DoApply();
     mIsApplied = true;
 }
 
-void Change::Revert()
-{
+void Change::Revert() {
     ASSERT(mIsFreed == false);
     ASSERT(mIsApplied == true);
     DoRevert();
     mIsApplied = false;
 }
 
-void Change::FreeResources()
-{
+void Change::FreeResources() {
     // This function can't be part of the destructor because destructors
     // apparently can't call virtual functions.
     ASSERT(mIsFreed == false);
@@ -85,8 +81,7 @@ SetChange<KeyType>::SetChange(CollectionDatum<KeyType> *inDatum,
 }
 
 template <typename KeyType>
-void SetChange<KeyType>::DoApply()
-{
+void SetChange<KeyType>::DoApply() {
     if (mOldDatum)
         RemoveKnown(mCollection, mKey, mOldDatum);
     Insert(mCollection, mKey, mNewDatum);
@@ -97,8 +92,7 @@ void SetChange<KeyType>::DoApply()
 }
 
 template <typename KeyType>
-void SetChange<KeyType>::DoRevert()
-{
+void SetChange<KeyType>::DoRevert() {
     RemoveKnown(mCollection, mKey, mNewDatum);
     if (mOldDatum)
         Insert(mCollection, mKey, mOldDatum);
@@ -109,17 +103,14 @@ void SetChange<KeyType>::DoRevert()
 }
 
 template <typename KeyType>
-void SetChange<KeyType>::DoFreeApplyResources()
-{
+void SetChange<KeyType>::DoFreeApplyResources() {
     delete mNewDatum;
     mNewDatum = NULL;
 }
 
 template <typename KeyType>
-void SetChange<KeyType>::DoFreeRevertResources()
-{
-    if (mOldDatum)
-    {
+void SetChange<KeyType>::DoFreeRevertResources() {
+    if (mOldDatum) {
         delete mOldDatum;
         mOldDatum = NULL;
     }
@@ -139,37 +130,32 @@ DeleteChange<KeyType>::DeleteChange(
     : mCollection(inDatum), mKey(inKey)
 {
     mOldDatum = Find(mCollection, inKey);
-    if (!mOldDatum)
-    {
+    if (!mOldDatum) {
         ConstructorFailing();
         THROW("DeleteChange: No such key");
     }
 }
 
 template <typename KeyType>
-void DeleteChange<KeyType>::DoApply()
-{
+void DeleteChange<KeyType>::DoApply() {
     RemoveKnown(mCollection, mKey, mOldDatum);
     NotifyChanged(mCollection);
     NotifyDeleted(mOldDatum);
 }
 
 template <typename KeyType>
-void DeleteChange<KeyType>::DoRevert()
-{
+void DeleteChange<KeyType>::DoRevert() {
     Insert(mCollection, mKey, mOldDatum);
     NotifyChanged(mCollection);
     NotifyUndeleted(mOldDatum);
 }
 
 template <typename KeyType>
-void DeleteChange<KeyType>::DoFreeApplyResources()
-{
+void DeleteChange<KeyType>::DoFreeApplyResources() {
 }
 
 template <typename KeyType>
-void DeleteChange<KeyType>::DoFreeRevertResources()
-{
+void DeleteChange<KeyType>::DoFreeRevertResources() {
     delete mOldDatum;
     mOldDatum = NULL;
 }
@@ -189,26 +175,22 @@ InsertChange::InsertChange(List *inCollection,
 {
 }
 
-void InsertChange::DoApply()
-{
+void InsertChange::DoApply() {
     Insert(mCollection, mKey, mNewDatum);
     NotifyChanged(mCollection);
     NotifyUndeleted(mNewDatum);
 }
 
-void InsertChange::DoRevert()
-{
+void InsertChange::DoRevert() {
     RemoveKnown(mCollection, mKey, mNewDatum);
     NotifyChanged(mCollection);
     NotifyDeleted(mNewDatum);
 }
 
-void InsertChange::DoFreeApplyResources()
-{
+void InsertChange::DoFreeApplyResources() {
     delete mNewDatum;
     mNewDatum = NULL;   
 }
 
-void InsertChange::DoFreeRevertResources()
-{
+void InsertChange::DoFreeRevertResources() {
 }

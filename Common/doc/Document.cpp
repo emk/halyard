@@ -86,16 +86,14 @@ const static ModelFormat gHalyardFormat("HalyardProgram", CURRENT_FORMAT,
 //  Document Methods
 //=========================================================================
 
-std::string Document::SetBaseAndGetFilePath(const std::string &inDirectory)
-{
+std::string Document::SetBaseAndGetFilePath(const std::string &inDirectory) {
     FileSystem::SetBaseDirectory(inDirectory);
     FileSystem::Path path =
         FileSystem::GetBaseDirectory().AddComponent("application.halyard");
     return path.ToNativePathString();
 }
 
-void Document::CheckStructure()
-{
+void Document::CheckStructure() {
     // Sanity-check our directory structure.
     Path base = FileSystem::GetBaseDirectory();
     Path runtime = FileSystem::GetRuntimeCollectsDirectory();
@@ -109,15 +107,13 @@ void Document::CheckStructure()
     CheckFile(FileSystem::GetScriptFilePath("start.ss"));
 }
 
-void Document::CheckDirectory(Path inPath)
-{
+void Document::CheckDirectory(Path inPath) {
     CHECK(inPath.DoesExist() && inPath.IsDirectory(),
           ("Cannot find directory " + inPath.ToNativePathString() +
            " in Halyard program").c_str());
 }
 
-void Document::CheckFile(Path inPath)
-{
+void Document::CheckFile(Path inPath) {
     CHECK(inPath.DoesExist() && inPath.IsRegularFile(),
           ("Cannot find file " + inPath.ToNativePathString() +
            " in Halyard program").c_str());
@@ -142,12 +138,10 @@ Document::Document(const std::string &inDirectory, Flag inOpen)
     manager->BeginScript();    
 }
 
-Document::~Document()
-{
+Document::~Document() {
     
 }
 
-HalyardProgram *Document::GetHalyardProgram()
-{
+HalyardProgram *Document::GetHalyardProgram() {
     return cast<HalyardProgram>(GetRoot());
 }

@@ -25,20 +25,17 @@
 
 using namespace Halyard;
 
-TPoint::TPoint(int32 inX /* = 0 */, int32 inY /* = 0 */) 
-{ 
+TPoint::TPoint(int32 inX /* = 0 */, int32 inY /* = 0 */) {
     m_X = inX; 
     m_Y = inY; 
 }
 
-TPoint::TPoint(const TPoint &inPt) 
-{ 
+TPoint::TPoint(const TPoint &inPt) {
     m_X = inPt.X(); 
     m_Y = inPt.Y(); 
 }
 
-TPoint &TPoint::operator=(const TPoint &inPt)
-{
+TPoint &TPoint::operator=(const TPoint &inPt) {
     Set(inPt);
 
     return (*this);
@@ -47,8 +44,7 @@ TPoint &TPoint::operator=(const TPoint &inPt)
 // 
 // equality operator
 //
-bool TPoint::operator==(const TPoint &inPt) const
-{
+bool TPoint::operator==(const TPoint &inPt) const {
     if ((inPt.X() == m_X) &&
         (inPt.Y() == m_Y))
     {
@@ -57,20 +53,17 @@ bool TPoint::operator==(const TPoint &inPt) const
     return (false);
 }
 
-void TPoint::Set(int32 inX, int32 inY) 
-{ 
+void TPoint::Set(int32 inX, int32 inY) {
     m_X = inX; 
     m_Y = inY; 
 }
 
-void TPoint::Set (const TPoint &inPt) 
-{ 
+void TPoint::Set (const TPoint &inPt) {
     m_X = inPt.X();
     m_Y = inPt.Y(); 
 }
 
-void TPoint::Offset(TPoint &inPt)
-{
+void TPoint::Offset(TPoint &inPt) {
     m_X += inPt.X();
     m_Y += inPt.Y();
 }

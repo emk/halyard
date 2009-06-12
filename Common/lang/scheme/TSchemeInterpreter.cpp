@@ -141,8 +141,7 @@ TSchemeInterpreterManager::SetCollectsPath(int inArgc, Scheme_Object **inArgv) {
     return scheme_null;
 }
 
-void TSchemeInterpreterManager::InitializeScheme()
-{
+void TSchemeInterpreterManager::InitializeScheme() {
     Scheme_Config *current_config = NULL;
     Scheme_Object *current_directory = NULL;
 
@@ -170,8 +169,7 @@ void TSchemeInterpreterManager::InitializeScheme()
     LoadFile(halyard_dir.AddComponent("loader").AddComponent("stage1.ss"));
 }
 
-void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
-{
+void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile) {
     // Make sure the file exists.
     std::string name = inFile.ToNativePathString();
     if (!inFile.DoesExist())
@@ -179,8 +177,7 @@ void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
                         name.c_str());
 
     // Load the file.
-    if (!scheme_load(name.c_str()))
-    {
+    if (!scheme_load(name.c_str())) {
         // An error occurred in the code below, so give an error message.
         // Note that this error message isn't very helpful, so we shouldn't
         // use this routine to load ordinary user code--just the kernel
@@ -190,8 +187,7 @@ void TSchemeInterpreterManager::LoadFile(const FileSystem::Path &inFile)
     }
 }
 
-void TSchemeInterpreterManager::MakeInterpreter()
-{
+void TSchemeInterpreterManager::MakeInterpreter() {
     // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
     ASSERT(IsInsideStackBase());
 
@@ -260,8 +256,7 @@ TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
 
     // Load our kernel and script.
     result = LoadScript();
-    if (!SCHEME_FALSEP(result))
-    {
+    if (!SCHEME_FALSEP(result)) {
         ASSERT(SCHEME_CHAR_STRINGP(result));
         byte_str = scheme_char_string_to_byte_string(result);
         raw_str = SCHEME_BYTE_STR_VAL(byte_str);
@@ -274,8 +269,7 @@ TSchemeInterpreter::TSchemeInterpreter(Scheme_Env *inGlobalEnv)
     mScriptIsLoaded = true;
 }
 
-TSchemeInterpreter::~TSchemeInterpreter()
-{
+TSchemeInterpreter::~TSchemeInterpreter() {
     ASSERT(TInterpreterManager::GetInstance()->IsInsideStackBase());
 
     // We don't actually shut down the Scheme interpreter.  But we'll
@@ -289,8 +283,7 @@ TSchemeInterpreter *TSchemeInterpreter::GetSchemeInterpreter() {
     return interp;
 }
 
-void TSchemeInterpreter::InitializeModuleNames()
-{
+void TSchemeInterpreter::InitializeModuleNames() {
     Scheme_Object *halyard_string = NULL;
     Scheme_Object *tail1 = NULL;
     Scheme_Object *lib_symbol = NULL;
@@ -373,8 +366,7 @@ TSchemeInterpreter::FindBucket(Scheme_Env *inEnv,
     }
 }
 
-Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc, Scheme_Object **inArgv)
-{
+Scheme_Object *TSchemeInterpreter::CallPrim(int inArgc, Scheme_Object **inArgv) {
     // We need to be very careful here, because mixing scheme_signal_error
     // with C++ exceptions will subtly corrupt the C++ exception-handling
     // runtime, and the errors will show up once in every few days of
@@ -625,8 +617,7 @@ Scheme_Object *TSchemeInterpreter::CallScheme(const char *inFuncName,
     return CallSchemeEx(mScriptEnv, mKernelModule, inFuncName, inArgc, inArgv);
 }
 
-Scheme_Object *TSchemeInterpreter::CallSchemeSimple(const char *inFuncName)
-{
+Scheme_Object *TSchemeInterpreter::CallSchemeSimple(const char *inFuncName) {
     // Call a function with no arguments.
     return CallScheme(inFuncName, 0, NULL);
 }
@@ -677,70 +668,59 @@ void TSchemeInterpreter::Run() {
     END_SANDBOX_THREAD
 }
 
-void TSchemeInterpreter::KillInterpreter(void)
-{
+void TSchemeInterpreter::KillInterpreter(void) {
     (void) CallSchemeSimple("%kernel-kill-interpreter");
 }
 
-void TSchemeInterpreter::Stop()
-{
+void TSchemeInterpreter::Stop() {
     ASSERT(!IsStopped());
     (void) CallSchemeSimple("%kernel-stop");
 }
 
-bool TSchemeInterpreter::IsStopped()
-{
+bool TSchemeInterpreter::IsStopped() {
     // MANUAL GC PROOF REQUIRED - We do no allocation after the call to
     // CallSchemeSimple, so don't need a TSchemeReg here.
     Scheme_Object *o = CallSchemeSimple("%kernel-stopped?");
     return SCHEME_FALSEP(o) ? false : true;
 }
 
-void TSchemeInterpreter::Go(const char *card)
-{
+void TSchemeInterpreter::Go(const char *card) {
     ASSERT(IsStopped());
     (void) CallSchemeSimple("%kernel-go");
     JumpToCardByName(card);
 }
 
-bool TSchemeInterpreter::CanSuspend()
-{
+bool TSchemeInterpreter::CanSuspend() {
     // MANUAL GC PROOF REQUIRED - We do no allocation after the call to
     // CallSchemeSimple, so don't need a TSchemeReg here.
     Scheme_Object *o = CallSchemeSimple("%kernel-can-suspend?");
     return SCHEME_FALSEP(o) ? false : true;
 }
 
-void TSchemeInterpreter::Pause(void)
-{
+void TSchemeInterpreter::Pause(void) {
     (void) CallSchemeSimple("%kernel-pause");
 }
 
-void TSchemeInterpreter::WakeUp(void)
-{
+void TSchemeInterpreter::WakeUp(void) {
     (void) CallSchemeSimple("%kernel-wake-up");
 }
 
-void TSchemeInterpreter::SetShouldWakeUp(void)
-{
+void TSchemeInterpreter::SetShouldWakeUp(void) {
     (void) CallSchemeSimple("%kernel-set-should-wake-up");
 }
 
-bool TSchemeInterpreter::Paused(void)
-{
+bool TSchemeInterpreter::Paused(void) {
     // MANUAL GC PROOF REQUIRED - We do no allocation after the call to
     // CallSchemeSimple, so don't need a TSchemeReg here.
     Scheme_Object *o = CallSchemeSimple("%kernel-paused?");
     return SCHEME_FALSEP(o) ? false : true;
 }
 
-void TSchemeInterpreter::KillCurrentCard(void)
-{
+void TSchemeInterpreter::KillCurrentCard(void) {
     (void) CallSchemeSimple("%kernel-kill-current-card");
 }
 
-void TSchemeInterpreter::JumpToCardByName(const char *inName)
-{
+void TSchemeInterpreter::JumpToCardByName(const char *inName) {
     TSchemeArgs<1> args;
     TSchemeReg<0,1> reg;
     reg.args(args);
@@ -766,8 +746,7 @@ void TSchemeInterpreter::LoadGroup(const char *inName) {
     (void) CallScheme("%kernel-load-group", args.size(), args.get());
 }
 
-std::string TSchemeInterpreter::CurCardName(void)
-{
+std::string TSchemeInterpreter::CurCardName(void) {
     Scheme_Object *name_obj = NULL, *name_byte_str = NULL;
     char *name = NULL;
 
@@ -785,8 +764,7 @@ std::string TSchemeInterpreter::CurCardName(void)
     return std::string(name);
 }
 
-bool TSchemeInterpreter::IsValidCard(const char *inCardName)
-{
+bool TSchemeInterpreter::IsValidCard(const char *inCardName) {
     Scheme_Object *b = NULL;
     TSchemeArgs<1> args;
 

@@ -36,8 +36,7 @@ class MediaInfoPane;
 /// An interface for elements which play media streams.  This is used as a
 /// mixin class.
 ///
-class MediaElement
-{
+class MediaElement {
     bool mEndPlaybackWasCalled;
     bool mHaveSentMediaFinishedEvent;
     shared_ptr<Halyard::CaptionList> mCaptions;

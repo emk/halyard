@@ -34,38 +34,33 @@ TRect::TRect(int32 inLeft, int32 inTop,
     m_Right = inRight;
 }
 
-TRect::TRect(const TRect &inRect)
-{
+TRect::TRect(const TRect &inRect) {
     m_Top = inRect.m_Top;
     m_Left = inRect.m_Left;
     m_Bottom = inRect.m_Bottom;
     m_Right = inRect.m_Right;
 }
 
-void TRect::Set(int32 inLeft, int32 inTop, int32 inRight, int32 inBottom)
-{  
+void TRect::Set(int32 inLeft, int32 inTop, int32 inRight, int32 inBottom) {
     m_Top = inTop; 
     m_Left = inLeft; 
     m_Bottom = inBottom; 
     m_Right = inRight; 
 }
 
-void TRect::Set(const TRect &inRect)
-{
+void TRect::Set(const TRect &inRect) {
     m_Top = inRect.Top();
     m_Left = inRect.Left();
     m_Bottom = inRect.Bottom();
     m_Right = inRect.Right();
 }
 
-TPoint TRect::TopLeft(void) const
-{
+TPoint TRect::TopLeft(void) const {
     TPoint retPt(m_Left, m_Top);
     return retPt;
 }
 
-TRect &TRect::operator=(const TRect &inRect)
-{
+TRect &TRect::operator=(const TRect &inRect) {
     Set(inRect);
 
     return (*this);
@@ -74,8 +69,7 @@ TRect &TRect::operator=(const TRect &inRect)
 // 
 // equality operator
 //
-bool TRect::operator==(const TRect &inRect) const
-{
+bool TRect::operator==(const TRect &inRect) const {
     if ((inRect.Top() == m_Top) &&
         (inRect.Left() == m_Left) &&
         (inRect.Bottom() == m_Bottom) &&
@@ -86,9 +80,8 @@ bool TRect::operator==(const TRect &inRect) const
     return (false);
 }
 
-bool TRect::Contains(TPoint &inPt)
-{
-    if ((inPt.X() >= m_Left) && 
+bool TRect::Contains(TPoint &inPt) {
+    if ((inPt.X() >= m_Left) &&
         (inPt.X() <= m_Right) &&
         (inPt.Y() >= m_Top) && 
         (inPt.Y() <= m_Bottom))
@@ -98,8 +91,7 @@ bool TRect::Contains(TPoint &inPt)
     return (false);
 }
 
-void TRect::Offset(const TPoint &inPt)
-{
+void TRect::Offset(const TPoint &inPt) {
     m_Top += inPt.Y();
     m_Bottom += inPt.Y();
     m_Left += inPt.X();

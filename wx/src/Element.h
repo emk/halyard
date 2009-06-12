@@ -42,8 +42,7 @@ class CairoContext;
 /// if IsLightWeight returns true.  This allows us to avoid using RTTI,
 /// but is otherwise a slightly odd design.
 ///
-class Element
-{
+class Element {
     /// The stage on which this element appears.
     Stage *mStage;
 

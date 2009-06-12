@@ -64,8 +64,7 @@ using namespace Halyard;
 
 ///  This class implements the wxWindow *behind* the stage.  It has few
 ///  duties other than (1) being black and (2) keeping the stage centered.
-class StageBackground : public wxWindow
-{
+class StageBackground : public wxWindow {
     DECLARE_EVENT_TABLE();
 
     StageFrame *mStageFrame;
@@ -103,10 +102,8 @@ StageBackground::StageBackground(StageFrame *inStageFrame)
         SetBackgroundColour(STAGE_BACKGROUND_COLOR_NEUTRAL);
 }
 
-void StageBackground::UpdateStagePosition()
-{
-    if (mStage)
-    {
+void StageBackground::UpdateStagePosition() {
+    if (mStage) {
         // Calling CentreOnParent produces weird results when the size
         // of stage is exactly equal to the size of background (and I've
         // tracked down enough wxWindows bugs this afternoon).  So let's
@@ -119,13 +116,11 @@ void StageBackground::UpdateStagePosition()
     }
 }
 
-void StageBackground::OnSize(wxSizeEvent &WXUNUSED(event))
-{
+void StageBackground::OnSize(wxSizeEvent &WXUNUSED(event)) {
     UpdateStagePosition();
 }
 
-void StageBackground::UpdateColor()
-{
+void StageBackground::UpdateColor() {
     // We're called immediately *before* toggling ShowFullScreen,
     // so we need to set our background color to what we want it
     // to be *after* the call.  So this test is backwards...
@@ -135,8 +130,7 @@ void StageBackground::UpdateColor()
         SetBackgroundColour(STAGE_BACKGROUND_COLOR_NEUTRAL);
 }
 
-void StageBackground::CenterStage(Stage *inStage)
-{
+void StageBackground::CenterStage(Stage *inStage) {
     ASSERT(!mStage);
     mStage = inStage;
     UpdateStagePosition();
@@ -375,8 +369,7 @@ void StageFrame::SetFullScreenVideoMode() {}
 void StageFrame::ResetVideoMode() {}
 #else // wxUSE_DISPLAY
 
-void StageFrame::FindBestFullScreenVideoMode()
-{
+void StageFrame::FindBestFullScreenVideoMode() {
     // Get the number of the current display. 
     //
     // XXX - I'm not sure that wxWidgets' underlying toplevel.cpp resize
@@ -419,8 +412,7 @@ void StageFrame::FindBestFullScreenVideoMode()
     wxArrayVideoModes modes = display.GetModes();
     mFullScreenVideoMode = wxDefaultVideoMode;
     wxSize min_size = mStage->GetStageSize();
-    for (size_t i = 0; i < modes.GetCount(); i++)
-    {
+    for (size_t i = 0; i < modes.GetCount(); i++) {
         wxVideoMode &mode = modes[i];
         gLog.Debug("halyard", "Found mode: %dx%d, %d bit, %d Hz (aspect %.2f)",
                       mode.w, mode.h, mode.bpp, mode.refresh,
@@ -476,10 +468,8 @@ void StageFrame::SetFullScreenVideoMode() {
     mBackground->UpdateStagePosition();
 }
 
-void StageFrame::ResetVideoMode()
-{
-    if (mFullScreenVideoMode != wxDefaultVideoMode)
-    {
+void StageFrame::ResetVideoMode() {
+    if (mFullScreenVideoMode != wxDefaultVideoMode) {
         wxDisplay display(mCurrentFullScreenDisplayId);
         display.ResetMode();
     }       
@@ -544,8 +534,7 @@ bool StageFrame::ConfirmScreenSize() {
 
 #endif // wxUSE_DISPLAY
 
-bool StageFrame::ShowFullScreen(bool show, long style)
-{
+bool StageFrame::ShowFullScreen(bool show, long style) {
     mBackground->UpdateColor();
     if (show) {
         // We're going to full-screen mode, so save our current perspective
@@ -637,8 +626,7 @@ void StageFrame::UseTemplate(const wxString &inDir,
     }
 }
 
-void StageFrame::NewDocument()
-{
+void StageFrame::NewDocument() {
     wxASSERT(mDocument == NULL);
     wxFileDialog dlg(this, wxT("New Halyard program"), wxEmptyString,
                      wxEmptyString, wxFileSelectorDefaultWildcardStr,
@@ -671,8 +659,7 @@ void StageFrame::NewDocument()
     }
 }
 
-void StageFrame::OpenDocument()
-{
+void StageFrame::OpenDocument() {
     wxASSERT(mDocument == NULL);
     wxFileDialog dlg(this, wxT("Open a Halyard program folder:"),
                      wxT(""), wxT(""),
@@ -769,8 +756,7 @@ void StageFrame::LoadIcon(const std::string &inName, wxIconBundle &ioIcons,
     ioHaveIcon = true;
 }
 
-void StageFrame::ObjectChanged()
-{
+void StageFrame::ObjectChanged() {
     // Load our icons, if we have any.
     wxIconBundle icons;
     bool have_icon = false;
@@ -813,8 +799,7 @@ void StageFrame::ObjectChanged()
     }
 }
 
-void StageFrame::ObjectDeleted()
-{
+void StageFrame::ObjectDeleted() {
     FileSystem::SetScriptDataDirectoryName("");
 
     // Only reset our name and icon if we're not in runtime mode--there's
@@ -898,57 +883,48 @@ void StageFrame::UpdateUiDevTool(wxUpdateUIEvent &inEvent) {
     inEvent.Enable(AreDevToolsAvailable());
 }
 
-void StageFrame::OnExit(wxCommandEvent &inEvent)
-{
+void StageFrame::OnExit(wxCommandEvent &inEvent) {
     Close(FALSE);
 }
 
-void StageFrame::UpdateUiNewProgram(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiNewProgram(wxUpdateUIEvent &inEvent) {
     inEvent.Enable(AreDevToolsAvailable() && mDocument == NULL);
 }
 
-void StageFrame::OnNewProgram(wxCommandEvent &inEvent)
-{
+void StageFrame::OnNewProgram(wxCommandEvent &inEvent) {
     BEGIN_EXCEPTION_TRAPPER()
         NewDocument();
     END_EXCEPTION_TRAPPER(TException::ReportException)
 }
 
-void StageFrame::UpdateUiOpenProgram(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiOpenProgram(wxUpdateUIEvent &inEvent) {
     inEvent.Enable(AreDevToolsAvailable() && mDocument == NULL);
 }
 
-void StageFrame::OnOpenProgram(wxCommandEvent &inEvent)
-{
+void StageFrame::OnOpenProgram(wxCommandEvent &inEvent) {
     BEGIN_EXCEPTION_TRAPPER()
         OpenDocument();
     END_EXCEPTION_TRAPPER(TException::ReportException)
 }
 
-void StageFrame::UpdateUiSaveProgram(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiSaveProgram(wxUpdateUIEvent &inEvent) {
     inEvent.Enable(AreDevToolsAvailable() &&
                    mDocument != NULL && mDocument->IsDirty());
 }
 
-void StageFrame::OnSaveProgram(wxCommandEvent &inEvent)
-{
+void StageFrame::OnSaveProgram(wxCommandEvent &inEvent) {
     mDocument->Save();
 }
 
 #if CONFIG_HAVE_SCRIPTEDITOR
 
-void StageFrame::OnEditScripts(wxCommandEvent &inEvent)
-{
+void StageFrame::OnEditScripts(wxCommandEvent &inEvent) {
     ScriptEditor::EditScripts();
 }
 
 #endif // CONFIG_HAVE_SCRIPTEDITOR
 
-void StageFrame::OnUpdateUiReloadScripts(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::OnUpdateUiReloadScripts(wxUpdateUIEvent &inEvent) {
     if (TInterpreterManager::HaveInstance()) {
         TInterpreterManager *manager = TInterpreterManager::GetInstance();
         inEvent.Enable(AreDevToolsAvailable() && manager->ScriptHasBegun());
@@ -957,24 +933,19 @@ void StageFrame::OnUpdateUiReloadScripts(wxUpdateUIEvent &inEvent)
     }
 }
 
-void StageFrame::OnReloadScripts(wxCommandEvent &inEvent)
-{
-    if (TInterpreterManager::HaveInstance())
-    {
+void StageFrame::OnReloadScripts(wxCommandEvent &inEvent) {
+    if (TInterpreterManager::HaveInstance()) {
         // Save our documents and focus our stage.
         if (!SaveAllForReloadScript())
             return;
         mStage->SetFocus();
 
         TInterpreterManager *manager = TInterpreterManager::GetInstance();
-        if (manager->FailedToLoad())
-        {
+        if (manager->FailedToLoad()) {
             // The previous attempt to load a script failed, so we need
             // to try loading it again.
             manager->RequestRetryLoadScript();
-        }
-        else
-        {
+        } else {
             // We have a running script.  Go ahead and reload it.
             ASSERT(TInterpreter::HaveInstance());
             TInterpreter *interp = TInterpreter::GetInstance();
@@ -1000,13 +971,11 @@ void StageFrame::NotifyReloadScriptFailed() {
     SetStatusText(wxT("Could not reload script."));
 }
 
-void StageFrame::OnRunTests(wxCommandEvent &inEvent)
-{
+void StageFrame::OnRunTests(wxCommandEvent &inEvent) {
     TestHarness::GetInstance()->RunTests();
 }
 
-void StageFrame::OnAbout(wxCommandEvent &inEvent)
-{
+void StageFrame::OnAbout(wxCommandEvent &inEvent) {
     wxMessageDialog about(this,
                           wxString(VERSION_STRING "\n"
                                    HALYARD_COPYRIGHT_NOTICE,
@@ -1015,28 +984,24 @@ void StageFrame::OnAbout(wxCommandEvent &inEvent)
     about.ShowModal();
 }
 
-void StageFrame::OnShowListener(wxCommandEvent &inEvent)
-{
+void StageFrame::OnShowListener(wxCommandEvent &inEvent) {
     mAuiManager->GetPane(mListener).Show();
     mAuiManager->Update();
     mListener->FocusInput();
 }
 
-void StageFrame::OnShowMediaInfo(wxCommandEvent &inEvent)
-{
+void StageFrame::OnShowMediaInfo(wxCommandEvent &inEvent) {
     mAuiManager->GetPane(mMediaInfoPane).Show();
     mAuiManager->Update();
     mListener->FocusInput();
 }
 
-void StageFrame::UpdateUiFullScreen(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiFullScreen(wxUpdateUIEvent &inEvent) {
     inEvent.Check(IsFullScreen());
     inEvent.Enable(AreDevToolsAvailable());
 }
 
-void StageFrame::OnFullScreen(wxCommandEvent &inEvent)
-{
+void StageFrame::OnFullScreen(wxCommandEvent &inEvent) {
     if (IsFullScreen()) {
         // If we leave full-screen mode, make sure runtime mode is turned
         // off, too.  This can happen if we boot into runtime mode but
@@ -1052,63 +1017,52 @@ void StageFrame::OnFullScreen(wxCommandEvent &inEvent)
     }
 }
 
-void StageFrame::UpdateUiDisplayXy(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiDisplayXy(wxUpdateUIEvent &inEvent) {
     inEvent.Check(mStage->IsDisplayingXy());
     inEvent.Enable(AreDevToolsAvailable());
 }
 
-void StageFrame::OnDisplayXy(wxCommandEvent &inEvent)
-{
+void StageFrame::OnDisplayXy(wxCommandEvent &inEvent) {
     mStage->ToggleDisplayXy();
 }
 
-void StageFrame::UpdateUiDisplayGrid(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiDisplayGrid(wxUpdateUIEvent &inEvent) {
     inEvent.Check(mStage->IsDisplayingGrid());
     inEvent.Enable(AreDevToolsAvailable());
 }
 
-void StageFrame::OnDisplayGrid(wxCommandEvent &inEvent)
-{
+void StageFrame::OnDisplayGrid(wxCommandEvent &inEvent) {
     mStage->ToggleDisplayGrid();
 }
 
-void StageFrame::UpdateUiDisplayBorders(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiDisplayBorders(wxUpdateUIEvent &inEvent) {
     inEvent.Check(mStage->IsDisplayingBorders());
     inEvent.Enable(AreDevToolsAvailable());
 }
 
-void StageFrame::OnDisplayBorders(wxCommandEvent &inEvent)
-{
+void StageFrame::OnDisplayBorders(wxCommandEvent &inEvent) {
     mStage->ToggleDisplayBorders();
 }
 
-void StageFrame::UpdateUiErrortraceCompile(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiErrortraceCompile(wxUpdateUIEvent &inEvent) {
     inEvent.Check(mStage->IsErrortraceCompileEnabled());
     inEvent.Enable(AreDevToolsAvailable());
 }
 
-void StageFrame::OnErrortraceCompile(wxCommandEvent &inEvent)
-{
+void StageFrame::OnErrortraceCompile(wxCommandEvent &inEvent) {
     mStage->ToggleErrortraceCompile();
 }
 
-void StageFrame::UpdateUiProperties(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiProperties(wxUpdateUIEvent &inEvent) {
     inEvent.Enable(AreDevToolsAvailable() && mDocument != NULL);
 }
 
-void StageFrame::OnProperties(wxCommandEvent &inEvent)
-{
+void StageFrame::OnProperties(wxCommandEvent &inEvent) {
     ProgramPropDlg prop_dlg(this, mDocument->GetHalyardProgram());
     prop_dlg.ShowModal();
 }
 
-void StageFrame::UpdateUiEditMode(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiEditMode(wxUpdateUIEvent &inEvent) {
     if (AreDevToolsAvailable() &&
         mDocument != NULL &&
         mStage->IsScriptInitialized())
@@ -1118,15 +1072,12 @@ void StageFrame::UpdateUiEditMode(wxUpdateUIEvent &inEvent)
             inEvent.SetText(wxT("&Run Card\tCtrl+Space"));
         else
             inEvent.SetText(wxT("&Edit Card\tCtrl+Space"));
-    }
-    else
-    {
+    } else {
         inEvent.Enable(FALSE);
     }
 }
 
-void StageFrame::OnEditMode(wxCommandEvent &inEvent)
-{
+void StageFrame::OnEditMode(wxCommandEvent &inEvent) {
     mStage->SetEditMode(!mStage->IsInEditMode());
 }
 
@@ -1149,13 +1100,11 @@ void StageFrame::OnEditCardScript(wxCommandEvent &inEvent) {
 
 #endif // CONFIG_HAVE_SCRIPTEDITOR
 
-void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiJumpCard(wxUpdateUIEvent &inEvent) {
     inEvent.Enable(AreDevToolsAvailable() && mStage->CanJump());
 }
 
-void StageFrame::OnJumpCard(wxCommandEvent &inEvent)
-{
+void StageFrame::OnJumpCard(wxCommandEvent &inEvent) {
     if (!IsFullScreen())
         mLocationBox->Prompt();
     else
@@ -1166,13 +1115,11 @@ void StageFrame::OnJumpCard(wxCommandEvent &inEvent)
     }
 }
 
-void StageFrame::UpdateUiStopMovies(wxUpdateUIEvent &inEvent)
-{
+void StageFrame::UpdateUiStopMovies(wxUpdateUIEvent &inEvent) {
     inEvent.Enable(mStage->IsMediaPlaying());
 }
 
-void StageFrame::OnStopMovies(wxCommandEvent &inEvent)
-{
+void StageFrame::OnStopMovies(wxCommandEvent &inEvent) {
     mStage->EndMediaElements();
 }
 
@@ -1184,8 +1131,7 @@ void StageFrame::OnActivate(wxActivateEvent &inEvent) {
     inEvent.Skip();
 }
 
-void StageFrame::OnClose(wxCloseEvent &inEvent)
-{
+void StageFrame::OnClose(wxCloseEvent &inEvent) {
     // If we're in full screen mode, leave it, so we don't exit Halyard
     // with the screen in an awkward resized mode.
     if (IsFullScreen())
@@ -1196,15 +1142,11 @@ void StageFrame::OnClose(wxCloseEvent &inEvent)
         return;
 
     // Ask the user to save any unsaved documents.
-    if (mDocument && mDocument->IsDirty())
-    {
-        if (!inEvent.CanVeto())
-        {
+    if (mDocument && mDocument->IsDirty()) {
+        if (!inEvent.CanVeto()) {
             mDocument->Save();
             wxLogError(wxT("Halyard forced to exit; saved document."));
-        }
-        else
-        {
+        } else {
             wxMessageDialog dlg(this, wxT("Save current Halyard program?"),
                                 wxT("Halyard"), wxYES_NO|wxCANCEL|wxCENTRE|
                                 wxICON_EXCLAMATION);

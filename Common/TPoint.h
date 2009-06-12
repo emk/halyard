@@ -31,8 +31,7 @@ BEGIN_NAMESPACE_HALYARD
 /// \author Chuck Officer
 /// \author ...and others
 ///
-class TPoint 
-{ 
+class TPoint {
     public:
         /// Constructor.  Initialize X and Y to zero.
         TPoint() : m_X(0), m_Y(0)  {}

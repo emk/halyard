@@ -61,8 +61,7 @@ MovieWindowQT::MovieWindowQT(wxWindow *inParent, wxWindowID inID,
 #endif
 }
 
-MovieWindowQT::~MovieWindowQT()
-{
+MovieWindowQT::~MovieWindowQT() {
     CleanUpMovie();
 
 #ifdef __WXMSW__
@@ -103,10 +102,8 @@ wxPoint MovieWindowQT::GetMoviePosRelativeToPort() {
 
 #endif // !__WXMSW__
 
-void MovieWindowQT::CleanUpMovie()
-{
-    if (mMovie)
-    {
+void MovieWindowQT::CleanUpMovie() {
+    if (mMovie) {
         delete mMovie;
         mMovie = NULL;
     }
@@ -116,8 +113,7 @@ void MovieWindowQT::CleanUpMovie()
     mIsRemote = false;
 }
 
-void MovieWindowQT::SetMovie(const wxString &inName)
-{
+void MovieWindowQT::SetMovie(const wxString &inName) {
     ASSERT(inName != wxT(""));
 
     // Detach any old movie, determine if the new one will be remote, and
@@ -157,8 +153,7 @@ void MovieWindowQT::SetMovie(const wxString &inName)
     mMovie->StartWhenReady(opt, p);
 }
 
-MovieFrame MovieWindowQT::GetFrame()
-{
+MovieFrame MovieWindowQT::GetFrame() {
     if (!mMovie || !mMovie->IsStarted())
         return 0;
     else
@@ -193,27 +188,23 @@ bool MovieWindowQT::GetNextCaption(std::string &outCaption) {
     return mMovie && mMovie->GetNextCaption(outCaption);
 }
 
-bool MovieWindowQT::IsLooping()
-{
+bool MovieWindowQT::IsLooping() {
     return mMovie && mMovie->IsLooping();
 }
 
-bool MovieWindowQT::IsDone()
-{
+bool MovieWindowQT::IsDone() {
     if (!mMovie)
         return false;
     else
         return mMovie->IsDone();
 }
 
-void MovieWindowQT::Pause()
-{
+void MovieWindowQT::Pause() {
     if (mMovie)
         mMovie->Pause();
 }
 
-void MovieWindowQT::Resume()
-{
+void MovieWindowQT::Resume() {
     if (mMovie)
         mMovie->Unpause();
 }
@@ -230,17 +221,14 @@ void MovieWindowQT::SetTimeout(unsigned int timeout) {
     mTimeout = timeout;
 }
 
-void MovieWindowQT::OnEraseBackground(wxEraseEvent &inEvent)
-{
+void MovieWindowQT::OnEraseBackground(wxEraseEvent &inEvent) {
     // Ignore this event to prevent flicker.
     wxLogTrace(TRACE_STAGE_DRAWING, wxT("Ignoring request to erase movie."));
 }
 
-void MovieWindowQT::OnPaint(wxPaintEvent &inEvent)
-{
+void MovieWindowQT::OnPaint(wxPaintEvent &inEvent) {
     wxLogTrace(TRACE_STAGE_DRAWING, wxT("Asked to repaint movie window."));
-    if (mMovie)
-    {
+    if (mMovie) {
         wxLogTrace(TRACE_STAGE_DRAWING, wxT("Passing repaint event to movie."));
         mMovie->Redraw();
     }
@@ -251,14 +239,12 @@ void MovieWindowQT::OnPaint(wxPaintEvent &inEvent)
     inEvent.Skip();
 }
 
-void MovieWindowQT::OnIdle(wxIdleEvent &inEvent)
-{
-    if (mMovie) 
+void MovieWindowQT::OnIdle(wxIdleEvent &inEvent) {
+    if (mMovie)
         mMovie->Idle();
 }
 
-void MovieWindowQT::OnMouseMove(wxMouseEvent &inEvent)
-{
+void MovieWindowQT::OnMouseMove(wxMouseEvent &inEvent) {
     // Ignore this event so it doesn't propogate to the stage, which
     // would try to update the cursor, which QuickTime would prefer
     // to manage on its own.
@@ -266,10 +252,8 @@ void MovieWindowQT::OnMouseMove(wxMouseEvent &inEvent)
     // the flicker continues anyway.
 }
 
-void MovieWindowQT::OnActivate(wxActivateEvent &inEvent)
-{
-    if (mMovie)
-    {
+void MovieWindowQT::OnActivate(wxActivateEvent &inEvent) {
+    if (mMovie) {
         if (inEvent.GetActive())
             wxLogTrace(TRACE_STAGE_DRAWING, wxT("Activate movie window."));
         else
@@ -280,11 +264,9 @@ void MovieWindowQT::OnActivate(wxActivateEvent &inEvent)
 
 #ifdef __WXMSW__
 
-void MovieWindowQT::OnLeftDown(wxMouseEvent &inEvent)
-{
+void MovieWindowQT::OnLeftDown(wxMouseEvent &inEvent) {
     // TODO - Figure out why double-clicking is broken.
-    if (mMovie)
-    {
+    if (mMovie) {
         // Get usable event.when and event.modifiers values.  Note that
         // these aren't strictly accurate, merely usable.
         EventRecord event;
@@ -303,13 +285,11 @@ void MovieWindowQT::OnLeftDown(wxMouseEvent &inEvent)
     }
 }
 
-void MovieWindowQT::OnKeyDown(wxKeyEvent &inEvent)
-{
+void MovieWindowQT::OnKeyDown(wxKeyEvent &inEvent) {
     // TODO - Only pass appropriate keys to QuickTime, and Skip() the
     // rest of the events.  Figure out why SPACE isn't working.  And
     // re-enable this handler in our event table.
-    if (mMovie)
-    {
+    if (mMovie) {
         EventRecord event;
         mMovie->FillOutEvent((HWND) mHWND, WM_KEYDOWN,
                              (WPARAM) inEvent.GetRawKeyCode(),

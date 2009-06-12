@@ -134,8 +134,7 @@ Scheme_Object *Halyard::TValueToScheme(TValue inVal) {
     // MANUAL GC PROOF REQUIRED - Any Scheme objects we allocate in this
     // function are immediately returned.  So for now, we don't need to use
     // TSchemeReg here.
-    switch (inVal.GetType())
-    {   
+    switch (inVal.GetType()) {
         case TValue::TYPE_NULL: {
             return scheme_void;
         }
@@ -300,7 +299,7 @@ static TValue SchemeLongOrULongToTValue(Scheme_Object *inVal) {
     // signed integer, unless it cannot fit into a C++ signed 
     // long.
     int32 result;
-    if (scheme_get_int_val(inVal, &result)) 
+    if (scheme_get_int_val(inVal, &result))
         return TValue(result);
 
     uint32 uresult;
@@ -325,7 +324,7 @@ static TValue SchemeToTPoint(Scheme_Object *inVal) {
                          SchemeGetInt32Member("point-y", inVal)));
 }
 
-static TValue SchemeToTRect(Scheme_Object *inVal) { 
+static TValue SchemeToTRect(Scheme_Object *inVal) {
     TSchemeReg<1> reg;
     reg.param(inVal);
     reg.done();
@@ -367,7 +366,7 @@ static TValue SchemeListToTValue(Scheme_Object *inVal) {
     return TValue(list);
 }
 
-static TValue SchemeToTPolygon(Scheme_Object *inVal) {  
+static TValue SchemeToTPolygon(Scheme_Object *inVal) {
     Scheme_Object *scheme_pts = NULL, *current = NULL;
     TSchemeArgs<1> args;
 
@@ -541,8 +540,7 @@ TValue Halyard::SchemeToTValue(Scheme_Object *inVal) {
 // This function compares two scheme objects for equality.
 // Note: We are using the scheme EQUALS? since we might be
 // dealing with swindle classes.
-static bool SchemeEquals(Scheme_Object *inObj1, Scheme_Object *inObj2)
-{
+static bool SchemeEquals(Scheme_Object *inObj1, Scheme_Object *inObj2) {
     Scheme_Object *b = NULL;
     TSchemeArgs<2> args;
 

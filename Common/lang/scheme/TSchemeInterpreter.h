@@ -42,8 +42,7 @@ class TPercent;
 /// reloading scripts and other fun stuff that involves creating
 /// and destroying interpreters.
 ///
-class TSchemeInterpreterManager : public TInterpreterManager
-{
+class TSchemeInterpreterManager : public TInterpreterManager {
     bool mHaveInitializedScheme;
     TSchemePtr<Scheme_Env> mGlobalEnv;
     shared_ptr<ScriptEditorDB> mScriptEditorDB;
@@ -70,8 +69,7 @@ protected:
 /// The interface to our Scheme interpreter.  Since this is a singleton
 /// class, we store a lot of variables as static data to ease implementation.
 ///
-class TSchemeInterpreter : public TInterpreter
-{
+class TSchemeInterpreter : public TInterpreter {
     friend class TSchemeInterpreterManager;
     friend class TSchemeCallback;
 

@@ -40,8 +40,7 @@ static int gPauseCount = 0;
 
 // The idle function called periodically by our Scheme interpreter.
 void Halyard::TSchemeInterpreterTestIdleProc(bool inBlock) {
-    if (gTestingPause && --gPauseCount <= 0)
-    {
+    if (gTestingPause && --gPauseCount <= 0) {
         gTestingPause = false;
         gPauseCount = 0;
 
@@ -51,8 +50,7 @@ void Halyard::TSchemeInterpreterTestIdleProc(bool inBlock) {
     }
 }
 
-DEFINE_PRIMITIVE(TestStop)
-{
+DEFINE_PRIMITIVE(TestStop) {
     std::string next_card;
     inArgs >> SymbolName(next_card);
 
@@ -63,8 +61,7 @@ DEFINE_PRIMITIVE(TestStop)
     TEST(!TInterpreter::GetInstance()->IsStopped());
 }
 
-DEFINE_PRIMITIVE(TestPause)
-{
+DEFINE_PRIMITIVE(TestPause) {
     gTestingPause = true;
     gPauseCount = 10;
 
@@ -73,15 +70,13 @@ DEFINE_PRIMITIVE(TestPause)
     TEST(TInterpreter::GetInstance()->Paused());
 }
 
-DEFINE_PRIMITIVE(TestCallback)
-{
+DEFINE_PRIMITIVE(TestCallback) {
     TCallbackPtr callback;
     inArgs >> callback;
     callback->Run();
 }
 
-DEFINE_PRIMITIVE(TestCallbackArgs)
-{
+DEFINE_PRIMITIVE(TestCallbackArgs) {
     TCallbackPtr callback;
     inArgs >> callback;
 
@@ -94,8 +89,7 @@ DEFINE_PRIMITIVE(TestCallbackArgs)
     callback->Run(args);
 }
 
-DEFINE_PRIMITIVE(TestScriptEditorDB)
-{
+DEFINE_PRIMITIVE(TestScriptEditorDB) {
     // Get our script editor database.
     TInterpreterManager *manager = TInterpreterManager::GetInstance();
     ScriptEditorDB *db = manager->GetScriptEditorDB();
@@ -136,8 +130,7 @@ DEFINE_TYPE_TEST_PRIMITIVES(TRect, 1)
 DEFINE_TYPE_TEST_PRIMITIVES(TPolygon, 2)
 DEFINE_TYPE_TEST_PRIMITIVES(Color, 1)
 
-void Halyard::RegisterTSchemeInterpreterTestPrimitives()
-{
+void Halyard::RegisterTSchemeInterpreterTestPrimitives() {
     REGISTER_PRIMITIVE(TestStop);
     REGISTER_PRIMITIVE(TestPause);
     REGISTER_PRIMITIVE(TestCallback);

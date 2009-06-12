@@ -41,8 +41,7 @@ enum /* MovieWindowStyle */ {
 /// class does nothing but display a blank widget; you generally want to use
 /// an appropriate subclass to actually show a movie.
 ///
-class MovieWindow : public wxWindow
-{
+class MovieWindow : public wxWindow {
     MovieWindowStyle mMovieWindowStyle;
 
 public:

@@ -43,8 +43,7 @@ void test_failure (const char *file, int line,
     exit(1);
 }
 
-int tests_finished (void) 
-{
+int tests_finished (void) {
     // Summarize our test run.
     std::cout << std::endl << "Ran " << total_tests << " tests, "
               << total_failures << " failed, "

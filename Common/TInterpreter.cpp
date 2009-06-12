@@ -54,8 +54,7 @@ TInterpreter::TInterpreter()
     }
 }
 
-TInterpreter::~TInterpreter()
-{
+TInterpreter::~TInterpreter() {
     sInstance = NULL;
 }
 
@@ -155,16 +154,14 @@ TInterpreterManager::TInterpreterManager(SystemIdleProc inIdleProc)
     ResetInitialCardName();
 }
 
-TInterpreterManager::~TInterpreterManager()
-{
+TInterpreterManager::~TInterpreterManager() {
     sInstance = NULL;
 
     // Don't clear sHaveAlreadyCreatedSingleton--we promise that only
     // one TInterpreterManager can ever be created.
 }
 
-void TInterpreterManager::Run()
-{
+void TInterpreterManager::Run() {
     // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
 
     // WARNING - No Scheme function may ever be called above this
@@ -176,31 +173,24 @@ void TInterpreterManager::Run()
 
     // Loop until somebody calls RequestQuitApplication, or we exit
     // because of an error (below).
-    while (!mDone)
-    {
+    while (!mDone) {
         mShouldConsiderExiting = false;
-        try
-        {
+        try {
             // Either create and run an interpreter, or just call the
             // idle procedure.
             if (mScriptHasBegun && !mLoadScriptFailed)
                 LoadAndRunScript();
             else
                 (*mSystemIdleProc)(true);
-        }
-        catch (std::exception &e)
-        {
+        } catch (std::exception &e) {
             gLog.Error("halyard", "%s.", e.what());
             mShouldConsiderExiting = true;
-        }
-        catch (...)
-        {
+        } catch (...) {
             gLog.Fatal("halyard", "Unexpected internal error.");
         }
 
         // Handle any errors.
-        if (mShouldConsiderExiting)
-        {
+        if (mShouldConsiderExiting) {
             // Always quit for non-load errors, but only quit for load
             // errors if we're not in authoring mode.
             if (!mLoadScriptFailed ||
@@ -221,13 +211,11 @@ void TInterpreterManager::DoIdle(bool block) {
     (*mSystemIdleProc)(block);
 }
 
-void TInterpreterManager::BeginScript()
-{
+void TInterpreterManager::BeginScript() {
     mScriptHasBegun = true;
 }
 
-void TInterpreterManager::LoadAndRunScript()
-{
+void TInterpreterManager::LoadAndRunScript() {
     // STACK MOVE WARNING - See lang/scheme/MZSCHEME-THREADS.txt for details.
     ASSERT(IsInsideStackBase());
 
@@ -269,8 +257,7 @@ void TInterpreterManager::LoadAndRunScript()
     TInterpreter::DestroyInstance();
 }
 
-void TInterpreterManager::RunInitialCommands()
-{
+void TInterpreterManager::RunInitialCommands() {
     ASSERT(IsInsideStackBase());
 
     TInterpreter *interp = TInterpreter::GetInstance();
@@ -334,8 +321,7 @@ void TInterpreterManager::RequestQuitApplication() {
     mDone = true;
 }
 
-void TInterpreterManager::RequestReloadScript(const char *inGotoCardName)
-{
+void TInterpreterManager::RequestReloadScript(const char *inGotoCardName) {
     ASSERT(IsInsideStackBase());
     ASSERT(inGotoCardName != NULL);
     ASSERT(TInterpreter::HaveInstance());
@@ -348,13 +334,11 @@ bool TInterpreterManager::ScriptHasBegun() {
     return mScriptHasBegun;
 }
 
-bool TInterpreterManager::FailedToLoad()
-{
+bool TInterpreterManager::FailedToLoad() {
     return mLoadScriptFailed;
 }
 
-void TInterpreterManager::RequestRetryLoadScript()
-{
+void TInterpreterManager::RequestRetryLoadScript() {
     ASSERT(FailedToLoad());
 
     // Turn off our load error flag, and Run will take care of the rest.

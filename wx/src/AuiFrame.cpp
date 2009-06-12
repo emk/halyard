@@ -118,8 +118,7 @@ void AuiFrame::LoadFramePerspective() {
     mHaveLoadedFramePerspective = true;
 }
 
-void AuiFrame::MaybeSaveFramePerspective()
-{
+void AuiFrame::MaybeSaveFramePerspective() {
     // Don't save the frame perspective if we haven't loaded it yet, or if
     // we're in full-screen mode (which has an automatically-chosen
     // perspective).

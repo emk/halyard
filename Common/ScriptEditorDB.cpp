@@ -452,8 +452,7 @@ ScriptEditorDB::strings ScriptEditorDB::ScanTree(const std::string &relpath,
 /// Delete all the old data associated with the file, if any, and notify
 /// ScriptEditorDB listeners that the file is gone.
 void
-ScriptEditorDB::DeleteAnyFileDataAndNotifyListeners(const std::string &relpath)
-{
+ScriptEditorDB::DeleteAnyFileDataAndNotifyListeners(const std::string &relpath) {
     DeleteAnyFileData(relpath);
     
     // Notify any listeners that this file has been deleted.
@@ -606,7 +605,7 @@ void ScriptEditorDB::InsertDefinition(const std::string &name,
                          static_cast<int>(type), lineno);
 }
 
-void ScriptEditorDB::InsertHelp(const std::string &name, 
+void ScriptEditorDB::InsertHelp(const std::string &name,
                                 const std::string &help)
 {
     ASSERT(mIsProcessingFile);
@@ -614,8 +613,7 @@ void ScriptEditorDB::InsertHelp(const std::string &name,
                          mProcessingFileId, name.c_str(), help.c_str());
 }
 
-void ScriptEditorDB::InsertIndentation(const std::string &name, int indentation)
-{
+void ScriptEditorDB::InsertIndentation(const std::string &name, int indentation) {
     ASSERT(mIsProcessingFile);
     mDB->executenonquery("INSERT INTO indent VALUES(%lld, '%q', %d)",
                          mProcessingFileId, name.c_str(), indentation);
@@ -668,7 +666,7 @@ ScriptEditorDB::strings ScriptEditorDB::FindHelp(const std::string &name) {
                            name.c_str());
     
     // Add each row returned by the query to our result.
-    while (r.read()) 
+    while (r.read())
         result.push_back(r.getstring(0));
     
     return result;
@@ -791,8 +789,7 @@ DEFINE_PRIMITIVE(ScriptEditorDBInsertIndentation) {
 //=========================================================================
 //  Install our portable primitive functions.
 
-void Halyard::RegisterScriptEditorDBPrimitives()
-{
+void Halyard::RegisterScriptEditorDBPrimitives() {
     REGISTER_PRIMITIVE(ScriptEditorDBInsertDef);
     REGISTER_PRIMITIVE(ScriptEditorDBInsertHelp);
     REGISTER_PRIMITIVE(ScriptEditorDBInsertIndentation);

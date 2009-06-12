@@ -63,7 +63,7 @@ void Manifest::init(const std::string &contents) {
             break;
 
         case PATH:
-            if (*iter == '\n') { 
+            if (*iter == '\n') {
                 mEntries.push_back(Entry(digest_buf, 
                                          atoi(size_buf.c_str()),
                                          path_buf));
@@ -95,7 +95,7 @@ std::string read_file(const boost::filesystem::path &path) {
     return buffer;
 }
 
-SpecFile::SpecFile(const boost::filesystem::path &path) 
+SpecFile::SpecFile(const boost::filesystem::path &path)
     : mContents(read_file(path)), mHeader(parseHeader()), 
       mUrl(mHeader["Update-URL"]), mBuild(mHeader["Build"]), 
       mManifest(mContents) 

@@ -26,12 +26,10 @@
 
 using namespace Halyard;
 
-const char* TException::what () const throw ()
-{
+const char* TException::what () const throw () {
     std::ostringstream s;
     s << GetClassName() << ": " << GetErrorMessage() << " (";
-    if (GetErrorCode() != kNoErrorCode)
-    {
+    if (GetErrorCode() != kNoErrorCode) {
         s << "error " << GetErrorCode() << " ";
     }
 #ifdef DEBUG

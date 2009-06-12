@@ -41,8 +41,7 @@ static void test_style(const StyledText &inText, int inBegin, int inEnd,
         TEST(*current->style == inDesiredStyle);
 }
 
-void test_TStyleSheet(void)
-{
+void test_TStyleSheet(void) {
     // Create and get our stylesheet.
     TValueList arg_values;
     arg_values.push_back(TSymbol("S1"));

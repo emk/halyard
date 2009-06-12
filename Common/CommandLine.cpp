@@ -34,7 +34,7 @@ std::string CommandLine::WindowsQuotedString() const {
     
     std::vector<std::string>::const_iterator iter = mArgs.begin();
     for(; iter != mArgs.end(); ++iter) {
-        if (iter != mArgs.begin()) 
+        if (iter != mArgs.begin())
             result += " ";
         result += WindowsQuoteArgument(*iter);
     }

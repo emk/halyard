@@ -47,7 +47,7 @@ public:
     void Log(const boost::format &message, Severity severity = MESSAGE);
     void Log(const std::string &message, Severity severity = MESSAGE);
     void Log(const char *message, Severity severity = MESSAGE);
-private: 
+private:
     FILE *mLogFile;
 };
 

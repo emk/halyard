@@ -44,8 +44,7 @@ EventDispatcher::EventDispatcher() {
     }
 }
  
-EventDispatcher::~EventDispatcher()
-{
+EventDispatcher::~EventDispatcher() {
 }
 
 bool EventDispatcher::IsEventStale(const wxEvent &event) {
@@ -60,20 +59,17 @@ void EventDispatcher::UpdateMaxStaleTime() {
     sMaxStaleTime = PlatformGetTickCount();    
 }
 
-void EventDispatcher::SetDispatcher(TCallbackPtr inCallback)
-{
+void EventDispatcher::SetDispatcher(TCallbackPtr inCallback) {
     ASSERT(inCallback.get());
     mDispatcher = inCallback;
 }
 
-void EventDispatcher::NotifyReloadScriptStarting()
-{
+void EventDispatcher::NotifyReloadScriptStarting() {
     mDispatcher.reset();
     sEnableExpensiveEvents = false;
 }
 
-void EventDispatcher::EnableExpensiveEvents(bool inEnable)
-{
+void EventDispatcher::EnableExpensiveEvents(bool inEnable) {
     if (inEnable == sEnableExpensiveEvents)
         return;
     if (inEnable)
@@ -83,8 +79,7 @@ void EventDispatcher::EnableExpensiveEvents(bool inEnable)
     sEnableExpensiveEvents = inEnable;
 }
 
-bool EventDispatcher::EventSetup()
-{
+bool EventDispatcher::EventSetup() {
     if (!mDispatcher)
         return false;
 
@@ -94,8 +89,7 @@ bool EventDispatcher::EventSetup()
     return true;
 }
 
-bool EventDispatcher::EventCleanup()
-{
+bool EventDispatcher::EventCleanup() {
     // Any as-yet-unprocessed events which occurred before this time are
     // considered "stale", and may be ignored if the script so desires.
     UpdateMaxStaleTime();
@@ -163,24 +157,20 @@ bool EventDispatcher::DoSimpleMouseEvent(const char *inType,
     return EventCleanup();
 }
 
-bool EventDispatcher::DoEventLeftUp(wxMouseEvent &inEvent)
-{
+bool EventDispatcher::DoEventLeftUp(wxMouseEvent &inEvent) {
     return DoSimpleMouseEvent("mouse-up", inEvent.GetPosition(),
                               IsEventStale(inEvent));
 }
 
-bool EventDispatcher::DoEventMouseEnter(wxPoint inPosition)
-{
+bool EventDispatcher::DoEventMouseEnter(wxPoint inPosition) {
     return DoSimpleMouseEvent("mouse-enter", inPosition);
 }
 
-bool EventDispatcher::DoEventMouseLeave(wxPoint inPosition)
-{
+bool EventDispatcher::DoEventMouseLeave(wxPoint inPosition) {
     return DoSimpleMouseEvent("mouse-leave", inPosition);
 }
 
-bool EventDispatcher::DoEventChar(wxKeyEvent &inEvent)
-{
+bool EventDispatcher::DoEventChar(wxKeyEvent &inEvent) {
     if (!EventSetup())
         return false;
 
@@ -207,8 +197,7 @@ bool EventDispatcher::DoEventChar(wxKeyEvent &inEvent)
     return EventCleanup();
 }
 
-bool EventDispatcher::DoEventIdle()
-{
+bool EventDispatcher::DoEventIdle() {
     if (!sEnableExpensiveEvents)
         return false;
 
@@ -221,21 +210,18 @@ bool EventDispatcher::DoEventIdle()
     return EventCleanup();
 }
 
-bool EventDispatcher::DoEventMouseMoved(wxMouseEvent &inEvent)
-{
+bool EventDispatcher::DoEventMouseMoved(wxMouseEvent &inEvent) {
     if (!sEnableExpensiveEvents)
         return false;
     
     return DoSimpleMouseEvent("mouse-moved", inEvent.GetPosition());
 }
 
-bool EventDispatcher::DoEventTextChanged(wxCommandEvent &inEvent)
-{
+bool EventDispatcher::DoEventTextChanged(wxCommandEvent &inEvent) {
     return DoSimpleEvent("text-changed");
 }
 
-bool EventDispatcher::DoEventTextEnter(wxCommandEvent &inEvent)
-{
+bool EventDispatcher::DoEventTextEnter(wxCommandEvent &inEvent) {
     return DoSimpleEvent("text-enter");
 }
 

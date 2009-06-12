@@ -27,7 +27,7 @@
 #define GUIDE_FRAME_H 1
 
 class GuideFrame : public wxFrame {
-public: 
+public:
     GuideFrame(bool shouldWarnAboutProLicense);
     
 private:

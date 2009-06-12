@@ -45,8 +45,7 @@ class Cursor;
 END_NAMESPACE_HALYARD
 
 /// The window where all actual script output and interaction occurs.
-class Stage : public wxWindow, public Halyard::TReloadNotified
-{
+class Stage : public wxWindow, public Halyard::TReloadNotified {
     /// A list of Elements.
     typedef std::deque<ElementPtr> ElementCollection;
 

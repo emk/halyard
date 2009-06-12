@@ -28,8 +28,7 @@
 
 using namespace Halyard;
 
-CursorManager::CursorManager()
-{
+CursorManager::CursorManager() {
     // wxWindows stock cursors.
     // PORTABILITY - Not all stock cursors are guaranteed to be available
     // everywhere.
@@ -61,8 +60,7 @@ CursorManager::CursorManager()
     RegisterCursor("turnright", wxCursor(wxT("IDC_TURN_RIGHT_CURSOR")));
 }
 
-CursorManager::~CursorManager()
-{
+CursorManager::~CursorManager() {
     CursorMap::iterator iter = mCursors.begin();
     for (; iter != mCursors.end(); ++iter) {
         // All remaining cursors should be owned by us.  Delete them, but
@@ -74,8 +72,7 @@ CursorManager::~CursorManager()
     }
 }
 
-Cursor *CursorManager::FindCursor(const std::string inName)
-{
+Cursor *CursorManager::FindCursor(const std::string inName) {
     CursorMap::iterator found = mCursors.find(inName);
     if (found != mCursors.end())
         return found->second;
@@ -86,13 +83,12 @@ Cursor *CursorManager::FindCursor(const std::string inName)
     }
 }
 
-void CursorManager::RegisterCursor(const std::string &inName, 
+void CursorManager::RegisterCursor(const std::string &inName,
                                    Cursor *inCursor) 
 {
     // Delete any existing cursor with this name.
     CursorMap::iterator found = mCursors.find(inName);
-    if (found != mCursors.end())
-    {
+    if (found != mCursors.end()) {
         gLog.Debug("halyard", "Redefining cursor: %s", inName.c_str());
         mCursors.erase(found);
     }
@@ -116,8 +112,7 @@ void CursorManager::RegisterImageCursor(const std::string &inName,
     wxImage image;
     wxString path(inPath.c_str(), wxConvLocal);
     image.LoadFile(path);
-    if (!image.Ok())
-    {
+    if (!image.Ok()) {
         // Display an error message, and register a plausible substitute
         // cursor instead of the one we can't find.
         gLog.Error("halyard", "Cannot open cursor file '%s'", inPath.c_str());

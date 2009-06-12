@@ -31,8 +31,7 @@ using namespace Halyard;
 //  TSchemeCallback Methods
 //=========================================================================
 
-TValue TSchemeCallback::Run(const TValueList &inArguments)
-{
+TValue TSchemeCallback::Run(const TValueList &inArguments) {
 
     // Make sure we have a Scheme interpreter and that it isn't stopped.
     ASSERT(TSchemeInterpreter::HaveInstance());

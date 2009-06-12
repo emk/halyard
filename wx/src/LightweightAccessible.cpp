@@ -119,8 +119,7 @@ wxAccStatus LightweightAccessible::GetState(int childId, long* state) {
 }
 
 /// Return the currently-focused child of this object.
-wxAccStatus LightweightAccessible::GetFocus(int* childId, wxAccessible** child)
-{
+wxAccStatus LightweightAccessible::GetFocus(int* childId, wxAccessible** child) {
     ASSERT(*childId == 0);
     *child = NULL;
     return wxACC_OK;

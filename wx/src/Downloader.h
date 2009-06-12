@@ -43,8 +43,7 @@ protected:
                                 double ultotal, double ulnow);
 };
 
-class Downloader
-{
+class Downloader {
 public:
     Downloader();
     ~Downloader();

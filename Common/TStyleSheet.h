@@ -100,8 +100,7 @@ public:
 };
 
 /// Centralized manager class for TStyleSheet objects.
-class TStyleSheetManager
-{
+class TStyleSheetManager {
     std::map<std::string,TStyleSheet*> mStyleSheetMap;
 
 public:

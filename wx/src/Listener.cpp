@@ -74,13 +74,11 @@ void Listener::FocusInput() {
     mInput->SetFocus();
 }
 
-void Listener::UpdateUiInput(wxUpdateUIEvent &inEvent)
-{
+void Listener::UpdateUiInput(wxUpdateUIEvent &inEvent) {
     inEvent.Enable(TInterpreter::HaveInstance());    
 }
 
-void Listener::OnTextEnter(wxCommandEvent &inEvent)
-{
+void Listener::OnTextEnter(wxCommandEvent &inEvent) {
     if (inEvent.GetString() == wxT(""))
         inEvent.Skip();
     else
@@ -106,14 +104,11 @@ void Listener::OnTextEnter(wxCommandEvent &inEvent)
                                               result);
         
         // Print the interpreter's output.
-        if (ok)
-        {
+        if (ok) {
             mHistory->SetDefaultStyle(wxTextAttr(*wxBLUE, wxNullColour,
                                                  mNormalFont));
             mHistory->AppendText(wxT("\n==> ") + ToWxString(result));
-        }
-        else
-        {
+        } else {
             mHistory->SetDefaultStyle(wxTextAttr(*wxRED, wxNullColour,
                                                  mNormalFont));
             mHistory->AppendText(wxT("\nERROR: ") + ToWxString(result));

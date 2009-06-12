@@ -34,8 +34,7 @@
 /// and one to call Idle().  See the description of each function for
 /// more details.
 ///
-class AudioStream
-{
+class AudioStream {
 public:
     enum Format {
         INT16_PCM_STREAM,
@@ -288,8 +287,7 @@ public: // static stuff
 //////////
 /// Sine wave synthesizer.  This is a simple demo class.
 /// 
-class SineAudioStream : public AudioStream
-{
+class SineAudioStream : public AudioStream {
     int mFrequency;
 
 public:
@@ -306,8 +304,7 @@ protected:
 //////////
 /// Convert a 16-signed integer PCM sample into float-point format.
 ///
-inline float int16_pcm_to_float(Halyard::int16 sample)
-{
+inline float int16_pcm_to_float(Halyard::int16 sample) {
     return sample / 32768.0f;
 }
 

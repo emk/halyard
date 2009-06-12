@@ -28,8 +28,7 @@
 class CustomTreeItemData;
 
 /// Subclass of wxTreeCtrl shared between StageFrame and ScriptEditor.
-class CustomTreeCtrl : public wxTreeCtrl
-{
+class CustomTreeCtrl : public wxTreeCtrl {
     DECLARE_EVENT_TABLE()
 
     CustomTreeItemData *mDragItemData;
@@ -86,8 +85,7 @@ private:
 ///  This class respresents a "smart" node in our CustomTreeCtrl.  Most
 ///  node-specific events will be passed to a subclass of
 ///  CustomTreeItemData by our event handlers.
-class CustomTreeItemData : public wxTreeItemData
-{
+class CustomTreeItemData : public wxTreeItemData {
     CustomTreeCtrl *mTreeCtrl;
 
 public:

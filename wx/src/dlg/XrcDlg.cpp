@@ -26,8 +26,7 @@
 BEGIN_EVENT_TABLE(XrcDlg, wxDialog)
 END_EVENT_TABLE()
 
-XrcDlg::XrcDlg(wxWindow *inParent, const wxString &inResourceName)
-{
+XrcDlg::XrcDlg(wxWindow *inParent, const wxString &inResourceName) {
     wxXmlResource::Get()->LoadDialog(this, inParent, inResourceName);
 
     // This seems to help...

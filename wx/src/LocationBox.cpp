@@ -67,14 +67,12 @@ LocationBox::LocationBox(wxToolBar *inParent)
 
 #endif // !CONFIG_LOCATION_BOX_IS_COMBO
 
-void LocationBox::NotifyEnterCard(const wxString &inName)
-{
+void LocationBox::NotifyEnterCard(const wxString &inName) {
     SetValue(inName);
     RegisterCard(inName);
 }
 
-void LocationBox::RegisterCard(const wxString &inCardName)
-{
+void LocationBox::RegisterCard(const wxString &inCardName) {
 #if CONFIG_LOCATION_BOX_IS_COMBO
     // Update our drop-down list of cards.
     // First, delete the card from the list
@@ -95,16 +93,14 @@ void LocationBox::RegisterCard(const wxString &inCardName)
     Append(inCardName);
 
     // Put back all of the remaining cards
-    for (i = vec.size() - 1; i >= 0; i--) 
+    for (i = vec.size() - 1; i >= 0; i--)
         Append(vec[i]);
 #endif // CONFIG_LOCATION_BOX_IS_COMBO
 }
 
-void LocationBox::TryJump(const wxString &inCardName)
-{
+void LocationBox::TryJump(const wxString &inCardName) {
     Stage *stage = wxGetApp().GetStage();
-    if (stage->CanJump())
-    {
+    if (stage->CanJump()) {
         // If the specified card exists, add it to our list.
         std::string card_name(inCardName.mb_str());
         if (TInterpreter::GetInstance()->IsValidCard(card_name.c_str()))
@@ -116,16 +112,14 @@ void LocationBox::TryJump(const wxString &inCardName)
     }
 }
 
-void LocationBox::UpdateUiLocationBox(wxUpdateUIEvent &inEvent)
-{
+void LocationBox::UpdateUiLocationBox(wxUpdateUIEvent &inEvent) {
     // We need to check for a stage because we may be called after the
     // Stage is unregistered.
     if (wxGetApp().HaveStage())
         inEvent.Enable(wxGetApp().GetStage()->CanJump());
 }
 
-void LocationBox::OnChar(wxKeyEvent &inEvent)
-{
+void LocationBox::OnChar(wxKeyEvent &inEvent) {
     if (inEvent.GetKeyCode() == WXK_RETURN)
         TryJump(GetValue());
     else
@@ -134,14 +128,12 @@ void LocationBox::OnChar(wxKeyEvent &inEvent)
 
 #if CONFIG_LOCATION_BOX_IS_COMBO
 
-void LocationBox::OnComboBoxSelected(wxCommandEvent &inEvent)
-{
+void LocationBox::OnComboBoxSelected(wxCommandEvent &inEvent) {
     TryJump(inEvent.GetString());
 }
 
 #endif // CONFIG_LOCATION_BOX_IS_COMBO
 
-void LocationBox::Prompt()
-{
+void LocationBox::Prompt() {
     SetFocus();
 }

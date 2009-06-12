@@ -85,35 +85,29 @@ public:
     std::string GetListItem() { return mListItem; }
 };
 
-CardView::CardView()
-{
+CardView::CardView() {
     mChangeCount = 0;
     mDeleteCount = 0;
 }
 
-void CardView::CheckCounts(int inChanges, int inDeletes)
-{
+void CardView::CheckCounts(int inChanges, int inDeletes) {
     TEST(mChangeCount == inChanges);
     TEST(mDeleteCount == inDeletes);
 }
 
-void CardView::ObjectDeleted()
-{
+void CardView::ObjectDeleted() {
     mDeleteCount++;
     mCurrentlyDeleted = true;
 }
 
-void CardView::ObjectChanged()
-{
+void CardView::ObjectChanged() {
     mChangeCount++;
     mCurrentlyDeleted = false;
     mCardName = GetObject()->GetString("name");
     mHaveListItem = false;
-    if (GetObject()->HaveKey("list"))
-    {
+    if (GetObject()->HaveKey("list")) {
         List *list = cast<List>(GetObject()->Get("list"));
-        if (list->HaveKey(0))
-        {
+        if (list->HaveKey(0)) {
             mHaveListItem = true;
             mListItem = list->GetString(0);
         }
@@ -125,8 +119,7 @@ void CardView::ObjectChanged()
 //  Model Tests
 //=========================================================================
 
-void test_Model (void)
-{
+void test_Model (void) {
     ModelFormat format("TestData", 0, 0);
     Model model(format);
     TEST(model.CanUndo() == false);

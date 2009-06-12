@@ -41,24 +41,21 @@ void Halyard::StringLTrim(std::string &ioStr) {
         ioStr = ioStr.substr(1);
 }
 
-bool Halyard::StringStartsWith(const std::string &inStr1, 
+bool Halyard::StringStartsWith(const std::string &inStr1,
                                const std::string &inStr2) 
 {
     return (inStr1.find_first_of(inStr2) == 0);
 }
 
-std::string Halyard::MakeStringLowercase(std::string inString)
-{
+std::string Halyard::MakeStringLowercase(std::string inString) {
     std::transform(inString.begin(), inString.end(), inString.begin(),
                    tolower);
     return inString;
 }
 
-std::string Halyard::MakeQuotedString(const std::string& inString)
-{
+std::string Halyard::MakeQuotedString(const std::string& inString) {
     std::string result = "\"";
-    for (std::string::size_type pos = 0; pos < inString.length(); pos++)
-    {
+    for (std::string::size_type pos = 0; pos < inString.length(); pos++) {
         char c = inString[pos];
         if (c == '\"')
             result += "\\\"";
@@ -78,8 +75,7 @@ std::string Halyard::MakeQuotedString(const std::string& inString)
 
 #if BUILD_TEST_CASES
 
-struct QuotedStringTestData
-{
+struct QuotedStringTestData {
     char *input;
     char *output;
 };

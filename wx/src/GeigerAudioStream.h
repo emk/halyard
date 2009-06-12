@@ -31,8 +31,7 @@
 /// is too confusing to use in an API, where it already has a conventional
 /// meaning.
 ///
-class GeigerAudioStream : public AudioStream
-{
+class GeigerAudioStream : public AudioStream {
     enum { MAX_CHIRP_CURSORS = 10 };
 
     volatile float mChirpsPerSecond;

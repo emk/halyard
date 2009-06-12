@@ -32,8 +32,7 @@ using namespace model;
 
 IMPLEMENT_MODEL_CLASS(HalyardProgram);
 
-void HalyardProgram::Initialize()
-{
+void HalyardProgram::Initialize() {
     time_t t = time(0);
     std::string year =
         boost::lexical_cast<std::string>(localtime(&t)->tm_year + 1900);

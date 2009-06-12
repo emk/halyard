@@ -41,8 +41,7 @@ enum CrashType {
 /// catching this directly; catch something like std::exception
 /// instead.
 /// 
-class TException : public std::runtime_error
-{
+class TException : public std::runtime_error {
     std::string mErrorFile;
     int mErrorLine;
     std::string mErrorMessage;

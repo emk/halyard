@@ -52,8 +52,7 @@ class NodeItemData;
 //=========================================================================
 
 /// Tree widget showing structure of Halyard script.
-class ProgramTreeCtrl : public CustomTreeCtrl
-{
+class ProgramTreeCtrl : public CustomTreeCtrl {
 public:
     ProgramTreeCtrl(wxWindow *inParent);
     NodeItemData *GetNodeItemData(wxTreeItemId inId);
@@ -195,8 +194,7 @@ CardItemData::CardItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId,
 {
 }
 
-void CardItemData::OnLeftDClick(wxMouseEvent& event)
-{
+void CardItemData::OnLeftDClick(wxMouseEvent& event) {
     Stage *stage = wxGetApp().GetStage();
     if (stage->CanJump())
         stage->TryJumpTo(GetName());
@@ -368,8 +366,7 @@ void CardItemData::OnLeftDClick(wxMouseEvent& event)
 //=========================================================================
 
 /// Right-click menu for the HalyardProgramItemData in our ProgramTreeCtrl.
-class HalyardProgramMenu : public wxMenu
-{
+class HalyardProgramMenu : public wxMenu {
     DECLARE_EVENT_TABLE();
 
     wxWindow *mParent;
@@ -385,16 +382,14 @@ BEGIN_EVENT_TABLE(HalyardProgramMenu, wxMenu)
     EVT_MENU(HALYARD_PROPERTIES, HalyardProgramMenu::OnProperties)
 END_EVENT_TABLE()
 
-HalyardProgramMenu::HalyardProgramMenu(wxWindow *inParent, model::Object *inObject)
-{
+HalyardProgramMenu::HalyardProgramMenu(wxWindow *inParent, model::Object *inObject) {
     mParent = inParent;
     mObject = inObject;
     Append(HALYARD_PROPERTIES, wxT("Properties..."),
            wxT("Edit the properties for this program."));
 }
 
-void HalyardProgramMenu::OnProperties(wxCommandEvent &inEvent)
-{
+void HalyardProgramMenu::OnProperties(wxCommandEvent &inEvent) {
     ProgramPropDlg prop_dlg(mParent, mObject);
     prop_dlg.ShowModal();
 }
@@ -405,8 +400,7 @@ void HalyardProgramMenu::OnProperties(wxCommandEvent &inEvent)
 //=========================================================================
 
 /// Representation of the entire Halyard script in our ProgramTreeCtrl.
-class HalyardProgramItemData : public GroupItemData, public model::View
-{
+class HalyardProgramItemData : public GroupItemData, public model::View {
 public:
     HalyardProgramItemData(ProgramTreeCtrl *inTreeCtrl, wxTreeItemId inItemId)
         : GroupItemData(inTreeCtrl, inItemId, wxT("/"), true) {}
@@ -417,21 +411,18 @@ public:
     virtual void ObjectDeleted();
 };
 
-void HalyardProgramItemData::OnRightDown(wxMouseEvent& event)
-{
+void HalyardProgramItemData::OnRightDown(wxMouseEvent& event) {
     HalyardProgramMenu popup(GetTree(), GetObject());
     GetTree()->PopupMenu(&popup, event.GetPosition());
 }
 
-void HalyardProgramItemData::ObjectChanged()
-{
+void HalyardProgramItemData::ObjectChanged() {
     wxASSERT(GetId());
     wxString name(GetObject()->GetString("name").c_str(), wxConvLocal);
     GetTree()->SetItemText(GetId(), wxT("Program '") + name + wxT("'"));
 }
 
-void HalyardProgramItemData::ObjectDeleted()
-{
+void HalyardProgramItemData::ObjectDeleted() {
 }
 
 
@@ -472,8 +463,7 @@ ProgramTree::ProgramTree(StageFrame *inStageFrame, int inID)
     mTree = new ProgramTreeCtrl(this);
 }
 
-void ProgramTree::RegisterDocument(Document *inDocument)
-{
+void ProgramTree::RegisterDocument(Document *inDocument) {
     // Set up our root node, but which also represents the root node named
     // "/".  Note that this persists even when we're in the middle of
     // reloading the script, which isn't (currently) a problem since loaded
@@ -602,8 +592,7 @@ void ProgramTree::RegisterGroupMember(const wxString &inName, bool inIsCard,
                                    inIsLoaded);
 }
 
-void ProgramTree::NotifyReloadScriptStarting()
-{
+void ProgramTree::NotifyReloadScriptStarting() {
     ASSERT(mRootID.IsOk());
     mGroupMemberMap.clear();
     mHaveLastHighlightedItem = false;
@@ -614,8 +603,7 @@ void ProgramTree::NotifyReloadScriptStarting()
     mGroupMemberMap.insert(ItemMap::value_type("/", mRootID));
 }
 
-void ProgramTree::NotifyEnterCard(const wxString &inName)
-{
+void ProgramTree::NotifyEnterCard(const wxString &inName) {
     // Look up the ID corresponding to this card.
     ItemMap::iterator found =
         mGroupMemberMap.find(std::string(inName.mb_str()));

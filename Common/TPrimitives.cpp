@@ -70,8 +70,7 @@ TArgumentList &operator>>(TArgumentList &args, T &out) {
 }
 */
 
-TArgumentList &Halyard::operator>>(TArgumentList &args, TCallbackPtr &out)
-{
+TArgumentList &Halyard::operator>>(TArgumentList &args, TCallbackPtr &out) {
     out = args.GetCallbackArg();
     return args;
 }
@@ -108,17 +107,14 @@ TArgumentList &Halyard::operator>>(TArgumentList &inArgs,
     inArgs.GetValueOrPercentArg(is_percent, value);
 
     // Interpret it.
-    if (is_percent)
-    {
+    if (is_percent) {
         double result = (inVoP.mBaseValue * value) / 100.0;
         if (result < 0)
             result -= 0.5;
         else
             result += 0.5;
         *inVoP.mOutputValue = static_cast<int>(result);
-    }
-    else
-    {
+    } else {
         *inVoP.mOutputValue = value;
     }
     return inArgs;
@@ -129,8 +125,7 @@ TArgumentList &Halyard::operator>>(TArgumentList &inArgs,
 //  Debugging output
 //=========================================================================
 
-std::ostream &Halyard::operator<<(std::ostream &out, TArgumentList &args)
-{
+std::ostream &Halyard::operator<<(std::ostream &out, TArgumentList &args) {
     TValueList::iterator arg = args.mArgList.begin();
     if (arg == args.mArgList.end())
         return out;
@@ -154,8 +149,7 @@ void TPrimitiveManager::RegisterPrimitive(const std::string &inName,
     // Erase any existing primitive with this name.
     std::map<std::string,PrimitiveFunc>::iterator existing =
         mPrimitiveMap.find(inName);
-    if (existing != mPrimitiveMap.end())
-    {
+    if (existing != mPrimitiveMap.end()) {
         gLog.Debug("halyard", "Replacing primitive <%s>", inName.c_str());
         mPrimitiveMap.erase(existing);
     }
@@ -164,8 +158,7 @@ void TPrimitiveManager::RegisterPrimitive(const std::string &inName,
     mPrimitiveMap.insert(std::pair<std::string,PrimitiveFunc>(inName, inFunc));
 }
 
-bool TPrimitiveManager::DoesPrimitiveExist(const std::string &inName)
-{
+bool TPrimitiveManager::DoesPrimitiveExist(const std::string &inName) {
     ASSERT(inName != "");
 
     std::map<std::string,PrimitiveFunc>::iterator found =
@@ -210,7 +203,7 @@ void TPrimitiveManager::CallPrimitive(const std::string &inName,
     (*primitive)(inArgs);
 
     // Log primitive and return value after executing.
-    if (should_log) { 
+    if (should_log) {
         std::ostringstream out;
         out << "<<< " << inName;
         if (!gVariableManager.IsNull("_result")) {

@@ -54,8 +54,7 @@ bool Halyard::operator!=(const TPercent &inP1, const TPercent &inP2) {
     return !(inP1 == inP2);
 }
 
-std::ostream &Halyard::operator<<(std::ostream &out, const TPercent &inPercent)
-{
+std::ostream &Halyard::operator<<(std::ostream &out, const TPercent &inPercent) {
     out << inPercent.GetValue() << "%";
     return out;
 }
@@ -167,7 +166,7 @@ template <> int32 tvalue_cast(const TValue &v) {
     return v.Get(r, "a signed 32-bit integer");
 }
 
-template <> uint32 tvalue_cast(const TValue &v) { 
+template <> uint32 tvalue_cast(const TValue &v) {
     uint32 r;
     // Convert to uint32 if TValue is an int32
     // but only if the int32 is non-negative.

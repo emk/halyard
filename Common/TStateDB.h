@@ -51,7 +51,7 @@ typedef shared_ptr<TStateListener> TStateListenerPtr;
 /// A TStateDB stores key/value pairs (much like the Windows registry) and
 /// notifies TStateListeners when those keys change.
 ///
-class TStateDB {     
+class TStateDB {
     friend class TStateListener;
         
     /// Represents the value of an event and all the Listerners

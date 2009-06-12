@@ -28,10 +28,8 @@
 
 using namespace Typography;
 
-int main(int argc, char **argv)
-{
-    try
-    {
+int main(int argc, char **argv) {
+    try {
         // Our resources are located relative to our parent directory.
         FileSystem::SetBaseDirectory(FileSystem::Path().AddParentComponent());
 
@@ -39,14 +37,10 @@ int main(int argc, char **argv)
         FamilyDatabase familyDatabase;
         familyDatabase.ReadFromFontDirectory();
         familyDatabase.WriteToCache(std::cout);
-    }
-    catch (std::exception &error)
-    {
+    } catch (std::exception &error) {
         std::cerr << std::endl << error.what() << std::endl;
         return 1;
-    }
-    catch (...)
-    {
+    } catch (...) {
         std::cerr << std::endl
                   << "An unknown exception occurred!" << std::endl;
         return 1;

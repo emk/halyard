@@ -64,8 +64,7 @@ GeigerAudioStream::GeigerAudioStream(const char *inFileName, float inVolume)
     InitializationDone();
 }
 
-GeigerAudioStream::~GeigerAudioStream()
-{
+GeigerAudioStream::~GeigerAudioStream() {
     // We're called from the foreground thread, thankfully enough.
     delete [] mChirpBegin;
 }
@@ -77,31 +76,25 @@ void GeigerAudioStream::LogFinalStreamInfo() {
                mClipCount);
 }
 
-void GeigerAudioStream::ZeroBuffer(float *outBuffer, unsigned long inFrames)
-{
+void GeigerAudioStream::ZeroBuffer(float *outBuffer, unsigned long inFrames) {
     ASSERT(GetChannelCount() == 2);
     float *cursor = outBuffer;
-    for (size_t i = 0; i < inFrames; i++)
-    {
+    for (size_t i = 0; i < inFrames; i++) {
         *cursor++ = 0.0f;
         *cursor++ = 0.0f;
     }
 }
 
-void GeigerAudioStream::ClipBuffer(float *ioBuffer, unsigned long inFrames)
-{
+void GeigerAudioStream::ClipBuffer(float *ioBuffer, unsigned long inFrames) {
     size_t sample_count = inFrames * GetChannelCount();
     float *cursor = ioBuffer;
-    for (size_t i = 0; i < sample_count; i++)
-    {
+    for (size_t i = 0; i < sample_count; i++) {
         float sample = *cursor;
-        if (sample > 1.0)
-        {
+        if (sample > 1.0) {
             *cursor = 1.0;
             mClipCount++;
         }
-        if (sample < -1.0)
-        {
+        if (sample < -1.0) {
             *cursor = -1.0;
             mClipCount++;
         }
@@ -109,8 +102,7 @@ void GeigerAudioStream::ClipBuffer(float *ioBuffer, unsigned long inFrames)
     }
 }
 
-bool GeigerAudioStream::DoesEventOccurGivenProbability(float inProbability)
-{
+bool GeigerAudioStream::DoesEventOccurGivenProbability(float inProbability) {
     // NOTE - rand() sucks.  It only generates about 15 bits of entropy,
     // and the low order bits show highly regular patterns.
     //
@@ -121,8 +113,7 @@ bool GeigerAudioStream::DoesEventOccurGivenProbability(float inProbability)
     return (rand() < scaled_probability);
 }
 
-bool GeigerAudioStream::ShouldChirpDuringInterval(size_t inSamplesPerInterval)
-{
+bool GeigerAudioStream::ShouldChirpDuringInterval(size_t inSamplesPerInterval) {
     float chirps_per_sample = mChirpsPerSecond / SAMPLES_PER_SECOND;
     float chirps_per_interval = chirps_per_sample * inSamplesPerInterval;
     // Limit our chirp rate to a value where we still get some randomness.
@@ -132,11 +123,9 @@ bool GeigerAudioStream::ShouldChirpDuringInterval(size_t inSamplesPerInterval)
     return DoesEventOccurGivenProbability(chirps_per_interval);
 }
 
-size_t GeigerAudioStream::FindCursorIndexForNewChirp()
-{
+size_t GeigerAudioStream::FindCursorIndexForNewChirp() {
     size_t best_candidate = 0;
-    for (size_t i = 0; i < MAX_CHIRP_CURSORS; i++)
-    {
+    for (size_t i = 0; i < MAX_CHIRP_CURSORS; i++) {
         if (mChirpCursors[i] == NULL)
             return i;
         else if (mChirpCursors[i] > mChirpCursors[best_candidate])
@@ -145,10 +134,8 @@ size_t GeigerAudioStream::FindCursorIndexForNewChirp()
     return best_candidate;
 }
 
-void GeigerAudioStream::UpdateChirpStateForInterval(unsigned long inFrames)
-{
-    if (ShouldChirpDuringInterval(inFrames))
-    {
+void GeigerAudioStream::UpdateChirpStateForInterval(unsigned long inFrames) {
+    if (ShouldChirpDuringInterval(inFrames)) {
         mChirpCursors[FindCursorIndexForNewChirp()] = mChirpBegin;
         mChirpsPlayed++;
     }
@@ -159,8 +146,7 @@ void GeigerAudioStream::MixChirpIntoBuffer(size_t inCursor,
                                            unsigned long inFrames)
 {
     float *cursor = ioBuffer;
-    for (size_t i = 0; mChirpCursors[inCursor] && i < inFrames; i++)
-    {
+    for (size_t i = 0; mChirpCursors[inCursor] && i < inFrames; i++) {
         *cursor++ += *(mChirpCursors[inCursor])++;
         ASSERT(mChirpCursors[inCursor] < mChirpEnd);
         *cursor++ += *(mChirpCursors[inCursor])++;

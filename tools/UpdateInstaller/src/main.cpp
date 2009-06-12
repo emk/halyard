@@ -63,7 +63,7 @@ void UpdaterMain(size_t argc, const char **argv) {
     } 
 
     if (strcmp(argv[1], "--uninstall") == 0) {
-        if (argc < 3) { 
+        if (argc < 3) {
             printf("Usage: UpdateInstaller --uninstall path\n");
             exit(1);
         } else {

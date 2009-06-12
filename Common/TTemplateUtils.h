@@ -39,7 +39,7 @@ extern void StringLTrim(std::string &ioStr);
 /// Return true if inStr1 starts with inStr2. Do a case sensitive 
 /// comparison by default.
 ///
-extern bool StringStartsWith(const std::string &inStr1, 
+extern bool StringStartsWith(const std::string &inStr1,
                              const std::string &inStr2);
 
 //////////
@@ -57,7 +57,7 @@ extern std::string MakeStringLowercase(std::string inString);
 /// \param inString  the string to convert
 /// \return  the input string, with escaped quotes
 ///
-extern std::string MakeQuotedString(const std::string &inString); 
+extern std::string MakeQuotedString(const std::string &inString);
 
 //////////
 /// This functor can be used to delete all the pointers in a container
@@ -98,8 +98,7 @@ struct DeleteArray {
 /// When restore_i goes out of scope, i will be reset to its original value.
 ///
 template<class Type>
-class StValueRestorer : boost::noncopyable
-{
+class StValueRestorer : boost::noncopyable {
     Type &mLocation;
     Type mSaved;
 

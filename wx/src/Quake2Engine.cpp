@@ -67,23 +67,19 @@ Quake2Engine::Quake2Engine(Stage *inStage, const std::string &inGame,
     // TODO - Do something reasonable about stages which aren't 800x600.
 }
 
-Quake2Engine::~Quake2Engine()
-{
+Quake2Engine::~Quake2Engine() {
     DeleteCallbacks();
     sInstance = NULL;
 }
 
-void Quake2Engine::OnMouseEvent(wxMouseEvent &inEvent)
-{
+void Quake2Engine::OnMouseEvent(wxMouseEvent &inEvent) {
     // We redirect mouse events to the underlying stage.  We only receive
     // these events if mouse interaction is enabled.
     GetParent()->GetEventHandler()->ProcessEvent(inEvent);
 }
 
-bool Quake2Engine::Show(bool show)
-{
-    if (!show && IsShown() && wxGetApp().HaveStage())
-    {
+bool Quake2Engine::Show(bool show) {
+    if (!show && IsShown() && wxGetApp().HaveStage()) {
         // Attempt to save our displayed graphics back into our Stage's
         // offscreen buffer.
         wxClientDC client_dc(this);
@@ -95,8 +91,7 @@ bool Quake2Engine::Show(bool show)
 }
 
 
-void Quake2Engine::NotifyReloadScriptStarting()
-{
+void Quake2Engine::NotifyReloadScriptStarting() {
     // Hide the Quake 2 window, if necessary.  If the reloaded script wants
     // Quake 2 to be visible, it will show it.
     if (IsShown())
@@ -106,8 +101,7 @@ void Quake2Engine::NotifyReloadScriptStarting()
     DeleteCallbacks();
 }
 
-void Quake2Engine::DeleteCallbacks()
-{
+void Quake2Engine::DeleteCallbacks() {
     mCallbackMap.clear();
 }
 
@@ -116,14 +110,11 @@ void Quake2Engine::RegisterCallback(const std::string &inName,
 {
     // Check to see if this command is currently in our map.
     CallbackMap::iterator found = mCallbackMap.find(inName);
-    if (found == mCallbackMap.end())
-    {
+    if (found == mCallbackMap.end()) {
         // We don't currently have a command with this name,
         // so assume we probably have to register it with Quake 2.
         RegisterCommand(inName.c_str());
-    }
-    else
-    {
+    } else {
         // Delete an existing command with this name.
         mCallbackMap.erase(found);
     }
@@ -132,8 +123,7 @@ void Quake2Engine::RegisterCallback(const std::string &inName,
     mCallbackMap.insert(std::pair<std::string,TCallbackPtr>(inName, inCallback));
 }
 
-void Quake2Engine::HandleCommand()
-{
+void Quake2Engine::HandleCommand() {
     wxString command = CommandArgv(0);
     CallbackMap::iterator found = mCallbackMap.find(ToStdString(command));
     if (found == mCallbackMap.end())
@@ -150,8 +140,7 @@ void Quake2Engine::HandleCommand()
     }
 }
 
-void Quake2Engine::HandleBinMsg(unsigned char *buffer, size_t size)
-{
+void Quake2Engine::HandleBinMsg(unsigned char *buffer, size_t size) {
     BEGIN_EXCEPTION_TRAPPER() {
         BinMsg msg(buffer, size);
         TValueList args(tvalue_cast<TValueList>(msg.GetArgs()));

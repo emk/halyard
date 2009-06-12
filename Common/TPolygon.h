@@ -28,8 +28,7 @@ BEGIN_NAMESPACE_HALYARD
 //////////
 /// A class representing a closed polygon.
 ///
-class TPolygon
-{
+class TPolygon {
     std::vector<TPoint> mVertices;
     TRect mBounds;
 

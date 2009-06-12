@@ -145,8 +145,7 @@ namespace model {
 
     /// This class is used to delete the value associated with a given key.
     template <typename KeyType>
-    class DeleteChange : public Change
-    {
+    class DeleteChange : public Change {
         typedef const KeyType ConstKeyType;
 
         CollectionDatum<KeyType> *mCollection;

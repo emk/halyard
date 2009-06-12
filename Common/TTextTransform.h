@@ -42,8 +42,7 @@ BEGIN_NAMESPACE_HALYARD
 /// this routine can be more-or-less safely applied to XML text, and won't
 /// do anything particularly useful to non-XML text.
 ///
-namespace TTextTransform
-{
+namespace TTextTransform {
     /// Transform double hyphens into m-dash entities (a dash the
     /// width of the capital letter 'M'), and '...' sequences into
     /// horizontal ellipsis entities.

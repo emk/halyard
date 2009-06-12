@@ -55,8 +55,7 @@ MovieElement::MovieElement(Stage *inStage, const wxString &inName,
     InitializeWidgetWindow(mMovieWindow);
 }
 
-bool MovieElement::HasVisibleRepresentation()
-{
+bool MovieElement::HasVisibleRepresentation() {
     if (mMovieWindow->GetMovieWindowStyle() & MOVIE_AUDIO_ONLY)
         return false;
     else
@@ -126,29 +125,24 @@ bool MovieElement::ApplyClippingToStage(wxRegion &ioRegion) {
         return false;
 }
 
-bool MovieElement::IsLooping()
-{
+bool MovieElement::IsLooping() {
     return mMovieWindow->IsLooping();
 }
 
-void MovieElement::EndPlayback()
-{
+void MovieElement::EndPlayback() {
     MediaElement::EndPlayback();
     mMovieWindow->Pause();
 }
 
-void MovieElement::Pause()
-{
+void MovieElement::Pause() {
     mMovieWindow->Pause();
 }
 
-void MovieElement::Resume()
-{
+void MovieElement::Resume() {
     mMovieWindow->Resume();
 }
 
-void MovieElement::SetVolume(const std::string &inChannel, double inVolume)
-{
+void MovieElement::SetVolume(const std::string &inChannel, double inVolume) {
     mMovieWindow->SetVolume(inChannel, inVolume);
 }
 

@@ -88,8 +88,7 @@ static void TerminateQTML() {
 // TQTMovie Static Methods
 //=========================================================================
 
-void TQTMovie::InitializeMovies()
-{
+void TQTMovie::InitializeMovies() {
     ASSERT(sIsQuickTimeInitialized == false);
 
     // Start up the portions of the Macintosh Toolbox included with
@@ -138,11 +137,9 @@ void TQTMovie::InitializeMovies()
     sIsQuickTimeInitialized = true;
 }
 
-void TQTMovie::ShutDownMovies()
-{
+void TQTMovie::ShutDownMovies() {
     ASSERT(sIsQuickTimeInitialized == true);
-    if (sIsQuickTimeInitialized)
-    {
+    if (sIsQuickTimeInitialized) {
         ::ExitMovies();
         if (sDummyGWorld)
             ::DisposeGWorld(sDummyGWorld);
@@ -153,8 +150,7 @@ void TQTMovie::ShutDownMovies()
 
 #if defined __WXMSW__
 
-void TQTMovie::RegisterWindowForMovies(HWND inWindow)
-{
+void TQTMovie::RegisterWindowForMovies(HWND inWindow) {
     ASSERT(sIsQuickTimeInitialized);
 
     // Tell QuickTime to bind a CGrafPort to the window.
@@ -164,8 +160,7 @@ void TQTMovie::RegisterWindowForMovies(HWND inWindow)
     ::CreatePortAssociation(inWindow, NULL, 0);
 }
 
-void TQTMovie::UnregisterWindowForMovies(HWND inWindow)
-{
+void TQTMovie::UnregisterWindowForMovies(HWND inWindow) {
     ASSERT(sIsQuickTimeInitialized);
 
     // Dispose of the Macintosh drawing context associated with inWindow.
@@ -174,8 +169,7 @@ void TQTMovie::UnregisterWindowForMovies(HWND inWindow)
         ::DestroyPortAssociation(port);
 }
 
-CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow)
-{
+CGrafPtr TQTMovie::GetPortFromHWND(HWND inWindow) {
     return reinterpret_cast<CGrafPtr>(::GetNativeWindowPort(inWindow));
 }
 
@@ -227,8 +221,7 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
     // preloading.
     short load_flags = newMovieActive /*| newMovieAsyncOK*/;
     
-    try
-    {
+    try {
         // Build a CFStringRef version of inMoviePath for use with the
         // toolbox APIs.
         path_ref = CFStringCreateWithCString(NULL, inMoviePath.c_str(),
@@ -269,9 +262,7 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
         UpdateMovieState(MOVIE_INCOMPLETE);
 
         // NEXT: Our Idle method will call ProcessAsyncLoad repeatedly.
-    }
-    catch (std::exception &)
-    {
+    } catch (std::exception &) {
         // We failed, so clean up everything.
         UpdateMovieState(MOVIE_BROKEN);
         ReleaseResources();
@@ -289,14 +280,12 @@ TQTMovie::TQTMovie(CGrafPtr inPort, const std::string &inMoviePath)
         ::DisposeHandle(data_ref);
 }
 
-void TQTMovie::Idle() throw ()
-{
+void TQTMovie::Idle() throw () {
     // Keep event-loop processing simple for our callers.
     if (IsBroken())
         return;
 
-    try
-    {
+    try {
         // Give QuickTime some time to run.
         if (mMovieController)
             CHECK_MAC_ERROR(::MCIdle(mMovieController));
@@ -316,15 +305,12 @@ void TQTMovie::Idle() throw ()
 
         // Maybe update our timeout.
         UpdateTimeout();
-    }
-    catch (...)
-    {
+    } catch (...) {
         UpdateMovieState(MOVIE_BROKEN);
     }
 }
 
-void TQTMovie::ProcessAsyncLoad()
-{
+void TQTMovie::ProcessAsyncLoad() {
     ASSERT(mState == MOVIE_INCOMPLETE);
 
     // XXX - Give QuickTime plenty of idles to get this movie off the
@@ -350,8 +336,7 @@ void TQTMovie::ProcessAsyncLoad()
         AsyncLoadComplete();
 }
 
-void TQTMovie::AsyncLoadComplete()
-{
+void TQTMovie::AsyncLoadComplete() {
     ASSERT(mState == MOVIE_INCOMPLETE);
 
     // "hintsScrubMode" tells QuickTime to jump to the nearest keyframe
@@ -366,8 +351,7 @@ void TQTMovie::AsyncLoadComplete()
         Start(mOptions, mPosition);
 }
 
-void TQTMovie::StartWhenReady(PlaybackOptions inOptions, Point inPosition)
-{
+void TQTMovie::StartWhenReady(PlaybackOptions inOptions, Point inPosition) {
     if (mState == MOVIE_READY)
         Start(inOptions, inPosition);
     else
@@ -385,8 +369,7 @@ void TQTMovie::StartWhenReady(PlaybackOptions inOptions, Point inPosition)
     }
 }
 
-void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
-{
+void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition) {
     ASSERT(mState == MOVIE_READY);
 
     // Store our options so other routines can find them.
@@ -400,8 +383,7 @@ void TQTMovie::Start(PlaybackOptions inOptions, Point inPosition)
     // The movie should be done flashing (and drawing in awkward places),
     // so we should attach it to the correct port (if it has any graphics
     // we care about).
-    if (!(mOptions & kAudioOnly))
-    {
+    if (!(mOptions & kAudioOnly)) {
         // See IsReadyToHandleOwnDrawing(), below, which needs to start
         // returning true as soon as we set up our new GWorld.
         ::SetMovieGWorld(mMovie, mPort, NULL);
@@ -546,13 +528,11 @@ bool TQTMovie::SafeToStart(long inLoadState) {
 // Regular TQTMovie Methods
 //=========================================================================
 
-TQTMovie::~TQTMovie() throw ()
-{
+TQTMovie::~TQTMovie() throw () {
     ReleaseResources();
 }
 
-bool TQTMovie::IsDone() throw ()
-{
+bool TQTMovie::IsDone() throw () {
     if (mState == MOVIE_BROKEN)
         return true;
     else if (mState < MOVIE_STARTED)
@@ -581,8 +561,7 @@ bool TQTMovie::IsDone() throw ()
     }
 }
 
-bool TQTMovie::IsPaused()
-{
+bool TQTMovie::IsPaused() {
     if (mState == MOVIE_BROKEN)
         return true;
     else if (mState < MOVIE_STARTED)
@@ -596,8 +575,7 @@ bool TQTMovie::IsPaused()
     }
 }
 
-void TQTMovie::Pause()
-{
+void TQTMovie::Pause() {
     if (mState == MOVIE_BROKEN)
         return;
 
@@ -613,8 +591,7 @@ void TQTMovie::Pause()
     }
 }
 
-void TQTMovie::Unpause()
-{
+void TQTMovie::Unpause() {
     if (mState == MOVIE_BROKEN)
         return;
 
@@ -623,24 +600,21 @@ void TQTMovie::Unpause()
     else
     {
         ASSERT(mState == MOVIE_STARTED);        
-        if (IsPaused() && !IsDone())
-        {
+        if (IsPaused() && !IsDone()) {
             Fixed rate = ::GetMoviePreferredRate(mMovie);
             DoAction(mcActionPlay, reinterpret_cast<void*>(rate));
         }
     }
 }
 
-TimeValue TQTMovie::GetMovieTime()
-{
+TimeValue TQTMovie::GetMovieTime() {
     ASSERT(CanGetMovieProperties());
     TimeValue current_time = ::GetMovieTime(mMovie, NULL);
     CHECK_MAC_ERROR(::GetMoviesError());
     return current_time;
 }
 
-void TQTMovie::SetMovieVolume(float inVolume)
-{
+void TQTMovie::SetMovieVolume(float inVolume) {
     // Store the volume.  We'll need this later if we don't have an
     // mMovieController yet.
     mVolume = inVolume;
@@ -660,32 +634,28 @@ void TQTMovie::SetMovieVolume(float inVolume)
     }
 }
 
-TimeScale TQTMovie::GetTimeScale()
-{
+TimeScale TQTMovie::GetTimeScale() {
     ASSERT(CanGetMovieProperties());
     TimeScale scale = ::GetMovieTimeScale(mMovie);
     CHECK_MAC_ERROR(::GetMoviesError());
     return scale;
 }
 
-TimeValue TQTMovie::GetDuration()
-{
+TimeValue TQTMovie::GetDuration() {
     ASSERT(CanGetMovieProperties());
     TimeValue duration = ::GetMovieDuration(mMovie);
     CHECK_MAC_ERROR(::GetMoviesError());
     return duration;    
 }
 
-TimeValue TQTMovie::GetMaxLoadedTimeInMovie()
-{
+TimeValue TQTMovie::GetMaxLoadedTimeInMovie() {
     ASSERT(CanGetMovieProperties());
     TimeValue max_loaded;
     CHECK_MAC_ERROR(::GetMaxLoadedTimeInMovie(mMovie, &max_loaded));
     return max_loaded;
 }
 
-void TQTMovie::ThrowIfBroken()
-{
+void TQTMovie::ThrowIfBroken() {
     if (IsBroken())
         // XXX - Find a better error to throw.
         throw TMacError(__FILE__, __LINE__, noErr);
@@ -728,8 +698,7 @@ void TQTMovie::UpdateTimeout(bool inStart) {
     }
 }
 
-bool TQTMovie::GetNextCaption(std::string &outCaption)
-{
+bool TQTMovie::GetNextCaption(std::string &outCaption) {
     if (mCaptionsToDisplay.empty())
         return false;
     outCaption = mCaptionsToDisplay.front();
@@ -767,51 +736,44 @@ void TQTMovie::FillOutEvent(HWND inHWND, UINT inMessage, WPARAM inWParam,
 
 #endif // defined __WXMSW__
 
-void TQTMovie::Redraw() throw ()
-{
+void TQTMovie::Redraw() throw () {
     if (IsBroken() || !mMovieController)
         return;
     ::MCDraw(mMovieController, GetMacWindow());
 }
 
-void TQTMovie::Activate(bool inIsActivating) throw ()
-{
+void TQTMovie::Activate(bool inIsActivating) throw () {
     if (IsBroken() || !mMovieController)
         return;
     ::MCActivate(mMovieController, GetMacWindow(), inIsActivating);
 }
 
-void TQTMovie::Click(Point inWhere, long inWhen, long inModifiers) throw ()
-{
+void TQTMovie::Click(Point inWhere, long inWhen, long inModifiers) throw () {
     if (IsBroken() || !mMovieController)
         return;
     ::MCClick(mMovieController, GetMacWindow(), inWhere, inWhen, inModifiers);
 }
 
 
-void TQTMovie::Key(SInt8 inKey, long inModifiers) throw ()
-{
+void TQTMovie::Key(SInt8 inKey, long inModifiers) throw () {
     if (IsBroken() || !mMovieController)
         return;
     ::MCKey(mMovieController, inKey, inModifiers);  
 }
 
-void TQTMovie::DoAction(mcAction inAction, void *inParam)
-{
+void TQTMovie::DoAction(mcAction inAction, void *inParam) {
     ASSERT(mMovieController);
     CHECK_MAC_ERROR(::MCDoAction(mMovieController, inAction, inParam));
 }
 
-void TQTMovie::ReleaseResources() throw ()
-{
+void TQTMovie::ReleaseResources() throw () {
     if (mMovieController)
         ::DisposeMovieController(mMovieController);
     if (mMovie)
         ::DisposeMovie(mMovie);
 }
 
-void TQTMovie::UpdateMovieState(MovieState inNewState)
-{
+void TQTMovie::UpdateMovieState(MovieState inNewState) {
     // Sanity-check our new state.
     ASSERT(inNewState == MOVIE_BROKEN || (inNewState - 1 == mState));
 
@@ -819,18 +781,15 @@ void TQTMovie::UpdateMovieState(MovieState inNewState)
     mState = inNewState;
 }
 
-bool TQTMovie::ActionFilter(short inAction, void* inParams)
-{
-    switch (inAction)
-    {
+bool TQTMovie::ActionFilter(short inAction, void* inParams) {
+    switch (inAction) {
         case mcActionMovieEdited:
         case mcActionControllerSizeChanged:
             // We'll eventually want to do stuff here.
             break;
 
         case mcActionMovieClick:
-            if (!(mOptions & kEnableInteraction))
-            {
+            if (!(mOptions & kEnableInteraction)) {
                 // Devour mouse clicks using the trick recommended by
                 // Inside Macintosh.
                 EventRecord* evt = reinterpret_cast<EventRecord*>(inParams);
@@ -844,8 +803,7 @@ bool TQTMovie::ActionFilter(short inAction, void* inParams)
     return false;
 }
 
-void TQTMovie::Caption(const std::string &inText)
-{
+void TQTMovie::Caption(const std::string &inText) {
     // Queue the caption.
     mCaptionsToDisplay.push_back(inText);
 }
@@ -929,8 +887,7 @@ OSErr TQTMovie::CaptionCallback(Handle inText, Movie inMovie,
 //
 // TYPE and SUBTYPE are four-character, case-sensitive strings.
 
-DEFINE_PRIMITIVE(QTComponentVersion)
-{
+DEFINE_PRIMITIVE(QTComponentVersion) {
     long version = 0;
     OSType type, subtype;
     ComponentInstance ci = NULL;
@@ -939,8 +896,7 @@ DEFINE_PRIMITIVE(QTComponentVersion)
     // Get our type & subtype.
     std::string type_str, subtype_str;
     inArgs >> type_str >> subtype_str;
-    if (type_str.length() != 4 || subtype_str.length() != 4)
-    {
+    if (type_str.length() != 4 || subtype_str.length() != 4) {
         gLog.Warn("halyard", "QTComponent type and subtype must be four characters.");
         goto done;
     }
@@ -953,8 +909,7 @@ DEFINE_PRIMITIVE(QTComponentVersion)
     
     // Open the component.
     ci = ::OpenDefaultComponent(type, subtype);
-    if (!ci)
-    {
+    if (!ci) {
         gLog.Info("halyard", "Can't open component %s/%s",
                  type_str.c_str(), subtype_str.c_str());
         goto done;
@@ -962,8 +917,7 @@ DEFINE_PRIMITIVE(QTComponentVersion)
 
     // Get the version number.
     version = ::GetComponentVersion(ci);
-    if (::GetComponentInstanceError(ci) != noErr)
-    {
+    if (::GetComponentInstanceError(ci) != noErr) {
         gLog.Info("halyard", "Can't get component version for %s/%s",
                  type_str.c_str(), subtype_str.c_str());
         version = 0;

@@ -67,8 +67,7 @@ class ValueOrPercent;
 /// the correct data type on the fly, if that's appropriate for the
 /// scripting language in question.
 ///
-class TArgumentList
-{
+class TArgumentList {
     /// The arguments passed to a primitive will be stored as TValues
     /// in a TValueList.
     TValueList mArgList;
@@ -136,8 +135,7 @@ public:
 /// An input manipulator which reads a symbol from the input stream and
 /// stores it in the specified std::string object.
 ///
-class SymbolName
-{
+class SymbolName {
     std::string &mName;
 
 public:
@@ -156,8 +154,7 @@ public:
 /// When passed 20%, this will return 2.  When passed "4", this
 /// will return "4".
 ///
-class ValueOrPercent
-{
+class ValueOrPercent {
     int32 mBaseValue;
     int32 *mOutputValue;
 
@@ -174,8 +171,7 @@ public:
 /// functions.  These functions can be called from our scripting
 /// language.
 ///
-class TPrimitiveManager
-{
+class TPrimitiveManager {
 public:
     /// A PrimitiveFunc implements a single primitive.
     ///
@@ -269,8 +265,7 @@ extern std::ostream &operator<<(std::ostream &out, TArgumentList &args);
 ///
 /// \param inVariable  The variable whose value we should use.
 ///
-inline void SetPrimitiveResult(const TValue &inVariable)
-{
+inline void SetPrimitiveResult(const TValue &inVariable) {
     gVariableManager.Set("_result", inVariable);
 }
 

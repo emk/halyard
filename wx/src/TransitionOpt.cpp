@@ -43,8 +43,7 @@ using namespace Halyard;
 #define DEFAULT_MILLISECONDS_PER_BLOCK (20)
 
 /// A graphical transition effect.
-class Transition
-{
+class Transition {
     double mTotalBlocks;
     int mTotalMilliseconds;
 
@@ -78,8 +77,7 @@ Transition::Transition()
 }
 
 /// A block is equivalent to one full screen's worth of pixels.
-double Transition::BlocksPerFrame(TransitionResources &inResources) const
-{
+double Transition::BlocksPerFrame(TransitionResources &inResources) const {
     if (!AffectsOnlyDirtyRect()) {
         return 1.0;
     } else {
@@ -102,8 +100,7 @@ double Transition::BlocksPerFrame(TransitionResources &inResources) const
 /// much data as possible.
 double Transition::EstimateMillisecondsPerBlock() const {
     double est_ms_per_block = DEFAULT_MILLISECONDS_PER_BLOCK;
-    if (mTotalBlocks > 0)
-    {
+    if (mTotalBlocks > 0) {
         est_ms_per_block = mTotalMilliseconds / mTotalBlocks;
 
         // Don't believe really small numbers until we have a large sample
@@ -143,8 +140,7 @@ void Transition::RunTransition(int inMilliseconds,
                "Transition: %d ms, est. %f ms/frame, est. %f frames",
                inMilliseconds, est_ms_per_frame, frames);
 
-    if (frames >= 1.0 && step > 0.0)
-    {
+    if (frames >= 1.0 && step > 0.0) {
         // Run the transition.
         //
         /// \todo This timing loop is based on the assumpting that our
@@ -152,8 +148,7 @@ void Transition::RunTransition(int inMilliseconds,
         /// much better, with less interference Stage::IdleElements, if we
         /// had a high-resolution timer.
         wxStopWatch watch;
-        for (double s = step; s < 1.0; s += step)
-        {
+        for (double s = step; s < 1.0; s += step) {
             mTotalBlocks += blocks_per_frame;
             ShowStep(s, inResources);
             
@@ -164,8 +159,7 @@ void Transition::RunTransition(int inMilliseconds,
             wxGetApp().ProcessIdle();
 
             // Just to be safe!
-            if (watch.Time() > panic_ms)
-            {
+            if (watch.Time() > panic_ms) {
                 gLog.Debug("halyard.transition",
                            "Transition: way too long, aborting");
                 break;
@@ -181,14 +175,12 @@ void Transition::RunTransition(int inMilliseconds,
 //=========================================================================
 
 /// A gradual fade from one image to another.
-class CrossFade : public Transition
-{
+class CrossFade : public Transition {
     bool AffectsOnlyDirtyRect() const { return true; }
     void ShowStep(double inStep, TransitionResources &inResources);
 };
 
-void CrossFade::ShowStep(double inStep, TransitionResources &inResources)
-{
+void CrossFade::ShowStep(double inStep, TransitionResources &inResources) {
     wxNativePixelData before_data(inResources.GetBeforeBmp());
     wxNativePixelData after_data(inResources.GetAfterBmp());
     wxNativePixelData scratch_data(inResources.GetScratchBmp());
@@ -208,15 +200,13 @@ void CrossFade::ShowStep(double inStep, TransitionResources &inResources)
     before_row_start.Offset(before_data, bounds.GetLeft(), bounds.GetTop());
     after_row_start.Offset(after_data, bounds.GetLeft(), bounds.GetTop());
     scratch_row_start.Offset(scratch_data, bounds.GetLeft(), bounds.GetTop());
-    for (int y = bounds.GetHeight(); y > 0; --y)
-    {
+    for (int y = bounds.GetHeight(); y > 0; --y) {
         wxNativePixelData::Iterator before(before_row_start);
         wxNativePixelData::Iterator after(after_row_start);
         wxNativePixelData::Iterator scratch(scratch_row_start);
 
         // Our fast inner loop.
-        for (int y = line_width; y > 0; --y)
-        {
+        for (int y = line_width; y > 0; --y) {
             scratch.Red() = (after.Red() * alpha + before.Red() * beta) >> 8;
             scratch.Green() =
                 (after.Green() * alpha + before.Green() * beta) >> 8;
@@ -253,8 +243,7 @@ enum FadeBlackType {
 };
 
 /// A fade to or from a black screen.
-class FadeBlack : public Transition
-{
+class FadeBlack : public Transition {
     FadeBlackType mType;
 
 public:
@@ -264,18 +253,14 @@ protected:
     void ShowStep(double inStep, TransitionResources &inResources);
 };
 
-void FadeBlack::ShowStep(double inStep, TransitionResources &inResources)
-{
+void FadeBlack::ShowStep(double inStep, TransitionResources &inResources) {
     // Decide whether to fade to or from black, and prepare appropriately.
     wxBitmap source_bitmap;
     int alpha;
-    if (mType == FADE_TO_BLACK)
-    {
+    if (mType == FADE_TO_BLACK) {
         alpha = 256 * (1.0 - inStep);
         source_bitmap = inResources.GetBeforeBmp();
-    }
-    else
-    {
+    } else {
         ASSERT(mType == FADE_FROM_BLACK);
         alpha = 256 * inStep;
         source_bitmap = inResources.GetAfterBmp();
@@ -288,14 +273,12 @@ void FadeBlack::ShowStep(double inStep, TransitionResources &inResources)
     // Our outer loop.
     wxNativePixelData::Iterator source_row_start(source_data);
     wxNativePixelData::Iterator scratch_row_start(scratch_data);
-    for (int y = source_bitmap.GetHeight(); y > 0; --y)
-    {
+    for (int y = source_bitmap.GetHeight(); y > 0; --y) {
         wxNativePixelData::Iterator source(source_row_start);
         wxNativePixelData::Iterator scratch(scratch_row_start);
 
         // Our fast inner loop.
-        for (int y = source_bitmap.GetWidth(); y > 0; --y)
-        {
+        for (int y = source_bitmap.GetWidth(); y > 0; --y) {
             scratch.Red()   = (source.Red()   * alpha) >> 8;
             scratch.Green() = (source.Green() * alpha) >> 8;
             scratch.Blue()  = (source.Blue()  * alpha) >> 8;
@@ -326,8 +309,7 @@ enum Direction {
 };
 
 /// A transition which can move in one of four directions.
-class DirectionalTransition : public Transition
-{
+class DirectionalTransition : public Transition {
     Direction mDirection;
 
 protected:
@@ -385,8 +367,7 @@ void DirectionalTransition::ShowStep(double inStep,
     p.output_dc = &inResources.GetOutputDC();
 
     // Choose which version of the transition to run.
-    switch (mDirection)
-    {
+    switch (mDirection) {
         case DIRECTION_LEFT:  ShowStepLeft(p);  break;
         case DIRECTION_RIGHT: ShowStepRight(p); break;
         case DIRECTION_UP:    ShowStepUp(p);    break;
@@ -406,8 +387,7 @@ void DirectionalTransition::ShowStep(double inStep,
 ///  when computing speeds.  For now, we slow down wipes considerably
 ///  to ensure this.  A different timing algorithm could be used with
 ///  "incremental" wipes.
-class Wipe : public DirectionalTransition
-{
+class Wipe : public DirectionalTransition {
     void ShowStepLeft(Params &p);
     void ShowStepRight(Params &p);
     void ShowStepUp(Params &p);
@@ -417,32 +397,28 @@ public:
     Wipe(Direction inDirection) : DirectionalTransition(inDirection) {}
 };
 
-void Wipe::ShowStepLeft(Params &p)
-{
+void Wipe::ShowStepLeft(Params &p) {
     p.output_dc->Blit(0, 0, p.before_width, p.height,
                       p.before_dc, 0, 0);
     p.output_dc->Blit(p.before_width, 0, p.after_width, p.height,
                       p.after_dc, p.before_width, 0);
 }
 
-void Wipe::ShowStepRight(Params &p)
-{
+void Wipe::ShowStepRight(Params &p) {
     p.output_dc->Blit(p.after_width, 0, p.before_width, p.height,
                       p.before_dc, p.after_width, 0);
     p.output_dc->Blit(0, 0, p.after_width, p.height,
                       p.after_dc, 0, 0);
 }
 
-void Wipe::ShowStepUp(Params &p)
-{
+void Wipe::ShowStepUp(Params &p) {
     p.output_dc->Blit(0, 0, p.width, p.before_height,
                       p.before_dc, 0, 0);
     p.output_dc->Blit(0, p.before_height, p.width, p.after_height,
                       p.after_dc, 0, p.before_height);
 }
 
-void Wipe::ShowStepDown(Params &p)
-{
+void Wipe::ShowStepDown(Params &p) {
     p.output_dc->Blit(0, p.after_height, p.width, p.before_height,
                       p.before_dc, 0, p.after_height);
     p.output_dc->Blit(0, 0, p.width, p.after_height,
@@ -455,8 +431,7 @@ void Wipe::ShowStepDown(Params &p)
 //=========================================================================
 
 /// A transition where the new image pushes the old image off screen.
-class Push : public DirectionalTransition
-{
+class Push : public DirectionalTransition {
     void ShowStepLeft(Params &p);
     void ShowStepRight(Params &p);
     void ShowStepUp(Params &p);
@@ -466,32 +441,28 @@ public:
     Push(Direction inDirection) : DirectionalTransition(inDirection) {}
 };
 
-void Push::ShowStepLeft(Params &p)
-{
+void Push::ShowStepLeft(Params &p) {
     p.output_dc->Blit(0, 0, p.before_width, p.height,
                       p.before_dc, p.after_width, 0);
     p.output_dc->Blit(p.before_width, 0, p.after_width, p.height,
                       p.after_dc, 0, 0);
 }
 
-void Push::ShowStepRight(Params &p)
-{
+void Push::ShowStepRight(Params &p) {
     p.output_dc->Blit(p.after_width, 0, p.before_width, p.height,
                       p.before_dc, 0, 0);
     p.output_dc->Blit(0, 0, p.after_width, p.height,
                       p.after_dc, p.before_width, 0);
 }
 
-void Push::ShowStepUp(Params &p)
-{
+void Push::ShowStepUp(Params &p) {
     p.output_dc->Blit(0, 0, p.width, p.before_height,
                       p.before_dc, 0, p.after_height);
     p.output_dc->Blit(0, p.before_height, p.width, p.after_height,
                       p.after_dc, 0, 0);
 }
 
-void Push::ShowStepDown(Params &p)
-{
+void Push::ShowStepDown(Params &p) {
     p.output_dc->Blit(0, p.after_height, p.width, p.before_height,
                       p.before_dc, 0, 0);
     p.output_dc->Blit(0, 0, p.width, p.after_height,
@@ -503,8 +474,7 @@ void Push::ShowStepDown(Params &p)
 //  TransitionManager
 //=========================================================================
 
-TransitionManager::TransitionManager()
-{
+TransitionManager::TransitionManager() {
     // Basics.
     RegisterTransition("crossfade", new CrossFade());
     RegisterTransition("toblack",   new FadeBlack(FADE_TO_BLACK));
@@ -523,8 +493,7 @@ TransitionManager::TransitionManager()
     RegisterTransition("pushdown",  new Push(DIRECTION_DOWN));
 }
 
-TransitionManager::~TransitionManager()
-{
+TransitionManager::~TransitionManager() {
     TransitionMap::iterator i = mTransitions.begin();
     for (; i != mTransitions.end(); ++i)
         delete i->second;

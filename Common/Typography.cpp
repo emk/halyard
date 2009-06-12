@@ -34,8 +34,7 @@ using std::min;
 using std::max;
 using namespace Typography;
 
-inline Distance round_266 (FT_Pos in266Measurement)
-{
+inline Distance round_266 (FT_Pos in266Measurement) {
     // XXX - Are all our values pre-fitted?
     return (in266Measurement + 32) >> 6;
 }
@@ -97,18 +96,15 @@ void Representation::DecRef() {
 
 Library *Library::sLibrary = NULL;
 
-Library::Library()
-{
+Library::Library() {
     CHECK_RESULT(FT_Init_FreeType(&mLibrary));
 }
 
-Library::~Library()
-{
+Library::~Library() {
     CHECK_RESULT(FT_Done_FreeType(mLibrary));
 }
 
-Library *Library::GetLibrary()
-{
+Library *Library::GetLibrary() {
     if (!sLibrary)
         sLibrary = new Library();
     return sLibrary;
@@ -141,27 +137,20 @@ Glyph::Glyph(FT_GlyphSlot inGlyph)
 
     FT_Bitmap *bitmap = &inGlyph->bitmap;
     ASSERT(bitmap->pitch >= 0);
-    if (bitmap->pixel_mode == ft_pixel_mode_grays)
-    {
+    if (bitmap->pixel_mode == ft_pixel_mode_grays) {
         // Convert 8-bit greyscale characters.
         ASSERT(bitmap->num_grays == 256);
-        for (int y = 0; y < bitmap->rows; y++)
-        {
-            for (int x = 0; x < bitmap->width; x++)
-            {
+        for (int y = 0; y < bitmap->rows; y++) {
+            for (int x = 0; x < bitmap->width; x++) {
                 Channel value = bitmap->buffer[x + bitmap->pitch*y];
                 mGreyMap.At(x, y) = value;
             }
         }
-    }
-    else
-    {
+    } else {
         // Convert 1-bit monochrome characters.
         ASSERT(bitmap->pixel_mode == ft_pixel_mode_mono);
-        for (int y = 0; y < bitmap->rows; y++)
-        {
-            for (int x = 0; x < bitmap->width; x++)
-            {
+        for (int y = 0; y < bitmap->rows; y++) {
+            for (int x = 0; x < bitmap->width; x++) {
                 unsigned char byte = bitmap->buffer[(x/8) + bitmap->pitch * y];
                 Channel value = ((1<<(7-(x%8))) & byte) ? 255 : 0; 
                 mGreyMap.At(x, y) = value;
@@ -231,30 +220,25 @@ bool Style::StyleRep::operator==(const StyleRep &inRep) const {
 }
 
 
-Style::Style(const std::string &inFamily, int inSize)
-{
+Style::Style(const std::string &inFamily, int inSize) {
     mRep = new StyleRep(inFamily, inSize);
 }
 
-Style::Style(const Style &inStyle)
-{
+Style::Style(const Style &inStyle) {
     // It's safe to cast away the const here because we always call
     // 'Grab' before modifying the representation.
     mRep = const_cast<StyleRep*>(inStyle.mRep);
     mRep->IncRef();
 }
 
-Style::~Style()
-{
+Style::~Style() {
     // Only throw away the rep if we're the last reference.
     mRep->DecRef();
 }
 
-void Style::Grab()
-{
+void Style::Grab() {
     // If we don't have our own copy, get one.
-    if (mRep->IsShared())
-    {
+    if (mRep->IsShared()) {
         StyleRep *oldRep = mRep;
         mRep = new StyleRep(*mRep);
 
@@ -263,13 +247,11 @@ void Style::Grab()
     }
 }
 
-void Style::InvalidateFace()
-{
+void Style::InvalidateFace() {
     mRep->InvalidateFace();
 }
 
-Typography::Style &Style::operator=(const Style &inStyle)
-{
+Typography::Style &Style::operator=(const Style &inStyle) {
     // Watch out for self-assignment.
     if (mRep == inStyle.mRep)
         return *this;
@@ -283,37 +265,32 @@ Typography::Style &Style::operator=(const Style &inStyle)
     return *this;
 }
 
-bool Style::operator==(const Style &inStyle) const
-{
+bool Style::operator==(const Style &inStyle) const {
     return (*mRep == *inStyle.mRep);
 }
 
-Typography::Style &Style::SetFamily(const std::string &inFamily)
-{
+Typography::Style &Style::SetFamily(const std::string &inFamily) {
     Grab();
     InvalidateFace();
     mRep->mFamily = inFamily;
     return *this;
 }
 
-Typography::Style &Style::SetBackupFamilies(const std::list<std::string> &inBFs)
-{
+Typography::Style &Style::SetBackupFamilies(const std::list<std::string> &inBFs) {
     Grab();
     InvalidateFace();
     mRep->mBackupFamilies = inBFs;
     return *this;   
 }
 
-Typography::Style &Style::SetFaceStyle(FaceStyle inFaceStyle)
-{
+Typography::Style &Style::SetFaceStyle(FaceStyle inFaceStyle) {
     Grab();
     InvalidateFace();
     mRep->mFaceStyle = inFaceStyle;
     return *this;
 }
 
-Typography::Style &Style::ToggleFaceStyle(FaceStyle inToggleFlags)
-{
+Typography::Style &Style::ToggleFaceStyle(FaceStyle inToggleFlags) {
     FaceStyle toggled_mask = inToggleFlags;
     FaceStyle unchanged_mask = ~inToggleFlags;
     FaceStyle current = GetFaceStyle();
@@ -321,23 +298,20 @@ Typography::Style &Style::ToggleFaceStyle(FaceStyle inToggleFlags)
     return *this;
 }
 
-Typography::Style &Style::SetSize(int inSize)
-{
+Typography::Style &Style::SetSize(int inSize) {
     Grab();
     InvalidateFace();
     mRep->mSize = inSize;
     return *this;
 }
 
-Typography::Style &Style::SetLeading(Distance inLeading)
-{
+Typography::Style &Style::SetLeading(Distance inLeading) {
     Grab();
     mRep->mLeading = inLeading;
     return *this;
 }
 
-Typography::Style &Style::SetShadowOffset(Distance inOffset)
-{
+Typography::Style &Style::SetShadowOffset(Distance inOffset) {
     // We're too lazy to fully implement negative shadow offsets
     // (particularly with regard to bounding box calculations), so we
     // disallow them for now.
@@ -349,24 +323,20 @@ Typography::Style &Style::SetShadowOffset(Distance inOffset)
     return *this;
 }
 
-Typography::Style &Style::SetColor(Color inColor)
-{
+Typography::Style &Style::SetColor(Color inColor) {
     Grab();
     mRep->mColor = inColor;
     return *this;
 }
 
-Typography::Style &Style::SetShadowColor(Color inColor)
-{
+Typography::Style &Style::SetShadowColor(Color inColor) {
     Grab();
     mRep->mShadowColor = inColor;
     return *this;
 }
 
-AbstractFace *Style::GetFace() const
-{
-    if (!mRep->mFace)
-    {
+AbstractFace *Style::GetFace() const {
+    if (!mRep->mFace) {
         // Load a face if we don't have one already.
         FamilyDatabase *db = FamilyDatabase::GetFamilyDatabase();
         FaceStyle intrinsic =
@@ -386,13 +356,11 @@ AbstractFace *Style::GetFace() const
     return mRep->mFace;
 }
 
-bool Style::GetIsUnderlined() const
-{
+bool Style::GetIsUnderlined() const {
     return (mRep->mFaceStyle & kUnderlineFaceStyle) ? true : false;
 }
 
-bool Style::GetIsShadowed() const
-{
+bool Style::GetIsShadowed() const {
     return (mRep->mFaceStyle & kShadowFaceStyle) ? true : false;
 }
 
@@ -407,21 +375,18 @@ StyledText::StyledText(const Style &inBaseStyle)
     mStyleRuns.insert(std::pair<size_t,Style>(0, inBaseStyle));
 }
 
-void StyledText::AppendText(const std::wstring &inText)
-{
+void StyledText::AppendText(const std::wstring &inText) {
     ASSERT(!mIsBuilt);
     mText += inText;
 }
 
-void StyledText::AppendText(wchar_t inText)
-{
+void StyledText::AppendText(wchar_t inText) {
     ASSERT(!mIsBuilt);
     ASSERT(inText != 0);
     mText += inText;
 }
 
-void StyledText::ChangeStyle(const Style &inStyle)
-{
+void StyledText::ChangeStyle(const Style &inStyle) {
     ASSERT(!mIsBuilt);
 
     // Delete any existing entry at this offset.
@@ -434,8 +399,7 @@ void StyledText::ChangeStyle(const Style &inStyle)
     mStyleRuns.insert(std::pair<size_t,Style>(mText.length(), inStyle));
 }
 
-void StyledText::EndConstruction()
-{
+void StyledText::EndConstruction() {
     ASSERT(!mIsBuilt);
     mIsBuilt = true;
     mEnd = mText.length();
@@ -443,8 +407,7 @@ void StyledText::EndConstruction()
 
 // TODO - Cache results of this lookup somehow?  This code is probably
 // performance critical, but profile it before optimizing it.
-const Typography::Style *StyledText::GetStyleAt(size_t inOffset) const
-{
+const Typography::Style *StyledText::GetStyleAt(size_t inOffset) const {
     ASSERT(mIsBuilt);
     ASSERT(0 <= inOffset && inOffset < mEnd);
 
@@ -454,23 +417,17 @@ const Typography::Style *StyledText::GetStyleAt(size_t inOffset) const
 
     // Figure out which style actually applies.
     std::map<size_t,Style>::const_iterator result = lower_bound;
-    if (result == mStyleRuns.end())
-    {
+    if (result == mStyleRuns.end()) {
         // CASE 1: If all the elements were less than our offset, we'll get
         // an iterator pointing to the end of the collection.  We want to
         // back up one item.
         --result;
-    }
-    else
-    {
+    } else {
         std::pair<size_t,Style> item = *result;
-        if (item.first == inOffset)
-        {
+        if (item.first == inOffset) {
             // CASE 2: We found a style begining exactly at our offset.
             // We want to use it as is.
-        }
-        else
-        {
+        } else {
             // CASE 3: We found the first style greater than our offset.
             // We need to back up one element.
             ASSERT(item.first > inOffset);
@@ -488,16 +445,12 @@ const Typography::Style *StyledText::GetStyleAt(size_t inOffset) const
 //  Typography::StyledText::value_type Methods
 //=========================================================================
 
-Distance StyledText::value_type::GetLineHeight(bool isFirstLine) const
-{
+Distance StyledText::value_type::GetLineHeight(bool isFirstLine) const {
     Distance ascender = GetNominalAscender();
-    if (isFirstLine)
-    {
+    if (isFirstLine) {
         // We don't need any inter-line spacing for the first line.
         return ascender;
-    }
-    else
-    {
+    } else {
         // We need to use the full interline spacing for lines after
         // the first, and we need to adjust the leading.  Note that if
         // the ascender requires extra room, we'll bump the line height
@@ -508,15 +461,13 @@ Distance StyledText::value_type::GetLineHeight(bool isFirstLine) const
     }
 }
 
-Distance StyledText::value_type::GetNominalAscender() const
-{
+Distance StyledText::value_type::GetNominalAscender() const {
     Glyph *glyph = style->GetFace()->GetGlyph(value);
     Distance glyph_ascender = round_266(glyph->GetMetrics()->horiBearingY);
     return max(glyph_ascender, style->GetFace()->GetAscender());
 }
 
-Distance StyledText::value_type::GetNominalDescender() const
-{
+Distance StyledText::value_type::GetNominalDescender() const {
     Glyph *glyph = style->GetFace()->GetGlyph(value);
     Distance glyph_descender = round_266(glyph->GetMetrics()->height -
                                          glyph->GetMetrics()->horiBearingY);
@@ -524,8 +475,7 @@ Distance StyledText::value_type::GetNominalDescender() const
     return base + max(Distance(0), style->GetShadowOffset());
 }
 
-Distance StyledText::value_type::GetLeftBearing() const
-{
+Distance StyledText::value_type::GetLeftBearing() const {
     // TODO - Should we calculate a left bearing for the face, like with do
     // with GetNominalAscender, etc.?  This would get us better-aligned
     // left-hand edges in vertically-aligned text blocks drawn in separate
@@ -572,8 +522,7 @@ Face::FaceRep::FaceRep(FT_Face inFace)
 {
 }
 
-Face::FaceRep::~FaceRep()
-{
+Face::FaceRep::~FaceRep() {
     CHECK_RESULT(FT_Done_Face(mFace));
 
     // Delete our cached glyph objects.
@@ -582,8 +531,7 @@ Face::FaceRep::~FaceRep()
         delete cursor->second;
 }
 
-void Face::UpdateGlyphCacheSize(const Glyph *inGlyph)
-{
+void Face::UpdateGlyphCacheSize(const Glyph *inGlyph) {
     // Update our cache size.
     size_t size = sizeof(Glyph) + inGlyph->GetGreyMap()->EstimatedMemoryUse();
     sGlyphCacheSize += size;
@@ -614,19 +562,15 @@ Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
     // Allocate a new FaceRep structure.  This takes ownership
     // of the face object.  Until the constructor exits successfully,
     // we're in change of calling delete on the FaceRep.
-    try
-    {
+    try {
         mFaceRep = new FaceRep(face);
-    }
-    catch (std::exception &)
-    {
+    } catch (std::exception &) {
         // Allocation failed, so finish using our face and bail.
         FT_Done_Face(face);
         throw;
     }
 
-    try
-    {
+    try {
         // Attach our metrics, if we have any.
         if (inMetricsFile)
             CHECK_RESULT(FT_Attach_File(face, inMetricsFile));
@@ -637,12 +581,10 @@ Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
         // Check to see if our font is either (1) scalable or (2) available
         // in the specified point size.  We never attempt to scale bitmap
         // fonts; the results are gross.
-        if (!FT_IS_SCALABLE(face))
-        {
+        if (!FT_IS_SCALABLE(face)) {
             bool found_size = false;
             for (FT_Int i = 0; i < face->num_fixed_sizes; i++) {
-                if (round_266(face->available_sizes[i].y_ppem) == inSize)
-                {
+                if (round_266(face->available_sizes[i].y_ppem) == inSize) {
                     found_size = true;
                     break;
                 }
@@ -658,9 +600,7 @@ Face::Face(const char *inFontFile, const char *inMetricsFile, int inSize)
         // Set various font properties that we'll need later.
         // (Manual conversion to true, false to avoid MSVC++ warning.
         mHasKerning = (FT_HAS_KERNING(face) ? true : false);
-    }
-    catch (std::exception &)
-    {
+    } catch (std::exception &) {
         mFaceRep->DecRef();
         mFaceRep = NULL;
         throw;
@@ -675,8 +615,7 @@ Face::Face(const Face &inFace)
     mHasKerning = inFace.mHasKerning;
 }
 
-Face::~Face()
-{
+Face::~Face() {
     mFaceRep->DecRef();
 }
 
@@ -694,27 +633,22 @@ Face &Face::operator=(const Face &inFace) {
     return *this;
 }
 
-GlyphIndex Face::GetGlyphIndex(CharCode inCharCode)
-{
+GlyphIndex Face::GetGlyphIndex(CharCode inCharCode) {
     if (inCharCode == kNoSuchCharacter)
         return 0;
     else
         return FT_Get_Char_Index(mFaceRep->mFace, inCharCode);
 }
 
-Glyph *Face::GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex)
-{
+Glyph *Face::GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex) {
     // Look for a glyph in our cache.
     std::map<GlyphIndex,Glyph*>::iterator found =
         mFaceRep->mGlyphCache.find(inGlyphIndex);
 
-    if (found != mFaceRep->mGlyphCache.end())
-    {
+    if (found != mFaceRep->mGlyphCache.end()) {
         // Return the cached glyph glyph.
         return found->second;
-    }
-    else
-    {
+    } else {
         // Load and cache a new glyph.
         CHECK_RESULT(FT_Load_Glyph(mFaceRep->mFace, inGlyphIndex,
                                    FT_LOAD_RENDER));
@@ -726,8 +660,7 @@ Glyph *Face::GetGlyphFromGlyphIndex(GlyphIndex inGlyphIndex)
     }
 }
 
-Glyph *Face::GetGlyph(CharCode inCharCode)
-{
+Glyph *Face::GetGlyph(CharCode inCharCode) {
     return GetGlyphFromGlyphIndex(GetGlyphIndex(inCharCode));
 }
 
@@ -738,15 +671,12 @@ Vector Face::GetKerning(CharCode inPreviousChar,
     GlyphIndex previous_glyph = GetGlyphIndex(inPreviousChar);
     GlyphIndex current_glyph = GetGlyphIndex(inCurrentChar);
 
-    if (mHasKerning && previous_glyph && current_glyph)
-    {   
+    if (mHasKerning && previous_glyph && current_glyph) {
         // If we actually have kerning data, use it.
         CHECK_RESULT(FT_Get_Kerning(mFaceRep->mFace,
                                     previous_glyph, current_glyph,
                                     ft_kerning_default, &delta));
-    }
-    else
-    {
+    } else {
         // Otherwise, don't kern the text.
         delta.x = 0;
         delta.y = 0;
@@ -755,8 +685,7 @@ Vector Face::GetKerning(CharCode inPreviousChar,
     return delta;
 }
 
-Distance Face::GetAscender()
-{
+Distance Face::GetAscender() {
     // The obvious way to implement this function is to call
     // 'round_266(mFaceRep->mFace->size->metrics.ascender)', but this would
     // produce slightly weird results.  In particular, 'ascender' is based
@@ -773,19 +702,16 @@ Distance Face::GetAscender()
     // handled by adjusting the inter-line spacing.
     const char *candidates = "MTCl1";
     Distance result = 0;
-    for (const char *cp = candidates; *cp; cp++)
-    {
+    for (const char *cp = candidates; *cp; cp++) {
         GlyphIndex index = GetGlyphIndex(*cp);
-        if (index)
-        {
+        if (index) {
             Glyph *glyph = GetGlyphFromGlyphIndex(index);
             Distance asc = round_266(glyph->GetMetrics()->horiBearingY);
             result = max(asc, result);
         }
     }
 
-    if (result == 0)
-    {
+    if (result == 0) {
         // We don't have any candidate characters in this font, so use the
         // approximate height of the tallest character.
         result = round_266(mFaceRep->mFace->size->metrics.ascender);
@@ -794,17 +720,14 @@ Distance Face::GetAscender()
     return result;
 }
 
-Distance Face::GetDescender()
-{
+Distance Face::GetDescender() {
     // For descenders, we measure a variety of letters, for the reasons
     // discussed above.
     const char *candidates = "gpqyj7";
     Distance result = 0;
-    for (const char *cp = candidates; *cp; cp++)
-    {
+    for (const char *cp = candidates; *cp; cp++) {
         GlyphIndex index = GetGlyphIndex(*cp);
-        if (index)
-        {
+        if (index) {
             Glyph *glyph = GetGlyphFromGlyphIndex(index);
             Distance dsc = round_266(glyph->GetMetrics()->height -
                                      glyph->GetMetrics()->horiBearingY);
@@ -812,8 +735,7 @@ Distance Face::GetDescender()
         }
     }
 
-    if (result == 0)
-    {
+    if (result == 0) {
         // We don't have any of the candidate characters in this font, so
         // use the approximate maximum descender.
         result = round_266(mFaceRep->mFace->size->metrics.descender);
@@ -822,8 +744,7 @@ Distance Face::GetDescender()
     return result;
 }
 
-Distance Face::GetLineHeight()
-{
+Distance Face::GetLineHeight() {
     return round_266(mFaceRep->mFace->size->metrics.height);
 }
 
@@ -838,47 +759,40 @@ FaceStack::FaceStack(const Face &inPrimaryFace)
     mFaceStack.push_back(inPrimaryFace);
 }
 
-FaceStack::~FaceStack()
-{
+FaceStack::~FaceStack() {
 }
 
-void FaceStack::AddSecondaryFace(const Face &inFace)
-{
+void FaceStack::AddSecondaryFace(const Face &inFace) {
     ASSERT(GetSize() == inFace.GetSize());
     mFaceStack.push_back(inFace);
 }
 
-Glyph *FaceStack::GetGlyph(CharCode inCharCode)
-{
+Glyph *FaceStack::GetGlyph(CharCode inCharCode) {
     Face *face;
     GlyphIndex glyph;
     SearchForCharacter(inCharCode, &face, &glyph);
     return face->GetGlyphFromGlyphIndex(glyph);
 }
 
-Distance FaceStack::GetAscender()
-{
+Distance FaceStack::GetAscender() {
     // Use the ascender of our primary face.
     // (This makes glyph substitution prettier.)
     return mFaceStack.front().GetAscender();
 }
 
-Distance FaceStack::GetDescender()
-{
+Distance FaceStack::GetDescender() {
     // Use the ascender of our primary face.
     // (This makes glyph substitution prettier.)
     return mFaceStack.front().GetDescender();
 }
 
-Distance FaceStack::GetLineHeight()
-{
+Distance FaceStack::GetLineHeight() {
     // Use the line-height of our primary face.
     // (This makes glyph substitution prettier.)
     return mFaceStack.front().GetLineHeight();
 }
 
-Face *FaceStack::GetRealFace(CharCode inCharCode)
-{
+Face *FaceStack::GetRealFace(CharCode inCharCode) {
     Face *face;
     GlyphIndex glyph;
     SearchForCharacter(inCharCode, &face, &glyph);
@@ -923,8 +837,7 @@ LineSegment::LineSegment(const StyledText::const_iterator &inBegin,
 {
 }
 
-bool Typography::operator==(const LineSegment &left, const LineSegment &right)
-{
+bool Typography::operator==(const LineSegment &left, const LineSegment &right) {
     return (left.begin == right.begin &&
             left.end == right.end &&
             left.isLineBreak == right.isLineBreak &&
@@ -937,8 +850,7 @@ LineSegmentIterator::LineSegmentIterator(const StyledText &inText)
 {
 }
 
-bool LineSegmentIterator::NextElement(LineSegment *outSegment)
-{
+bool LineSegmentIterator::NextElement(LineSegment *outSegment) {
     ASSERT(outSegment != NULL);
     
     // Skip past any leading soft hyphens.  (They're merely invisible
@@ -953,8 +865,7 @@ bool LineSegmentIterator::NextElement(LineSegment *outSegment)
 
     // Figure out what kind of segment to process next.
     StyledText::const_iterator cursor = mSegmentBegin;
-    if (cursor->value == '\n')
-    {
+    if (cursor->value == '\n') {
         // NEWLINE SEGMENT
         // Include just the newline in the segment.
         ++cursor;
@@ -962,9 +873,7 @@ bool LineSegmentIterator::NextElement(LineSegment *outSegment)
         // Describe our segment & update our state.
         outSegment->SetLineSegment(mSegmentBegin, cursor, true);
         mSegmentBegin = cursor; 
-    }
-    else if (iswspace(cursor->value))
-    {
+    } else if (iswspace(cursor->value)) {
         // WHITESPACE SEGMENT
         // Scan forward until we find the end of the whitespace.
         while (cursor != mTextEnd &&
@@ -975,9 +884,7 @@ bool LineSegmentIterator::NextElement(LineSegment *outSegment)
         // Describe our segment & update our state.
         outSegment->SetLineSegment(mSegmentBegin, cursor, false, true);
         mSegmentBegin = cursor; 
-    }
-    else
-    {
+    } else {
         // TEXT SEGMENT
         // Scan forward until we find the end of the current word or
         // a line-break character (e.g., '-').  Soft hyphens are tricky.
@@ -987,8 +894,7 @@ bool LineSegmentIterator::NextElement(LineSegment *outSegment)
 
         // Adjust our stopping point and set up some flags (as needed).
         bool needHyphenAtEndOfLine = false;
-        if (cursor != mTextEnd)
-        {
+        if (cursor != mTextEnd) {
             needHyphenAtEndOfLine = (cursor->value == kSoftHyphen);
             if (cursor->value == '-')
                 ++cursor;
@@ -1011,8 +917,7 @@ bool LineSegmentIterator::NextElement(LineSegment *outSegment)
 void BoundingBox::ExpandToInclude(Distance inLeft, Distance inTop,
                                   Distance inRight, Distance inBottom)
 {
-    if (mHasValue)
-    {
+    if (mHasValue) {
         if (inLeft < mLeft)
             mLeft = inLeft;
         if (inTop < mTop)
@@ -1021,9 +926,7 @@ void BoundingBox::ExpandToInclude(Distance inLeft, Distance inTop,
             mRight = inRight;
         if (inBottom > mBottom)
             mBottom = inBottom;
-    }
-    else
-    {
+    } else {
         mHasValue = true;
         mLeft = inLeft;
         mTop = inTop;
@@ -1034,8 +937,7 @@ void BoundingBox::ExpandToInclude(Distance inLeft, Distance inTop,
     ASSERT(mTop <= mBottom);
 }
 
-bool BoundingBox::ExtendsBeyond(const BoundingBox &other) const
-{
+bool BoundingBox::ExtendsBeyond(const BoundingBox &other) const {
     if (!mHasValue)
         // We have no value, so we can't extend beyond anything.
         return false;
@@ -1059,8 +961,7 @@ bool BoundingBox::ExtendsBeyond(const BoundingBox &other) const
 // A miscellaneous local helper function to get either a pointer
 // to the last element of a deque, or NULL if no such element exists.
 template <class C>
-static C* back_or_null(std::vector<C> &d)
-{
+static C* back_or_null(std::vector<C> &d) {
     if (d.empty())
         return NULL;
     else
@@ -1082,13 +983,11 @@ GenericTextRenderingEngine(const StyledText &inText,
 }
         
 Distance GenericTextRenderingEngine::
-CalculateHorizontalOffset(Distance inSpaceUsed)
-{
+CalculateHorizontalOffset(Distance inSpaceUsed) {
     ASSERT(inSpaceUsed <= GetLineLength());
     Distance remaining = GetLineLength() - inSpaceUsed;
     Distance offset;
-    switch (GetJustification())
-    {
+    switch (GetJustification()) {
         case kLeftJustification:   offset = 0; break;
         case kCenterJustification: offset = remaining / 2; break;
         case kRightJustification:  offset = remaining; break;
@@ -1098,8 +997,7 @@ CalculateHorizontalOffset(Distance inSpaceUsed)
 }
 
 void GenericTextRenderingEngine::
-RenderAndResetLine(std::vector<LineSegment> *ioLine)
-{
+RenderAndResetLine(std::vector<LineSegment> *ioLine) {
     // Discard trailing whitespace segments.
     while (!ioLine->empty() && ioLine->back().discardAtEndOfLine)
         ioLine->pop_back();
@@ -1115,8 +1013,7 @@ RenderAndResetLine(std::vector<LineSegment> *ioLine)
     ioLine->clear();
 }
 
-void GenericTextRenderingEngine::RenderText()
-{
+void GenericTextRenderingEngine::RenderText() {
     LineSegment seg;
     std::vector<LineSegment> current_line;
     
@@ -1163,8 +1060,7 @@ void GenericTextRenderingEngine::RenderText()
         // This is an ugly wart, and it isn't merged well into the
         // overall algorithm.  But isolating this ugly wart seems to
         // keep the rest of the code clean.
-        while (needed > GetUsableLineLength())
-        {
+        while (needed > GetUsableLineLength()) {
             ASSERT(space_used == mInitialIndent && current_line.empty());
             LineSegment extracted;
             ExtractOneLine(&seg, &extracted);
@@ -1233,11 +1129,9 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
     Glyph *glyph = inCurrent.style->GetFace()->GetGlyph(inCurrent.value);
 
     // Draw our glyph (if requested).
-    if (inShouldDraw)
-    {
+    if (inShouldDraw) {
         Point loc = *ioPosition + glyph->GetGreyMapOffset();
-        if (inCurrent.style->GetIsShadowed())
-        {
+        if (inCurrent.style->GetIsShadowed()) {
             Distance offset = inCurrent.style->GetShadowOffset();
             DrawGreyMap(loc + Point(offset, offset), glyph->GetGreyMap(),
                         inCurrent.style->GetShadowColor());
@@ -1273,8 +1167,7 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
     // such as 'T' and '.' in heavily kerned fonts.  If we omit this
     // calculation, it causes our right bound to be off slightly,
     // and produces visually odd results.
-    if (ioPosition->x < previous_position.x)
-    {
+    if (ioPosition->x < previous_position.x) {
         ioPosition->x = previous_position.x;
         // We should probably set *ioPrevious to (kNoSuchCharacter, NULL)
         // here, but intersegment kerning in MeasureSegment only has one
@@ -1283,8 +1176,7 @@ void TextRenderingEngine::ProcessCharacter(StyledText::value_type *ioPrevious,
 }
 
 Distance
-TextRenderingEngine::GetMinimumLeftBearing(const StyledText &inText) const
-{
+TextRenderingEngine::GetMinimumLeftBearing(const StyledText &inText) const {
     Distance result = 0;
     StyledText::const_iterator cp = inText.begin();
     for (; cp != inText.end(); ++cp)
@@ -1299,8 +1191,7 @@ Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
     // Attempt to get the last glyph of the previous segment for
     // kerning purposes.  Default to kNoSuchCharacter.
     StyledText::value_type previous(kNoSuchCharacter, NULL);
-    if (inPrevious)
-    {
+    if (inPrevious) {
         ASSERT(inPrevious->begin != inPrevious->end);
         StyledText::const_iterator previous = inPrevious->end;
         --previous;
@@ -1314,8 +1205,7 @@ Distance TextRenderingEngine::MeasureSegment(LineSegment *inPrevious,
         ProcessCharacter(&previous, *cp, &total, &right_bound, false);
 
     // If necessary, add a trailing hyphen.
-    if (inAtEndOfLine && inSegment->needsHyphenAtEndOfLine)
-    {
+    if (inAtEndOfLine && inSegment->needsHyphenAtEndOfLine) {
         StyledText::value_type current(L'-', previous.style);
         ProcessCharacter(&previous, current, &total, &right_bound, false);
     }
@@ -1352,8 +1242,7 @@ void TextRenderingEngine::ExtractOneLine(LineSegment *ioRemaining,
     // This code runs in O(N^2) time (with small values of N).
     LineSegment seg = *ioRemaining;
     seg.needsHyphenAtEndOfLine = true; // We'll have to hyphenate.
-    do
-    {
+    do {
         --seg.end;
         if (seg.begin == seg.end)
             throw Error(__FILE__, __LINE__,
@@ -1426,8 +1315,7 @@ void TextRenderingEngine::RenderLine(std::vector<LineSegment> *inLine,
     }
 
     // Draw a trailing hyphen if we need one.
-    if (!inLine->empty() && inLine->back().needsHyphenAtEndOfLine)
-    {
+    if (!inLine->empty() && inLine->back().needsHyphenAtEndOfLine) {
         StyledText::value_type current(L'-', previous.style);
         ProcessCharacter(&previous, current, &cursor, &line_right_bound, true);
     }
@@ -1458,8 +1346,7 @@ FamilyDatabase::AvailableFace::AvailableFace(const std::string &inRelPath)
     CHECK_RESULT(FT_New_Face(*Library::GetLibrary(),
                              path.c_str(), 0, &face));
                 
-    try
-    {
+    try {
         // Extract some useful information about the face.
         mFamilyName = face->family_name;
         mStyleName = face->style_name;
@@ -1488,8 +1375,7 @@ FamilyDatabase::AvailableFace::AvailableFace(const std::string &inRelPath)
             // Search for a fixed size we can use.
             bool found_size = false;
             for (FT_Int i = 0; i < face->num_fixed_sizes; i++) {
-                if (face->available_sizes[i].y_ppem)
-                {
+                if (face->available_sizes[i].y_ppem) {
                     found_size = true;
                     mSize = round_266(face->available_sizes[i].y_ppem);
                     break;
@@ -1500,17 +1386,14 @@ FamilyDatabase::AvailableFace::AvailableFace(const std::string &inRelPath)
             if (!found_size)
                 throw Error(__FILE__, __LINE__, FT_Err_Invalid_File_Format);
         }
-    }
-    catch (std::exception &)
-    {
+    } catch (std::exception &) {
         FT_Done_Face(face);
         throw;
     }
     CHECK_RESULT(FT_Done_Face(face));
 }
 
-Face FamilyDatabase::AvailableFace::OpenFace(int inSize) const
-{
+Face FamilyDatabase::AvailableFace::OpenFace(int inSize) const {
     ASSERT(inSize != kAnySize && inSize > 0);
     ASSERT(mSize == kAnySize || mSize == inSize);
 
@@ -1525,8 +1408,7 @@ Face FamilyDatabase::AvailableFace::OpenFace(int inSize) const
         return Face(file.c_str(), NULL, inSize);
 }
 
-void FamilyDatabase::AvailableFace::ReadSerializationHeader(std::istream &in)
-{
+void FamilyDatabase::AvailableFace::ReadSerializationHeader(std::istream &in) {
     // Check our header information.
     std::string filetype, vers_label;
     int version;
@@ -1541,15 +1423,13 @@ void FamilyDatabase::AvailableFace::ReadSerializationHeader(std::istream &in)
         throw Error(__FILE__, __LINE__, "Error reading face cache");
 }
 
-void FamilyDatabase::AvailableFace::WriteSerializationHeader(std::ostream &out)
-{
+void FamilyDatabase::AvailableFace::WriteSerializationHeader(std::ostream &out) {
     out << "facecache vers 2" << std::endl
         << "FILE|FAMILY|STYLE|SIZE|IS BOLD|IS ITALIC"
         << std::endl;
 }
 
-FamilyDatabase::AvailableFace::AvailableFace(std::istream &in)
-{
+FamilyDatabase::AvailableFace::AvailableFace(std::istream &in) {
     // Read in our individual fields.
     std::string has_metrics, size, is_bold, is_italic;
     std::getline(in, mRelPath, '|');
@@ -1573,8 +1453,7 @@ FamilyDatabase::AvailableFace::AvailableFace(std::istream &in)
     mIsItalic   = atoi(is_italic.c_str()) ? true : false;
 }
 
-void FamilyDatabase::AvailableFace::Serialize(std::ostream &out) const
-{
+void FamilyDatabase::AvailableFace::Serialize(std::ostream &out) const {
     // XXX - This will fail if any of our strings contain '|'.
     out << mRelPath << '|' << mFamilyName << '|' << mStyleName << '|'
         << mSize << '|' << mIsBold << '|' << mIsItalic << std::endl;
@@ -1586,8 +1465,7 @@ void FamilyDatabase::AvailableFace::Serialize(std::ostream &out) const
 //=========================================================================
 
 void
-FamilyDatabase::FaceSizeGroup::AddAvailableFace(const AvailableFace &inFace)
-{
+FamilyDatabase::FaceSizeGroup::AddAvailableFace(const AvailableFace &inFace) {
     int size = inFace.GetSize();
     if (mAvailableFaces.find(size) != mAvailableFaces.end())
         throw Error(__FILE__, __LINE__,
@@ -1595,8 +1473,7 @@ FamilyDatabase::FaceSizeGroup::AddAvailableFace(const AvailableFace &inFace)
     mAvailableFaces.insert(std::pair<int,AvailableFace>(size, inFace));
 }
 
-Face FamilyDatabase::FaceSizeGroup::GetFace(int inSize)
-{
+Face FamilyDatabase::FaceSizeGroup::GetFace(int inSize) {
     // First, look for an already instantiated face.
     std::map<int,Face>::iterator foundFace = mFaces.find(inSize);
     if (foundFace != mFaces.end())
@@ -1623,8 +1500,7 @@ Face FamilyDatabase::FaceSizeGroup::GetFace(int inSize)
                 "No matching font (did you try to scale a bitmap font?)");
 }
 
-void FamilyDatabase::FaceSizeGroup::Serialize(std::ostream &out) const
-{
+void FamilyDatabase::FaceSizeGroup::Serialize(std::ostream &out) const {
     for (std::map<int,AvailableFace>::const_iterator iter =
              mAvailableFaces.begin();
          iter != mAvailableFaces.end(); ++iter)
@@ -1636,8 +1512,7 @@ void FamilyDatabase::FaceSizeGroup::Serialize(std::ostream &out) const
 //  Typography::FamilyDatabase::Family Methods
 //=========================================================================
 
-void FamilyDatabase::Family::AddAvailableFace(const AvailableFace &inFace)
-{
+void FamilyDatabase::Family::AddAvailableFace(const AvailableFace &inFace) {
     ASSERT(mFamilyName == inFace.GetFamilyName());
 
     // Store the face in the appropriate group.
@@ -1651,8 +1526,7 @@ void FamilyDatabase::Family::AddAvailableFace(const AvailableFace &inFace)
         mRegularFaces.AddAvailableFace(inFace);
 }
 
-Face FamilyDatabase::Family::GetFace(FaceStyle inStyle, int inSize)
-{
+Face FamilyDatabase::Family::GetFace(FaceStyle inStyle, int inSize) {
     ASSERT((inStyle & ~kIntrisicFaceStyles) == 0);
 
     // Fallback lists.  Because not all faces are available in all styles,
@@ -1716,8 +1590,7 @@ Face FamilyDatabase::Family::GetFace(FaceStyle inStyle, int inSize)
     return mRegularFaces.GetFace(inSize);
 }
 
-void FamilyDatabase::Family::Serialize(std::ostream &out) const
-{
+void FamilyDatabase::Family::Serialize(std::ostream &out) const {
     mRegularFaces.Serialize(out);
     mBoldFaces.Serialize(out);
     mItalicFaces.Serialize(out);
@@ -1731,29 +1604,24 @@ void FamilyDatabase::Family::Serialize(std::ostream &out) const
 
 FamilyDatabase *FamilyDatabase::sFamilyDatabase = NULL;
         
-FamilyDatabase *FamilyDatabase::GetFamilyDatabase()
-{
-    if (!sFamilyDatabase)
-    {
+FamilyDatabase *FamilyDatabase::GetFamilyDatabase() {
+    if (!sFamilyDatabase) {
         sFamilyDatabase = new FamilyDatabase();
         sFamilyDatabase->ReadFromFontDirectory();
     }
     return sFamilyDatabase;
 }
 
-bool FamilyDatabase::IsFontFile(const FileSystem::Path &inPath)
-{
+bool FamilyDatabase::IsFontFile(const FileSystem::Path &inPath) {
     std::string extension = inPath.GetExtension();
     return (extension == "pfb" || extension == "pcf" || extension == "ttf");
 }
 
-void FamilyDatabase::AddAvailableFace(const AvailableFace &inFace)
-{
+void FamilyDatabase::AddAvailableFace(const AvailableFace &inFace) {
     std::string family_name = inFace.GetFamilyName();
     std::map<std::string,Family>::iterator found =
         mFamilyMap.find(family_name);
-    if (found == mFamilyMap.end())
-    {
+    if (found == mFamilyMap.end()) {
         mFamilyMap.insert(std::pair<std::string,Family>(family_name,
                                                         Family(family_name)));
         found = mFamilyMap.find(family_name);
@@ -1777,13 +1645,11 @@ Face FamilyDatabase::GetFace(const std::string &inFamilyName,
     return *(Face *) NULL; // Never run.
 }
 
-void FamilyDatabase::ReadFromFontDirectory()
-{
+void FamilyDatabase::ReadFromFontDirectory() {
     // If a cache file exists, attempt to read from it.
     FileSystem::Path cachePath =
         FileSystem::GetScriptDataDirectory().AddComponent("fontcache.dat");
-    if (cachePath.DoesExist() && cachePath.IsRegularFile())
-    {
+    if (cachePath.DoesExist() && cachePath.IsRegularFile()) {
         std::ifstream cache(cachePath.ToNativePathString().c_str());
         ReadFromCache(cache);
         return;
@@ -1793,20 +1659,16 @@ void FamilyDatabase::ReadFromFontDirectory()
     ScanForFonts("");
 
     // Attempt to write out a new cache file.
-    try
-    {
+    try {
         std::ofstream cache(cachePath.ToNativePathString().c_str());
         WriteToCache(cache);
-    }
-    catch (std::exception &)
-    {
+    } catch (std::exception &) {
         // Just ignore the exception.
         // TODO - Try logging a warning?
     }
 }
 
-void FamilyDatabase::ScanForFonts(const std::string &rel_path)
-{
+void FamilyDatabase::ScanForFonts(const std::string &rel_path) {
     FileSystem::Path path(FileSystem::ResolveFontPath(rel_path));
     if (path.IsRegularFile() && IsFontFile(path)) {
         // Load the face using FreeType, and add it to our database.
@@ -1829,15 +1691,13 @@ void FamilyDatabase::ScanForFonts(const std::string &rel_path)
     }
 }
 
-void FamilyDatabase::ReadFromCache(std::istream &in)
-{
+void FamilyDatabase::ReadFromCache(std::istream &in) {
     FamilyDatabase::AvailableFace::ReadSerializationHeader(in);
     while (!in.eof())
         AddAvailableFace(AvailableFace(in));
 }
 
-void FamilyDatabase::WriteToCache(std::ostream &out) const
-{
+void FamilyDatabase::WriteToCache(std::ostream &out) const {
     FamilyDatabase::AvailableFace::WriteSerializationHeader(out);
     for (std::map<std::string,Family>::const_iterator iter =
              mFamilyMap.begin();

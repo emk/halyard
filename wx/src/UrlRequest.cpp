@@ -119,7 +119,7 @@ void UrlRequest::ProcessAllRequests() {
     }
 }
 
-int UrlRequest::ProgressCallback(void *data, double dltotal, double dlnow, 
+int UrlRequest::ProgressCallback(void *data, double dltotal, double dlnow,
                                  double ultotal, double ulnow)
 {
     return static_cast<UrlRequest*>(data)->DoProgress(dltotal, dlnow,

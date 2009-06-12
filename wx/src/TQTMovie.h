@@ -65,8 +65,7 @@
 ///
 /// TODO - Port this code to be a subclass of TException.
 ///
-class TMacError : public std::runtime_error
-{
+class TMacError : public std::runtime_error {
     std::string mFile;
     int mLine;
     ComponentResult mErrorCode;
@@ -96,8 +95,7 @@ public:
 /// QuickDraw port.  Look up "resource aquisition is initialization"
 /// for a summary of why we do this.
 ///
-class StMacDrawingContext
-{
+class StMacDrawingContext {
     GrafPtr mSavedPort;
 
 public:
@@ -124,8 +122,7 @@ public:
 /// Please design this class for maximum paranoia.  Use *lots* of
 /// assertions, and code defensively.
 ///
-class TQTMovie
-{
+class TQTMovie {
 private:
     static bool sIsQuickTimeInitialized;
     static GWorldPtr sDummyGWorld;

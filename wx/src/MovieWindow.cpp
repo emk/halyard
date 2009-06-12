@@ -53,13 +53,11 @@ MovieWindow::MovieWindow(wxWindow *inParent, wxWindowID inID,
     SetBackgroundColour(MOVIE_WINDOW_COLOR);
 }
 
-MovieWindow::~MovieWindow()
-{
+MovieWindow::~MovieWindow() {
     wxLogTrace(TRACE_STAGE_DRAWING, wxT("Destroyed movie window."));
 }
 
-void MovieWindow::SetMovie(const wxString &inName)
-{
+void MovieWindow::SetMovie(const wxString &inName) {
     // Here, we use wxString::c_str(), because we want to return either a
     // const char * or a const wchar_t *, depending on whether or not we
     // are in Unicode mode.  I can't find any documentation on wxLogWarning
@@ -69,8 +67,7 @@ void MovieWindow::SetMovie(const wxString &inName)
     wxLogWarning(wxT("Movies not supported; skipping \"%s\"."), inName.c_str());
 }
 
-MovieFrame MovieWindow::GetFrame()
-{
+MovieFrame MovieWindow::GetFrame() {
     return 0;
 }
 
@@ -80,22 +77,18 @@ bool MovieWindow::WantsCursor() const {
     return (flags ? true : false);
 }
 
-bool MovieWindow::IsDone()
-{
+bool MovieWindow::IsDone() {
     return true;
 }
 
-void MovieWindow::Pause()
-{
+void MovieWindow::Pause() {
     return;
 }
 
-void MovieWindow::Resume()
-{
+void MovieWindow::Resume() {
     return;
 }
 
-void MovieWindow::SetVolume(const std::string &inChannel, double inVolume)
-{
+void MovieWindow::SetVolume(const std::string &inChannel, double inVolume) {
     return;
 }

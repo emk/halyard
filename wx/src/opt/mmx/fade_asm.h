@@ -26,7 +26,7 @@
 extern void OptimizedDrawingStart();
 extern void OptimizedDrawingEnd();
 
-extern void OptimizedFadePixels(wxRawBitmapPixelRef24 inPixelsBegin, 
+extern void OptimizedFadePixels(wxRawBitmapPixelRef24 inPixelsBegin,
                                 wxRawBitmapPixelRef24 inPixelsEnd,
                                 wxRawBitmapPixelRef24 outPixelsBegin,
                                 uint16 inValue);

@@ -38,23 +38,19 @@ TRect WxToTRect(const wxRect &inRect) {
                  inRect.x + inRect.width, inRect.y + inRect.height); 
 }
 
-wxPoint TToWxPoint(const TPoint &inPoint)
-{
+wxPoint TToWxPoint(const TPoint &inPoint) {
     return wxPoint(inPoint.X(), inPoint.Y());
 }
 
-TPoint WxToTPoint(const wxPoint &inPoint)
-{
+TPoint WxToTPoint(const wxPoint &inPoint) {
     return TPoint(inPoint.x, inPoint.y);
 }
 
-wxPoint GetPos(const TRect &inRect)
-{
+wxPoint GetPos(const TRect &inRect) {
     return wxPoint(inRect.Left(), inRect.Top());
 }
 
-wxSize GetSize(const TRect &inRect)
-{
+wxSize GetSize(const TRect &inRect) {
     // Our rectangles *exclude* their right and bottom edges, like C++
     // iterators.  This is the sanest way to do things, and it works well
     // with wxWindows.
@@ -62,8 +58,7 @@ wxSize GetSize(const TRect &inRect)
                   inRect.Bottom() - inRect.Top());
 }
 
-wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor)
-{
+wxColour GraphicsToolsToWxColor(const GraphicsTools::Color &inColor) {
     if (!inColor.IsCompletelyOpaque())
         gLog.Warn("halyard", "Removing alpha channel from color");
     return wxColour(inColor.red, inColor.green, inColor.blue);

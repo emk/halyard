@@ -30,8 +30,7 @@ class wxFileConfig;
 class wxConfigBase;
 
 /// Our main application object.
-class HalyardApp : public wxApp
-{
+class HalyardApp : public wxApp {
     DECLARE_EVENT_TABLE();
 
     /// Set to true when we are in the middle of a crash and we don't want

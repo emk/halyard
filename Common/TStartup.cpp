@@ -29,8 +29,7 @@
 
 using namespace Halyard;
 
-void Halyard::InitializeCommonCode(CrashReporter *inReporter)
-{
+void Halyard::InitializeCommonCode(CrashReporter *inReporter) {
     // Initialize our CrashReporter.
     CrashReporter::InitializeCrashReporting(inReporter);
 
@@ -43,8 +42,7 @@ void Halyard::InitializeCommonCode(CrashReporter *inReporter)
 }
 
 TInterpreterManager *Halyard::
-GetSchemeInterpreterManager(TInterpreterManager::SystemIdleProc inIdleProc)
-{
+GetSchemeInterpreterManager(TInterpreterManager::SystemIdleProc inIdleProc) {
     // Create and return a new Scheme interpreter manager.
     return new TSchemeInterpreterManager(inIdleProc);
 }

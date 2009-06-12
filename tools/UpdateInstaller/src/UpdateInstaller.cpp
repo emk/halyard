@@ -152,7 +152,7 @@ bool UpdateInstaller::CopySpec::IsCopyPossible() const {
 }
 
 void UpdateInstaller::CopySpec::CopyOverwriting() const {
-    if (exists(dest)) 
+    if (exists(dest))
         remove(dest);
     CopyFileWithRetries(source, dest);
     TouchFile(dest);

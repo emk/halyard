@@ -29,8 +29,7 @@ class CursorElement;
 
 /// Centralized manager class for cursor resources.  See the notes in
 /// Cursor.h on the ownership of Cursor pointers.
-class CursorManager
-{
+class CursorManager {
     typedef std::map<std::string,Halyard::Cursor *> CursorMap;
 
     CursorMap mCursors;

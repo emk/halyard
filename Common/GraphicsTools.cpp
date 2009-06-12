@@ -39,13 +39,11 @@ GreyMap::GreyMap(Distance inWidth, Distance inHeight)
     // All done.
 }
 
-GreyMap::~GreyMap()
-{
+GreyMap::~GreyMap() {
     delete [] pixels;
 }
 
-void GreyMap::Clear(Channel inColor)
-{
+void GreyMap::Clear(Channel inColor) {
     Channel *end = pixels + stride * height;
     for (Channel *cursor = pixels; cursor < end; cursor++)
         *cursor = inColor;

@@ -87,8 +87,7 @@ static const char *byte_to_hex_string[256] = {
 // Check to see whether the specified primitive exists.  Helpful in
 // writing code which runs under different versions of the engine.
 
-DEFINE_PRIMITIVE(HavePrimitive)
-{
+DEFINE_PRIMITIVE(HavePrimitive) {
     std::string name;
     inArgs >> SymbolName(name);
     ::SetPrimitiveResult(gPrimitiveManager.DoesPrimitiveExist(name));
@@ -101,8 +100,7 @@ DEFINE_PRIMITIVE(HavePrimitive)
 // Run the initial commands that we need to run once script startup is
 // finished.
 
-DEFINE_PRIMITIVE(RunInitialCommands)
-{
+DEFINE_PRIMITIVE(RunInitialCommands) {
     TInterpreterManager *manager = TInterpreterManager::GetInstance();
     manager->RunInitialCommands();
 }
@@ -113,8 +111,7 @@ DEFINE_PRIMITIVE(RunInitialCommands)
 //-------------------------------------------------------------------------
 // Performs either a blocking or non-blocking idle.
 
-DEFINE_PRIMITIVE(Idle)
-{
+DEFINE_PRIMITIVE(Idle) {
     // Recover our TInterpreterManager.
     TInterpreterManager *manager = TInterpreterManager::GetInstance();
     ASSERT(manager);
@@ -140,8 +137,7 @@ DEFINE_PRIMITIVE(Idle)
 // sparingly--it will tend to be logged to a permenant, central log for
 // all Halyard applications.  Use 'debug' for normal debugging messages.
 
-DEFINE_PRIMITIVE(Log)
-{
+DEFINE_PRIMITIVE(Log) {
     std::string level_str, category, msg;
     inArgs >> SymbolName(level_str) >> category >> msg;
     level_str = ::MakeStringLowercase(level_str);
@@ -174,8 +170,7 @@ DEFINE_PRIMITIVE(CommandLineError) {
 //-------------------------------------------------------------------------
 // Determines if pt lies within poly
 
-DEFINE_PRIMITIVE(PolygonContains)
-{
+DEFINE_PRIMITIVE(PolygonContains) {
     TPolygon poly;
     TPoint pt;
     inArgs >> poly >> pt;
@@ -189,8 +184,7 @@ DEFINE_PRIMITIVE(PolygonContains)
 // TYPE is "null", then NEWVALUE must be omitted.
 
 
-DEFINE_PRIMITIVE(SetTyped)
-{
+DEFINE_PRIMITIVE(SetTyped) {
     TValue val;
     std::string vname;
     inArgs >> SymbolName(vname) >> val;
@@ -204,8 +198,7 @@ DEFINE_PRIMITIVE(SetTyped)
 //-------------------------------------------------------------------------
 // Returns the value stored in the variable, preserving type information.
 
-DEFINE_PRIMITIVE(Get)
-{
+DEFINE_PRIMITIVE(Get) {
     std::string vname;
     inArgs >> SymbolName(vname);
 
@@ -218,8 +211,7 @@ DEFINE_PRIMITIVE(Get)
 //-------------------------------------------------------------------------
 // Determine whether a variable has been initialized.
 
-DEFINE_PRIMITIVE(VariableInitialized)
-{
+DEFINE_PRIMITIVE(VariableInitialized) {
     std::string vname;
     inArgs >> SymbolName(vname);
 
@@ -232,8 +224,7 @@ DEFINE_PRIMITIVE(VariableInitialized)
 //-------------------------------------------------------------------------
 // Create a stylesheet with the given name.
 
-DEFINE_PRIMITIVE(DefStyle)
-{
+DEFINE_PRIMITIVE(DefStyle) {
     gStyleSheetManager.AddStyleSheet(inArgs);
 }
 
@@ -306,8 +297,7 @@ DEFINE_PRIMITIVE(LoadScriptFailed) {
 //
 // This updates all the special variables associated with text.
 
-DEFINE_PRIMITIVE(MeasureTextAA)
-{
+DEFINE_PRIMITIVE(MeasureTextAA) {
     std::string style;
     std::string text;
     uint32 max_width;
@@ -392,17 +382,14 @@ DEFINE_PRIMITIVE(TryToAvoidExitingWithError) {
     TLogger::TryToAvoidExitingWithError();
 }
 
-DEFINE_PRIMITIVE(ForceCrash)
-{
+DEFINE_PRIMITIVE(ForceCrash) {
     *reinterpret_cast<unsigned int *>(NULL) = 0xDEADBEEF;
 }
 
-DEFINE_PRIMITIVE(Noop)
-{
+DEFINE_PRIMITIVE(Noop) {
 }
 
-DEFINE_PRIMITIVE(UntracedNoop)
-{
+DEFINE_PRIMITIVE(UntracedNoop) {
 }
 
 //=========================================================================
@@ -410,8 +397,7 @@ DEFINE_PRIMITIVE(UntracedNoop)
 //=========================================================================
 //  Install our portable primitive functions.
 
-void Halyard::RegisterCommonPrimitives()
-{
+void Halyard::RegisterCommonPrimitives() {
     REGISTER_PRIMITIVE(HavePrimitive);
     REGISTER_PRIMITIVE(RunInitialCommands);
     REGISTER_PRIMITIVE(Idle);

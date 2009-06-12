@@ -38,8 +38,7 @@ AudioStreamElement::AudioStreamElement(Stage *inStage, const wxString &inName,
     mStream->Start();
 }
 
-AudioStreamElement::~AudioStreamElement()
-{
+AudioStreamElement::~AudioStreamElement() {
     mStream->Stop();
     mStream->Delete();
 }
@@ -56,24 +55,20 @@ void AudioStreamElement::Idle() {
     MediaElementIdle();
 }
 
-bool AudioStreamElement::IsLooping()
-{
+bool AudioStreamElement::IsLooping() {
     return mStream->IsLooping();
 }
 
-void AudioStreamElement::EndPlayback()
-{
+void AudioStreamElement::EndPlayback() {
     MediaElement::EndPlayback();
     mStream->Stop();
 }
 
-void AudioStreamElement::Pause()
-{
+void AudioStreamElement::Pause() {
     mStream->Stop();
 }
 
-void AudioStreamElement::Resume()
-{
+void AudioStreamElement::Resume() {
     mStream->Start();
 }
 

@@ -64,8 +64,7 @@ enum TestResult {
 /// If a test case fails explicity (by calling FAIL, or violating a CHECK_*
 /// assertion), we throw a TestFailed exception.
 ///
-class TestFailed : public Halyard::TException
-{
+class TestFailed : public Halyard::TException {
     std::string mMessage;
 
 public:
@@ -87,8 +86,7 @@ public:
 /// This is the closest C++ adaptation I can achieve of the standard
 /// xUnit TestCase class.
 ///
-class TestCase
-{
+class TestCase {
 public:
     virtual ~TestCase() {}
 
@@ -121,8 +119,7 @@ public:
 /// primarily by REGISTER_TEST_CASE.
 ///
 template <class TestCaseType>
-class TestCaseFactoryImpl : public TestCaseFactory
-{
+class TestCaseFactoryImpl : public TestCaseFactory {
 public:
     TestCaseFactoryImpl(const char *inName, TestRegistry *inRegistry)
         : TestCaseFactory(inName, inRegistry) { }
@@ -171,8 +168,7 @@ public:
 /// This is basically a collection of TestCaseReport objects with
 /// some summary statistics.
 ///
-class TestRunReport
-{
+class TestRunReport {
     typedef std::vector<TestCaseReport::ptr> TestCaseReportVector;
 
     TestCaseReportVector mTestCaseReports;
@@ -201,8 +197,7 @@ public:
     std::string GetSummary();
 };
 
-inline std::ostream &operator<<(std::ostream &out, TestRunReport::iterator i)
-{
+inline std::ostream &operator<<(std::ostream &out, TestRunReport::iterator i) {
     out << "<iterator>";
     return out;
 }
@@ -233,8 +228,7 @@ public:
 /// REGISTER_TEST_CASE.  This is the only registry which you will
 /// normally need to use.
 ///
-class TestRegistry
-{
+class TestRegistry {
     // The REGISTER_TEST_CASE macro uses this global registry for
     // registering test cases.
     static TestRegistry *sGlobalRegistry;

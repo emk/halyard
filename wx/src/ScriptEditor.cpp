@@ -168,7 +168,7 @@ class ScriptTextCtrl : public wxStyledTextCtrl {
     bool mReplaceStateUseRegex;
     wxString mReplaceStateText;
     
-public:    
+public:
     ScriptTextCtrl(wxWindow *parent, wxWindowID id = -1, int font_size = 10);
     void GotoLineEnsureVisible(int line);
     void UpdateIdentifierInformation();
@@ -710,7 +710,7 @@ void ScriptTextCtrl::OnKeyDown(wxKeyEvent &event) {
         /// \todo Move this code up to ScriptEditor class?
         int id = (event.ShiftDown()) ? wxID_REPLACE_ALL : wxID_REPLACE;
         wxUpdateUIEvent update(id);
-        if (ProcessEvent(update) && update.GetEnabled()) {            
+        if (ProcessEvent(update) && update.GetEnabled()) {
             wxCommandEvent command(wxEVT_COMMAND_MENU_SELECTED, id);
             ProcessEvent(command);
         }
@@ -939,8 +939,7 @@ void ScriptTextCtrl::PutCursorAtBottomOfSelection() {
     SetCurrentPos(end);
 }
 
-void ScriptTextCtrl::InitializeFindState()
-{
+void ScriptTextCtrl::InitializeFindState() {
     // Set up some basic search parameters.
     if (FindDlg::GetSearchArea() == FindDlg::SELECTION_ONLY) {
         mSpans.SetSpan(BufferSpan(SPAN_SEARCH_LIMITS,
@@ -1145,8 +1144,7 @@ void ScriptTextCtrl::GotoLineEnsureVisible(int line) {
     SetFocus();
 }
 
-wxString ScriptTextCtrl::GetWordAt(int pos, int *outBegin, int *outEnd)
-{
+wxString ScriptTextCtrl::GetWordAt(int pos, int *outBegin, int *outEnd) {
     int line_number = LineFromPosition(pos);
     int line_start = PositionFromLine(line_number);
     wxString line = GetLine(line_number);
@@ -1257,8 +1255,7 @@ void ScriptTextCtrl::IndentLine(int inLine) {
     int parent_pos = wxSTC_INVALID_POSITION;
     std::vector<int> sibling_pos;
     bool done = false;
-    for (int rpos = PositionFromLine(inLine); !done && rpos > 0; rpos--)
-    {
+    for (int rpos = PositionFromLine(inLine); !done && rpos > 0; rpos--) {
         int pos = rpos - 1;
         if (IsBraceAt(pos)) {
             char c = GetCharAt(pos);
@@ -1384,7 +1381,7 @@ int ScriptTextCtrl::GetBaseIndentFromPosition(int inPos) {
 void ScriptTextCtrl::MaybeShowCallTip() {
     // Try to extract a function name.  If we can't, give up.
     int pos = GetCurrentPos();
-    if (pos < 2) 
+    if (pos < 2)
         return;
     ASSERT(GetCharAt(pos - 1) == ' ');
     int word_begin;
@@ -1790,7 +1787,7 @@ public:
     /// path.  May not succeed.
     void HighlightFile(const wxString &path);
 
-private:    
+private:
     void NotifyReloadScriptSucceeded();
 
     void FileChanged(const std::string &relpath);

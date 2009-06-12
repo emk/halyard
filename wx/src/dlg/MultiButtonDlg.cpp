@@ -68,8 +68,7 @@ void MultiButtonDlg::LabelOrHideButton(wxButton *inButton,
         inButton->Hide();
 }
 
-void MultiButtonDlg::OnButton(wxCommandEvent &inEvent)
-{
+void MultiButtonDlg::OnButton(wxCommandEvent &inEvent) {
     Hide();
 
     int id = inEvent.GetId();

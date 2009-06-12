@@ -37,8 +37,7 @@ using namespace TTextTransform;
 
 extern void test_TTextTransform (void);
 
-void test_TTextTransform (void) 
-{
+void test_TTextTransform (void) {
     // A null transformation.
     TEST(TransformString("Hello!") == "Hello!");
     

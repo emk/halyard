@@ -28,8 +28,7 @@
 //=========================================================================
 
 ///  A simple thermometer-style class with a setable color.
-class ProgressMeter : public wxWindow
-{
+class ProgressMeter : public wxWindow {
     wxColour mColor;
     float mValue;
 
@@ -56,8 +55,7 @@ ProgressMeter::ProgressMeter(wxWindow *inParent)
     mColor = FancyStatusBar::DEFAULT_PROGRESS_COLOR;
 }
 
-void ProgressMeter::Draw(wxDC &inDC)
-{
+void ProgressMeter::Draw(wxDC &inDC) {
     wxBrush brush(mColor, wxSOLID);
     inDC.SetBrush(brush);
     inDC.SetPen(*wxTRANSPARENT_PEN);
@@ -65,14 +63,12 @@ void ProgressMeter::Draw(wxDC &inDC)
     inDC.DrawRectangle(0, 0, mValue * sz.GetWidth(), sz.GetHeight());
 }
 
-void ProgressMeter::Refresh()
-{
+void ProgressMeter::Refresh() {
     wxClientDC dc(this);
     Draw(dc);
 }
 
-void ProgressMeter::OnPaint(wxPaintEvent &inEvent)
-{
+void ProgressMeter::OnPaint(wxPaintEvent &inEvent) {
     wxPaintDC dc(this);
     Draw(dc);
 }
@@ -109,21 +105,18 @@ FancyStatusBar::FancyStatusBar(wxWindow *inParent)
     mProgressMeter = new ProgressMeter(this);
 }
 
-void FancyStatusBar::OnSize(wxSizeEvent &event)
-{
+void FancyStatusBar::OnSize(wxSizeEvent &event) {
     wxRect rect;
     GetFieldRect(PROGRESS_FIELD, rect);
     rect.Deflate(1, 1);
     mProgressMeter->SetSize(rect);
 }
 
-void FancyStatusBar::SetProgressColor(const wxColour &inColor)
-{
+void FancyStatusBar::SetProgressColor(const wxColour &inColor) {
     mProgressMeter->SetColor(inColor);
 }
 
-void FancyStatusBar::SetProgress(float inValue)
-{
+void FancyStatusBar::SetProgress(float inValue) {
     mProgressMeter->SetValue(inValue);
 }
 
