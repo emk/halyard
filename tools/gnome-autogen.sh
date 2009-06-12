@@ -274,6 +274,7 @@ want_intltool=false
 want_pkg_config=false
 want_gtk_doc=false
 want_gnome_doc_utils=false
+want_maintainer_mode=false
 
 # IML - emk - 2 May 2008 - We don't need to recursively configure any of
 # our subprojects, so ignore their configure.ac files.
@@ -309,6 +310,11 @@ for configure_ac in $configure_files; do
         want_gnome_doc_utils=true
     fi
 
+    # check that AM_MAINTAINER_MODE is used
+    if grep "^AM_MAINTAINER_MODE" $configure_ac >/dev/null; then
+	want_maintainer_mode=true
+    fi
+
     # check to make sure gnome-common macros can be found ...
     if grep "^GNOME_COMMON_INIT" $configure_ac >/dev/null ||
        grep "^GNOME_DEBUG_CHECK" $configure_ac >/dev/null ||
@@ -330,12 +336,13 @@ AUTOHEADER=`echo $AUTOCONF | sed s/autoconf/autoheader/`
 
 case $REQUIRED_AUTOMAKE_VERSION in
     1.4*) automake_progs="automake-1.4" ;;
-    1.5*) automake_progs="automake-1.10 automake-1.9 automake-1.8 automake-1.7 automake-1.6 automake-1.5" ;;
-    1.6*) automake_progs="automake-1.10 automake-1.9 automake-1.8 automake-1.7 automake-1.6" ;;
-    1.7*) automake_progs="automake-1.10 automake-1.9 automake-1.8 automake-1.7" ;;
-    1.8*) automake_progs="automake-1.10 automake-1.9 automake-1.8" ;;
-    1.9*) automake_progs="automake-1.10 automake-1.9" ;;
-    1.10*) automake_progs="automake-1.10" ;;
+    1.5*) automake_progs="automake-1.11 automake-1.10 automake-1.9 automake-1.8 automake-1.7 automake-1.6 automake-1.5" ;;
+    1.6*) automake_progs="automake-1.11 automake-1.10 automake-1.9 automake-1.8 automake-1.7 automake-1.6" ;;
+    1.7*) automake_progs="automake-1.11 automake-1.10 automake-1.9 automake-1.8 automake-1.7" ;;
+    1.8*) automake_progs="automake-1.11 automake-1.10 automake-1.9 automake-1.8" ;;
+    1.9*) automake_progs="automake-1.11 automake-1.10 automake-1.9" ;;
+    1.10*) automake_progs="automake-1.11 automake-1.10" ;;
+    1.11*) automake_progs="automake-1.11" ;;
 esac
 version_check automake AUTOMAKE "$automake_progs" $REQUIRED_AUTOMAKE_VERSION \
     "http://ftp.gnu.org/pub/gnu/automake/automake-$REQUIRED_AUTOMAKE_VERSION.tar.gz"
@@ -487,7 +494,7 @@ for configure_ac in $configure_files; do
           cp -pf INSTALL INSTALL.autogen_bak
         fi
 	if [ $REQUIRED_AUTOMAKE_VERSION != 1.4 ]; then
-	    $AUTOMAKE --gnu --add-missing --force --copy || exit 1
+	    $AUTOMAKE --gnu --add-missing --force --copy -Wno-portability || exit 1
 	else
 	    $AUTOMAKE --gnu --add-missing --copy || exit 1
 	fi
@@ -504,7 +511,11 @@ for configure_ac in $configure_files; do
     fi
 done
 
-conf_flags="--enable-maintainer-mode"
+conf_flags=""
+
+if $want_maintainer_mode; then
+    conf_flags="--enable-maintainer-mode"
+fi
 
 if test x$NOCONFIGURE = x; then
     printbold Running $srcdir/configure $conf_flags "$@" ...
