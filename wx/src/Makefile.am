@@ -99,6 +99,7 @@ halyard_SOURCES = \
 	MovieElement.cpp MovieElement.h \
 	MovieWindow.cpp MovieWindow.h \
 	MovieWindowQT.cpp MovieWindowQT.h \
+	Node.cpp Node.h \
 	Overlay.cpp Overlay.h \
 	ProgramTree.cpp ProgramTree.h \
 	resources.cpp \

@@ -23,6 +23,7 @@
 #ifndef Element_H
 #define Element_H
 
+#include "Node.h"
 #include "EventDispatcher.h"
 
 class wxAccessible;
@@ -40,7 +41,7 @@ class CairoContext;
 /// This class has a "fat" interface--a number of methods are only useful
 /// if IsLightWeight returns true.  This allows us to avoid using RTTI,
 /// but is otherwise a slightly odd design.
-class Element {
+class Element : public Node {
     /// The stage on which this element appears.
     Stage *mStage;
 

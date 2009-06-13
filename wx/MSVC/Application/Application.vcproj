@@ -475,6 +475,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\Node.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\Overlay.cpp"
 				>
 			</File>
@@ -777,6 +781,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\dlg\MultiButtonDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\Node.h"
 				>
 			</File>
 			<File
