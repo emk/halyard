@@ -23,7 +23,7 @@ foreach my $filename (@ARGV) {
     my $in_comment = 0;
     my @lines;
     while (<INPUT>) {
-        if (m,^\s+////+\s*\n?$,) {
+        if (m,^\s*//////////(?!/)\s*\n?$,) {
             $in_comment = 1;
         } elsif (m,^\s*///,) {
             if ($in_comment) {
