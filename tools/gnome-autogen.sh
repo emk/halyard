@@ -348,8 +348,16 @@ version_check automake AUTOMAKE "$automake_progs" $REQUIRED_AUTOMAKE_VERSION \
     "http://ftp.gnu.org/pub/gnu/automake/automake-$REQUIRED_AUTOMAKE_VERSION.tar.gz"
 ACLOCAL=`echo $AUTOMAKE | sed s/automake/aclocal/`
 
+# IML - emk - 13 June 2009 - If we're on the Mac, libtool is installed as
+# glibtool.
+if glibtool --version < /dev/null > /dev/null 2>&1 ; then
+    LIBTOOL=glibtool
+else
+    LIBTOOL=libtool
+fi
+
 if $want_libtool; then
-    version_check libtool LIBTOOLIZE libtoolize $REQUIRED_LIBTOOL_VERSION \
+    version_check libtool LIBTOOLIZE ${LIBTOOL}ize $REQUIRED_LIBTOOL_VERSION \
         "http://ftp.gnu.org/pub/gnu/libtool/libtool-$REQUIRED_LIBTOOL_VERSION.tar.gz"
     require_m4macro libtool.m4
 fi
