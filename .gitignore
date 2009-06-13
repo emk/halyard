@@ -5,9 +5,13 @@
 /configure
 /config.log
 /config.status
+/config.guess
+/config.sub
 /depcomp
 /install-sh
 /missing
+/libtool
+/ltmain.sh
 /.stgit-edit.txt
 /doc
 *~
