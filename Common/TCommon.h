@@ -38,23 +38,22 @@
 ///@{
 
 /// We have our own, portable assertion-checking routine because
-/// we want to log assertion failures (because the users *never*
-/// write them down).
+/// we want to log assertion failures.
 ///
 /// This routine is defined in TLogger.cpp.
 /// 
-/// \param inTest  If this value is zero, trigger the assertion.
 /// \param inDescription  Text describing the assertion.
 /// \param inFile  The file in which the assertion appears.
 /// \param inLine  The line number of the assertion.
-extern void HalyardCheckAssertion(unsigned long inTest,
-                                  const char *inDescription,
-                                  const char *inFile, int inLine);
+extern void HalyardAssertionFailed(const char *inDescription,
+                                   const char *inFile, int inLine);
 
 #ifdef DEBUG
 #	define ASSERT(test) \
-		HalyardCheckAssertion((unsigned long) (test), #test, __FILE__, \
-                              __LINE__);
+        do { \
+            if (!(test)) \
+                HalyardAssertionFailed(#test, __FILE__, __LINE__); \
+        } while (0)
 #else // DEBUG
 #   define ASSERT(test) ((void) 0)
 #endif // DEBUG

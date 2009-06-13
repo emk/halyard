@@ -48,13 +48,12 @@ TLogger Halyard::gLog;
 //=========================================================================
 
 // This routine is declared in TCommon.h.
-void HalyardCheckAssertion(unsigned long inTest, const char *inDescription,
-                           const char *inFile, int inLine)
+void HalyardAssertionFailed(const char *inDescription,
+                            const char *inFile, int inLine)
 {
-    if (!inTest)
-        // Log a fatal error and bail.
-        gLog.Fatal("halyard", "ASSERTION FAILURE: %s:%d: %s",
-                   inFile, inLine, inDescription);
+    // Log a fatal error and bail.
+    gLog.Fatal("halyard", "ASSERTION FAILURE: %s:%d: %s",
+               inFile, inLine, inDescription);
 }
 
 
