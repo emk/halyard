@@ -26,13 +26,11 @@
 #include "TInterpreter.h"
 
 
-//////////
 /// A browser element based on embedding Internet Explorer via ActiveX.  This
 /// could be trivially generalized to support any other browser controls
 /// which implement IE's ActiveX interfaces.
 ///
 /// PORTING - This obviously isn't going to work anywhere but Windows.
-///
 class BrowserElementIE : public BrowserElement {
     friend class CustomIEHtmlWindow;
 

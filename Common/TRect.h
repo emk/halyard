@@ -25,12 +25,10 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 /// A class to represent a rectangular region.
 ///
 /// \author Chuck Officer
 /// \author ...and others
-///
 class TRect {
     public:
         TRect() : m_Left(0), m_Top(0), m_Right(0), m_Bottom(0) {}

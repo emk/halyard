@@ -41,7 +41,6 @@
 #define HAVE_CUSTOM_WXWIDGETS \
     wxCHECK_VERSION(2,6,1) && !wxCHECK_VERSION(2,6,2)
 
-//////////
 /// Set this option to 1 to enable Quake 2 support.  You'll
 /// also need to place a specially-patched version of Quake 2
 /// in the libs/ directory, and add wxq2 to the application's
@@ -49,7 +48,6 @@
 ///
 /// To disable Quake 2 support, set this option to 0, and remove
 /// wxq2 from this applications's dependencies.
-///
 #define CONFIG_OPTION_QUAKE2             1
 
 #ifdef __WXMSW__

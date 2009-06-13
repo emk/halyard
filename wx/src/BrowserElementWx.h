@@ -26,9 +26,7 @@
 #include "TInterpreter.h"
 
 
-//////////
 /// A simple browser based on the wxWindows help viewer.
-///
 class BrowserElementWx : public BrowserElement {
     friend class CustomWxHtmlWindow;
 

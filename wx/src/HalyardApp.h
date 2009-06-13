@@ -189,9 +189,7 @@ public:
     void OnActivateApp(wxActivateEvent &event);
 };
 
-//////////
 /// Declare a 'HalyardApp &wxGetApp()' method.
-///
 DECLARE_APP(HalyardApp)
 
 #endif // HalyardApp_H

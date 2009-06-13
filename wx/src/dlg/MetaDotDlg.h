@@ -26,10 +26,8 @@
 #include "XrcDlg.h"
 #include "ScriptEditorDB.h"
 
-//////////
 /// This is the dialog which pops up if there's multiple candidates
 /// for looking up a definition with Alt-Period.
-///
 class MetaDotDlg : public XrcDlg {
     DECLARE_EVENT_TABLE();
     

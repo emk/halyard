@@ -28,12 +28,10 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 /// A TStateListenerManager keeps track of lots of little free-floating
 /// TStateListener objects.  These should theoretically be associated with
 /// C++ Node objects, but we don't have a Node class corresponding to
 /// the interpreter's <node> class.
-///
 class TStateListenerManager : public TReloadNotified  {
     class CallbackListener : public TStateListener {
         static uint32 sNextSerialNumber;

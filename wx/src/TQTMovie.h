@@ -59,12 +59,10 @@
 //   Port to 3.3.x
 
 
-//////////
 /// This exception class represents a MacOS error.  Note that QuickTime
 /// for Windows uses MacOS-style errors.
 ///
 /// TODO - Port this code to be a subclass of TException.
-///
 class TMacError : public std::runtime_error {
     std::string mFile;
     int mLine;
@@ -82,19 +80,15 @@ public:
                       ComponentResult inErrorCode);
 };
 
-//////////
 /// Check the result of a MacOS function for an error.
 ///
 /// \param expr  A value of type OSErr.
-///
 #define CHECK_MAC_ERROR(expr) \
     /*Halyard::*/ TMacError::Check(__FILE__, __LINE__, (expr))
 
-//////////
 /// A stack-based resource management class for the current Macintosh
 /// QuickDraw port.  Look up "resource aquisition is initialization"
 /// for a summary of why we do this.
-///
 class StMacDrawingContext {
     GrafPtr mSavedPort;
 
@@ -112,7 +106,6 @@ public:
     }
 };
 
-//////////
 /// This class is intended to be a portable QuickTime movie wrapper
 /// containing all our low-level interfaces to QuickTime.  We're
 /// implementing this because we're tired of non-portable,
@@ -121,7 +114,6 @@ public:
 ///
 /// Please design this class for maximum paranoia.  Use *lots* of
 /// assertions, and code defensively.
-///
 class TQTMovie {
 private:
     static bool sIsQuickTimeInitialized;
@@ -414,9 +406,7 @@ private:
                                  short *inDisplayFlag, long inRefCon) throw ();
 };
 
-//////////
 /// Register our QuickTime-related primitives with the engine.
-///
 extern void RegisterQuickTimePrimitives();
 
 #endif // CONFIG_HAVE_QUICKTIME

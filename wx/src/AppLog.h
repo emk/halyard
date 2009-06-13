@@ -24,10 +24,8 @@
 #define AppLog_H
 
 
-//////////
 /// This is a wxWindows log target which knows how to write messages to
 /// the Halyard logging subsystem.
-///
 class AppLog : public wxLog {
     bool mShouldSilentlyLogNonFatalErrors;
 

@@ -41,10 +41,8 @@
 class DocNotebookBar;
 class DocNotebookTab;
 
-//////////
 /// A tabbed notebook containing zero or more documents.  This works like
 /// Mozilla or MS Visual Studio: The individual tabs can be closed.
-///
 class DocNotebook : public wxWindow {
     friend class DocNotebookTab;
     friend class DocNotebookBar;
@@ -96,10 +94,8 @@ private:
     DECLARE_EVENT_TABLE();
 };
 
-//////////
 /// A document tab in DocNotebook.  This is intended to be used as a mixin
 /// class for wxWindow subclasses.
-///
 class DocNotebookTab : boost::noncopyable {
     friend class DocNotebook;
     friend class DocNotebookBar;
@@ -148,10 +144,8 @@ public:
     virtual wxWindow *GetDocumentWindow() = 0;
 };
 
-//////////
 /// The tab bar across the top of a DocNotebook.  This does most of the real
 /// work.
-///
 class DocNotebookBar : public wxWindow {
     friend class DocNotebook;
     friend class DocNotebookTab;

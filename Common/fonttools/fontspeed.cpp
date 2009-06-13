@@ -32,9 +32,7 @@ using namespace Halyard;
 using GraphicsTools::Point;
 using GraphicsTools::PixMap;
 
-//////////
 // A do-nothing image.
-//
 class NullImage : public GraphicsTools::Image {
     void DrawPixMap(Point inPoint, PixMap &inPixmap) {}
 };

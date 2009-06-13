@@ -26,9 +26,7 @@
 #include "Widget.h"
 #include "TInterpreter.h"
 
-//////////
 /// A browser element displays a web browser of some sort.
-///
 class BrowserElement : public Widget {
 protected:
     /// Create a new browser element with the specified event handlers.

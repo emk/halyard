@@ -29,10 +29,8 @@
 
 class TQTMovie;
 
-//////////
 /// A wxWindow subclass which can display and manage a QuickTime movie.
 /// TODO - Still frightfully incomplete, but enough to get by with.
-///
 class MovieWindowQT : public MovieWindow {
     WXHWND mHWND;
     TQTMovie *mMovie;

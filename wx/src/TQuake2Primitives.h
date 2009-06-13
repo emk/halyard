@@ -30,9 +30,7 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 /// Register a set of primitives for working with Quake 2.
-///
 extern void RegisterQuake2Primitives();
 
 END_NAMESPACE_HALYARD

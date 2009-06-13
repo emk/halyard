@@ -29,24 +29,18 @@ BEGIN_NAMESPACE_HALYARD
 
 class CrashReporter;
 
-//////////
 /// Initialize the various modules of the Common/ library.
 /// If you want to call FileSystem::SetBaseDirectory, do it
 /// before calling this function.
-///
 extern void InitializeCommonCode(CrashReporter *inReporter);
 
-//////////
 /// Create a Scheme interpreter manager.
-///
 extern TInterpreterManager *
 GetSchemeInterpreterManager(TInterpreterManager::SystemIdleProc inIdleProc);
 
-//////////
 /// If the current program looks like a Scheme script, attempt
 /// to start a Scheme interpreter.  Otherwise, return NULL.  This function
 /// can be used to support two languages in a single engine.
-///
 extern TInterpreterManager *
 MaybeGetSchemeInterpreterManager(
     TInterpreterManager::SystemIdleProc inIdleProc);

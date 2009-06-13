@@ -56,7 +56,6 @@ class SymbolName;
 class ValueOrPercent;
 
 
-//////////
 /// TArgumentList provides an abstract interface to the argument lists
 /// passed to a primitive function.  To allow a new TInterpreter
 /// class to call primitives, you'll need to implement all this
@@ -66,7 +65,6 @@ class ValueOrPercent;
 /// For example, these methods might automatically coerce arguments to
 /// the correct data type on the fly, if that's appropriate for the
 /// scripting language in question.
-///
 class TArgumentList {
     /// The arguments passed to a primitive will be stored as TValues
     /// in a TValueList.
@@ -131,10 +129,8 @@ public:
                                     TArgumentList &args);
 };
 
-//////////
 /// An input manipulator which reads a symbol from the input stream and
 /// stores it in the specified std::string object.
-///
 class SymbolName {
     std::string &mName;
 
@@ -145,7 +141,6 @@ public:
                                      const SymbolName &inSymbolName);
 };
 
-//////////
 /// An input manipulator which parses either (1) percentage values
 /// relative to some base or (2) absolute values of the form "4".
 /// Call it as:
@@ -153,7 +148,6 @@ public:
 ///   stream >> ValueOrPercent(10, &result);
 /// When passed 20%, this will return 2.  When passed "4", this
 /// will return "4".
-///
 class ValueOrPercent {
     int32 mBaseValue;
     int32 *mOutputValue;
@@ -166,11 +160,9 @@ public:
                                      const ValueOrPercent &inVoP);
 };
 
-//////////
 /// The TPrimitiveManager class maintains a set of primitive engine
 /// functions.  These functions can be called from our scripting
 /// language.
-///
 class TPrimitiveManager {
 public:
     /// A PrimitiveFunc implements a single primitive.
@@ -205,19 +197,14 @@ public:
     void CallPrimitive(const std::string &inName, TArgumentList &inArgs);
 };
 
-//////////
 /// The global object in charge of managing our primitive functions.
-///
 extern TPrimitiveManager gPrimitiveManager;
 
-//////////
 /// Print this argument list to an output stream, for debugging
 /// purposes.
-/// 
 extern std::ostream &operator<<(std::ostream &out, TArgumentList &args);
 
 
-//////////
 /// A handy macro for declaring a primitive function and registering
 /// it with the gPrimitiveManager, all in one fell swoop.  There are
 /// several bits of pre-processor wizardry going on here:
@@ -234,14 +221,12 @@ extern std::ostream &operator<<(std::ostream &out, TArgumentList &args);
 /// Note that REGISTER_PRIMITIVE must appear _after_ DEFINE_PRIMITIVE in a
 /// source file, because making forward declarations work portably in the
 /// presence of namespaces is tricky.
-///
 #define REGISTER_PRIMITIVE_WITH_NAME(NAME, TOKEN) \
     gPrimitiveManager.RegisterPrimitive(NAME, &DoPrim_ ## TOKEN)
 
 #define REGISTER_PRIMITIVE(NAME) \
     REGISTER_PRIMITIVE_WITH_NAME(#NAME, NAME)
 
-//////////
 /// Use this macro in place of a function prototype when implementing a
 /// primitive.  This will shield you from changes to the standard
 /// prototype.  (For an explanation of the macro grik, see
@@ -255,16 +240,13 @@ extern std::ostream &operator<<(std::ostream &out, TArgumentList &args);
 ///       inArgs >> message;
 ///       gLog.Debug("halyard.foo", "%s", message.c_str());
 ///   }
-///
 #define DEFINE_PRIMITIVE(NAME) \
     static void DoPrim_ ## NAME(TArgumentList &inArgs)
 
-//////////
 /// Set the return value of the current primitive to the
 /// value of the specified variable.
 ///
 /// \param inVariable  The variable whose value we should use.
-///
 inline void SetPrimitiveResult(const TValue &inVariable) {
     gVariableManager.Set("_result", inVariable);
 }

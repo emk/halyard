@@ -24,7 +24,6 @@
 #define _TPlatform_h_
 
 
-//////////
 /// \defgroup platform Platform-Specific Configuration
 ///
 /// Platform-specific configuration code.

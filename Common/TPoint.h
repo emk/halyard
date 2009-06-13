@@ -25,12 +25,10 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 /// A class to represent a point in 2D space.
 ///
 /// \author Chuck Officer
 /// \author ...and others
-///
 class TPoint {
     public:
         /// Constructor.  Initialize X and Y to zero.

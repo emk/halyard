@@ -27,7 +27,6 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 /// This is an exception-safe replacement for MZ_GC_REG and friends.  It is
 /// used as follows:
 ///
@@ -49,7 +48,6 @@ BEGIN_NAMESPACE_HALYARD
 ///
 /// Note that we actually look _slightly_ below the covers of PLT's
 /// abstraction APIs.
-///
 template <size_t VARS, size_t ARRAYS = 0>
 class TSchemeReg : boost::noncopyable {
     // Layout:

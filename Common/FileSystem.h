@@ -25,10 +25,8 @@
 
 #include "TException.h"
 
-//////////
 /// Portable interface to various filesystem functions.  Over time,
 /// it might be good to refactor more code into this library.
-///
 namespace FileSystem {
 
     /// A file-system related error. 

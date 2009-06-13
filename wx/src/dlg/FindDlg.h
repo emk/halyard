@@ -25,10 +25,8 @@
 
 #include "XrcDlg.h"
 
-//////////
 /// This is the dialog which pops up at startup time and asks you whether
 /// you want to open an existing program or create a new one.
-///
 class FindDlg : public XrcDlg {
 public:
     enum SearchArea {

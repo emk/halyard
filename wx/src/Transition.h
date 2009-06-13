@@ -25,11 +25,9 @@
 
 class Transition;
 
-//////////
 /// A set of display-related resources which are needed to perform a
 /// transition.  We stick these in a class so we don't need to pass
 /// them around as separate parameters everywhere.
-///
 class TransitionResources {
     wxDC &mOutputDC;
     wxBitmap &mBeforeBmp;
@@ -63,9 +61,7 @@ public:
     wxRect &GetDirtyRect() { return mDirtyRect; }
 };
 
-//////////
 /// This class holds all known transitions, and performs them upon request.
-///
 class TransitionManager {
     typedef std::map<std::string,Transition*> TransitionMap;
 

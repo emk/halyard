@@ -28,10 +28,8 @@ BEGIN_NAMESPACE_HALYARD
 class TValue;
 class ScriptEditorDB;
 
-//////////
 /// An identifier which might appear in a script.  Used to inform the editor
 /// of highlightable keywords, autocompletable names, etc.
-///
 class TScriptIdentifier {
 public:
     /// The type of an identifier.
@@ -82,12 +80,10 @@ public:
 
 typedef std::vector<TScriptIdentifier> IdentifierList;
 
-//////////
 /// TInterpreter provides an abstract interface to a programming language
 /// interpreter used by the Halyard engine.  In theory, it should be possible
 /// to change Halyard's scripting language by providing a new implementation
 /// of this class.
-///
 class TInterpreter : boost::noncopyable {
 public:
     /// Create a new TInterpreter object.  TInterpreter is a singleton
@@ -219,12 +215,10 @@ private:
     static TInterpreter *sInstance;
 };
 
-//////////
 /// TCallback represents a "callback" function in the interpreter.  These
 /// functions may be called repeatedly.  Destroying the TInterpreter
 /// object invalidates all TCallbacks; calling ReDoScript may or may
 /// not invalidate any given callback.
-///
 class TCallback : boost::noncopyable {
 public:
     TCallback() {}
@@ -242,10 +236,8 @@ public:
 };
 
 
-//////////
 /// Objects of this class are automatically notified when the script is
 /// is reloaded.
-///
 class TReloadNotified {
 public:
     TReloadNotified();
@@ -256,12 +248,10 @@ public:
 };
 
 
-//////////
 /// The platform may provide the TInterpreterManager with an object of this
 /// class to support saving and loading the number of files loaded, in order
 /// to properly initialize the progress bar, or any other cached 
 /// interpreter configuration that needs to be saved.
-/// 
 class TInterpreterCachedConf {
 public:
     TInterpreterCachedConf();
@@ -271,7 +261,6 @@ public:
 };
 
 
-//////////
 /// This class is in charge of creating, running and destroying
 /// interpreters as required by the application.  It supports reloading
 /// scripts, dealing with load errors, and other high-level features.
@@ -281,7 +270,6 @@ public:
 ///
 /// Only one TInterpreterManager will ever be created, so feel free to
 /// install language-specific primitives in the constructor.
-///
 class TInterpreterManager : boost::noncopyable {
 public:
     /// Platform-specific idle procedures.  These procedures can be

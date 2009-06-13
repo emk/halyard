@@ -25,9 +25,7 @@
 
 #include "TInterpreter.h"
 
-//////////
 /// This class passes events from our GUI to the interpreter.
-///
 class EventDispatcher : boost::noncopyable, public Halyard::TReloadNotified {
     static bool sMaxStaleTimeInitialized;
     static wxLongLong sMaxStaleTime;

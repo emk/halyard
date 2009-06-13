@@ -25,9 +25,7 @@
 
 namespace model { class Object; };
 
-//////////
 /// A dialog which allows you to edit the properties of a model::Object.
-///
 class PropertyDlg : public wxDialog {
 public:
     typedef unsigned long Flags;

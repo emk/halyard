@@ -25,10 +25,8 @@
 
 #include "XrcDlg.h"
 
-//////////
 /// This is the dialog which asks you whether you want to keep the changed
 /// screen resolution.
-///
 class AdjustScreenConfirmDlg : public XrcDlg {
     DECLARE_EVENT_TABLE();
 

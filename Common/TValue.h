@@ -331,10 +331,8 @@ template <> inline TValue::Type TValue::FindType(const TCallbackPtr &)
 template <> inline TValue::Type TValue::FindType(const TPercent &)
     { return TYPE_PERCENT; }
 
-//////////
 /// Two TValues are equal if and only if they are of the same type and
 /// the underlying values are ==.
-///
 extern bool operator==(const TValue &inV1, const TValue &inV2);
 
 extern bool operator!=(const TValue &inV1, const TValue &inV2);

@@ -25,9 +25,7 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 /// A C++ wrapper for a zero-argument Scheme callback function (a "thunk").
-///
 class TSchemeCallback : public TCallback {
     /// Our callback object.  Note that we need to use a TSchemePtr to
     /// prevent mCallback from being garbage-collected, because we're

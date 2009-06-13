@@ -36,11 +36,9 @@ enum CrashType {
     SCRIPT_CRASH
 };
 
-//////////
 /// A handy exception class for use in Halyard code.  Don't bother
 /// catching this directly; catch something like std::exception
 /// instead.
-/// 
 class TException : public std::runtime_error {
     std::string mErrorFile;
     int mErrorLine;

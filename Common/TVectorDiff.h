@@ -25,7 +25,6 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 /// Compute the "largest common subsequence" (LCS) of two vectors.  The LCS
 /// of two vectors v_1 and v_2 is defined as the largest vector which can
 /// obtained by deleting individual items from v_1 and v_2 ("A Fast
@@ -60,7 +59,6 @@ BEGIN_NAMESPACE_HALYARD
 /// Apparently D.S. Hirschberg figured out how to solve this problem using
 /// dynamic programming in the 1970s.  I can't find his paper online, so
 /// I've decided to puzzle out an algorithm from the hints in later papers.
-///
 template <typename T> inline
 void LargestCommonSubsequence(const std::vector<T> &v1,
                               const std::vector<T> &v2,

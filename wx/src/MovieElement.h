@@ -27,11 +27,9 @@
 #include "MediaElement.h"
 #include "MovieWindow.h"
 
-//////////
 /// A Widget subclass which implements some MovieWindow-specific features.
 ///
 /// TODO - Make a typedef for Frame counts.
-///
 class MovieElement : public Widget, public MediaElement {
     wxString mLocationInfo;
     MovieWindow *mMovieWindow;

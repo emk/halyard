@@ -30,9 +30,7 @@ struct _xmlDoc;
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 /// A lightweight pointer/iterator for referring to libxml2 XML nodes.
-///
 class xml_node {
 public:
     // We declare local versions of libxml2 types here, so users of this

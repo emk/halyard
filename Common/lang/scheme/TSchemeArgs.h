@@ -27,7 +27,6 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 /// This is a wrapper for building Scheme_Object * argc/argv pairs in a
 /// convenient and GC-safe fashion.  We automatically handle initialization
 /// with NULL, and registration of the correct size with TSchemeReg.  Note
@@ -49,7 +48,6 @@ BEGIN_NAMESPACE_HALYARD
 ///       args[1] = ...;
 ///       TSchemeInterpreter::CallScheme("my_func", args.size(), args.ptr());
 ///   }
-///
 template <size_t LENGTH>
 class TSchemeArgs : boost::noncopyable {
     Scheme_Object *mArgs[LENGTH];

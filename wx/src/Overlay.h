@@ -27,9 +27,7 @@
 #include "DrawingArea.h"
 
 
-//////////
 /// A overlay is the simplest form of lightweight element.
-///
 class Overlay : public LightweightElement {
     DrawingArea mDrawingArea;
     bool mAreTransparentAreasClickable;

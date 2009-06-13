@@ -32,11 +32,9 @@
 
 class TCallback;
 
-//////////
 /// Our local "value-added" subclass of wxQuake2Window.  This class
 /// is a singleton, and once created, it remains permanently attached
 /// to the Stage object (although we may hide and show it).
-///
 class Quake2Engine : public wxQuake2Window, public Halyard::TReloadNotified {
     typedef std::map<std::string,Halyard::TCallbackPtr> CallbackMap;
 

@@ -26,14 +26,12 @@
 #include <portaudio.h>
 
 
-//////////
 /// AudioStreams are used for continuous, real-time playback of custom
 /// audio.
 ///
 /// AudioStream relies on two background threads--one to call FillBuffer(),
 /// and one to call Idle().  See the description of each function for
 /// more details.
-///
 class AudioStream {
 public:
     enum Format {
@@ -284,9 +282,7 @@ public: // static stuff
 };
 
 
-//////////
 /// Sine wave synthesizer.  This is a simple demo class.
-/// 
 class SineAudioStream : public AudioStream {
     int mFrequency;
 
@@ -301,9 +297,7 @@ protected:
 
 };
 
-//////////
 /// Convert a 16-signed integer PCM sample into float-point format.
-///
 inline float int16_pcm_to_float(Halyard::int16 sample) {
     return sample / 32768.0f;
 }

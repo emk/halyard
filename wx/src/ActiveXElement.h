@@ -29,9 +29,7 @@
 class EventDispatcher;
 class wxActiveX;
 
-//////////
 /// A ActiveXElement displays an ActiveX control on the stage.
-///
 class ActiveXElement : public Widget {
     wxActiveX *mControl;
 

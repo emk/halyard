@@ -30,10 +30,8 @@ BEGIN_NAMESPACE_HALYARD
 
 class HalyardProgram;
 
-//////////
 /// This class represents a Halyard document.  It should have no dependencies
 /// on the GUI--it's a pure, portable Model class.
-///
 class Document : public model::Model, boost::noncopyable {
     static std::string SetBaseAndGetFilePath(const std::string &inDirectory);
 

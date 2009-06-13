@@ -26,9 +26,7 @@
 #include "XmlUtils.h"
 
 
-//////////
 /// A lightweight, persistent object database with XML serialization.
-///
 namespace model {
 
     // Forward declarations.

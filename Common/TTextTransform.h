@@ -32,7 +32,6 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 /// Turn HTML-escaped characters into Unicode characters, and handle a few
 /// other special escape sequences (--, smart quotes).  This rather ad hoc
 /// encoding was chosen at the request of content authors--they don't want
@@ -41,7 +40,6 @@ BEGIN_NAMESPACE_HALYARD
 /// Note that we do not tranform anything inside angle brackets ("<>"), so
 /// this routine can be more-or-less safely applied to XML text, and won't
 /// do anything particularly useful to non-XML text.
-///
 namespace TTextTransform {
     /// Transform double hyphens into m-dash entities (a dash the
     /// width of the capital letter 'M'), and '...' sequences into

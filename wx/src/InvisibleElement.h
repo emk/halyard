@@ -25,11 +25,9 @@
 
 #include "Element.h"
 
-//////////
 /// An invisible element never actually gets displayed.  Most of these are
 /// currently associated with audio, but there may be more types in the
 /// future.
-///
 class InvisibleElement : public Element {
 public:
     InvisibleElement(Stage *inStage, const wxString &inName,

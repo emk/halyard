@@ -23,15 +23,11 @@
 #ifndef AppGlobals_H
 #define AppGlobals_H
 
-//////////
 /// We use this trace mask to debug flicker and other stage drawing problems.
-///
 #define TRACE_STAGE_DRAWING wxT("STAGE DRAWING")
 
-//////////
 /// Enumerations for menu items, toolbar buttons, and other command-
 /// generating widgets.
-///
 enum {
     HALYARD_NEW_PROGRAM = 100,
     HALYARD_OPEN_PROGRAM,
@@ -79,9 +75,7 @@ enum {
     HALYARD_STAGE_TIMER
 };
 
-//////////
 /// The frame number of a movie.
-///
 typedef long MovieFrame;
 
 enum /* MovieFrame */ {

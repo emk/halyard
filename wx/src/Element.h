@@ -31,7 +31,6 @@ class DrawingArea;
 class CairoContext;
 
 
-//////////
 /// A Element is something which appears on a stage--typically either
 /// a Zone or an full-fledged widget.  Elements are either "lightweight",
 /// meaning they need help from the stage to process events, or they are
@@ -41,7 +40,6 @@ class CairoContext;
 /// This class has a "fat" interface--a number of methods are only useful
 /// if IsLightWeight returns true.  This allows us to avoid using RTTI,
 /// but is otherwise a slightly odd design.
-///
 class Element {
     /// The stage on which this element appears.
     Stage *mStage;

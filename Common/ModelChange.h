@@ -23,9 +23,7 @@
 #if !defined (ModelChange_H)
 #define ModelChange_H
 
-//////////
 /// API for modifying the model in an undoable/redoable fashion.
-///
 namespace model {
 
     /// A Change represents a mutation of something within the Model.  A

@@ -40,9 +40,7 @@ class Listener;
 class MediaInfoPane;
 
 
-//////////
 /// Our main window--the "frame" around our stage.
-///
 class StageFrame : public AuiFrame,
                    public Halyard::TReloadNotified,
                    public model::View

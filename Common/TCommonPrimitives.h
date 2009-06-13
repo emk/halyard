@@ -27,10 +27,8 @@
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 /// Register all of the Common primitives with the gPrimitiveManager
 /// object, so our scripts have some useful commands available.
-///
 extern void RegisterCommonPrimitives();
 
 END_NAMESPACE_HALYARD

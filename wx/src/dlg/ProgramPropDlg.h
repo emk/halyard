@@ -27,10 +27,8 @@
 
 namespace model { class Object; }
 
-//////////
 /// This is the dialog which allows you to edit the name and other properties
 /// of a Halyard program.
-///
 class ProgramPropDlg : public PropertyDlg {
     DECLARE_EVENT_TABLE();
     DECLARE_PROPERTY_DIALOG();

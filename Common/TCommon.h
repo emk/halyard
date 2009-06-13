@@ -37,7 +37,6 @@
 /// \author ...and others
 ///@{
 
-//////////
 /// We have our own, portable assertion-checking routine because
 /// we want to log assertion failures (because the users *never*
 /// write them down).
@@ -48,7 +47,6 @@
 /// \param inDescription  Text describing the assertion.
 /// \param inFile  The file in which the assertion appears.
 /// \param inLine  The line number of the assertion.
-///
 extern void HalyardCheckAssertion(unsigned long inTest,
                                   const char *inDescription,
                                   const char *inFile, int inLine);
@@ -77,14 +75,12 @@ extern void HalyardCheckAssertion(unsigned long inTest,
 
 BEGIN_NAMESPACE_HALYARD
 
-//////////
 enum TriState {
     TriStateOff,
     TriStateOn,
     TriStateLatent
 };
 
-//////////
 enum Alignment {
     AlignLeft,
     AlignCenter,

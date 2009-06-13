@@ -36,11 +36,9 @@ enum /* MovieWindowStyle */ {
     MOVIE_REPORT_CAPTIONS = 16
 };
 
-//////////
 /// A wxWindow subclass for displaying and managing a movie.  By itself, this
 /// class does nothing but display a blank widget; you generally want to use
 /// an appropriate subclass to actually show a movie.
-///
 class MovieWindow : public wxWindow {
     MovieWindowStyle mMovieWindowStyle;
 

@@ -23,9 +23,7 @@
 #ifndef XrcDlg_H
 #define XrcDlg_H
 
-//////////
 /// This abstract class displays a dialog defined in our XRC resources file.
-///
 class XrcDlg : public wxDialog {
     DECLARE_EVENT_TABLE();
 

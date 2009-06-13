@@ -27,9 +27,7 @@ BEGIN_NAMESPACE_HALYARD
 
 class TStateDB;
 
-//////////
 /// Subclasses of TStateListener listener for changes to keys in a TStateDB. 
-///
 class TStateListener {
     friend class TStateDB;
  
@@ -47,10 +45,8 @@ public:
 
 typedef shared_ptr<TStateListener> TStateListenerPtr;
 
-//////////
 /// A TStateDB stores key/value pairs (much like the Windows registry) and
 /// notifies TStateListeners when those keys change.
-///
 class TStateDB {
     friend class TStateListener;
         

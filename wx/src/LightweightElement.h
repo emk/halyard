@@ -30,7 +30,6 @@
 class wxAccessible;
 
 
-//////////
 /// A lightweight element is basically a "virtual widget" on our stage.  It
 /// doesn't have an associated wxWindow object; all of its events are passed
 /// directly to it by the Stage itself.
@@ -39,7 +38,6 @@ class wxAccessible;
 /// have event handlers in Scheme.  This is because I haven't figured out
 /// how to combine the wxWindows event-handling system with the Scheme
 /// event-handling system we're using.
-///
 class LightweightElement : public Element {
     std::string mCursorName;
     bool mIsShown;
