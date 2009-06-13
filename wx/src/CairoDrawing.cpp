@@ -143,7 +143,7 @@ CairoSurfacePtr::FromDC(wxDC &inDC) {
 }
 
 #else
-#error "No implementation of CairoContext::CreateSurface for this platform"
+#error "No implementation of CairoSurfacePtr::FromDC for this platform"
 #endif
 
 
