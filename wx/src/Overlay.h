@@ -40,7 +40,7 @@ public:
     virtual void Show(bool inShow);
     virtual bool IsPointInElement(const wxPoint &inPoint);
     virtual void MoveTo(const wxPoint &inPoint);
-    virtual void DrawElementBorder(wxDC &inDC);
+    virtual void DrawBorder(wxDC &inDC);
     virtual DrawingArea *GetDrawingArea() { return &mDrawingArea; }
     virtual void SetInDragLayer(bool inDragLayer);
     virtual void CompositeInto(CairoContext &inCr);

@@ -94,7 +94,7 @@ bool Widget::IsShown() {
     return mWindow->IsShown();
 }
 
-void Widget::DrawElementBorder(wxDC &inDC) {
+void Widget::DrawBorder(wxDC &inDC) {
     // Draw the border *outside* our rectangle.
     wxRect r = this->GetRect();
     r.Inflate(1);

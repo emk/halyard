@@ -65,7 +65,7 @@ void Overlay::MoveTo(const wxPoint &inPoint) {
     mDrawingArea.MoveTo(inPoint);
 }
 
-void Overlay::DrawElementBorder(wxDC &inDC) {
+void Overlay::DrawBorder(wxDC &inDC) {
     inDC.DrawRectangle(mDrawingArea.GetBounds());
 }
 

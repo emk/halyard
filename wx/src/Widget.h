@@ -77,7 +77,7 @@ public:
     virtual bool WantsCursor() const { return true; }
 
     /// Draw an outline around the widget.
-    virtual void DrawElementBorder(wxDC &inDC);
+    virtual void DrawBorder(wxDC &inDC);
 
     /// Pass the keyboard focus to this element.
     virtual void SetFocus();

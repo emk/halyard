@@ -38,7 +38,7 @@ public:
 
     virtual bool IsPointInElement(const wxPoint &inPoint);
     virtual void MoveTo(const wxPoint &inPoint);
-    virtual void DrawElementBorder(wxDC &inDC);
+    virtual void DrawBorder(wxDC &inDC);
 
     /// Set the shape of this zone.
     virtual void SetShape(const Halyard::TPolygon &inPoly);

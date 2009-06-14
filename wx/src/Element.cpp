@@ -34,32 +34,10 @@ using namespace Halyard;
 
 Element::Element(Stage *inStage, const wxString &inName,
                  Halyard::TCallbackPtr inDispatcher)
-    : mStage(inStage), mName(inName), mLogName(inName.mb_str())
+    : Node(inStage, inName, inDispatcher)
 {
-    ASSERT(mStage);
-    ASSERT(mName != wxT(""));
-
-    if (inDispatcher) {
-        mEventDispatcher = EventDispatcherPtr(new EventDispatcher());
-        mEventDispatcher->SetDispatcher(inDispatcher);
-    }
-}
-
-void Element::OperationNotSupported(const char *inOperationName) {
-    std::string op(inOperationName);
-    std::string name(mName.mb_str());
-    THROW("Cannot " + op + " element: " + name);
 }
 
 void Element::MoveTo(const wxPoint &inPoint) {
     OperationNotSupported("move");
-}
-
-void Element::Show(bool inShow) {
-    if (inShow != IsShown()) {
-        if (inShow)
-            OperationNotSupported("show");
-        else
-            OperationNotSupported("hide");
-    }
 }

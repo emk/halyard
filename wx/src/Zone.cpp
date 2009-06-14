@@ -42,7 +42,7 @@ void Zone::MoveTo(const wxPoint &inPoint) {
     mPolygon.MoveTo(WxToTPoint(inPoint));
 }
 
-void Zone::DrawElementBorder(wxDC &inDC) {
+void Zone::DrawBorder(wxDC &inDC) {
     std::vector<TPoint> pts = mPolygon.Vertices();
     std::vector<TPoint>::iterator i;
     TPoint begin, end;

@@ -188,7 +188,7 @@ class Stage : public wxWindow, public Halyard::TReloadNotified {
     void PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion);
 
     /// Draw a border for the specified element.
-    void DrawElementBorder(wxDC &inDC, ElementPtr inElement);
+    void DrawNodeBorder(wxDC &inDC, NodePtr inNode);
 
     /// Return true if our game engine is current displayed.
     bool GameEngineIsDisplayed();

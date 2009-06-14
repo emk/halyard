@@ -29,3 +29,31 @@ using namespace Halyard;
 //=========================================================================
 //  Node Methods
 //=========================================================================
+
+Node::Node(Stage *inStage, const wxString &inName,
+           Halyard::TCallbackPtr inDispatcher)
+    : mStage(inStage), mName(inName), mLogName(inName.mb_str())
+{
+    ASSERT(mStage);
+    ASSERT(mName != wxT(""));
+
+    if (inDispatcher) {
+        mEventDispatcher = EventDispatcherPtr(new EventDispatcher());
+        mEventDispatcher->SetDispatcher(inDispatcher);
+    }
+}
+
+void Node::OperationNotSupported(const char *inOperationName) {
+    std::string op(inOperationName);
+    std::string name(mName.mb_str());
+    THROW("Cannot " + op + " node: " + name);
+}
+
+void Node::Show(bool inShow) {
+    if (inShow != IsShown()) {
+        if (inShow)
+            OperationNotSupported("show");
+        else
+            OperationNotSupported("hide");
+    }
+}

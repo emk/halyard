@@ -24,10 +24,8 @@
 #define Element_H
 
 #include "Node.h"
-#include "EventDispatcher.h"
 
 class wxAccessible;
-class Stage;
 class DrawingArea;
 class CairoContext;
 
@@ -42,66 +40,13 @@ class CairoContext;
 /// if IsLightWeight returns true.  This allows us to avoid using RTTI,
 /// but is otherwise a slightly odd design.
 class Element : public Node {
-    /// The stage on which this element appears.
-    Stage *mStage;
-
-    /// The name of this element.  Must be unique on any given card. 
-    wxString mName;
-
-    /// Because there's no way to extract a 'const char *' from a wxString
-    /// without it disappearing almost immediately, we also keep a
-    /// std::string version of mName for convenient use with logging
-    /// functions.
-    std::string mLogName;
-
-    /// The event dispatcher for this object.
-    EventDispatcherPtr mEventDispatcher;
-
-protected:
-    /// Throw an error saying inOperationName is not allowed.
-    void OperationNotSupported(const char *inOperationName);
-
 public:
-    /// Create a new Element and attach it to the specified stage.
-    /// The stage is responsible for deleting the element.
+    /// Create a new Element and attach it to inStage.  The stage is
+    /// responsible for deleting the element.
     Element(Stage *inStage, const wxString &inName,
             Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
-
     virtual ~Element() {}
     
-    /// Return the stage on which the element appears.
-    Stage *GetStage() { return mStage; }
-
-    /// Return the name of the element.  Should be unique on any
-    /// given card.
-    wxString GetName() { return mName; }
-
-    /// Return the name of this element in a fashion suitable for logging.
-    /// The 'const char *' returned is guaranteed to remain valid until the
-    /// element is destroyed.
-    const char *GetLogName() { return mLogName.c_str(); }
-
-    /// Get the event dispatcher associated with this element.
-    EventDispatcherPtr GetEventDispatcher() {
-        ASSERT(mEventDispatcher.get());
-        return mEventDispatcher;
-    }
-
-    /// Return true if the element can be shown.
-    virtual bool HasVisibleRepresentation() { return true; }
-
-    /// Let the element do any idle-time processing it needs to do.
-    virtual void Idle() {}
-
-    /// Return true if the element is shown on the screen.
-    virtual bool IsShown() { return true; }
-
-    /// Show or hide the widget.
-    virtual void Show(bool inShow);
-
-    /// Does this element want the engine to display a cursor?
-    virtual bool WantsCursor() const { return false; }
-
     /// Does this element need to receive events from the Stage?
     virtual bool IsLightWeight() { return false; }
 
@@ -118,9 +63,6 @@ public:
     /// CursorPtr reference.  See the Cursor documentation for details.
     virtual std::string GetCursorName() { return "hand"; }
 
-    /// Draw the element to the specified DC
-    virtual void DrawElementBorder(wxDC &inDC) {}
-
     /// Return the DrawingArea associated with this element, if any.
     virtual DrawingArea *GetDrawingArea() { return NULL; }
 
@@ -133,20 +75,6 @@ public:
     /// clipping region will be set up correctly before this function is
     /// called.
     virtual void CompositeInto(CairoContext &inCr) {}
-
-    /// When we redraw the Stage, we want to exclude certain elements
-    /// (generally Widgets) from the redraw.  This helps prevent accidental
-    /// redraws *over* playing movies or native OS widgets, which is
-    /// helpful, because such redraws are generally very ugly.
-    ///
-    /// Note that this function will only be called if IsShown returns
-    /// true.
-    ///
-    /// \param ioRegion The current clipping region.  Use Subtract to remove
-    ///    areas that shouldn't be drawn.
-    /// \return Return true if clipping was applied, and false if ioRegion
-    ///    was left alone.
-    virtual bool ApplyClippingToStage(wxRegion &ioRegion) { return false; }
 
     /// Get the accessibility information for this element, or NULL, if
     /// it has no accessibility information.

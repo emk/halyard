@@ -358,9 +358,9 @@ bool Stage::ShouldShowCursor() {
         || mGrabbedElement)
         return true;
 
-    // See if any of our elements want a cursor.
-    BOOST_FOREACH(ElementPtr elem, mElements)
-        if (elem->IsShown() && elem->WantsCursor())
+    // See if any of our nodes want a cursor.
+    BOOST_FOREACH(NodeMap::value_type kv, mNodes)
+        if (kv.second->IsShown() && kv.second->WantsCursor())
             return true;
 
     // By default, we want to hide it.
@@ -600,9 +600,14 @@ Stage::FindElementByName(ElementCollection &inCollection,
 }
 
 void Stage::IdleElements() {
-    // Send idle events to all our elements.  We use a copy of
-    // mElements in case elements delete themselves in their idle
-    // function.
+    // Send idle events to all our elements.  We use a copy of mElements in
+    // case elements delete themselves in their idle function.  (This is
+    // mostly likely to occur in MediaElement::MediaElementIdle(), which
+    // sends a number of events to Scheme.)
+    //
+    // TODO - This will be tricky to convert to use mNodes, because doing
+    // so may change the order in which we send events to Scheme.  We'll
+    // need to audit the media event code in existing Halyard programs.
     ElementCollection elems = mElements;
     BOOST_FOREACH(ElementPtr elem, elems)
         /// \bug *i may have been deleted by *someone else* earlier in idle
@@ -740,8 +745,8 @@ void Stage::ClipElementsThatDrawThemselves(wxDC &inDC) {
     // themselves.
     bool need_clipping = false;
     wxRegion clip_to(wxRect(wxPoint(0, 0), GetSize()));
-    BOOST_FOREACH(ElementPtr elem, mElements)
-        if (elem->IsShown() && elem->ApplyClippingToStage(clip_to))
+    BOOST_FOREACH(NodeMap::value_type kv, mNodes)
+        if (kv.second->IsShown() && kv.second->ApplyClippingToStage(clip_to))
             need_clipping = true;
 
     // If we actually made any changes to our clipping region, apply it.
@@ -796,23 +801,23 @@ void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion) {
 
     // If necessary, draw the borders.
     if (mIsDisplayingBorders) {
-        BOOST_FOREACH(ElementPtr elem, mElements)
-            if (elem->IsShown())
-                DrawElementBorder(inDC, elem);
+        BOOST_FOREACH(NodeMap::value_type kv, mNodes)
+            if (kv.second->IsShown())
+                DrawNodeBorder(inDC, kv.second);
     }
 }
 
 // XXX - these should be refactored, but it's just two lines they have 
 // in common. I'm not sure if it's worth it. Feel free to do so if you
 // want.
-void Stage::DrawElementBorder(wxDC &inDC, ElementPtr inElement) {
-    if (inElement->WantsCursor())
+void Stage::DrawNodeBorder(wxDC &inDC, NodePtr inNode) {
+    if (inNode->WantsCursor())
         inDC.SetPen(*wxRED_PEN);
     else
         inDC.SetPen(*wxGREY_PEN);
     inDC.SetBrush(*wxTRANSPARENT_BRUSH);
 
-    inElement->DrawElementBorder(inDC);
+    inNode->DrawBorder(inDC);
 }
 
 void Stage::OnChar(wxKeyEvent &inEvent) {
@@ -1190,8 +1195,9 @@ void Stage::DeleteElements() {
 }
 
 bool Stage::IsMediaPlaying() {
-    BOOST_FOREACH(ElementPtr elem, mElements) {
-        MediaElementPtr media_elem = MediaElementPtr(elem, dynamic_cast_tag());
+    BOOST_FOREACH(NodeMap::value_type kv, mNodes) {
+        MediaElementPtr media_elem =
+            MediaElementPtr(kv.second, dynamic_cast_tag());
         if (media_elem && !media_elem->IsLooping())
             return true;
     }
@@ -1199,10 +1205,11 @@ bool Stage::IsMediaPlaying() {
 }
 
 void Stage::EndMediaElements() {
-    BOOST_FOREACH(ElementPtr elem, mElements) {
-        MediaElementPtr media_elem = MediaElementPtr(elem, dynamic_cast_tag());
+    BOOST_FOREACH(NodeMap::value_type kv, mNodes) {
+        MediaElementPtr media_elem =
+            MediaElementPtr(kv.second, dynamic_cast_tag());
         if (media_elem && !media_elem->IsLooping()) {
-            std::string name(elem->GetName().mb_str());
+            std::string name(kv.second->GetName().mb_str());
             gLog.Debug("halyard", "Manually ending media: %s", name.c_str());
             media_elem->EndPlayback();
         }
