@@ -1010,44 +1010,21 @@ void Stage::Screenshot(const wxString &inFilename) {
     image.SaveFile(inFilename, wxBITMAP_TYPE_PNG);
 }
 
-bool Stage::Wait(const wxString &inElementName, MovieFrame inUntilFrame) {
+void Stage::Wait(MediaElementPtr inElement, MovieFrame inUntilFrame) {
     ASSERT(!mWaitElement);
-
-    // Look for our element.
-    ElementCollection::iterator i =
-        FindElementByName(mElements, inElementName);
-
-    // Make sure we can wait on this element.
-    // TODO - Refactor this error-handling code to a standalone
-    // routine so we don't have to keep on typing it.  (Actually, this code
-    // is handled nicely by some macros in TWxPrimitives.cpp, although they
-    // report errors quite a bit more noisily.
-    std::string name(inElementName.mb_str());
-    if (i == mElements.end()) {
-        gLog.Warn("halyard.wait", "wait: Element %s does not exist",
-                  name.c_str());
-        return false;
-    }
-    MediaElementPtr media = MediaElementPtr(*i, dynamic_cast_tag());
-    if (!media) {
-        gLog.Warn("halyard.wait", "wait: Element %s is not a media element",
-                  name.c_str());
-        return false;       
-    }
 
     // Return immediately (if we're already past the wait point) or
     // go to sleep for a while.
-    if (media->HasReachedFrame(inUntilFrame))
+    if (inElement->HasReachedFrame(inUntilFrame))
         gLog.Trace("halyard.wait",
                    "wait: Media element %s has already past frame %d",
-                   name.c_str(), inUntilFrame);
+                   inElement->GetMediaElementLogName().c_str(), inUntilFrame);
     else
     {
-        mWaitElement = media;
+        mWaitElement = inElement;
         mWaitFrame = inUntilFrame;
         InterpreterSleep();
     }
-    return true;
 }
 
 void Stage::EndWait() {

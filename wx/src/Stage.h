@@ -433,14 +433,9 @@ public:
     /// \param inString  The string to copy.
     void CopyStringToClipboard(const wxString &inString);
 
-    /// Suspend the interpreter until the named movie reaches the specified
+    /// Suspend the interpreter until a MediaElement reaches the specified
     /// frame.
-    ///
-    /// \param inElementName  The name of the MediaElement to wait on.
-    /// \param inUntilFrame  The frame to wait until.
-    /// \return  true if the wait request was valid, false if the
-    ///                named element doesn't exist or isn't a movie.
-    bool Wait(const wxString &inElementName, MovieFrame inUntilFrame);
+    void Wait(MediaElementPtr inElement, MovieFrame inUntilFrame);
 
     /// Refresh the screen using the specified effect.
     ///

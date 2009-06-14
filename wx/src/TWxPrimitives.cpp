@@ -999,7 +999,8 @@ DEFINE_PRIMITIVE(Wait) {
     if (inArgs.HasMoreArguments())
         inArgs >> frame;
     CHECK_SUSPEND_OK("WAIT");
-    wxGetApp().GetStage()->Wait(ToWxString(name), frame);
+    FIND_ELEMENT(MediaElement, elem, ToWxString(name));
+    wxGetApp().GetStage()->Wait(elem, frame);
 }
 
 DEFINE_PRIMITIVE(WantsCursorGet) {

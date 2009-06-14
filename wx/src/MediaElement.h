@@ -69,6 +69,12 @@ public:
     MediaElement();
     virtual ~MediaElement() {}
 
+    /// Return the name of this element in a form easily converted to a
+    /// char *.  We need to provide this extra accessor because we don't
+    /// want to export the bare pointer returned by GetThisAsElement().
+    std::string GetMediaElementLogName()
+        { return GetThisAsElement()->GetLogName(); }
+
     /// Attach a caption file to this movie.
     void AttachCaptionFile(const std::string &inCaptionFile);
 
