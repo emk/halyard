@@ -1087,13 +1087,12 @@ void Stage::AddElement(ElementPtr inElement) {
     NotifyElementsChanged();
 }
 
-ElementPtr Stage::FindElement(const wxString &inElementName) {
-    ElementCollection::iterator i =
-        FindElementByName(mElements, inElementName);
-    if (i == mElements.end())
-        return ElementPtr();
+NodePtr Stage::FindNode(const wxString &inName) {
+    NodeMap::iterator i(mNodes.find(inName));
+    if (i == mNodes.end())
+        return NodePtr();
     else
-        return *i;
+        return i->second;
 }
 
 ElementPtr Stage::FindLightWeightElement(const wxPoint &inPoint,

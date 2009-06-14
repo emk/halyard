@@ -458,11 +458,11 @@ public:
     /// by the Element class.
     void AddElement(ElementPtr inElement);
 
-    /// Find an element by name.
+    /// Find a node by name.
     ///
-    /// \param inElementName  The name to search for.
-    /// \return  A pointer to the element, or NULL.
-    ElementPtr FindElement(const wxString &inElementName);
+    /// \param inName  The name to search for.
+    /// \return        A pointer to the node, or NULL.
+    NodePtr FindNode(const wxString &inName);
 
     /// Find the lightweight Element containing the specified point, if
     /// any.

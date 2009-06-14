@@ -443,13 +443,13 @@
       :overlay? overlay?
       :alpha? alpha?))
   
-  (define (element-exists-in-engine? elem)
-    (call-prim 'ElementExists (elem .full-name)))
+  (define (node-exists-in-engine? elem)
+    (call-prim 'NodeExists (elem .full-name)))
 
   (define (set-element-shown?! elem show?)
     ;; Not all subclasses of %element% actually have a corresponding
     ;; engine object.
-    (when (element-exists-in-engine? elem)
+    (when (node-exists-in-engine? elem)
       (call-prim 'ElementSetShown (elem .full-name) show?)))
 
   ;;; Delete the specified elements.
