@@ -45,7 +45,8 @@ class AuiFrame : public wxFrame {
 
 public:
     /// Create a new AuiFrame.  Parameters are the same as wxFrame, except
-    /// for inFrameName, which contains
+    /// for inFrameName, which is used to keep track of which saved
+    /// perspectives belong to which frame.
     AuiFrame(wxWindow *inParent,
               wxWindowID inId,
               const wxString &inTitle,
