@@ -1082,6 +1082,8 @@ void Stage::AddElement(ElementPtr inElement) {
     gLog.Trace("halyard.element", "%s: Added to stage",
                inElement->GetLogName());
     mElements.push_back(inElement);
+    ASSERT(mNodes.find(inElement->GetName()) == mNodes.end());
+    mNodes.insert(NodeMap::value_type(inElement->GetName(), inElement));
     NotifyElementsChanged();
 }
 
@@ -1172,6 +1174,7 @@ bool Stage::DeleteElementByName(const wxString &inName) {
         // Completely remove from the collection first, then destroy.
         ElementPtr elem = *i;
         mElements.erase(i);
+        mNodes.erase(inName);
         DestroyElement(elem);
         found = true;
     }
@@ -1183,6 +1186,7 @@ void Stage::DeleteElements() {
     BOOST_FOREACH(ElementPtr elem, mElements)
         DestroyElement(elem);
     mElements.clear();
+    mNodes.clear();
     NotifyElementsChanged();
 }
 

@@ -30,6 +30,8 @@
 #include "CairoDrawing.h"
 
 class StageFrame;
+class Node;
+typedef shared_ptr<Node> NodePtr;
 class Element;
 typedef shared_ptr<Element> ElementPtr;
 class MediaElement;
@@ -46,8 +48,12 @@ END_NAMESPACE_HALYARD
 
 /// The window where all actual script output and interaction occurs.
 class Stage : public wxWindow, public Halyard::TReloadNotified {
-    /// A list of Elements.
+    /// A list of Elements.  This will eventually be replaced by NodeMap,
+    /// below.
     typedef std::deque<ElementPtr> ElementCollection;
+
+    /// A map from Node names to Nodes.
+    typedef std::map<wxString,NodePtr> NodeMap;
 
     /// The StageFrame associated with the stage.  We need to poke at it
     /// occassionally to implement various features.
@@ -114,8 +120,12 @@ class Stage : public wxWindow, public Halyard::TReloadNotified {
     /// Cursor.h about cursor-pointer ownership.
     Halyard::Cursor *mActualCursor;
 
-    /// Our currently active elements.
+    /// Our currently active elements.  This will eventually be replaced by
+    /// mNodes, below.
     ElementCollection mElements;
+
+    /// A map from node names to NodePtr objects.
+    NodeMap mNodes;
 
     /// The element which most recently contained the mouse.
     ///
