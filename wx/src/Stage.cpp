@@ -22,6 +22,7 @@
 
 #include "AppHeaders.h"
 
+#include <boost/foreach.hpp>
 #include <wx/config.h>
 #include <wx/filename.h>
 #include <wx/clipbrd.h>
@@ -184,15 +185,12 @@ wxBitmap &Stage::GetCompositingPixmap() {
 
         // Composite elements in two passes: regular elements first,
         // and then elements in the drag layer.
-        ElementCollection::iterator elem_begin = mElements.begin();
-        ElementCollection::iterator elem_end = mElements.end();
-        ElementCollection::iterator elem_i;
-        for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
-            if (!(*elem_i)->IsInDragLayer())
-                (*elem_i)->CompositeInto(cr);
-        for (elem_i = elem_begin; elem_i != elem_end; ++elem_i)
-            if ((*elem_i)->IsInDragLayer())
-                (*elem_i)->CompositeInto(cr);
+        BOOST_FOREACH(ElementPtr elem, mElements)
+            if (!elem->IsInDragLayer())
+                elem->CompositeInto(cr);
+        BOOST_FOREACH(ElementPtr elem, mElements)
+            if (elem->IsInDragLayer())
+                elem->CompositeInto(cr);
 
         wxLogTrace(TRACE_STAGE_DRAWING, wxT("End compositing."));
         mRectsToComposite.clear();
@@ -361,9 +359,8 @@ bool Stage::ShouldShowCursor() {
         return true;
 
     // See if any of our elements want a cursor.
-    ElementCollection::iterator i = mElements.begin();
-    for (; i != mElements.end(); i++)
-        if ((*i)->IsShown() && (*i)->WantsCursor())
+    BOOST_FOREACH(ElementPtr elem, mElements)
+        if (elem->IsShown() && elem->WantsCursor())
             return true;
 
     // By default, we want to hide it.
@@ -607,12 +604,11 @@ void Stage::IdleElements() {
     // mElements in case elements delete themselves in their idle
     // function.
     ElementCollection elems = mElements;
-    ElementCollection::iterator i = elems.begin();
-    for (; i != elems.end(); i++)
+    BOOST_FOREACH(ElementPtr elem, elems)
         /// \bug *i may have been deleted by *someone else* earlier in idle
         /// processing.  The state-db contains code to handle similar
         /// problems, but for now, we're going to hope nobody does this.
-        (*i)->Idle();
+        elem->Idle();
 }
 
 void Stage::OnTimer(wxTimerEvent& inEvent) {
@@ -744,9 +740,8 @@ void Stage::ClipElementsThatDrawThemselves(wxDC &inDC) {
     // themselves.
     bool need_clipping = false;
     wxRegion clip_to(wxRect(wxPoint(0, 0), GetSize()));
-    ElementCollection::iterator i = mElements.begin();
-    for (; i != mElements.end(); ++i)
-        if ((*i)->IsShown() && (*i)->ApplyClippingToStage(clip_to))
+    BOOST_FOREACH(ElementPtr elem, mElements)
+        if (elem->IsShown() && elem->ApplyClippingToStage(clip_to))
             need_clipping = true;
 
     // If we actually made any changes to our clipping region, apply it.
@@ -801,10 +796,9 @@ void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion) {
 
     // If necessary, draw the borders.
     if (mIsDisplayingBorders) {
-        ElementCollection::iterator i = mElements.begin();
-        for (; i != mElements.end(); i++)
-            if ((*i)->IsShown())
-                DrawElementBorder(inDC, *i);
+        BOOST_FOREACH(ElementPtr elem, mElements)
+            if (elem->IsShown())
+                DrawElementBorder(inDC, elem);
     }
 }
 
@@ -1105,12 +1099,11 @@ ElementPtr Stage::FindLightWeightElement(const wxPoint &inPoint,
 {
     // Look for the most-recently-added Element containing inPoint.
     ElementPtr result;
-    ElementCollection::iterator i = mElements.begin();
-    for (; i != mElements.end(); i++)
-        if ((*i)->IsLightWeight() && (*i)->IsShown() &&
-            ((*i)->WantsCursor() || !inMustWantCursor) &&
-            (*i)->IsPointInElement(inPoint))
-            result = *i;
+    BOOST_FOREACH(ElementPtr elem, mElements)
+        if (elem->IsLightWeight() && elem->IsShown() &&
+            (elem->WantsCursor() || !inMustWantCursor) &&
+            elem->IsPointInElement(inPoint))
+            result = elem;
     return result;
 }
 
@@ -1187,31 +1180,28 @@ bool Stage::DeleteElementByName(const wxString &inName) {
 }
 
 void Stage::DeleteElements() {
-    ElementCollection::iterator i = mElements.begin();
-    for (; i != mElements.end(); ++i)
-        DestroyElement(*i);
+    BOOST_FOREACH(ElementPtr elem, mElements)
+        DestroyElement(elem);
     mElements.clear();
     NotifyElementsChanged();
 }
 
 bool Stage::IsMediaPlaying() {
-    ElementCollection::iterator i = mElements.begin();
-    for (; i != mElements.end(); ++i) {
-        MediaElementPtr elem = MediaElementPtr(*i, dynamic_cast_tag());
-        if (elem && !elem->IsLooping())
+    BOOST_FOREACH(ElementPtr elem, mElements) {
+        MediaElementPtr media_elem = MediaElementPtr(elem, dynamic_cast_tag());
+        if (media_elem && !media_elem->IsLooping())
             return true;
     }
     return false;
 }
 
 void Stage::EndMediaElements() {
-    ElementCollection::iterator i = mElements.begin();
-    for (; i != mElements.end(); ++i) {
-        MediaElementPtr elem = MediaElementPtr(*i, dynamic_cast_tag());
-        if (elem && !elem->IsLooping()) {
-            std::string name((*i)->GetName().mb_str());
+    BOOST_FOREACH(ElementPtr elem, mElements) {
+        MediaElementPtr media_elem = MediaElementPtr(elem, dynamic_cast_tag());
+        if (media_elem && !media_elem->IsLooping()) {
+            std::string name(elem->GetName().mb_str());
             gLog.Debug("halyard", "Manually ending media: %s", name.c_str());
-            elem->EndPlayback();
+            media_elem->EndPlayback();
         }
     }
 }
