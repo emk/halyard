@@ -20,12 +20,10 @@
 //
 // @END_LICENSE
 
-#define BOOST_FILESYSTEM_SOURCE
-
 #include <stdio.h>
 #include <windows.h>
-#include "boost/filesystem/path.hpp"
-#include "boost/format.hpp"
+#include <boost/filesystem/path.hpp>
+#include <boost/format.hpp>
 
 #include "CommandLine.h"
 #include "UpdateInstaller.h"

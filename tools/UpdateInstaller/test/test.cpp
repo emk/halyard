@@ -20,12 +20,10 @@
 //
 // @END_LICENSE
 
-#define BOOST_AUTO_TEST_MAIN
-#include <boost/test/auto_unit_test.hpp>
-
-#define BOOST_FILESYSTEM_SOURCE
-#include "boost/filesystem/path.hpp"
-#include "boost/filesystem/operations.hpp"
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 
 #include <vector>
 #include <string>
@@ -52,7 +50,7 @@ void UpdateProgress(size_t steps_completed) {
         BOOST_CHECK((PATH) == _e.path()); \
     } while(0)
 
-BOOST_AUTO_UNIT_TEST(test_parse_diff) {
+BOOST_AUTO_TEST_CASE(test_parse_diff) {
     Manifest diff(path("Updates/temp/MANIFEST-DIFF"));
     BOOST_CHECK(3 == diff.entries().size());
     CHECK_ENTRY("855426068ee8939df6bce2c2c4b1e7346532a133", 5, "sub/foo.txt",
@@ -63,14 +61,14 @@ BOOST_AUTO_UNIT_TEST(test_parse_diff) {
                 diff.entries()[2]);
 }
 
-BOOST_AUTO_UNIT_TEST(test_parse_spec) {
+BOOST_AUTO_TEST_CASE(test_parse_spec) {
     SpecFile spec(path("Updates/release.spec"));
     BOOST_CHECK("http://www.example.com/updates/" == spec.url());
     BOOST_CHECK("update" == spec.build());
     BOOST_CHECK(2 == spec.manifest().entries().size());
 }
 
-BOOST_AUTO_UNIT_TEST(test_windows_command_line_quoting) {
+BOOST_AUTO_TEST_CASE(test_windows_command_line_quoting) {
     char *test[5] = { "C:\\Program Files\\foo.exe",
                       "Something with spaces",
                       "Something\" with\" quotes",
@@ -86,7 +84,7 @@ BOOST_AUTO_UNIT_TEST(test_windows_command_line_quoting) {
                       cl.WindowsQuotedString());
 }
 
-BOOST_AUTO_UNIT_TEST(test_is_update_possible) {
+BOOST_AUTO_TEST_CASE(test_is_update_possible) {
     UpdateInstaller installer = UpdateInstaller(path("."), path("."));
     
     rename(path("Updates/pool/da39a3ee5e6b4b0d3255bfef95601890afd80709"), 

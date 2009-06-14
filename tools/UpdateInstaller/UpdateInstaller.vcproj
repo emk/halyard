@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\libs\boost;..\..\Common;src;win32"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BOOST_ALL_NO_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -121,7 +121,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="..\..\libs\boost;..\..\Common;src;win32"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;BOOST_ALL_NO_LIB"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
@@ -373,7 +373,7 @@
 			Name="Boost Source Files"
 			>
 			<File
-				RelativePath="..\..\libs\boost\libs\filesystem\src\convenience.cpp"
+				RelativePath="..\..\libs\boost\libs\system\src\error_code.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -393,7 +393,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\libs\boost\libs\filesystem\src\exception.cpp"
+				RelativePath="..\..\libs\boost\libs\filesystem\src\operations.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -413,7 +413,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\libs\boost\libs\filesystem\src\operations_posix_windows.cpp"
+				RelativePath="..\..\libs\boost\libs\filesystem\src\path.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -433,7 +433,27 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\libs\boost\libs\filesystem\src\path_posix_windows.cpp"
+				RelativePath="..\..\libs\boost\libs\filesystem\src\portability.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\libs\boost\libs\filesystem\src\utf8_codecvt_facet.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"

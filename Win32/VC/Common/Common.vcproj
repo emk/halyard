@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1;..\..\..\libs\log4cplus\include;../../../libs/cairo/src"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;LIBXML_STATIC;MZ_PRECISE_GC;LOG4CPLUS_STATIC;CAIRO_WIN32_STATIC_BUILD"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;LIBXML_STATIC;MZ_PRECISE_GC;LOG4CPLUS_STATIC;CAIRO_WIN32_STATIC_BUILD;BOOST_ALL_NO_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -120,7 +120,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1;..\..\..\libs\log4cplus\include;../../../libs/cairo/src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;LIBXML_STATIC;MZ_PRECISE_GC;LOG4CPLUS_STATIC;CAIRO_WIN32_STATIC_BUILD"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;LIBXML_STATIC;MZ_PRECISE_GC;LOG4CPLUS_STATIC;CAIRO_WIN32_STATIC_BUILD;BOOST_ALL_NO_LIB"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				RuntimeTypeInfo="true"
@@ -605,7 +605,7 @@
 			Name="boost Files"
 			>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\convenience.cpp"
+				RelativePath="..\..\..\libs\boost\libs\system\src\error_code.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -617,7 +617,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\exception.cpp"
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\operations.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -629,7 +629,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\operations_posix_windows.cpp"
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\path.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -641,7 +641,19 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\path_posix_windows.cpp"
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\portability.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\utf8_codecvt_facet.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"

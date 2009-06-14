@@ -24,13 +24,8 @@
 #define LogFile_H
 
 #include <string>
-#include "boost/format.hpp"
-
-namespace boost {
-    namespace filesystem {
-        class path;
-    }
-}
+#include <boost/format.hpp>
+#include <boost/filesystem/path.hpp>
 
 using namespace boost::filesystem;
 

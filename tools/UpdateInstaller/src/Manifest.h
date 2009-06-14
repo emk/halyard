@@ -26,12 +26,7 @@
 #include <vector>
 #include <string>
 #include <map>
-
-namespace boost {
-    namespace filesystem {
-        class path;
-    }
-}
+#include <boost/filesystem/path.hpp>
 
 std::string read_file(const boost::filesystem::path &path);
 

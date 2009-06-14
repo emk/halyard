@@ -22,10 +22,8 @@
 
 #include <stdio.h>
 #include <exception>
-
-#define BOOST_FILESYSTEM_SOURCE
-#include "boost/filesystem/path.hpp"
-#include "boost/filesystem/convenience.hpp"
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/convenience.hpp>
 
 #include "LogFile.h"
 #include "Interface.h"

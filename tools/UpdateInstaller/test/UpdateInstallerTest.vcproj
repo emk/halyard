@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\src;..\..\..\libs\boost;..\..\..\Common"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;BOOST_ALL_NO_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -123,7 +123,7 @@
 				InlineFunctionExpansion="1"
 				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\src;..\..\..\libs\boost;..\..\..\Common"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;BOOST_ALL_NO_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -215,11 +215,19 @@
 			Name="Boost Source Files"
 			>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\convenience.cpp"
+				RelativePath="..\..\..\libs\boost\libs\test\src\compiler_log_formatter.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\exception.cpp"
+				RelativePath="..\..\..\libs\boost\libs\test\src\debug.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\system\src\error_code.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\test\src\exception_safety.cpp"
 				>
 			</File>
 			<File
@@ -227,15 +235,43 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\operations_posix_windows.cpp"
+				RelativePath="..\..\..\libs\boost\libs\test\src\framework.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\filesystem\src\path_posix_windows.cpp"
+				RelativePath="..\..\..\libs\boost\libs\test\src\interaction_based.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\test\src\supplied_log_formatters.cpp"
+				RelativePath="..\..\..\libs\boost\libs\test\src\logged_expectations.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\operations.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\path.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\test\src\plain_report_formatter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\portability.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\test\src\progress_monitor.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\test\src\results_collector.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\test\src\results_reporter.cpp"
 				>
 			</File>
 			<File
@@ -259,11 +295,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\test\src\unit_test_result.cpp"
+				RelativePath="..\..\..\libs\boost\libs\test\src\unit_test_suite.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libs\boost\libs\test\src\unit_test_suite.cpp"
+				RelativePath="..\..\..\libs\boost\libs\filesystem\src\utf8_codecvt_facet.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\test\src\xml_log_formatter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\libs\boost\libs\test\src\xml_report_formatter.cpp"
 				>
 			</File>
 		</Filter>

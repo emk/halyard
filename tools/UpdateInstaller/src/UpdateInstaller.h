@@ -23,7 +23,7 @@
 #ifndef UpdateInstaller_H
 #define UpdateInstaller_H
 
-#include "boost/filesystem/path.hpp"
+#include <boost/filesystem/path.hpp>
 
 using namespace boost::filesystem;
 

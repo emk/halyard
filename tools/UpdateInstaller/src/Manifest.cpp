@@ -20,12 +20,10 @@
 //
 // @END_LICENSE
 
-#define BOOST_FILESYSTEM_SOURCE
-
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include "boost/filesystem/path.hpp"
+#include <boost/filesystem/path.hpp>
 #include "Manifest.h"
 
 enum { BLOCK_SIZE = /*4096*/ 10 };

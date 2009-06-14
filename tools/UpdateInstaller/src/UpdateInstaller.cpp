@@ -20,16 +20,14 @@
 //
 // @END_LICENSE
 
-#define BOOST_FILESYSTEM_SOURCE
-
 #include <string>
 #include <vector>
 #include <windows.h>
 #include <sys/utime.h>
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
-#include "boost/filesystem/convenience.hpp"
-#include "boost/filesystem/exception.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/convenience.hpp>
+#include <boost/filesystem/exception.hpp>
 
 #include "UpdateInstaller.h"
 #include "Manifest.h"
