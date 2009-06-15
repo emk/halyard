@@ -339,14 +339,11 @@
         (error (cat "Called " self " ." name
                     ", but someone forgot to call SUPER"))))
 
-    ;;; Is there an underlying engine node associated with this class?
-    (attr %has-engine-node? #t)
-
     ;;; Create the actual C++ representation of this node.  This should be
     ;;; overrridden by anything that needs to create a corresponding C++
     ;;; object.
     (def (create-engine-node)
-      (void))
+      (error (cat "Must override create-engine-node on " self)))
 
     ;;; Perform any further initialization of the engine node, before
     ;;; setup is called.  This is separate from .CREATE-ENGINE-NODE so
@@ -1125,8 +1122,7 @@
       ;; Mark this node as no longer active.  This can be checked by
       ;; assertions, if that helps anybody.
       (set! (.node-state) 'EXITED)
-      (when (.%has-engine-node?)
-        (*engine* .delete-node self)))
+      (*engine* .delete-node self))
     )
 
   (with-instance %card%

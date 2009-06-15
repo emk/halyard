@@ -568,7 +568,7 @@ DEFINE_PRIMITIVE(GroupMember) {
     std::string name;
     TCallbackPtr dispatcher;
     inArgs >> SymbolName(name) >> dispatcher;
-    R(new GroupMember(wxGetApp().GetStage(), ToWxString(name.c_str()),
+    R(new GroupMember(wxGetApp().GetStage(), ToWxString(name),
                       dispatcher));
 }
 
@@ -578,6 +578,14 @@ DEFINE_PRIMITIVE(HideCursorUntilMouseMoved) {
 
 DEFINE_PRIMITIVE(Heartbeat) {
     wxGetApp().Heartbeat();
+}
+
+DEFINE_PRIMITIVE(InvisibleElement) {
+    std::string name;
+    TCallbackPtr dispatcher;
+    inArgs >> SymbolName(name) >> dispatcher;
+    R(new InvisibleElement(wxGetApp().GetStage(), ToWxString(name),
+                           dispatcher));
 }
 
 DEFINE_PRIMITIVE(UrlRequest) {
@@ -1107,6 +1115,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(GroupMember);
     REGISTER_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_PRIMITIVE(Heartbeat);
+    REGISTER_PRIMITIVE(InvisibleElement);
     REGISTER_PRIMITIVE(UrlRequest);
     REGISTER_PRIMITIVE(UrlRequestConfigurePost);
     REGISTER_PRIMITIVE(UrlRequestConfigureSetHeader);
