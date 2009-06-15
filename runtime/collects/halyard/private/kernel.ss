@@ -854,13 +854,18 @@
     (def (notify-card-body-finished card)
       (call-hook-functions *card-body-finished-hook*)
       (refresh))
+
+    (def (create-group-member group-mem)
+      (when (have-prim? 'GroupMember)
+        (call-prim 'GroupMember (group-mem .full-name)
+                   (make-node-event-dispatcher group-mem))))
     
-    (def (delete-element elem)
+    (def (delete-node node)
       ;; A little placeholder to make deletion work the same way in Halyard
       ;; and in Common test.
       ;; TODO - Remove when cleaning up element deletion.
       (when (have-prim? 'DeleteNode)
-        (call-prim 'DeleteNode (elem .full-name))))
+        (call-prim 'DeleteNode (node .full-name))))
 
     (def (exit-node node)
       (%kernel-cancel-deferred-thunks-for node))

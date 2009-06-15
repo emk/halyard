@@ -36,7 +36,7 @@
   ;;; is actually implemented using libcurl, so it should support (perhaps
   ;;; with a bit of tweaking of the C++ code) a wide variety of protocols.
   (define-class %url-request% (%invisible-element%)
-    (value %has-engine-element? #t)
+    (value %has-engine-node? #t)
 
     ;;; The URL to download (or upload to).
     (attr url :type <string>)

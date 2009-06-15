@@ -36,6 +36,7 @@
 #include "StageFrame.h"
 #include "Stage.h"
 #include "DrawingArea.h"
+#include "GroupMember.h"
 #include "Zone.h"
 #include "Overlay.h"
 #include "AnimatedOverlay.h"
@@ -561,6 +562,14 @@ DEFINE_PRIMITIVE(Focus) {
     inArgs >> SymbolName(name);
     FIND_NODE(Widget, element, ToWxString(name));
     element->SetFocus();
+}
+
+DEFINE_PRIMITIVE(GroupMember) {
+    std::string name;
+    TCallbackPtr dispatcher;
+    inArgs >> SymbolName(name) >> dispatcher;
+    R(new GroupMember(wxGetApp().GetStage(), ToWxString(name.c_str()),
+                      dispatcher));
 }
 
 DEFINE_PRIMITIVE(HideCursorUntilMouseMoved) {
@@ -1095,6 +1104,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(EnableExpensiveEvents);
     REGISTER_PRIMITIVE(ErrortraceCompileEnabled);
     REGISTER_PRIMITIVE(Focus);
+    REGISTER_PRIMITIVE(GroupMember);
     REGISTER_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_PRIMITIVE(Heartbeat);
     REGISTER_PRIMITIVE(UrlRequest);

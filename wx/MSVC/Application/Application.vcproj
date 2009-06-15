@@ -398,6 +398,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\GroupMember.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\GuiUtil.cpp"
 				>
 			</File>
@@ -721,6 +725,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\GeigerAudioStream.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\GroupMember.h"
 				>
 			</File>
 			<File

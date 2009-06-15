@@ -84,6 +84,7 @@ halyard_SOURCES = \
 	EventDelegator.cpp EventDelegator.h \
 	EventDispatcher.cpp EventDispatcher.h \
 	FancyStatusBar.cpp FancyStatusBar.h \
+	GroupMember.cpp GroupMember.h \
 	GuiUtil.cpp GuiUtil.h \
 	HalyardApp.cpp HalyardApp.h \
 	HistoryText.cpp HistoryText.h \

@@ -155,7 +155,7 @@
   (define-class %invisible-element% (%element%)
     (value at (point 0 0)) 
     (value shown? #f)
-    (default %has-engine-element? #f)
+    (default %has-engine-node? #f)
 
     (def (finish-initializing-engine-node)
       ;; By default, we don't have an engine node, so there's not much 
@@ -1221,7 +1221,7 @@
   ;;; The superclass of all audio-only elements.
   ;;; @see %movie%
   (define-class %audio-element% (%invisible-element%)
-    (value %has-engine-element? #t)
+    (value %has-engine-node? #t)
     (attr volume 1.0 :type <number> :label "Volume (0.0 to 1.0)")
     (add-common-media-methods! self))
 

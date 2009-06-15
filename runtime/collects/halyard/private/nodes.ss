@@ -93,7 +93,8 @@
     (def (notify-exit-card card) (must-override))
     (def (notify-enter-card card) (must-override))
     (def (notify-card-body-finished card) (must-override))
-    (def (delete-element elem) (must-override))
+    (def (create-group-member group-mem) (must-override))
+    (def (delete-node node) (must-override))
     (def (exit-node node) (must-override))
     )
 
@@ -338,13 +339,12 @@
         (error (cat "Called " self " ." name
                     ", but someone forgot to call SUPER"))))
 
+    ;;; Is there an underlying engine node associated with this class?
+    (attr %has-engine-node? #t)
+
     ;;; Create the actual C++ representation of this node.  This should be
     ;;; overrridden by anything that needs to create a corresponding C++
     ;;; object.
-    ;;;
-    ;;; Note that currently only elements have any sort of representation
-    ;;; in the C++ layer.  We'd like to fix this, so that the engine
-    ;;; actually knows about all nodes.
     (def (create-engine-node)
       (void))
 
@@ -829,6 +829,9 @@
       (define result (.class))
       (%assert (result .can-be-run?))
       result)
+
+    (def (create-engine-node)
+      (*engine* .create-group-member self))
     )
 
   ;;-----------------------------------------------------------------------
@@ -939,7 +942,6 @@
   (define-class %element% (%node%)
     (default name #f)
     (default parent (default-element-parent))
-    (attr %has-engine-element? #t)
 
     (.unseal-method! 'set-name!)
     (def (set-name! name-or-false)
@@ -1048,9 +1050,7 @@
               (filter (lambda (e) (not (eq? self e)))
                       (parent .elements)))
         ;; Now it's safe to delete the node.
-        (.exit-node)
-        (when (.%has-engine-element?)
-          (*engine* .delete-element self))))
+        (.exit-node)))
     (.seal-method! '%delete))
   
   
@@ -1063,7 +1063,7 @@
 
   (with-instance %node%
     (def (enter-node)
-      (trace 'halyard.element (self .full-name) ": Entering node")
+      (trace 'halyard.node (self .full-name) ": Entering node")
       ;; TODO - Make sure all our template properties are bound.  Mark this
       ;; node as running so we can call .NEW on elements.
       (%assert (eq? (.node-state) 'ENTERING))
@@ -1106,7 +1106,7 @@
       )
 
     (def (exit-node)
-      (trace 'halyard.element (self .full-name) ": Exiting node")
+      (trace 'halyard.node (self .full-name) ": Exiting node")
       (%assert (memq (.node-state) '(ENTERING ACTIVE)))
       (set! (.node-state) 'EXITING)
       (.notify-exit)
@@ -1124,7 +1124,9 @@
       (.unregister)
       ;; Mark this node as no longer active.  This can be checked by
       ;; assertions, if that helps anybody.
-      (set! (.node-state) 'EXITED))
+      (set! (.node-state) 'EXITED)
+      (when (.%has-engine-node?)
+        (*engine* .delete-node self)))
     )
 
   (with-instance %card%
