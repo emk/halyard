@@ -93,7 +93,8 @@
     (def (notify-exit-card card) (must-override))
     (def (notify-enter-card card) (must-override))
     (def (notify-card-body-finished card) (must-override))
-    (def (create-group-member group-mem) (must-override))
+    (def (create-card card) (must-override))
+    (def (create-card-group group) (must-override))
     (def (delete-node node) (must-override))
     (def (exit-node node) (must-override))
     )
@@ -826,9 +827,6 @@
       (define result (.class))
       (%assert (result .can-be-run?))
       result)
-
-    (def (create-engine-node)
-      (*engine* .create-group-member self))
     )
 
   ;;-----------------------------------------------------------------------
@@ -862,7 +860,10 @@
       ;;; We have a CALLER parameter so the caller of this method is logged
       ;;; by .method-missing on the trampoline.
       (def (ensure-loaded! caller)
-        (void))))
+        (void)))
+
+    (def (create-engine-node)
+      (*engine* .create-card-group self)))
 
   ;; TODO - Eliminate these wrappers.
   (define card-group? (make-node-type-predicate %card-group%))
@@ -909,6 +910,9 @@
       (def (jump)
         (*engine* .jump-to-card self))
       )
+
+    (def (create-engine-node)
+      (*engine* .create-card self))
 
     ;; This is a fairly easy mistake to make.
     (def (jump)

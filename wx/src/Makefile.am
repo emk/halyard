@@ -60,6 +60,8 @@ halyard_SOURCES = \
 	BrowserElementWx.cpp BrowserElementWx.h \
 	BufferSpan.cpp BufferSpan.h \
 	CairoDrawing.cpp CairoDrawing.h \
+	Card.cpp Card.h \
+	CardGroup.cpp CardGroup.h \
 	CommonWxConv.cpp CommonWxConv.h \
 	Cursor.cpp Cursor.h \
 	CursorElement.cpp CursorElement.h \

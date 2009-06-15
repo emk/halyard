@@ -322,6 +322,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\Card.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CardGroup.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CommonWxConv.cpp"
 				>
 			</File>
@@ -653,6 +661,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CairoDrawing.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\Card.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CardGroup.h"
 				>
 			</File>
 			<File

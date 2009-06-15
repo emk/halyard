@@ -36,7 +36,8 @@
 #include "StageFrame.h"
 #include "Stage.h"
 #include "DrawingArea.h"
-#include "GroupMember.h"
+#include "Card.h"
+#include "CardGroup.h"
 #include "Zone.h"
 #include "Overlay.h"
 #include "AnimatedOverlay.h"
@@ -315,6 +316,20 @@ DEFINE_PRIMITIVE(CancelDownload) {
     Downloader::GetInstance()->CancelDownload();
 }
 
+DEFINE_PRIMITIVE(Card) {
+    std::string name;
+    TCallbackPtr dispatcher;
+    inArgs >> SymbolName(name) >> dispatcher;
+    R(new Card(ToWxString(name), dispatcher));
+}
+
+DEFINE_PRIMITIVE(CardGroup) {
+    std::string name;
+    TCallbackPtr dispatcher;
+    inArgs >> SymbolName(name) >> dispatcher;
+    R(new CardGroup(ToWxString(name), dispatcher));
+}
+
 DEFINE_PRIMITIVE(ColorAt) {
     TPoint at;
     inArgs >> at;
@@ -561,13 +576,6 @@ DEFINE_PRIMITIVE(Focus) {
     inArgs >> SymbolName(name);
     FIND_NODE(Widget, element, ToWxString(name));
     element->SetFocus();
-}
-
-DEFINE_PRIMITIVE(GroupMember) {
-    std::string name;
-    TCallbackPtr dispatcher;
-    inArgs >> SymbolName(name) >> dispatcher;
-    R(new GroupMember(ToWxString(name), dispatcher));
 }
 
 DEFINE_PRIMITIVE(HideCursorUntilMouseMoved) {
@@ -938,7 +946,7 @@ DEFINE_PRIMITIVE(RegisterEventDispatcher) {
 DEFINE_PRIMITIVE(RootNode) {
     TCallbackPtr dispatcher;
     inArgs >> dispatcher;
-    NodePtr root(new GroupMember(wxT("/"), dispatcher));
+    NodePtr root(new CardGroup(wxT("/"), dispatcher));
     wxGetApp().GetStage()->AddRootNode(root);
 }
 
@@ -1081,6 +1089,8 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(BrowserReload);
     REGISTER_PRIMITIVE(BrowserStop);
     REGISTER_PRIMITIVE(CancelDownload);
+    REGISTER_PRIMITIVE(Card);
+    REGISTER_PRIMITIVE(CardGroup);
     REGISTER_PRIMITIVE(ColorAt);
     REGISTER_PRIMITIVE(CopyStringToClipboard);
     REGISTER_PRIMITIVE(CursorElement);
@@ -1112,7 +1122,6 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(EnableExpensiveEvents);
     REGISTER_PRIMITIVE(ErrortraceCompileEnabled);
     REGISTER_PRIMITIVE(Focus);
-    REGISTER_PRIMITIVE(GroupMember);
     REGISTER_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_PRIMITIVE(Heartbeat);
     REGISTER_PRIMITIVE(InvisibleElement);

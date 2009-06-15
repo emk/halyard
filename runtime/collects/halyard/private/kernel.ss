@@ -855,10 +855,15 @@
       (call-hook-functions *card-body-finished-hook*)
       (refresh))
 
-    (def (create-group-member group-mem)
-      (when (have-prim? 'GroupMember)
-        (call-prim 'GroupMember (group-mem .full-name)
-                   (make-node-event-dispatcher group-mem))))
+    (def (create-card card)
+      (when (have-prim? 'Card)
+        (call-prim 'Card (card .full-name)
+                   (make-node-event-dispatcher card))))
+
+    (def (create-card-group group)
+      (when (have-prim? 'CardGroup)
+        (call-prim 'CardGroup (group .full-name)
+                   (make-node-event-dispatcher group))))
     
     (def (delete-node node)
       ;; A little placeholder to make deletion work the same way in Halyard
