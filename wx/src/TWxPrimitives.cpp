@@ -878,7 +878,7 @@ DEFINE_PRIMITIVE(OverlaySetShape) {
     inArgs >> SymbolName(name) >> bounds;
     FIND_NODE(Overlay, elem, ToWxString(name));
     elem->SetSize(TToWxRect(bounds).GetSize());
-    wxGetApp().GetStage()->NotifyElementsChanged();
+    wxGetApp().GetStage()->NotifyNodesChanged();
 }
 
 DEFINE_PRIMITIVE(OverlayAnimated) {
@@ -1028,7 +1028,7 @@ DEFINE_PRIMITIVE(ZoneSetShape) {
     inArgs >> SymbolName(name) >> bounds;
     FIND_NODE(Zone, elem, ToWxString(name));
     elem->SetShape(bounds);
-    wxGetApp().GetStage()->NotifyElementsChanged();
+    wxGetApp().GetStage()->NotifyNodesChanged();
 }
 
 

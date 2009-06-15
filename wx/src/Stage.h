@@ -149,9 +149,9 @@ class Stage : public wxWindow, public Halyard::TReloadNotified {
     /// The movie frame we're waiting on.
     MovieFrame mWaitFrame;
 
-    /// Have the elements on the stage changed since the last time we
+    /// Have the nodes on the stage changed since the last time we
     /// processed events?
-    bool mElementsHaveChanged;
+    bool mNodesHaveChanged;
 
     /// Should we hide the cursor until the user moves the mouse?
     bool mShouldHideCursorUntilMouseMoved;
@@ -182,7 +182,7 @@ class Stage : public wxWindow, public Halyard::TReloadNotified {
 
     /// Set up clipping regions on a DC to make sure that we don't try
     /// to overdraw any heavyweight elements.
-    void ClipElementsThatDrawThemselves(wxDC &inDC);
+    void ClipNodesThatDrawThemselves(wxDC &inDC);
 
     /// Repaint the stage.
     void PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion);
@@ -338,7 +338,7 @@ public:
     void NotifyReloadScriptSucceeded();
 
     /// Let the stage know that the list of active elements has changed.
-    void NotifyElementsChanged();
+    void NotifyNodesChanged();
 
     /// Update the TStateDB system clock.
     void UpdateClockKeysInStateDB();

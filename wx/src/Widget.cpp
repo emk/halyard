@@ -85,7 +85,7 @@ void Widget::Show(bool inShow) {
             mWindow->Show();
         else
             mWindow->Hide();
-        GetStage()->NotifyElementsChanged();
+        GetStage()->NotifyNodesChanged();
     }
 }
 

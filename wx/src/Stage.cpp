@@ -94,7 +94,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
       mOffscreenFadePixmap(inStageSize.GetWidth(),
                            inStageSize.GetHeight(), 24),
       mDesiredCursor(NULL), mActualCursor(NULL),
-      mElementsHaveChanged(false),
+      mNodesHaveChanged(false),
       mShouldHideCursorUntilMouseMoved(false),
       mIsDisplayingXy(false), mIsDisplayingGrid(false),
       mIsDisplayingBorders(false), mIsErrortraceCompileEnabled(false), 
@@ -432,7 +432,7 @@ void Stage::NotifyReloadScriptSucceeded() {
     UpdateClockKeysInStateDB();
 }
 
-void Stage::NotifyElementsChanged() {
+void Stage::NotifyNodesChanged() {
     wxLogTrace(TRACE_STAGE_DRAWING, wxT("Elements on stage have changed."));
     // Notify our OnTimer method that the elements on the stage have
     // changed, and that we will need to recalculate the current element.
@@ -440,7 +440,7 @@ void Stage::NotifyElementsChanged() {
     // current element may generate mouse-enter/mouse-leave events, which
     // we should only send at well-defined times (such as during event
     // processing in OnTimer).
-    mElementsHaveChanged = true;
+    mNodesHaveChanged = true;
 }
 
 void Stage::EnterElement(ElementPtr inElement, const wxPoint &inPosition) {
@@ -621,8 +621,8 @@ void Stage::OnTimer(wxTimerEvent& inEvent) {
 
     // If any elements have changed on the stage since we last encountered
     // this loop, then we need to call UpdateCurrentElementAndCursor.
-    if (mElementsHaveChanged) {
-        mElementsHaveChanged = false;
+    if (mNodesHaveChanged) {
+        mNodesHaveChanged = false;
         // Update our element borders (if necessary) and fix our cursor.
         if (mIsDisplayingBorders)
             InvalidateScreen();
@@ -737,7 +737,7 @@ void Stage::OnPaint(wxPaintEvent &inEvent) {
     PaintStage(screen_dc, GetUpdateRegion());
 }
 
-void Stage::ClipElementsThatDrawThemselves(wxDC &inDC) {
+void Stage::ClipNodesThatDrawThemselves(wxDC &inDC) {
     // Clip our heavyweight elements, so that we don't attempt to redraw
     // the stage over movies or edit boxes.  Note that we don't use
     // wxCLIP_CHILDREN here, because some of our children (particularly
@@ -761,7 +761,7 @@ void Stage::ClipElementsThatDrawThemselves(wxDC &inDC) {
 
 void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion) {
     // Make sure we don't overdraw any heavyweight elements.
-    ClipElementsThatDrawThemselves(inDC);
+    ClipNodesThatDrawThemselves(inDC);
 
     // Blit our offscreen pixmap to the screen.
     {
@@ -1061,7 +1061,7 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds) {
             dirty.Intersect(wxRect(wxPoint(0, 0), mStageSize));
 
             // Make sure we don't overdraw any heavyweight elements.
-            ClipElementsThatDrawThemselves(client_dc);
+            ClipNodesThatDrawThemselves(client_dc);
 
             // Run the transition itself.
             TransitionResources r(client_dc, before, GetCompositingPixmap(),
@@ -1090,7 +1090,7 @@ void Stage::AddNode(NodePtr inNode) {
         mElements.push_back(as_elem);
     ASSERT(mNodes.find(inNode->GetName()) == mNodes.end());
     mNodes.insert(NodeMap::value_type(inNode->GetName(), inNode));
-    NotifyElementsChanged();
+    NotifyNodesChanged();
 }
 
 NodePtr Stage::FindNode(const wxString &inName) {
@@ -1191,7 +1191,7 @@ bool Stage::DeleteNodeByName(const wxString &inName) {
         DestroyNode(node);
         result = true;
     }
-    NotifyElementsChanged();
+    NotifyNodesChanged();
     return result;
 }
 
@@ -1200,7 +1200,7 @@ void Stage::DeleteNodes() {
         DestroyNode(kv.second);
     mElements.clear();
     mNodes.clear();
-    NotifyElementsChanged();
+    NotifyNodesChanged();
 }
 
 bool Stage::IsMediaPlaying() {
