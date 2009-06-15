@@ -24,8 +24,8 @@
 #include "BrowserElement.h"
 #include "EventDispatcher.h"
 
-BrowserElement::BrowserElement(Stage *inStage, const wxString &inName,
+BrowserElement::BrowserElement(const wxString &inName,
                                Halyard::TCallbackPtr inDispatch)
-    : Widget(inStage, inName, inDispatch)
+    : Widget(inName, inDispatch)
 {
 }

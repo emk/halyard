@@ -27,9 +27,9 @@
 
 using namespace Halyard;
 
-Zone::Zone(Stage *inStage, const wxString &inName, const TPolygon &inPoly,
+Zone::Zone(const wxString &inName, const TPolygon &inPoly,
            Halyard::TCallbackPtr inDispatch, const std::string &inCursorName)
-    : LightweightElement(inStage, inName, inDispatch, inCursorName),
+    : LightweightElement(inName, inDispatch, inCursorName),
       mPolygon(inPoly)
 {
 }

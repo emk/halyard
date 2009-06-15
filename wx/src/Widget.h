@@ -37,9 +37,8 @@ protected:
     /// widget creation.  Before the subclass exits its constructor, it
     /// must call InitializeWidgetWindow (below).
     ///
-    /// \param inStage  The stage to which this widget is attached.
     /// \param inName  The name of this widget.
-    Widget(Stage *inStage, const wxString &inName,
+    Widget(const wxString &inName,
            Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
 
     /// See the constructor without am inWindow argument for details.
@@ -59,7 +58,7 @@ public:
     ///                 Set the parent of this window to the Stage--
     ///                 this will get event-handling and destruction
     ///                 hooked up correctly.
-    Widget(Stage *inStage, const wxString &inName, wxWindow *inWindow);
+    Widget(const wxString &inName, wxWindow *inWindow);
 
     /// Destroy the widget.
     ~Widget();

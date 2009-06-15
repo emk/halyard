@@ -223,10 +223,10 @@ void UrlRequest::ConfigureProxyServer(CURL *inHandle, const wxString &inUrl) {
 //  Instance methods
 //========================================================================
 
-UrlRequest::UrlRequest(Stage *inStage, const wxString &inName,
+UrlRequest::UrlRequest(const wxString &inName,
                        Halyard::TCallbackPtr inDispatcher,
                        const wxString &inUrl)
-    : InvisibleElement(inStage, inName, inDispatcher),
+    : InvisibleElement(inName, inDispatcher),
       mState(INITIALZING), mHandle(NULL), mHeaders(NULL)
 {
     gLog.Debug("halyard.url-request", "%s: Making URL request to %s",

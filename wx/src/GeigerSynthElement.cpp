@@ -26,12 +26,12 @@
 #include "GeigerAudioStream.h"
 #include "VorbisAudioStream.h"
 
-GeigerSynthElement::GeigerSynthElement(Stage *inStage, const wxString &inName,
+GeigerSynthElement::GeigerSynthElement(const wxString &inName,
                                        const std::string &inStatePath,
                                        const char *inChirpLocation,
                                        size_t inBufferSize,
                                        double inVolume)
-    : InvisibleElement(inStage, inName),
+    : InvisibleElement(inName),
       mStatePath(inStatePath),
       mCurrentLoopCps(0), mBufferSize(inBufferSize),
       mInitialVolume(inVolume)

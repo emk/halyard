@@ -33,7 +33,7 @@ class BrowserElementWx : public BrowserElement {
     CustomWxHtmlWindow *mHtmlWindow;
 
 public:
-    BrowserElementWx(Stage *inStage, const wxString &inName,
+    BrowserElementWx(const wxString &inName,
                      const wxRect &inBounds,
                      Halyard::TCallbackPtr inDispatch);
 

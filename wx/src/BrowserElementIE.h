@@ -45,7 +45,7 @@ class BrowserElementIE : public BrowserElement {
     bool mButtonEnabled[MAX_BUTTONS];
 
 public:
-    BrowserElementIE(Stage *inStage, const wxString &inName,
+    BrowserElementIE(const wxString &inName,
                      const wxRect &inBounds,
                      Halyard::TCallbackPtr inDispatch);
 

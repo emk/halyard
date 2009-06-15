@@ -49,7 +49,7 @@ class LightweightElement : public Element {
 #endif // wxUSE_ACCESSIBILITY
     
 public:
-    LightweightElement(Stage *inStage, const wxString &inName,
+    LightweightElement(const wxString &inName,
                        Halyard::TCallbackPtr inDispatch,
                        const std::string &inCursorName);
 

@@ -25,20 +25,20 @@
 #include "TCommon.h"
 #include "TLogger.h"
 #include "Widget.h"
+#include "HalyardApp.h"
 
 using namespace Halyard;
 
-Widget::Widget(Stage *inStage, const wxString &inName,
-               Halyard::TCallbackPtr inDispatcher)
-    : Element(inStage, inName, inDispatcher), mWindow(NULL)
+Widget::Widget(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
+    : Element(inName, inDispatcher), mWindow(NULL)
 {
     // Our subclass must call InitializeWidgetWindow before exiting its
     // constructor.
 }
 
 
-Widget::Widget(Stage *inStage, const wxString &inName, wxWindow *inWindow)
-    : Element(inStage, inName), mWindow(NULL)
+Widget::Widget(const wxString &inName, wxWindow *inWindow)
+    : Element(inName), mWindow(NULL)
 {
     InitializeWidgetWindow(inWindow);
 }
@@ -85,7 +85,7 @@ void Widget::Show(bool inShow) {
             mWindow->Show();
         else
             mWindow->Hide();
-        GetStage()->NotifyNodesChanged();
+        wxGetApp().GetStage()->NotifyNodesChanged();
     }
 }
 

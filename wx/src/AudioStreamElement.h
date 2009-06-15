@@ -39,7 +39,7 @@ protected:
     virtual MovieFrame CurrentFrame();
 
 public:
-    AudioStreamElement(Stage *inStage, const wxString &inName,
+    AudioStreamElement(const wxString &inName,
                        AudioStream *inStream,
                        Halyard::TCallbackPtr inDispatcher);
     virtual ~AudioStreamElement();

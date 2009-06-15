@@ -55,7 +55,7 @@ protected:
     virtual MovieFrame CurrentFrame();
 
 public:
-    GeigerSynthElement(Stage *inStage, const wxString &inName,
+    GeigerSynthElement(const wxString &inName,
                        const std::string &inStatePath,
                        const char *inChirpLocation,
                        size_t inBufferSize,

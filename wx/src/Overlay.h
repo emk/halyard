@@ -33,7 +33,7 @@ class Overlay : public LightweightElement {
     bool mAreTransparentAreasClickable;
     
 public:
-    Overlay(Stage *inStage, const wxString &inName, const wxRect &inBounds,
+    Overlay(const wxString &inName, const wxRect &inBounds,
             Halyard::TCallbackPtr inDispatch, const std::string &inCursorName,
             bool inHasAlpha, bool inAreTransparentAreasClickable = false);
 

@@ -24,16 +24,17 @@
 #include "Overlay.h"
 #include "CommonWxConv.h"
 #include "TPoint.h"
+#include "HalyardApp.h"
 #include "Stage.h"
 
 using namespace Halyard;
 
-Overlay::Overlay(Stage *inStage, const wxString &inName,
+Overlay::Overlay(const wxString &inName,
                  const wxRect &inBounds, Halyard::TCallbackPtr inDispatch,
                  const std::string &inCursorName, bool inHasAlpha,
                  bool inAreTransparentAreasClickable)
-    : LightweightElement(inStage, inName, inDispatch, inCursorName),
-      mDrawingArea(inStage, inBounds, inHasAlpha),
+    : LightweightElement(inName, inDispatch, inCursorName),
+      mDrawingArea(wxGetApp().GetStage(), inBounds, inHasAlpha),
       mAreTransparentAreasClickable(inAreTransparentAreasClickable)
 {
 }

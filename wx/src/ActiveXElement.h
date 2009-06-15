@@ -34,7 +34,7 @@ class ActiveXElement : public Widget {
     wxActiveX *mControl;
 
 public:
-    ActiveXElement(Stage *inStage, const wxString &inName,
+    ActiveXElement(const wxString &inName,
                    const wxRect &inBounds,
                    Halyard::TCallbackPtr inDispatch,
                    const wxString &inControlName);

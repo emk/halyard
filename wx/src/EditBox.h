@@ -38,7 +38,7 @@ public:
     /// Create a new edit box.  inSize is the text size, in points, and
     /// inEnterIsEvent, if true, will cause presses of the Enter key to be
     /// passed to the script as an event.
-    EditBox(Stage *inStage, const wxString &inName, 
+    EditBox(const wxString &inName, 
             Halyard::TCallbackPtr inDispatch,
             const wxRect &inBounds, const wxString inText,
             Halyard::uint32 inSize, bool inIsMultiline, bool inEnterIsEvent);

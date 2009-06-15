@@ -30,11 +30,9 @@ using namespace Halyard;
 //  Node Methods
 //=========================================================================
 
-Node::Node(Stage *inStage, const wxString &inName,
-           Halyard::TCallbackPtr inDispatcher)
-    : mStage(inStage), mName(inName), mLogName(inName.mb_str())
+Node::Node(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
+    : mName(inName), mLogName(inName.mb_str())
 {
-    ASSERT(mStage);
     ASSERT(mName != wxT(""));
 
     if (inDispatcher) {

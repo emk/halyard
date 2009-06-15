@@ -42,7 +42,7 @@ protected:
     virtual MovieFrame CurrentFrame();
 
 public:
-    MovieElement(Stage *inStage, const wxString &inName,
+    MovieElement(const wxString &inName,
                  Halyard::TCallbackPtr inDispatcher,
                  const wxRect &inBounds, const wxString &inLocation,
                  long inWindowStyle, MovieWindowStyle inMovieWindowStyle,

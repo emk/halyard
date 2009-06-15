@@ -28,7 +28,7 @@
 /// A GroupMember represents a group or a card.
 class GroupMember : public Node {
 public:
-    GroupMember(Stage *inStage, const wxString &inName,
+    GroupMember(const wxString &inName,
                 Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
 };
 

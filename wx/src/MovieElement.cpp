@@ -23,22 +23,24 @@
 #include "AppHeaders.h"
 #include "MovieElement.h"
 #include "MovieWindow.h"
+#include "HalyardApp.h"
 
 using namespace Halyard;
 
-MovieElement::MovieElement(Stage *inStage, const wxString &inName,
+MovieElement::MovieElement(const wxString &inName,
                            Halyard::TCallbackPtr inDispatcher,
                            const wxRect &inBounds,
                            const wxString &inLocation,
                            long inWindowStyle,
                            MovieWindowStyle inMovieWindowStyle,
                            float inVolume)
-    : Widget(inStage, inName, inDispatcher),
+    : Widget(inName, inDispatcher),
       mLocationInfo(inLocation), mMovieWindow(NULL),
       mHaveSentMediaErrorEvent(false),
       mHaveSentMediaTimeoutEvent(false)
 {
-    mMovieWindow = new MovieWindowNative(inStage, -1, inBounds.GetPosition(),
+    mMovieWindow = new MovieWindowNative(wxGetApp().GetStage(), -1,
+                                         inBounds.GetPosition(),
                                          inBounds.GetSize(), inWindowStyle,
                                          inMovieWindowStyle);
     mMovieWindow->SetVolume("all", inVolume);

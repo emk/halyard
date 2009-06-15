@@ -32,7 +32,7 @@ class Zone : public LightweightElement {
     Halyard::TPolygon mPolygon;
     
 public:
-    Zone(Stage *inStage, const wxString &inName,
+    Zone(const wxString &inName,
          const Halyard::TPolygon &inPoly,
          Halyard::TCallbackPtr inDispatch, const std::string &inCursorName);
 

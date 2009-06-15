@@ -137,7 +137,7 @@ DEFINE_PRIMITIVE(ActiveX) {
 
     inArgs >> SymbolName(name) >> dispatcher >> bounds >> control_name;
 
-    R(new ActiveXElement(wxGetApp().GetStage(), name.c_str(),
+    R(new ActiveXElement(name.c_str(),
                          TToWxRect(bounds), dispatcher, control_name.c_str()));
 }
 
@@ -165,7 +165,7 @@ DEFINE_PRIMITIVE(AudioStreamGeiger) {
     double volume;
     TCallbackPtr dispatcher;
     inArgs >> SymbolName(name) >> dispatcher >> path >> volume;
-    R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+    R(new AudioStreamElement(name.c_str(),
                              new GeigerAudioStream(path.c_str(), volume),
                              dispatcher));
 }
@@ -189,7 +189,7 @@ DEFINE_PRIMITIVE(AudioStreamSine) {
     uint32 frequency;
     TCallbackPtr dispatcher;    
     inArgs >> SymbolName(name) >> dispatcher >> volume >> frequency;
-    R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+    R(new AudioStreamElement(name.c_str(),
                              new SineAudioStream(frequency, volume),
                              dispatcher));
 }
@@ -202,7 +202,7 @@ DEFINE_PRIMITIVE(AudioStreamVorbis) {
     TCallbackPtr dispatcher;
     inArgs >> SymbolName(name) >> dispatcher >> path >> volume >> buffer_size
            >> should_loop;
-    R(new AudioStreamElement(wxGetApp().GetStage(), name.c_str(),
+    R(new AudioStreamElement(name.c_str(),
                              new VorbisAudioStream(path.c_str(),
                                                    buffer_size,
                                                    should_loop,
@@ -219,7 +219,7 @@ DEFINE_PRIMITIVE(GeigerSynth) {
            >> volume >> buffer_size;
 
     GeigerSynthElement *element =
-        R(new GeigerSynthElement(wxGetApp().GetStage(), ToWxString(name),
+        R(new GeigerSynthElement(ToWxString(name),
                                  state_path, ToWxString(chirp_location.c_str()),
                                  1000, volume));
 
@@ -241,11 +241,11 @@ DEFINE_PRIMITIVE(Browser) {
     inArgs >> SymbolName(name) >> dispatcher >> bounds >> want_builtin;
 
     if (want_builtin)
-        R(new BrowserElementWx(wxGetApp().GetStage(), ToWxString(name),
-                               TToWxRect(bounds), dispatcher));
+        R(new BrowserElementWx(ToWxString(name), TToWxRect(bounds),
+                               dispatcher));
     else
-        R(new BrowserElementNative(wxGetApp().GetStage(), ToWxString(name),
-                                   TToWxRect(bounds), dispatcher));
+        R(new BrowserElementNative(ToWxString(name), TToWxRect(bounds),
+                                   dispatcher));
 }
 
 DEFINE_PRIMITIVE(BrowserCanBack) {
@@ -337,9 +337,8 @@ DEFINE_PRIMITIVE(CursorElement) {
     
     inArgs >> SymbolName(name) >> bounds >> dispatcher >> is_trans
            >> SymbolName(cursor_reg_name);
-    Stage *stage = wxGetApp().GetStage();
 
-    CursorElement *cursor = new CursorElement(stage, ToWxString(name), 
+    CursorElement *cursor = new CursorElement(ToWxString(name), 
                                               TToWxRect(bounds), dispatcher,
                                               is_trans, cursor_reg_name);
     R(cursor);
@@ -475,7 +474,7 @@ DEFINE_PRIMITIVE(EditBox) {
     inArgs >> SymbolName(name) >> dispatcher >> bounds >> text >> text_sz
            >> multiline >> send_enter_event;
 
-    R(new EditBox(wxGetApp().GetStage(), ToWxString(name), dispatcher,
+    R(new EditBox(ToWxString(name), dispatcher,
                   TToWxRect(bounds), ToWxString(text.c_str()), text_sz,
                   multiline, send_enter_event));
 }
@@ -568,8 +567,7 @@ DEFINE_PRIMITIVE(GroupMember) {
     std::string name;
     TCallbackPtr dispatcher;
     inArgs >> SymbolName(name) >> dispatcher;
-    R(new GroupMember(wxGetApp().GetStage(), ToWxString(name),
-                      dispatcher));
+    R(new GroupMember(ToWxString(name), dispatcher));
 }
 
 DEFINE_PRIMITIVE(HideCursorUntilMouseMoved) {
@@ -584,16 +582,14 @@ DEFINE_PRIMITIVE(InvisibleElement) {
     std::string name;
     TCallbackPtr dispatcher;
     inArgs >> SymbolName(name) >> dispatcher;
-    R(new InvisibleElement(wxGetApp().GetStage(), ToWxString(name),
-                           dispatcher));
+    R(new InvisibleElement(ToWxString(name), dispatcher));
 }
 
 DEFINE_PRIMITIVE(UrlRequest) {
     std::string name, url;
     TCallbackPtr dispatcher;
     inArgs >> SymbolName(name) >> dispatcher >> url;
-    R(new UrlRequest(wxGetApp().GetStage(), ToWxString(name.c_str()),
-                     dispatcher, ToWxString(url.c_str())));
+    R(new UrlRequest(ToWxString(name), dispatcher, ToWxString(url)));
 }
 
 DEFINE_PRIMITIVE(UrlRequestConfigurePost) {
@@ -794,7 +790,7 @@ DEFINE_PRIMITIVE(Movie) {
     if (report_captions)
         style |= MOVIE_REPORT_CAPTIONS;
 
-    R(new MovieElement(wxGetApp().GetStage(), ToWxString(name), dispatcher,
+    R(new MovieElement(ToWxString(name), dispatcher,
                        TToWxRect(bounds), ToWxString(path), 0, style, volume));
 }
 
@@ -884,8 +880,7 @@ DEFINE_PRIMITIVE(Overlay) {
     
     inArgs >> SymbolName(name) >> bounds >> dispatcher >> SymbolName(cursor)
            >> is_trans >> are_trans_areas_clickable;
-    Stage *stage = wxGetApp().GetStage();
-    R(new Overlay(stage, ToWxString(name), TToWxRect(bounds), dispatcher,
+    R(new Overlay(ToWxString(name), TToWxRect(bounds), dispatcher,
                   cursor, is_trans, are_trans_areas_clickable));
 }
 
@@ -907,8 +902,7 @@ DEFINE_PRIMITIVE(OverlayAnimated) {
     
     inArgs >> SymbolName(name) >> bounds >> dispatcher >> SymbolName(cursor)
            >> is_trans >> SymbolName(state_path) >> graphics;
-    Stage *stage = wxGetApp().GetStage();
-    R(new AnimatedOverlay(stage, ToWxString(name), TToWxRect(bounds),
+    R(new AnimatedOverlay(ToWxString(name), TToWxRect(bounds),
                           dispatcher, cursor, is_trans, state_path,
                           tvalue_cast<TValueList>(graphics)));
 }
@@ -944,7 +938,7 @@ DEFINE_PRIMITIVE(RegisterEventDispatcher) {
 DEFINE_PRIMITIVE(RootNode) {
     TCallbackPtr dispatcher;
     inArgs >> dispatcher;
-    NodePtr root(new GroupMember(wxGetApp().GetStage(), wxT("/"), dispatcher));
+    NodePtr root(new GroupMember(wxT("/"), dispatcher));
     wxGetApp().GetStage()->AddRootNode(root);
 }
 
@@ -1042,8 +1036,7 @@ DEFINE_PRIMITIVE(Zone) {
     TCallbackPtr dispatcher;
     
     inArgs >> SymbolName(name) >> poly >> dispatcher >> SymbolName(cursor);
-    R(new Zone(wxGetApp().GetStage(), ToWxString(name), poly, dispatcher,
-               cursor));
+    R(new Zone(ToWxString(name), poly, dispatcher, cursor));
 }
 
 DEFINE_PRIMITIVE(ZoneSetShape) {

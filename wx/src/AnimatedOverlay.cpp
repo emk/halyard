@@ -32,15 +32,14 @@
 using namespace Halyard;
 
 
-AnimatedOverlay::AnimatedOverlay(Stage *inStage, const wxString &inName,
+AnimatedOverlay::AnimatedOverlay(const wxString &inName,
                                  const wxRect &inBounds, 
                                  Halyard::TCallbackPtr inDispatch,
                                  const std::string &inCursorName,
                                  bool inHasAlpha,
                                  const std::string &inStatePath, 
                                  TValueList images)
-     : Overlay(inStage, inName, inBounds, inDispatch, inCursorName,
-               inHasAlpha),
+     : Overlay(inName, inBounds, inDispatch, inCursorName, inHasAlpha),
        mBasePosition(inBounds.GetPosition()), mCurrentOffset(0, 0),
        mStatePath(inStatePath)
 {

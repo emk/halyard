@@ -43,7 +43,7 @@ class Element : public Node {
 public:
     /// Create a new Element and attach it to inStage.  The stage is
     /// responsible for deleting the element.
-    Element(Stage *inStage, const wxString &inName,
+    Element(const wxString &inName,
             Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
     virtual ~Element() {}
     

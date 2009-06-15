@@ -23,6 +23,7 @@
 #include "AppHeaders.h"
 #include "EditBox.h"
 #include "EventDispatcher.h"
+#include "HalyardApp.h"
 
 using namespace Halyard;
 
@@ -80,11 +81,11 @@ void CustomTextCtrl::OnTextEnter(wxCommandEvent &inEvent) {
 //  EditBox Methods
 //=========================================================================
 
-EditBox::EditBox(Stage *inStage, const wxString &inName,
+EditBox::EditBox(const wxString &inName,
                  Halyard::TCallbackPtr inDispatch,
                  const wxRect &inBounds, const wxString inText,
                  uint32 inSize, bool inIsMultiline, bool inEnterIsEvent)
-    : Widget(inStage, inName, inDispatch)
+    : Widget(inName, inDispatch)
 {
     // Figure out what flags to use.  We always pass wxTE_PROCESS_TAB, because
     // we're inside a wxFrame, not a wxDialog, and the default tab handling is
@@ -100,7 +101,8 @@ EditBox::EditBox(Stage *inStage, const wxString &inName,
         style |= wxTE_PROCESS_ENTER;
 
     // Create the actual control.
-    mControl = new CustomTextCtrl(inStage, inText, inBounds, style, this);
+    mControl = new CustomTextCtrl(wxGetApp().GetStage(), inText, inBounds,
+                                  style, this);
 
     // Set up various options.
     wxFont font(inSize, wxROMAN, wxNORMAL, wxNORMAL);

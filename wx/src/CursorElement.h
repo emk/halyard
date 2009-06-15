@@ -34,7 +34,7 @@ class CursorElement : public Overlay, public Halyard::Cursor {
     std::string mCursorRegName;
 
 public:
-    CursorElement(Stage *inStage, const wxString &inName,
+    CursorElement(const wxString &inName,
                   const wxRect &inBounds, Halyard::TCallbackPtr inDispatch,
                   bool inHasAlpha,
                   const std::string &inCursorRegistrationName);

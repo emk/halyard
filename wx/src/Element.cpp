@@ -32,9 +32,8 @@ using namespace Halyard;
 //  Element Methods
 //=========================================================================
 
-Element::Element(Stage *inStage, const wxString &inName,
-                 Halyard::TCallbackPtr inDispatcher)
-    : Node(inStage, inName, inDispatcher)
+Element::Element(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
+    : Node(inName, inDispatcher)
 {
 }
 

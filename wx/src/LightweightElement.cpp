@@ -28,14 +28,15 @@
 #include "LightweightAccessible.h"
 #include "EventDispatcher.h"
 #include "Stage.h"
+#include "HalyardApp.h"
 
 using namespace Halyard;
 
 
-LightweightElement::LightweightElement(Stage *inStage, const wxString &inName,
+LightweightElement::LightweightElement(const wxString &inName,
                                        Halyard::TCallbackPtr inDispatch,
                                        const std::string &inCursorName)
-    : Element(inStage, inName, inDispatch), mCursorName(inCursorName),
+    : Element(inName, inDispatch), mCursorName(inCursorName),
       mIsShown(true), mWantsCursor(false), mIsInDragLayer(false)
 {
 #if wxUSE_ACCESSIBILITY
@@ -47,7 +48,7 @@ void LightweightElement::Show(bool inShow) {
     if (inShow != mIsShown) {
         // Update our state, and notify the stage.
         mIsShown = inShow;
-        GetStage()->NotifyNodesChanged();
+        wxGetApp().GetStage()->NotifyNodesChanged();
     }
 }
 
@@ -55,7 +56,7 @@ void LightweightElement::SetCursorName(const std::string &inCursorName) {
     mCursorName = inCursorName; 
     // We need to notify the stage that elements have changed so it can
     // update our current cursor.
-    GetStage()->NotifyNodesChanged();
+    wxGetApp().GetStage()->NotifyNodesChanged();
 }
 
 bool LightweightElement::IsInDragLayer() const {

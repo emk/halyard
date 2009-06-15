@@ -23,6 +23,7 @@
 #include "AppHeaders.h"
 #include "ActiveXElement.h"
 #include <wxactivex.h>
+#include "HalyardApp.h"
 #include "EventDispatcher.h"
 
 /// Create a new ActiveX control on the stage.
@@ -31,13 +32,13 @@
 /// \param inName The name of the element.
 /// \param inDispatch The event dispatcher for this element.
 /// \param inControlName The ActiveX name of the control to create.
-ActiveXElement::ActiveXElement(Stage *inStage, const wxString &inName,
+ActiveXElement::ActiveXElement(const wxString &inName,
                                const wxRect &inBounds,
                                Halyard::TCallbackPtr inDispatch,
                                const wxString &inControlName)
-    : Widget(inStage, inName, inDispatch)                      
+    : Widget(inName, inDispatch)                      
 {
-    mControl = new wxActiveX(inStage, inControlName, -1,
+    mControl = new wxActiveX(wxGetApp().GetStage(), inControlName, -1,
                              inBounds.GetPosition(), inBounds.GetSize(),
                              wxSIMPLE_BORDER);
     InitializeWidgetWindow(mControl);

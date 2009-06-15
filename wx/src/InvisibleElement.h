@@ -30,10 +30,10 @@
 /// future.
 class InvisibleElement : public Element {
 public:
-    InvisibleElement(Stage *inStage, const wxString &inName,
+    InvisibleElement(const wxString &inName,
                      Halyard::TCallbackPtr inDispatcher =
-                         Halyard::TCallbackPtr())
-        : Element(inStage, inName, inDispatcher) {}
+                     Halyard::TCallbackPtr())
+        : Element(inName, inDispatcher) {}
 
     virtual wxRect GetRect() { return wxRect(0, 0, 0, 0); }
     virtual bool HasVisibleRepresentation() { return false; }

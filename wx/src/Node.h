@@ -25,14 +25,9 @@
 
 #include "EventDispatcher.h"
 
-class Stage;
-
 /// A Node represents something in the "tree" of the program: a card, a group
 /// or an element.
 class Node : boost::noncopyable {
-    /// The stage on which this node appears.
-    Stage *mStage;
-
     /// The name of this node.  Must be unique on any given card. 
     wxString mName;
 
@@ -50,14 +45,10 @@ protected:
     void OperationNotSupported(const char *inOperationName);
 
 public:
-    /// Create a new Node and attach it to inStage.  The stage is
-    /// responsible for deleting the node.
-    Node(Stage *inStage, const wxString &inName,
+    /// Create a new Node.  The stage is responsible for deleting the node.
+    Node(const wxString &inName,
          Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
     virtual ~Node() {}
-
-    /// Return the stage on which the node appears.
-    Stage *GetStage() { return mStage; }
 
     /// Return the name of the node.  Should be unique.
     wxString GetName() { return mName; }

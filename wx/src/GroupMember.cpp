@@ -30,8 +30,8 @@ using namespace Halyard;
 //  GroupMember Methods
 //=========================================================================
 
-GroupMember::GroupMember(Stage *inStage, const wxString &inName,
+GroupMember::GroupMember(const wxString &inName,
                          Halyard::TCallbackPtr inDispatcher)
-    : Node(inStage, inName, inDispatcher)
+    : Node(inName, inDispatcher)
 {
 }

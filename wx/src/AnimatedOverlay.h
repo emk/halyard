@@ -42,7 +42,7 @@ class AnimatedOverlay : public Overlay, public Halyard::TStateListener {
     void DrawImage(const std::string &inName);
     
 public:
-    AnimatedOverlay(Stage *inStage, const wxString &inName, 
+    AnimatedOverlay(const wxString &inName, 
                     const wxRect &inBounds, 
                     Halyard::TCallbackPtr inDispatch,
                     const std::string &inCursorName,

@@ -31,10 +31,9 @@ class BrowserElement : public Widget {
 protected:
     /// Create a new browser element with the specified event handlers.
     ///
-    /// \param inStage  The stage on which to create the element.
     /// \param inName  The element name.
     /// \param inDispatch  The event dispatcher to use.
-    BrowserElement(Stage *inStage, const wxString &inName,
+    BrowserElement(const wxString &inName,
                    Halyard::TCallbackPtr inDispatch);
 
 public:

@@ -24,6 +24,7 @@
 #include <IEHtmlWin.h>
 #include <exdispid.h>
 #include "BrowserElement.h"
+#include "HalyardApp.h"
 #include "EventDispatcher.h"
 
 
@@ -177,12 +178,12 @@ void CustomIEHtmlWindow::OnMSHTMLProgressChangeX(wxActiveXEvent& event) {
 //  BrowserElementIE Methods
 //=========================================================================
 
-BrowserElementIE::BrowserElementIE(Stage *inStage, const wxString &inName,
+BrowserElementIE::BrowserElementIE(const wxString &inName,
                                    const wxRect &inBounds,
                                    Halyard::TCallbackPtr inDispatch)
-    : BrowserElement(inStage, inName, inDispatch)                      
+    : BrowserElement(inName, inDispatch)                      
 {
-    mHtmlWindow = new CustomIEHtmlWindow(inStage, inBounds, this);
+    mHtmlWindow = new CustomIEHtmlWindow(wxGetApp().GetStage(), inBounds, this);
     InitializeWidgetWindow(mHtmlWindow);
     for (int i = 0; i < MAX_BUTTONS; i++)
         mButtonEnabled[i] = false;

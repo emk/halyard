@@ -29,12 +29,12 @@
 
 using namespace Halyard;
 
-CursorElement::CursorElement(Stage *inStage, const wxString &inName,
+CursorElement::CursorElement(const wxString &inName,
                              const wxRect &inBounds,
                              Halyard::TCallbackPtr inDispatch,
                              bool inHasAlpha,
                              const std::string &inCursorRegName)
-    : Overlay(inStage, inName, inBounds, inDispatch, "blank", inHasAlpha),
+    : Overlay(inName, inBounds, inDispatch, "blank", inHasAlpha),
       mIsRegistered(false), mCursorRegName(inCursorRegName)
 {
 }

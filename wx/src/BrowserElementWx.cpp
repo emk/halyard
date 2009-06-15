@@ -23,6 +23,7 @@
 #include "AppHeaders.h"
 #include <wx/html/htmlwin.h>
 #include "BrowserElement.h"
+#include "HalyardApp.h"
 #include "EventDispatcher.h"
 
 
@@ -90,13 +91,13 @@ CustomWxHtmlWindow::OnOpeningURL(wxHtmlURLType inType,
 //  BrowserElementWx Methods
 //=========================================================================
 
-BrowserElementWx::BrowserElementWx(Stage *inStage, const wxString &inName,
+BrowserElementWx::BrowserElementWx(const wxString &inName,
                                    const wxRect &inBounds,
                                    Halyard::TCallbackPtr inDispatch)
-    : BrowserElement(inStage, inName, inDispatch)
+    : BrowserElement(inName, inDispatch)
                       
 {
-    mHtmlWindow = new CustomWxHtmlWindow(inStage, inBounds, this);
+    mHtmlWindow = new CustomWxHtmlWindow(wxGetApp().GetStage(), inBounds, this);
     InitializeWidgetWindow(mHtmlWindow);
 }
 

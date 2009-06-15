@@ -92,7 +92,7 @@ public:
     static void ConfigureProxyServer(CURL *inHandle, const wxString &inUrl);
 
     /// Create a new asynchronous URL request.
-    UrlRequest(Stage *inStage, const wxString &inName,
+    UrlRequest(const wxString &inName,
                Halyard::TCallbackPtr inDispatcher,
                const wxString &inUrl);
 

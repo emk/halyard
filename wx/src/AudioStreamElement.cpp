@@ -30,10 +30,10 @@
 //  AudioStreamElement Methods
 //=========================================================================
 
-AudioStreamElement::AudioStreamElement(Stage *inStage, const wxString &inName,
+AudioStreamElement::AudioStreamElement(const wxString &inName,
                                        AudioStream *inStream,
                                        Halyard::TCallbackPtr inDispatcher)
-    : InvisibleElement(inStage, inName, inDispatcher), mStream(inStream)
+    : InvisibleElement(inName, inDispatcher), mStream(inStream)
 {
     mStream->Start();
 }
