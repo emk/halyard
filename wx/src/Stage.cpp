@@ -1196,9 +1196,8 @@ void Stage::DeleteElements() {
 
 bool Stage::IsMediaPlaying() {
     BOOST_FOREACH(NodeMap::value_type kv, mNodes) {
-        MediaElementPtr media_elem =
-            MediaElementPtr(kv.second, dynamic_cast_tag());
-        if (media_elem && !media_elem->IsLooping())
+        MediaElementPtr as_media(kv.second, dynamic_cast_tag());
+        if (as_media && !as_media->IsLooping())
             return true;
     }
     return false;
@@ -1206,12 +1205,11 @@ bool Stage::IsMediaPlaying() {
 
 void Stage::EndMediaElements() {
     BOOST_FOREACH(NodeMap::value_type kv, mNodes) {
-        MediaElementPtr media_elem =
-            MediaElementPtr(kv.second, dynamic_cast_tag());
-        if (media_elem && !media_elem->IsLooping()) {
-            std::string name(kv.second->GetName().mb_str());
-            gLog.Debug("halyard", "Manually ending media: %s", name.c_str());
-            media_elem->EndPlayback();
+        MediaElementPtr as_media(kv.second, dynamic_cast_tag());
+        if (as_media && !as_media->IsLooping()) {
+            gLog.Debug("halyard", "Manually ending media: %s",
+                       kv.second->GetLogName());
+            as_media->EndPlayback();
         }
     }
 }
