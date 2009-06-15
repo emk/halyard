@@ -941,6 +941,13 @@ DEFINE_PRIMITIVE(RegisterEventDispatcher) {
     wxGetApp().GetStage()->GetEventDispatcher()->SetDispatcher(callback);
 }
 
+DEFINE_PRIMITIVE(RootNode) {
+    TCallbackPtr dispatcher;
+    inArgs >> dispatcher;
+    NodePtr root(new GroupMember(wxGetApp().GetStage(), wxT("/"), dispatcher));
+    wxGetApp().GetStage()->AddRootNode(root);
+}
+
 /*---------------------------------------------------------------
     (SCREEN COLOR)
 
@@ -1156,6 +1163,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(RegisterCursor);
     REGISTER_PRIMITIVE(RegisterGroupMember);
     REGISTER_PRIMITIVE(RegisterEventDispatcher);
+    REGISTER_PRIMITIVE(RootNode);
     REGISTER_PRIMITIVE(Screen);
     REGISTER_PRIMITIVE(SetImageCacheSize);
     REGISTER_PRIMITIVE(SetStatusText);

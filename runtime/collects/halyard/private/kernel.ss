@@ -873,6 +873,11 @@
 
   (set-engine! (%real-engine% .new))
 
+  ;; Now that we've called set-engine!, we can create a C++ element for our
+  ;; %root-node%.
+  (when (have-prim? 'RootNode)
+    (call-prim 'RootNode (make-node-event-dispatcher (running-root-node))))
+
   ;; Set up our event handling machinery.
   (enable-expensive-events #f)
   (when (have-prim? 'RegisterEventDispatcher)

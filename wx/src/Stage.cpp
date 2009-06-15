@@ -1093,6 +1093,15 @@ void Stage::AddNode(NodePtr inNode) {
     NotifyNodesChanged();
 }
 
+void Stage::AddRootNode(NodePtr inNode) {
+    if (inNode->GetName() != wxT("/"))
+        THROW("Expected root node to have the name \"/\"");
+    if (mRootNode)
+        THROW("Trying to create the root node twice");
+    AddNode(inNode);
+    mRootNode = inNode;
+}
+
 NodePtr Stage::FindNode(const wxString &inName) {
     NodeMap::iterator i(mNodes.find(inName));
     if (i == mNodes.end())
@@ -1179,6 +1188,9 @@ bool Stage::DeleteNodeByName(const wxString &inName) {
     bool result = false;
     NodeMap::iterator found(mNodes.find(inName));
     if (found != mNodes.end()) {
+        if (inName == wxT("/"))
+            THROW("Cannot delete the root node");
+
         // If the inName refers to an Element, remove it from mElements.
         ElementCollection::iterator found_elem =
             FindElementByName(mElements, inName);
@@ -1200,6 +1212,7 @@ void Stage::DeleteNodes() {
         DestroyNode(kv.second);
     mElements.clear();
     mNodes.clear();
+    mRootNode.reset();
     NotifyNodesChanged();
 }
 

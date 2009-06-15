@@ -127,6 +127,9 @@ class Stage : public wxWindow, public Halyard::TReloadNotified {
     /// A map from node names to NodePtr objects.
     NodeMap mNodes;
 
+    /// All other nodes are children of this node.
+    NodePtr mRootNode;
+
     /// The element which most recently contained the mouse.
     ///
     /// Invariant: This variable is always NULL, or points to a valid
@@ -457,6 +460,9 @@ public:
     /// Add a Node to this Stage.  This should only be called from
     /// register_node in Stage.cpp.
     void AddNode(NodePtr inNode);
+
+    /// Add the root node to the stage.
+    void AddRootNode(NodePtr inNode);
 
     /// Find a node by name.
     ///
