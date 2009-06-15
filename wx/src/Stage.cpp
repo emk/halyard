@@ -153,7 +153,7 @@ Stage::Stage(wxWindow *inParent, StageFrame *inFrame, wxSize inStageSize)
 Stage::~Stage() {
     mIsBeingDestroyed = true;
     mTimer.Stop();
-    DeleteElements();
+    DeleteNodes();
 
     // Destory various resources *after* all elements.
     delete mImageCache;
@@ -324,7 +324,7 @@ void Stage::SetEditMode(bool inWantEditMode) {
         // and much more of it should be handled from the interpreter.
         NotifyExitCard();
         // Delete any non-card elements.
-        DeleteElements();
+        DeleteNodes();
         // Delete any non-card, non-element listeners.
         gStateListenerManager.NotifyInterpreterStopped();
         GetBackgroundDrawingArea()->Clear();
@@ -416,7 +416,7 @@ void Stage::NotifyExitCard() {
 void Stage::NotifyReloadScriptStarting() {
     mLastCard = "";
     NotifyExitCard();
-    DeleteElements();
+    DeleteNodes();
     gStyleSheetManager.RemoveAll();
 }
 
@@ -1079,16 +1079,17 @@ void Stage::RefreshStage(const std::string &inTransition, int inMilliseconds) {
     ValidateStage();
 }
 
-void Stage::AddElement(ElementPtr inElement) {
-    // Delete any existing Element with the same name.
-    (void) DeleteElementByName(inElement->GetName());
+void Stage::AddNode(NodePtr inNode) {
+    // Delete any existing Node with the same name.
+    DeleteNodeByName(inNode->GetName());
 
-    // Add the new Element to our list.
-    gLog.Trace("halyard.element", "%s: Added to stage",
-               inElement->GetLogName());
-    mElements.push_back(inElement);
-    ASSERT(mNodes.find(inElement->GetName()) == mNodes.end());
-    mNodes.insert(NodeMap::value_type(inElement->GetName(), inElement));
+    // Add the new Node to our list.
+    gLog.Trace("halyard.node", "%s: Added to stage", inNode->GetLogName());
+    ElementPtr as_elem(inNode, dynamic_cast_tag());
+    if (as_elem)
+        mElements.push_back(as_elem);
+    ASSERT(mNodes.find(inNode->GetName()) == mNodes.end());
+    mNodes.insert(NodeMap::value_type(inNode->GetName(), inNode));
     NotifyElementsChanged();
 }
 
@@ -1126,23 +1127,26 @@ EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint) {
         return GetEventDispatcher();
 }
 
-void Stage::DestroyElement(ElementPtr inElement) {
-    wxString name = inElement->GetName();
+void Stage::DestroyNode(NodePtr inNode) {
+    ElementPtr as_elem(inNode, dynamic_cast_tag());
+    if (as_elem) {
+        // Make sure this element isn't on our drawing context stack.
+        if (mDrawingContextStack->ContainsElement(as_elem))
+            gLog.Fatal("halyard.node",
+                       "%s: Tried to delete element with an active drawing "
+                       "context", as_elem->GetLogName());
 
-    // Make sure this element isn't on our drawing context stack.
-    if (mDrawingContextStack->ContainsElement(inElement))
-        gLog.Fatal("halyard.element",
-                   "%s: Tried to delete element with an active drawing context",
-                   inElement->GetLogName());
+        // Clean up any dangling references to this node.
+        if (as_elem == mGrabbedElement)
+            MouseUngrab(mGrabbedElement);
+        if (as_elem == mCurrentElement)
+            mCurrentElement = ElementPtr();
+        if (as_elem == mCurrentElementNamedInStatusBar)
+            mCurrentElementNamedInStatusBar = ElementPtr();
+    }
 
-    // Clean up any dangling references to this object.
-    if (inElement == mGrabbedElement)
-        MouseUngrab(mGrabbedElement);
-    if (inElement == mCurrentElement)
-        mCurrentElement = ElementPtr();
-    if (inElement == mCurrentElementNamedInStatusBar)
-        mCurrentElementNamedInStatusBar = ElementPtr();
-    MediaElementPtr as_media(inElement, dynamic_cast_tag());
+    // Make sure we're not waiting on this node.
+    MediaElementPtr as_media(inNode, dynamic_cast_tag());
     if (as_media && as_media == mWaitElement)
         EndWait();
 
@@ -1150,7 +1154,7 @@ void Stage::DestroyElement(ElementPtr inElement) {
     // tell it to unregister itself, and then update the cursor we're
     // displaying in case it has changed.  This takes care of
     // mDesiredCursor and mActualCursor.
-    shared_ptr<CursorElement> as_cursor_elem(inElement, dynamic_cast_tag());
+    shared_ptr<CursorElement> as_cursor_elem(inNode, dynamic_cast_tag());
     if (as_cursor_elem) {
         as_cursor_elem->UnregisterWithCursorManager(mCursorManager);
 
@@ -1162,33 +1166,38 @@ void Stage::DestroyElement(ElementPtr inElement) {
     }
 
     // We don't have to destroy the object explicity, because the
-    // ElementPtr smart-pointer class will take care of that for us.
+    // NodePtr smart-pointer class will take care of that for us.
     //
     // TODO - Implemented delayed destruction so element callbacks can
     // destroy the element they're attached to.
 
-    gLog.Trace("halyard.element", "%s: Removed from stage",
-               inElement->GetLogName());
+    gLog.Trace("halyard.node", "%s: Removed from stage",
+               inNode->GetLogName());
 }
 
-bool Stage::DeleteElementByName(const wxString &inName) {
-    bool found = false;
-    ElementCollection::iterator i = FindElementByName(mElements, inName);
-    if (i != mElements.end()) {
-        // Completely remove from the collection first, then destroy.
-        ElementPtr elem = *i;
-        mElements.erase(i);
+bool Stage::DeleteNodeByName(const wxString &inName) {
+    bool result = false;
+    NodeMap::iterator found(mNodes.find(inName));
+    if (found != mNodes.end()) {
+        // If the inName refers to an Element, remove it from mElements.
+        ElementCollection::iterator found_elem =
+            FindElementByName(mElements, inName);
+        if (found_elem != mElements.end())
+            mElements.erase(found_elem);
+
+        // Completely remove from mNodes first, then destroy.
+        NodePtr node(found->second);
         mNodes.erase(inName);
-        DestroyElement(elem);
-        found = true;
+        DestroyNode(node);
+        result = true;
     }
     NotifyElementsChanged();
-    return found;
+    return result;
 }
 
-void Stage::DeleteElements() {
-    BOOST_FOREACH(ElementPtr elem, mElements)
-        DestroyElement(elem);
+void Stage::DeleteNodes() {
+    BOOST_FOREACH(NodeMap::value_type kv, mNodes)
+        DestroyNode(kv.second);
     mElements.clear();
     mNodes.clear();
     NotifyElementsChanged();

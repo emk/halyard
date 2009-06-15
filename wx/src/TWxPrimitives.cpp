@@ -102,17 +102,17 @@ static DrawingArea *GetCurrentDrawingArea() {
 // This method registers an element with the stage. We can't do registration
 // in Element::Element because it's dangerous to create smart-pointers to
 // objects which are not yet fully created.
-template <typename E>
-static void register_elem(shared_ptr<E> elem_ptr) {
+template <typename N>
+static void register_node(shared_ptr<N> node_ptr) {
     Stage *stage = wxGetApp().GetStage();
-    stage->AddElement(boost::static_pointer_cast<Element>(elem_ptr));
+    stage->AddNode(node_ptr);
 }
 
-// A wrapper around register_elem which creates the necessary shared_ptr.
-template <typename E>
-static E *R(E *elem) {
-    register_elem(ElementPtr(elem));
-    return elem;
+// A wrapper around register_node which creates the necessary shared_ptr.
+template <typename N>
+static N *R(N *node) {
+    register_node(NodePtr(node));
+    return node;
 }
 
 #define CHECK_SUSPEND_OK(PRIMNAME) \
@@ -383,20 +383,13 @@ DEFINE_PRIMITIVE(DebugReportAddFile) {
     CrashReporter::GetInstance()->AddDiagnosticFile(name, description);
 }
 
-DEFINE_PRIMITIVE(DeleteElements) {
-    if (!inArgs.HasMoreArguments()) {
-        wxGetApp().GetStage()->DeleteElements();
-    } else {
-        while (inArgs.HasMoreArguments()) {
-            std::string name;
-            inArgs >> SymbolName(name);
-            bool found =
-                wxGetApp().GetStage()->DeleteElementByName(ToWxString(name));
-            if (!found)
-                gLog.Warn("halyard", "Deleting non-existant element '%s'.",
-                                  name.c_str());
-        }
-    }
+DEFINE_PRIMITIVE(DeleteNode) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    bool found = wxGetApp().GetStage()->DeleteNodeByName(ToWxString(name));
+    if (!found)
+        gLog.Warn("halyard", "Deleting non-existant node '%s'.",
+                  name.c_str());
 }
 
 DEFINE_PRIMITIVE(Dialog) {
@@ -1080,7 +1073,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(DcPush);
     REGISTER_PRIMITIVE(DcRect);
     REGISTER_PRIMITIVE(DebugReportAddFile);
-    REGISTER_PRIMITIVE(DeleteElements);
+    REGISTER_PRIMITIVE(DeleteNode);
     REGISTER_PRIMITIVE(Dialog);
     REGISTER_PRIMITIVE(Download);
     REGISTER_PRIMITIVE(DrawBoxFill);

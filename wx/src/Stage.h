@@ -210,8 +210,8 @@ class Stage : public wxWindow, public Halyard::TReloadNotified {
     FindElementByName(ElementCollection &inCollection,
                       const wxString &inName);
 
-    /// Detach an element from the stage and destroy it.
-    void DestroyElement(ElementPtr inElement);
+    /// Detach an node from the stage and destroy it.
+    void DestroyNode(NodePtr inNode);
 
     /// We've entered an element; update things appropriately.
     void EnterElement(ElementPtr inElement, const wxPoint &inPosition);
@@ -454,9 +454,9 @@ public:
     void RefreshStage(const std::string &inTransition,
                       int inMilliseconds);
 
-    /// Add a Element to this Stage.  This should only be called
-    /// by the Element class.
-    void AddElement(ElementPtr inElement);
+    /// Add a Node to this Stage.  This should only be called from
+    /// register_node in Stage.cpp.
+    void AddNode(NodePtr inNode);
 
     /// Find a node by name.
     ///
@@ -482,14 +482,14 @@ public:
     ///                this event.
     EventDispatcher *FindEventDispatcher(const wxPoint &inPoint);
 
-    /// Delete a Element by name.
+    /// Delete a Node by name.
     ///
-    /// \param inName  The name of the Element to delete.
-    /// \return  Returns true if that Element existed.
-    bool DeleteElementByName(const wxString &inName);
+    /// \param inName  The name of the Node to delete.
+    /// \return  Returns true if that Node existed.
+    bool DeleteNodeByName(const wxString &inName);
 
-    /// Delete all Elements owned the Stage.
-    void DeleteElements();
+    /// Delete all Nodes owned the Stage.
+    void DeleteNodes();
 
     /// Return true if a movie is playing.
     bool IsMediaPlaying();
