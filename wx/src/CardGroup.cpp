@@ -34,3 +34,13 @@ CardGroup::CardGroup(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
     : GroupMember(inName, inDispatcher)
 {
 }
+
+void CardGroup::RegisterMember(GroupMemberPtr inMember) {
+    ASSERT(!mMember);
+    mMember = inMember;
+}
+
+void CardGroup::UnregisterMember(GroupMemberPtr inMember) {
+    ASSERT(mMember == inMember);
+    mMember.reset();
+}

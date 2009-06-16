@@ -30,6 +30,10 @@ class GroupMember : public Node {
 public:
     GroupMember(const wxString &inName,
                 Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
+
+    virtual void RegisterWithParent();
+    virtual void UnregisterFromParent();
 };
+typedef shared_ptr<GroupMember> GroupMemberPtr;
 
 #endif // GroupMember_H

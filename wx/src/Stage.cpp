@@ -1090,6 +1090,7 @@ void Stage::AddNode(NodePtr inNode) {
         mElements.push_back(as_elem);
     ASSERT(mNodes.find(inNode->GetName()) == mNodes.end());
     mNodes.insert(NodeMap::value_type(inNode->GetName(), inNode));
+    inNode->RegisterWithParent();
     NotifyNodesChanged();
 }
 
@@ -1137,6 +1138,8 @@ EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint) {
 }
 
 void Stage::DestroyNode(NodePtr inNode) {
+    inNode->UnregisterFromParent();
+
     ElementPtr as_elem(inNode, dynamic_cast_tag());
     if (as_elem) {
         // Make sure this element isn't on our drawing context stack.

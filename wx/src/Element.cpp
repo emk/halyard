@@ -40,3 +40,17 @@ Element::Element(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
 void Element::MoveTo(const wxPoint &inPoint) {
     OperationNotSupported("move");
 }
+
+
+void Element::RegisterWithParent() {
+    ElementPtr as_shared(shared_from_this(), dynamic_cast_tag());
+    ASSERT(as_shared);
+    GetParent()->RegisterChildElement(as_shared);
+}
+
+void Element::UnregisterFromParent() {
+    ElementPtr as_shared(shared_from_this(), dynamic_cast_tag());
+    ASSERT(as_shared);
+    GetParent()->UnregisterChildElement(as_shared);
+}
+

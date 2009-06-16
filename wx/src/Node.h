@@ -25,11 +25,19 @@
 
 #include "EventDispatcher.h"
 
+class Node;
+typedef shared_ptr<Node> NodePtr;
+class Element;
+typedef shared_ptr<Element> ElementPtr;
+
 /// A Node represents something in the "tree" of the program: a card, a group
 /// or an element.
-class Node : boost::noncopyable {
+class Node : boost::noncopyable, public boost::enable_shared_from_this<Node> {
+    /// A list of elements.
+    typedef std::deque<ElementPtr> ElementList;
+
     /// The parent of this node, or NULL if this is the root node.
-    shared_ptr<Node> mParent;
+    NodePtr mParent;
 
     /// The name of this node.  Must be unique on any given card. 
     wxString mName;
@@ -42,6 +50,9 @@ class Node : boost::noncopyable {
 
     /// The event dispatcher for this object.
     EventDispatcherPtr mEventDispatcher;
+
+    /// The elements attached to this node.
+    ElementList mElements;
 
 protected:
     /// Throw an error saying inOperationName is not allowed.
@@ -58,7 +69,7 @@ public:
 
     /// Get the parent of this node.  Should only be called if IsRootNode()
     /// is false.
-    shared_ptr<Node> GetParent() { ASSERT(mParent); return mParent; }
+    NodePtr GetParent() { ASSERT(mParent); return mParent; }
 
     /// Return the name of the node.  Should be unique.
     wxString GetName() { return mName; }
@@ -105,6 +116,21 @@ public:
     /// \return Return true if clipping was applied, and false if ioRegion
     ///    was left alone.
     virtual bool ApplyClippingToStage(wxRegion &ioRegion) { return false; }
+
+    /// Register this node with its parent.  This is not part of the
+    /// constructor because it needs to call virtual functions (and because
+    /// we may or may not want to control exactly when nodes get
+    /// registered).
+    virtual void RegisterWithParent() = 0;
+
+    /// Unregister this node from its parent.
+    virtual void UnregisterFromParent() = 0;
+
+    /// Attach a child Element to this node.
+    void RegisterChildElement(ElementPtr inElem);
+
+    /// Detach a child Element from this node.
+    void UnregisterChildElement(ElementPtr inElem);
 };
 
 #endif // Node_H

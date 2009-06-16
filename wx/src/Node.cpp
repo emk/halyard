@@ -72,3 +72,16 @@ void Node::Show(bool inShow) {
             OperationNotSupported("hide");
     }
 }
+
+void Node::RegisterChildElement(ElementPtr inElem) {
+    ASSERT(std::find(mElements.begin(), mElements.end(), inElem) ==
+           mElements.end());
+    mElements.push_back(inElem);
+}
+
+void Node::UnregisterChildElement(ElementPtr inElem) {
+    ElementList::iterator found =
+        std::find(mElements.begin(), mElements.end(), inElem);
+    ASSERT(found != mElements.end());
+    mElements.erase(found);
+}

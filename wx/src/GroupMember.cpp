@@ -22,6 +22,7 @@
 
 #include "AppHeaders.h"
 #include "GroupMember.h"
+#include "CardGroup.h"
 
 using namespace Halyard;
 
@@ -34,4 +35,24 @@ GroupMember::GroupMember(const wxString &inName,
                          Halyard::TCallbackPtr inDispatcher)
     : Node(inName, inDispatcher)
 {
+}
+
+void GroupMember::RegisterWithParent() {
+    if (!IsRootNode()) {
+        GroupMemberPtr as_shared(shared_from_this(), dynamic_cast_tag());
+        ASSERT(as_shared);
+        CardGroupPtr parent(GetParent(), dynamic_cast_tag());
+        ASSERT(parent);
+        parent->RegisterMember(as_shared);
+    }
+}
+ 
+void GroupMember::UnregisterFromParent() {
+    if (!IsRootNode()) {
+        GroupMemberPtr as_shared(shared_from_this(), dynamic_cast_tag());
+        ASSERT(as_shared);
+        CardGroupPtr parent(GetParent(), dynamic_cast_tag());
+        ASSERT(parent);
+        parent->UnregisterMember(as_shared);
+    }
 }

@@ -46,6 +46,9 @@ public:
     Element(const wxString &inName,
             Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
     virtual ~Element() {}
+
+    virtual void RegisterWithParent();
+    virtual void UnregisterFromParent();
     
     /// Does this element need to receive events from the Stage?
     virtual bool IsLightWeight() { return false; }

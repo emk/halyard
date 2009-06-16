@@ -27,9 +27,20 @@
 
 /// A CardGroup represents a group or a card.
 class CardGroup : public GroupMember {
+    GroupMemberPtr mMember;
+
 public:
     CardGroup(const wxString &inName,
               Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
+
+    /// Register the child GroupMember of this CardGroup.  Since C++ nodes
+    /// represent running nodes, a CardGroup may only have one member at a
+    /// time.
+    void RegisterMember(GroupMemberPtr inMember);
+
+    /// Unregister the child GroupMember of this CardGroup.
+    void UnregisterMember(GroupMemberPtr inMember);
 };
+typedef shared_ptr<CardGroup> CardGroupPtr;
 
 #endif // CardGroup_H
