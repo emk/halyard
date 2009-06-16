@@ -22,6 +22,8 @@
 
 #include "AppHeaders.h"
 #include "Node.h"
+#include "HalyardApp.h"
+#include "Stage.h"
 
 using namespace Halyard;
 
@@ -35,8 +37,23 @@ Node::Node(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
 {
     ASSERT(mName != wxT(""));
 
+    // If we're not the root node, look up our parent node.
+    if (mName != wxT("/")) {
+        size_t last_slash(mName.rfind(wxT("/")));
+        wxString parent_name;
+        if (last_slash == 0)
+            parent_name = wxT("/");
+        else
+            parent_name = mName.substr(0, last_slash);
+        mParent = wxGetApp().GetStage()->FindNode(parent_name);
+        ASSERT(mParent);
+    }
+
     if (inDispatcher) {
-        mEventDispatcher = EventDispatcherPtr(new EventDispatcher());
+        // Initialize a named pointer on a separate line to prevent leaks.
+        // We should do this pretty much everywhere we use shared_ptr.
+        EventDispatcherPtr ptr(new EventDispatcher());
+        mEventDispatcher = ptr;
         mEventDispatcher->SetDispatcher(inDispatcher);
     }
 }

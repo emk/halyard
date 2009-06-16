@@ -28,6 +28,9 @@
 /// A Node represents something in the "tree" of the program: a card, a group
 /// or an element.
 class Node : boost::noncopyable {
+    /// The parent of this node, or NULL if this is the root node.
+    shared_ptr<Node> mParent;
+
     /// The name of this node.  Must be unique on any given card. 
     wxString mName;
 
@@ -49,6 +52,13 @@ public:
     Node(const wxString &inName,
          Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
     virtual ~Node() {}
+
+    /// Is this the root of our node hierarchy?
+    bool IsRootNode() { return (mParent == NULL); }
+
+    /// Get the parent of this node.  Should only be called if IsRootNode()
+    /// is false.
+    shared_ptr<Node> GetParent() { ASSERT(mParent); return mParent; }
 
     /// Return the name of the node.  Should be unique.
     wxString GetName() { return mName; }
