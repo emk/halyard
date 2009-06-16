@@ -35,6 +35,7 @@ END_NAMESPACE_HALYARD
 class Stage;
 class LocationBox;
 class ProgramTree;
+class ElementsPane;
 class StageBackground;
 class Listener;
 class MediaInfoPane;
@@ -59,9 +60,12 @@ class StageFrame : public AuiFrame,
     /// The frame surrounding our stage.  This is just empty space.
     StageBackground *mBackground;
 
-    /// A window which displays a tree of all the interesting information
-    /// in our program.
+    /// A pane which displays a tree of all the cards in our program
+    /// \todo Rename ProgramTree to CardsPane for consistency?
     ProgramTree *mProgramTree;
+
+    /// A pane which displays all the currently-active nodes and elements.
+    ElementsPane *mElementsPane;
 
     /// The drop-down box which allows us to jump between cards.
     LocationBox *mLocationBox;
@@ -183,6 +187,9 @@ public:
     /// Get the program tree attached to this frame.
     ProgramTree *GetProgramTree() { return mProgramTree; }
 
+    /// Get the "Elements" pane attached to this frame.
+    ElementsPane *GetElementsPane() { return mElementsPane; }
+
     /// Get the MediaInfoPane attached to this frame.
     MediaInfoPane *GetMediaInfoPane() { return mMediaInfoPane; }
 
@@ -262,7 +269,7 @@ private:
     void OnReloadScripts(wxCommandEvent &inEvent);
     void OnRunTests(wxCommandEvent &inEvent);
     void OnAbout(wxCommandEvent &inEvent);
-    void OnShowLog(wxCommandEvent &inEvent);
+    void OnShowElements(wxCommandEvent &inEvent);
     void OnShowListener(wxCommandEvent &inEvent);
     void OnShowMediaInfo(wxCommandEvent &inEvent);
     void UpdateUiFullScreen(wxUpdateUIEvent &inEvent);

@@ -47,8 +47,8 @@ public:
             Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
     virtual ~Element() {}
 
-    virtual void RegisterWithParent();
-    virtual void UnregisterFromParent();
+    virtual void Register();
+    virtual void Unregister();
     
     /// Does this element need to receive events from the Stage?
     virtual bool IsLightWeight() { return false; }

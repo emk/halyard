@@ -83,6 +83,7 @@ halyard_SOURCES = \
 	DrawingContextStack.cpp DrawingContextStack.h \
 	EditBox.cpp EditBox.h \
 	Element.cpp Element.h \
+	ElementsPane.cpp ElementsPane.h \
 	EventDelegator.cpp EventDelegator.h \
 	EventDispatcher.cpp EventDispatcher.h \
 	FancyStatusBar.cpp FancyStatusBar.h \

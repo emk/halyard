@@ -41,6 +41,7 @@
 #include "StageFrame.h"
 #include "Stage.h"
 #include "ProgramTree.h"
+#include "ElementsPane.h"
 #include "LocationBox.h"
 #include "FancyStatusBar.h"
 #include "CommonWxConv.h"
@@ -163,6 +164,8 @@ BEGIN_EVENT_TABLE(StageFrame, AuiFrame)
     EVT_MENU(wxID_ABOUT, StageFrame::OnAbout)
     EVT_UPDATE_UI(HALYARD_RESET_PERSPECTIVE, StageFrame::UpdateUiDevTool)
     // EVT_MENU(HALYARD_RESET_PERSPECTIVE, ...) installed in AuiFrame.
+    EVT_UPDATE_UI(HALYARD_SHOW_ELEMENTS, StageFrame::UpdateUiDevTool)
+    EVT_MENU(HALYARD_SHOW_ELEMENTS, StageFrame::OnShowElements)
     EVT_UPDATE_UI(HALYARD_SHOW_LISTENER, StageFrame::UpdateUiDevTool)
     EVT_MENU(HALYARD_SHOW_LISTENER, StageFrame::OnShowListener)
     EVT_UPDATE_UI(HALYARD_SHOW_MEDIA_INFO, StageFrame::UpdateUiDevTool)
@@ -212,11 +215,18 @@ StageFrame::StageFrame(wxSize inSize)
     // Get an appropriate icon for this window.
     SetIcon(wxICON(ic_application));
 
-    // Create a sash window holding a tree widget.
+    // Create a pane holding a tree widget.
     mProgramTree = new ProgramTree(this, HALYARD_PROGRAM_TREE);
     mAuiManager->AddPane(mProgramTree, wxAuiPaneInfo().Name(wxT("Cards")).
                          Caption(wxT("Cards")).Left().MinSize(150, 75).
                          CloseButton(false).Layer(1).Floatable());
+
+    // Create a pane containing a tree of all our elements (and their
+    // parent nodes).
+    mElementsPane = new ElementsPane(this);
+    mAuiManager->AddPane(mElementsPane, wxAuiPaneInfo().Name(wxT("Elements")).
+                         Caption(wxT("Elements")).Left().MinSize(150, 75).
+                         Layer(1).Position(1).Floatable());
 
     // Create a background panel to surround our stage with.  This keeps
     // life simple.
@@ -310,6 +320,8 @@ StageFrame::StageFrame(wxSize inSize)
                         wxT("Reset all palettes to their default ")
                         wxT("configuration."));
     mWindowMenu->AppendSeparator();
+    mWindowMenu->Append(HALYARD_SHOW_ELEMENTS, wxT("Show &Elements\tCtrl+L"),
+                        wxT("Show a list of currently-displayed elements."));
     mWindowMenu->Append(HALYARD_SHOW_LISTENER, wxT("Show &Listener\tCtrl+L"),
                         wxT("Show interactive script listener."));
     mWindowMenu->Append(HALYARD_SHOW_MEDIA_INFO, wxT("Show &Media Info"),
@@ -984,6 +996,11 @@ void StageFrame::OnAbout(wxCommandEvent &inEvent) {
     about.ShowModal();
 }
 
+void StageFrame::OnShowElements(wxCommandEvent &inEvent) {
+    mAuiManager->GetPane(mElementsPane).Show();
+    mAuiManager->Update();
+}
+
 void StageFrame::OnShowListener(wxCommandEvent &inEvent) {
     mAuiManager->GetPane(mListener).Show();
     mAuiManager->Update();
@@ -993,7 +1010,6 @@ void StageFrame::OnShowListener(wxCommandEvent &inEvent) {
 void StageFrame::OnShowMediaInfo(wxCommandEvent &inEvent) {
     mAuiManager->GetPane(mMediaInfoPane).Show();
     mAuiManager->Update();
-    mListener->FocusInput();
 }
 
 void StageFrame::UpdateUiFullScreen(wxUpdateUIEvent &inEvent) {
@@ -1161,6 +1177,11 @@ void StageFrame::OnClose(wxCloseEvent &inEvent) {
         }
     }
 
+    // Delete all the nodes from our Stage before start to detach ourselves
+    // from other subsystems.
+    mStage->DeleteNodes();
+
+    // Save our pane configuration and shut down wxAui for this frame.
     ShutDownAuiManager();
 
     // If we've got an interpreter manager, we'll need to ask it to

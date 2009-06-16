@@ -21,38 +21,37 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
-
-#include "Element.h"
-#include "Stage.h"
+#include "StageFrame.h"
+#include "ElementsPane.h"
+#include "Node.h"
 
 using namespace Halyard;
 
+BEGIN_EVENT_TABLE(ElementsPane, wxTreeCtrl)
+END_EVENT_TABLE()
 
-//=========================================================================
-//  Element Methods
-//=========================================================================
-
-Element::Element(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
-    : Node(inName, inDispatcher)
+ElementsPane::ElementsPane(StageFrame *inStageFrame)
+    : CustomTreeCtrl(inStageFrame, wxID_ANY, wxDefaultPosition, wxSize(0, 0))
 {
 }
 
-void Element::MoveTo(const wxPoint &inPoint) {
-    OperationNotSupported("move");
+void ElementsPane::RegisterNode(NodePtr inNode) {
+    ASSERT(mItemMap.find(inNode->GetName()) == mItemMap.end());
+    wxTreeItemId item;
+    if (inNode->IsRootNode()) {
+        item = AddRoot(inNode->GetName());
+    } else {
+        ItemMap::iterator found_parent =
+            mItemMap.find(inNode->GetParent()->GetName());
+        ASSERT(found_parent != mItemMap.end());
+        item = AppendItem(found_parent->second, inNode->GetName());
+    }
+    mItemMap.insert(ItemMap::value_type(inNode->GetName(), item));
 }
 
-
-void Element::Register() {
-    ElementPtr as_shared(shared_from_this(), dynamic_cast_tag());
-    ASSERT(as_shared);
-    GetParent()->RegisterChildElement(as_shared);
-    Node::Register(); // Do this after our parent knows about us.
+void ElementsPane::UnregisterNode(NodePtr inNode) {
+    ItemMap::iterator found(mItemMap.find(inNode->GetName()));
+    ASSERT(found != mItemMap.end());
+    Delete(found->second);
+    mItemMap.erase(found);
 }
-
-void Element::Unregister() {
-    Node::Unregister(); // Do this while our parent still knows about us.
-    ElementPtr as_shared(shared_from_this(), dynamic_cast_tag());
-    ASSERT(as_shared);
-    GetParent()->UnregisterChildElement(as_shared);
-}
-

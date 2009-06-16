@@ -24,6 +24,8 @@
 #include "Node.h"
 #include "HalyardApp.h"
 #include "Stage.h"
+#include "StageFrame.h"
+#include "ElementsPane.h"
 
 using namespace Halyard;
 
@@ -71,6 +73,16 @@ void Node::Show(bool inShow) {
         else
             OperationNotSupported("hide");
     }
+}
+
+void Node::Register() {
+    NodePtr as_shared(shared_from_this());
+    wxGetApp().GetStageFrame()->GetElementsPane()->RegisterNode(as_shared);
+}
+
+void Node::Unregister() {
+    NodePtr as_shared(shared_from_this());
+    wxGetApp().GetStageFrame()->GetElementsPane()->UnregisterNode(as_shared);
 }
 
 void Node::RegisterChildElement(ElementPtr inElem) {

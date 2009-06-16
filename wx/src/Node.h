@@ -117,14 +117,15 @@ public:
     ///    was left alone.
     virtual bool ApplyClippingToStage(wxRegion &ioRegion) { return false; }
 
-    /// Register this node with its parent.  This is not part of the
-    /// constructor because it needs to call virtual functions (and because
-    /// we may or may not want to control exactly when nodes get
-    /// registered).
-    virtual void RegisterWithParent() = 0;
+    /// Register this node with its parent, and with other objects (except
+    /// the Stage).  This is not part of the constructor because it needs
+    /// to call virtual functions (and because we may or may not want to
+    /// control exactly when nodes get registered).
+    virtual void Register();
 
-    /// Unregister this node from its parent.
-    virtual void UnregisterFromParent() = 0;
+    /// Unregister this node from its parent and any other objects (except
+    /// the Stage).
+    virtual void Unregister();
 
     /// Attach a child Element to this node.
     void RegisterChildElement(ElementPtr inElem);

@@ -37,7 +37,7 @@ GroupMember::GroupMember(const wxString &inName,
 {
 }
 
-void GroupMember::RegisterWithParent() {
+void GroupMember::Register() {
     if (!IsRootNode()) {
         GroupMemberPtr as_shared(shared_from_this(), dynamic_cast_tag());
         ASSERT(as_shared);
@@ -45,9 +45,11 @@ void GroupMember::RegisterWithParent() {
         ASSERT(parent);
         parent->RegisterMember(as_shared);
     }
+    Node::Register(); // Do this after our parent knows about us.
 }
  
-void GroupMember::UnregisterFromParent() {
+void GroupMember::Unregister() {
+    Node::Unregister(); // Do this while our parent still knows about us.
     if (!IsRootNode()) {
         GroupMemberPtr as_shared(shared_from_this(), dynamic_cast_tag());
         ASSERT(as_shared);

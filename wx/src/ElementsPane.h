@@ -20,20 +20,35 @@
 //
 // @END_LICENSE
 
-#ifndef GroupMember_H
-#define GroupMember_H
+#ifndef ElementsPane_H
+#define ElementsPane_H
 
-#include "Node.h"
+#include "CustomTreeCtrl.h"
 
-/// A GroupMember represents a group or a card.
-class GroupMember : public Node {
+class StageFrame;
+class Node;
+typedef shared_ptr<Node> NodePtr;
+
+/// This pane displays a tree of elements, and the nodes which contain
+/// those elements.
+class ElementsPane : public CustomTreeCtrl {
+    DECLARE_EVENT_TABLE();
+
+    typedef std::map<wxString,wxTreeItemId> ItemMap;
+
+    /// Maps Node names to wxTreeItemId objects.
+    ItemMap mItemMap;
+
 public:
-    GroupMember(const wxString &inName,
-                Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
+    /// Create a new ElementsPane.
+    ElementsPane(StageFrame *inStageFrame);
 
-    virtual void Register();
-    virtual void Unregister();
+    /// Register a node with this pane.
+    void RegisterNode(NodePtr inNode);
+
+    /// Unregister a node from this pane.
+    void UnregisterNode(NodePtr inNode);
 };
-typedef shared_ptr<GroupMember> GroupMemberPtr;
 
-#endif // GroupMember_H
+#endif // ElementsPane_H
+

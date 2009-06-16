@@ -1090,7 +1090,7 @@ void Stage::AddNode(NodePtr inNode) {
         mElements.push_back(as_elem);
     ASSERT(mNodes.find(inNode->GetName()) == mNodes.end());
     mNodes.insert(NodeMap::value_type(inNode->GetName(), inNode));
-    inNode->RegisterWithParent();
+    inNode->Register();
     NotifyNodesChanged();
 }
 
@@ -1138,7 +1138,7 @@ EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint) {
 }
 
 void Stage::DestroyNode(NodePtr inNode) {
-    inNode->UnregisterFromParent();
+    inNode->Unregister();
 
     ElementPtr as_elem(inNode, dynamic_cast_tag());
     if (as_elem) {
@@ -1211,7 +1211,12 @@ bool Stage::DeleteNodeByName(const wxString &inName) {
 }
 
 void Stage::DeleteNodes() {
-    BOOST_FOREACH(NodeMap::value_type kv, mNodes)
+    // Delete nodes in reverse order, so that we delete "/foo/bar" before
+    // "/foo".  This relies on the fact the std::map is kept in sorted
+    // order, and that an element's parent's name is always a prefix of the
+    // element's name.  (Yes, this is bit of a kludge, and we'll eventually
+    // want to do better.)
+    BOOST_REVERSE_FOREACH(NodeMap::value_type kv, mNodes)
         DestroyNode(kv.second);
     mElements.clear();
     mNodes.clear();

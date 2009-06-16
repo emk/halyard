@@ -378,6 +378,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\ElementsPane.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\EventDelegator.cpp"
 				>
 			</File>
@@ -717,6 +721,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\Element.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\ElementsPane.h"
 				>
 			</File>
 			<File
