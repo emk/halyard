@@ -66,6 +66,15 @@ void Node::OperationNotSupported(const char *inOperationName) {
     THROW("Cannot " + op + " node: " + name);
 }
 
+wxString Node::GetDisplayName() {
+    if (IsRootNode()) {
+        return mName;
+    } else {
+        size_t last_slash(mName.rfind(wxT("/")));
+        return mName.substr(last_slash + 1);
+    }
+}
+
 void Node::Show(bool inShow) {
     if (inShow != IsShown()) {
         if (inShow)

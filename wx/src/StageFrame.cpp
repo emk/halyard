@@ -320,7 +320,7 @@ StageFrame::StageFrame(wxSize inSize)
                         wxT("Reset all palettes to their default ")
                         wxT("configuration."));
     mWindowMenu->AppendSeparator();
-    mWindowMenu->Append(HALYARD_SHOW_ELEMENTS, wxT("Show &Elements\tCtrl+L"),
+    mWindowMenu->Append(HALYARD_SHOW_ELEMENTS, wxT("Show &Elements"),
                         wxT("Show a list of currently-displayed elements."));
     mWindowMenu->Append(HALYARD_SHOW_LISTENER, wxT("Show &Listener\tCtrl+L"),
                         wxT("Show interactive script listener."));

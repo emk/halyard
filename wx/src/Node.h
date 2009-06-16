@@ -74,6 +74,10 @@ public:
     /// Return the name of the node.  Should be unique.
     wxString GetName() { return mName; }
 
+    /// Return the name of the node, omitting the parent's portion of the
+    /// name.
+    wxString GetDisplayName();
+
     /// Return the name of this node in a fashion suitable for logging.
     /// The 'const char *' returned is guaranteed to remain valid until the
     /// node is destroyed.

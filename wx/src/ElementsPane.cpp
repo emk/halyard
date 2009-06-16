@@ -39,12 +39,12 @@ void ElementsPane::RegisterNode(NodePtr inNode) {
     ASSERT(mItemMap.find(inNode->GetName()) == mItemMap.end());
     wxTreeItemId item;
     if (inNode->IsRootNode()) {
-        item = AddRoot(inNode->GetName());
+        item = AddRoot(inNode->GetDisplayName());
     } else {
         ItemMap::iterator found_parent =
             mItemMap.find(inNode->GetParent()->GetName());
         ASSERT(found_parent != mItemMap.end());
-        item = AppendItem(found_parent->second, inNode->GetName());
+        item = AppendItem(found_parent->second, inNode->GetDisplayName());
     }
     mItemMap.insert(ItemMap::value_type(inNode->GetName(), item));
 }
