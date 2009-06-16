@@ -47,7 +47,7 @@ public:
             Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
     virtual ~Element() {}
 
-    virtual bool IsElement() { return true; }
+    virtual Type GetType() { return ELEMENT; }
     virtual void Register();
     virtual void Unregister();
     

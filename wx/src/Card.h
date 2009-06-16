@@ -30,6 +30,8 @@ class Card : public GroupMember {
 public:
     Card(const wxString &inName,
          Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
+
+    Type GetType() { return CARD; }
 };
 
 #endif // Card_H

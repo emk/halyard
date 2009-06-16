@@ -59,6 +59,13 @@ protected:
     void OperationNotSupported(const char *inOperationName);
 
 public:
+    /// A very high-level breakdown of different Node types.
+    enum Type {
+        CARD_GROUP,
+        CARD,
+        ELEMENT
+    };
+
     /// Create a new Node.  The stage is responsible for deleting the node.
     Node(const wxString &inName,
          Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
@@ -83,10 +90,11 @@ public:
     /// node is destroyed.
     const char *GetLogName() { return mLogName.c_str(); }
 
-    /// Is this node an Element?  This predicate allows other parts of the
-    /// engine to distinguish between elements and other nodes without
-    /// adding new virtual functions to Node or using dynamic casts.
-    virtual bool IsElement() { return false; }
+    /// What type of node is this?  This predicate allows other parts of
+    /// the engine to distinguish between a few high-level types of Node
+    /// without adding new virtual functions to this class or using dynamic
+    /// casts.
+    virtual Type GetType() = 0;
 
     /// Get the event dispatcher associated with this node.
     EventDispatcherPtr GetEventDispatcher() {

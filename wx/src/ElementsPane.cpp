@@ -49,8 +49,21 @@ void ElementsPane::RegisterNode(NodePtr inNode) {
 
         // If our parent is not an Element, expand it so we can see this
         // node.
-        if (!inNode->GetParent()->IsElement())
+        if (inNode->GetParent()->GetType() != Node::ELEMENT)
             Expand(found_parent->second);
+    }
+
+    // Add an appropriate icon.
+    switch (inNode->GetType()) {
+        case Node::CARD_GROUP:
+            SetIcon(item, ICON_FOLDER_CLOSED, ICON_FOLDER_OPEN);
+            break;
+        case Node::CARD:
+            SetIcon(item, ICON_CARD);
+            break;
+        case Node::ELEMENT:
+            SetIcon(item, ICON_ELEMENT);
+            break;
     }
 
     // Record the new item in mItemMap, so we can look it up by name.

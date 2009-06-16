@@ -33,6 +33,8 @@ public:
     CardGroup(const wxString &inName,
               Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
 
+    Type GetType() { return CARD_GROUP; }
+
     /// Register the child GroupMember of this CardGroup.  Since C++ nodes
     /// represent running nodes, a CardGroup may only have one member at a
     /// time.
