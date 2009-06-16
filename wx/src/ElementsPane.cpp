@@ -36,6 +36,7 @@ ElementsPane::ElementsPane(StageFrame *inStageFrame)
 }
 
 void ElementsPane::RegisterNode(NodePtr inNode) {
+    // Create a new item in our tree.
     ASSERT(mItemMap.find(inNode->GetName()) == mItemMap.end());
     wxTreeItemId item;
     if (inNode->IsRootNode()) {
@@ -45,7 +46,14 @@ void ElementsPane::RegisterNode(NodePtr inNode) {
             mItemMap.find(inNode->GetParent()->GetName());
         ASSERT(found_parent != mItemMap.end());
         item = AppendItem(found_parent->second, inNode->GetDisplayName());
+
+        // If our parent is not an Element, expand it so we can see this
+        // node.
+        if (!inNode->GetParent()->IsElement())
+            Expand(found_parent->second);
     }
+
+    // Record the new item in mItemMap, so we can look it up by name.
     mItemMap.insert(ItemMap::value_type(inNode->GetName(), item));
 }
 

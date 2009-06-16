@@ -83,6 +83,11 @@ public:
     /// node is destroyed.
     const char *GetLogName() { return mLogName.c_str(); }
 
+    /// Is this node an Element?  This predicate allows other parts of the
+    /// engine to distinguish between elements and other nodes without
+    /// adding new virtual functions to Node or using dynamic casts.
+    virtual bool IsElement() { return false; }
+
     /// Get the event dispatcher associated with this node.
     EventDispatcherPtr GetEventDispatcher() {
         ASSERT(mEventDispatcher.get());
