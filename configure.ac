@@ -51,7 +51,8 @@ AX_LIB_SQLITE3(3.0.3)
 LIBRARY_MISSING_IF([test x$success != xyes], [SQLite])
 
 # Check for boost, plus any specific components that we need.
-AX_BOOST_BASE(1.34.0)
+AX_BOOST_BASE(1.38.0)
+AX_BOOST_SYSTEM
 AX_BOOST_FILESYSTEM
 AX_BOOST_UNIT_TEST_FRAMEWORK
 AX_BOOST_PRG_EXEC_MONITOR

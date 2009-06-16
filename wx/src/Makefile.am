@@ -123,6 +123,7 @@ halyard_LDADD = \
 	$(top_builddir)/libs/sqlite3-plus/sqlite3-plus/libsqlite3_plus.a \
 	$(BOOST_LDFLAGS) \
         $(BOOST_FILESYSTEM_LIB) \
+        $(BOOST_SYSTEM_LIB) \
 	$(XML2_LIBS) \
 	$(FREETYPE_LIBS) \
 	$(SQLITE3_LDFLAGS) \
