@@ -39,18 +39,27 @@ void ElementsPane::RegisterNode(NodePtr inNode) {
     // Create a new item in our tree.
     ASSERT(mItemMap.find(inNode->GetName()) == mItemMap.end());
     wxTreeItemId item;
+    bool is_anonymous;
     if (inNode->IsRootNode()) {
-        item = AddRoot(inNode->GetDisplayName());
+        item = AddRoot(inNode->GetDisplayName(&is_anonymous));
     } else {
         ItemMap::iterator found_parent =
             mItemMap.find(inNode->GetParent()->GetName());
         ASSERT(found_parent != mItemMap.end());
-        item = AppendItem(found_parent->second, inNode->GetDisplayName());
+        item = AppendItem(found_parent->second,
+                          inNode->GetDisplayName(&is_anonymous));
 
         // If our parent is not an Element, expand it so we can see this
         // node.
         if (inNode->GetParent()->GetType() != Node::ELEMENT)
             Expand(found_parent->second);
+    }
+
+    // If the node is anonymous, show the placeholder name in italics.
+    if (is_anonymous) {
+        wxFont item_font(GetItemFont(item));
+        item_font.SetStyle(wxFONTSTYLE_ITALIC);
+        SetItemFont(item, item_font);
     }
 
     // Add an appropriate icon.

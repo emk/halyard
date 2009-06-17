@@ -66,13 +66,36 @@ void Node::OperationNotSupported(const char *inOperationName) {
     THROW("Cannot " + op + " node: " + name);
 }
 
-wxString Node::GetDisplayName() {
+wxString Node::GetDisplayName(bool *outIsAnonymous) {
+    wxString result;
+    bool is_anonymous = false;
     if (IsRootNode()) {
-        return mName;
+        result = mName;
     } else {
         size_t last_slash(mName.rfind(wxT("/")));
-        return mName.substr(last_slash + 1);
+        result = mName.substr(last_slash + 1);
+
+        // Names of the form "%%anon-(.*)-\d+" are treated as anonymous
+        // nodes from the user's perspective.  We only display the (.*)
+        // portion.
+        wxString anon_prefix(wxT("%%anon-"));
+        size_t anon_prefix_size(anon_prefix.size());
+        size_t anon_suffix_start(result.rfind(wxT("-")));
+        if (result.substr(0, anon_prefix_size) == anon_prefix &&
+            anon_suffix_start != wxString::npos &&
+            anon_prefix_size < anon_suffix_start)
+        {
+            wxString tmp = result.substr(anon_prefix_size,
+                                         anon_suffix_start - anon_prefix_size);
+            result = tmp;
+            is_anonymous = true;
+        }
     }
+
+    // Return our results.
+    if (outIsAnonymous)
+        *outIsAnonymous = is_anonymous;
+    return result;
 }
 
 void Node::Show(bool inShow) {
