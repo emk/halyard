@@ -31,13 +31,15 @@
 class Overlay : public LightweightElement {
     DrawingArea mDrawingArea;
     bool mAreTransparentAreasClickable;
-    
+
+protected:
+    virtual void DoShow(bool inShow);
+
 public:
     Overlay(const wxString &inName, const wxRect &inBounds,
             Halyard::TCallbackPtr inDispatch, const std::string &inCursorName,
             bool inHasAlpha, bool inAreTransparentAreasClickable = false);
 
-    virtual void Show(bool inShow);
     virtual bool IsPointInElement(const wxPoint &inPoint);
     virtual void MoveTo(const wxPoint &inPoint);
     virtual void DrawBorder(wxDC &inDC);

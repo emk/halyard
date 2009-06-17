@@ -100,11 +100,21 @@ wxString Node::GetDisplayName(bool *outIsAnonymous) {
 
 void Node::Show(bool inShow) {
     if (inShow != IsShown()) {
-        if (inShow)
-            OperationNotSupported("show");
-        else
-            OperationNotSupported("hide");
+        // Let our subclasses do the actual showing and hiding.
+        DoShow(inShow);
+
+        // Notify the Stage and the ElementsPane.
+        wxGetApp().GetStage()->NotifyNodesChanged();
+        wxGetApp().GetStageFrame()->GetElementsPane()->
+            NotifyNodeStateChanged(shared_from_this());
     }
+}
+
+void Node::DoShow(bool inShow) {
+    if (inShow)
+        OperationNotSupported("show");
+    else
+        OperationNotSupported("hide");
 }
 
 void Node::Register() {

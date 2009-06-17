@@ -75,6 +75,9 @@ void ElementsPane::RegisterNode(NodePtr inNode) {
             break;
     }
 
+    // Set up any properties which depend on the dynamic state of the node.
+    UpdateItemForDynamicNodeState(item, inNode);
+
     // Record the new item in mItemMap, so we can look it up by name.
     mItemMap.insert(ItemMap::value_type(inNode->GetName(), item));
 }
@@ -84,4 +87,20 @@ void ElementsPane::UnregisterNode(NodePtr inNode) {
     ASSERT(found != mItemMap.end());
     Delete(found->second);
     mItemMap.erase(found);
+}
+
+void ElementsPane::NotifyNodeStateChanged(NodePtr inNode) {
+    ItemMap::iterator found(mItemMap.find(inNode->GetName()));
+    ASSERT(found != mItemMap.end());
+    UpdateItemForDynamicNodeState(found->second, inNode);
+}
+
+void ElementsPane::UpdateItemForDynamicNodeState(wxTreeItemId inItem,
+                                                 NodePtr inNode)
+{
+    // Show visible nodes in black, and hidden nodes in grey.
+    if (inNode->IsShown())
+        SetItemTextColour(inItem, *wxBLACK);
+    else
+        SetItemTextColour(inItem, wxColour(0x60, 0x60, 0x60));
 }

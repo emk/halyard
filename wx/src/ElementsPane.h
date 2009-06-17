@@ -39,6 +39,10 @@ class ElementsPane : public CustomTreeCtrl {
     /// Maps Node names to wxTreeItemId objects.
     ItemMap mItemMap;
 
+    /// Examine inNode for any interesting dynamic state, and update inItem
+    /// accordingly.
+    void UpdateItemForDynamicNodeState(wxTreeItemId inItem, NodePtr inNode);
+
 public:
     /// Create a new ElementsPane.
     ElementsPane(StageFrame *inStageFrame);
@@ -48,6 +52,10 @@ public:
 
     /// Unregister a node from this pane.
     void UnregisterNode(NodePtr inNode);
+
+    /// Call this function to update the tree item corresponding to inNode.
+    /// Right now, this needs to happen whenever nodes are shown or hidden.
+    void NotifyNodeStateChanged(NodePtr inNode);
 };
 
 #endif // ElementsPane_H

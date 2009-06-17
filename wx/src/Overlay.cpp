@@ -39,9 +39,9 @@ Overlay::Overlay(const wxString &inName,
 {
 }
 
-void Overlay::Show(bool inShow) {
+void Overlay::DoShow(bool inShow) {
     mDrawingArea.Show(inShow);
-    LightweightElement::Show(inShow);
+    LightweightElement::DoShow(inShow);
 }
 
 bool Overlay::IsPointInElement(const wxPoint &inPoint) {

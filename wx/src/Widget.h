@@ -49,6 +49,8 @@ protected:
     ///                 hooked up correctly.
     void InitializeWidgetWindow(wxWindow *inWindow);
 
+    virtual void DoShow(bool inShow);
+
 public:
     /// Create a new Widget, and add it to the stage.
     ///
@@ -65,9 +67,6 @@ public:
 
     /// Get the bounding rectangle for the widget.
     virtual wxRect GetRect();
-
-    /// Show or hide the widget.
-    virtual void Show(bool inShow);
 
     /// Return true if the stage object is shown on the screen.
     virtual bool IsShown();

@@ -47,6 +47,9 @@ class LightweightElement : public Element {
 #if wxUSE_ACCESSIBILITY
     shared_ptr<wxAccessible> mAccessible;
 #endif // wxUSE_ACCESSIBILITY
+
+protected:
+    virtual void DoShow(bool inShow) { mIsShown = inShow; }
     
 public:
     LightweightElement(const wxString &inName,
@@ -54,7 +57,6 @@ public:
                        const std::string &inCursorName);
 
     virtual bool IsShown() { return mIsShown; }
-    virtual void Show(bool inShow);
 
     virtual bool WantsCursor() const { return mWantsCursor; }
     void SetWantsCursor(bool wantsCursor) { mWantsCursor = wantsCursor; }

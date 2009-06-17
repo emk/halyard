@@ -63,30 +63,10 @@ wxRect Widget::GetRect() {
     return mWindow->GetRect();
 }
 
-void Widget::Show(bool inShow) {
-    if (!HasVisibleRepresentation()) {
-        // A Widget without a visible representation should never be shown
-        // in the first place, so we can call our superclass's version of
-        // this function and get behavior compatible with our old API.
-        // Specifically, if we are hiding a hidden wigdet, nothing will
-        // happen, and if we are trying to show a hidden widget, we'll get
-        // an error.
-        ASSERT(!IsShown());
-        Element::Show(inShow);
-        ASSERT(!IsShown());
-    } else {
-        // If we're not changing anything, quit now.
-        if (inShow == IsShown())
-            return;
-
-        // Update the window's visibility, and notify the stage of
-        // the change.
-        if (inShow)
-            mWindow->Show();
-        else
-            mWindow->Hide();
-        wxGetApp().GetStage()->NotifyNodesChanged();
-    }
+void Widget::DoShow(bool inShow) {
+    if (inShow && !HasVisibleRepresentation())
+        OperationNotSupported("show");
+    mWindow->Show(inShow);
 }
 
 bool Widget::IsShown() {

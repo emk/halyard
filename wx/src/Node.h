@@ -58,6 +58,10 @@ protected:
     /// Throw an error saying inOperationName is not allowed.
     void OperationNotSupported(const char *inOperationName);
 
+    /// This function will be called by Show() when a hidden node needs to
+    /// be shown or hidden.
+    virtual void DoShow(bool inShow);
+
 public:
     /// A very high-level breakdown of different Node types.
     enum Type {
@@ -115,8 +119,11 @@ public:
     /// Return true if the node is shown on the screen.
     virtual bool IsShown() { return true; }
 
-    /// Show or hide the widget.
-    virtual void Show(bool inShow);
+    /// Show or hide the Node.  This function cannot be overridden, though
+    /// it does call functions which can.
+    ///
+    /// \see DoShow()
+    void Show(bool inShow);
 
     /// Does this node want the engine to display a cursor?
     virtual bool WantsCursor() const { return false; }
