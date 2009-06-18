@@ -21,6 +21,8 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
+#include "HalyardApp.h"
+#include "Stage.h"
 #include "StageFrame.h"
 #include "ElementsPane.h"
 #include "Node.h"
@@ -35,7 +37,38 @@ ElementsPane::ElementsPane(StageFrame *inStageFrame)
 {
 }
 
+bool ElementsPane::Show(bool inShow) {
+    bool changed = wxTreeCtrl::Show(inShow);
+    if (changed) {
+        // For performance reasons, we don't maintain our tree when this
+        // pane is hidden.  On the Mac, this doesn't seem to make much
+        // difference, but on Windows, updating this pane seems to add a
+        // millisecond or two to node creation and deletion.  Since (at the
+        // time of writing), node creation typically took a millisecond or
+        // so, this overhead is significant.
+        if (inShow) {
+            // Our tree should be empty.
+            ASSERT(GetCount() == 0);
+            ASSERT(mItemMap.empty());
+
+            // Rebuild our tree of nodes from scratch.
+            NodePtr root(wxGetApp().GetStage()->GetRootNode());
+            if (root)
+                root->RecursivelyReregisterWithElementsPane(this);
+        } else {
+            // Discard all the nodes in our tree.
+            DeleteAllItems();
+            mItemMap.clear();
+        }
+    }
+    return changed;
+}
+
 void ElementsPane::RegisterNode(NodePtr inNode) {
+    // If this pane isn't visible, do nothing.  This helps performance.
+    if (!IsShown())
+        return;
+
     // Create a new item in our tree.
     ASSERT(mItemMap.find(inNode->GetName()) == mItemMap.end());
     wxTreeItemId item;
@@ -83,6 +116,11 @@ void ElementsPane::RegisterNode(NodePtr inNode) {
 }
 
 void ElementsPane::UnregisterNode(NodePtr inNode) {
+    // If this pane isn't visible, do nothing.  This helps performance.
+    if (!IsShown())
+        return;
+
+    // Remove the node from our tree and our mItemMap.
     ItemMap::iterator found(mItemMap.find(inNode->GetName()));
     ASSERT(found != mItemMap.end());
     Delete(found->second);
@@ -90,6 +128,11 @@ void ElementsPane::UnregisterNode(NodePtr inNode) {
 }
 
 void ElementsPane::NotifyNodeStateChanged(NodePtr inNode) {
+    // If this pane isn't visible, do nothing.  This helps performance.
+    if (!IsShown())
+        return;
+
+    // Use inNode to update our tree.
     ItemMap::iterator found(mItemMap.find(inNode->GetName()));
     ASSERT(found != mItemMap.end());
     UpdateItemForDynamicNodeState(found->second, inNode);
@@ -98,6 +141,8 @@ void ElementsPane::NotifyNodeStateChanged(NodePtr inNode) {
 void ElementsPane::UpdateItemForDynamicNodeState(wxTreeItemId inItem,
                                                  NodePtr inNode)
 {
+    ASSERT(IsShown());
+
     // Show visible nodes in black, and hidden nodes in grey.
     if (inNode->IsShown())
         SetItemTextColour(inItem, *wxBLACK);

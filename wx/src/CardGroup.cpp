@@ -35,6 +35,12 @@ CardGroup::CardGroup(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
 {
 }
 
+void CardGroup::RecursivelyReregisterWithElementsPane(ElementsPane *inPane) {
+    GroupMember::RecursivelyReregisterWithElementsPane(inPane);
+    if (mMember)
+        mMember->RecursivelyReregisterWithElementsPane(inPane);
+}
+
 void CardGroup::RegisterMember(GroupMemberPtr inMember) {
     ASSERT(!mMember);
     mMember = inMember;

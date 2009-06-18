@@ -47,6 +47,10 @@ public:
     /// Create a new ElementsPane.
     ElementsPane(StageFrame *inStageFrame);
 
+    /// Show or hide this window.  Overridden so that we can turn this pane
+    /// off when it isn't needed.
+    virtual bool Show(bool inShow = true);
+
     /// Register a node with this pane.
     void RegisterNode(NodePtr inNode);
 

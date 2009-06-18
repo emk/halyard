@@ -21,7 +21,9 @@
 // @END_LICENSE
 
 #include "AppHeaders.h"
+#include <boost/foreach.hpp>
 #include "Node.h"
+#include "Element.h"
 #include "HalyardApp.h"
 #include "Stage.h"
 #include "StageFrame.h"
@@ -125,6 +127,13 @@ void Node::Register() {
 void Node::Unregister() {
     NodePtr as_shared(shared_from_this());
     wxGetApp().GetStageFrame()->GetElementsPane()->UnregisterNode(as_shared);
+}
+
+void Node::RecursivelyReregisterWithElementsPane(ElementsPane *inPane) {
+    NodePtr as_shared(shared_from_this());
+    inPane->RegisterNode(as_shared);
+    BOOST_FOREACH(ElementPtr elem, mElements)
+        elem->RecursivelyReregisterWithElementsPane(inPane);
 }
 
 void Node::RegisterChildElement(ElementPtr inElem) {

@@ -29,6 +29,7 @@ class Node;
 typedef shared_ptr<Node> NodePtr;
 class Element;
 typedef shared_ptr<Element> ElementPtr;
+class ElementsPane;
 
 /// A Node represents something in the "tree" of the program: a card, a group
 /// or an element.
@@ -154,6 +155,10 @@ public:
     /// Unregister this node from its parent and any other objects (except
     /// the Stage).
     virtual void Unregister();
+
+    /// This is called when we need to rebuild the ElementsPane from
+    /// scratch.
+    virtual void RecursivelyReregisterWithElementsPane(ElementsPane *inPane);
 
     /// Attach a child Element to this node.
     void RegisterChildElement(ElementPtr inElem);
