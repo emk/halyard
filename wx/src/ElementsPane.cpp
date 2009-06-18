@@ -27,7 +27,7 @@
 
 using namespace Halyard;
 
-BEGIN_EVENT_TABLE(ElementsPane, wxTreeCtrl)
+BEGIN_EVENT_TABLE(ElementsPane, CustomTreeCtrl)
 END_EVENT_TABLE()
 
 ElementsPane::ElementsPane(StageFrame *inStageFrame)
