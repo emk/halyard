@@ -40,6 +40,8 @@ class CairoContext;
 /// if IsLightWeight returns true.  This allows us to avoid using RTTI,
 /// but is otherwise a slightly odd design.
 class Element : public Node {
+    bool mHasLegacyZOrderAndVisibility;
+
 public:
     /// Create a new Element and attach it to inStage.  The stage is
     /// responsible for deleting the element.
@@ -58,6 +60,23 @@ public:
     /// true, then GetEventDispatcher must not return NULL.
     /// NOT USEFUL UNLESS IsLightWeight RETURNS TRUE.
     virtual bool IsPointInElement(const wxPoint &inPoint) { return false; }
+
+    /// Ideally, elements should be treated as an inseperable part of their
+    /// parent node.  But historically, elements were treated as immediate
+    /// children of the current card for two purposes: Z-order, and
+    /// hide/show support.  We need to maintain compatibility with these
+    /// legacy semantics on a per-element basis, because doing anything
+    /// else would break quite a bit of existing Scheme code.
+    ///
+    /// \see UseLegacyZOrderAndVisibility()
+    virtual bool HasLegacyZOrderAndVisibility() const
+        { return mHasLegacyZOrderAndVisibility; }
+
+    /// Tell this element to use backwards-compatible Z-order and
+    /// visibility semantics.
+    ///
+    /// \see HasLegacyZOrderAndVisibility()
+    virtual void UseLegacyZOrderAndVisibility();
 
     /// Move the element to the specified location.
     virtual void MoveTo(const wxPoint &inPoint);

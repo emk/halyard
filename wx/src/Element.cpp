@@ -23,6 +23,7 @@
 #include "AppHeaders.h"
 
 #include "Element.h"
+#include "HalyardApp.h"
 #include "Stage.h"
 
 using namespace Halyard;
@@ -33,14 +34,21 @@ using namespace Halyard;
 //=========================================================================
 
 Element::Element(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
-    : Node(inName, inDispatcher)
+    : Node(inName, inDispatcher), mHasLegacyZOrderAndVisibility(false)
 {
+}
+
+void Element::UseLegacyZOrderAndVisibility() {
+    ASSERT(!mHasLegacyZOrderAndVisibility);
+    mHasLegacyZOrderAndVisibility = true;
+    ElementPtr as_shared(shared_from_this(), dynamic_cast_tag());
+    ASSERT(as_shared);
+    wxGetApp().GetStage()->RegisterLegacyZOrderAndVisibility(as_shared);
 }
 
 void Element::MoveTo(const wxPoint &inPoint) {
     OperationNotSupported("move");
 }
-
 
 void Element::Register() {
     ElementPtr as_shared(shared_from_this(), dynamic_cast_tag());
@@ -54,5 +62,7 @@ void Element::Unregister() {
     ElementPtr as_shared(shared_from_this(), dynamic_cast_tag());
     ASSERT(as_shared);
     GetParent()->UnregisterChildElement(as_shared);
+    if (HasLegacyZOrderAndVisibility())
+        wxGetApp().GetStage()->UnregisterLegacyZOrderAndVisibility(as_shared);
 }
 

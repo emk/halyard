@@ -628,6 +628,49 @@
 
 
   ;;=======================================================================
+  ;;  Compositing
+  ;;=======================================================================
+
+  (define-class %composite-demo% (%rectangle%)
+    (attr children-have-legacy-z-order-and-visibility? :type <boolean>)
+    (attr label-text :type <string>)
+
+    (value shape (shape 200 220))
+    (value color (color 255 0 0))
+
+    (text label ((point 10 10) $title-style (.label-text)
+                 :has-legacy-z-order-and-visibility?
+                   (.children-have-legacy-z-order-and-visibility?)))
+
+    (elem input (%edit-box% :rect (rect 10 180 190 210) :font-size 18))
+
+    (def (mouse-down event)
+      (set! (.shown?) #f))
+    )
+
+  (card /features/compositing
+      (%standard-test-card% :title "Compositing (modern and legacy)")
+    (elem modern (%composite-demo%
+                  :at (point 100 100) :label-text "Modern"
+                  :children-have-legacy-z-order-and-visibility? #f))
+    (elem legacy (%composite-demo%
+                  :at (point 400 100) :label-text "Legacy"
+                  :children-have-legacy-z-order-and-visibility? #t))
+    (rectangle overlay ((rect 90 150 610 250) (color 255 255 0)))
+
+    (def (make-child-rect parent)
+      (%rectangle% .new
+        :name 'blue :parent parent :at (point 30 30) :shape (shape 140 140)
+        :color (color 0 0 255)
+        :has-legacy-z-order-and-visibility?
+          (parent .children-have-legacy-z-order-and-visibility?)))
+
+    (setup
+      (.make-child-rect (.modern))
+      (.make-child-rect (.legacy))))
+
+
+  ;;=======================================================================
   ;;  Primitive Layout Support
   ;;=======================================================================
 
@@ -946,6 +989,7 @@
  
     (def (idle)
       ((.flasher-2) .maybe-update-flasher)))
+
   
   ;;=======================================================================
   ;;  Animation

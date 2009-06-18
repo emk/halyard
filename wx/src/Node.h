@@ -63,6 +63,20 @@ protected:
     /// be shown or hidden.
     virtual void DoShow(bool inShow);
 
+    /// Is inElem a real child of this node?
+    ///
+    /// \see IsChildForPurposeOfZOrderAndVisibility()
+    bool IsRealChild(ElementPtr inElem);
+
+    /// Should we treat inElem as a child of this node when calculating
+    /// Z-order and element visibility?  This is a backwards-compatible
+    /// emulation mode needed to run old code.  Precondition: inElem is a
+    /// member of inElements.
+    ///
+    /// \see IsRealChild()
+    /// \see Element::HasLegacyZOrderAndVisibility()
+    virtual bool IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem);
+
 public:
     /// A very high-level breakdown of different Node types.
     enum Type {

@@ -1010,6 +1010,13 @@ DEFINE_PRIMITIVE(TextAA) {
     ::SetPrimitiveResult(bounds_used);
 }
 
+DEFINE_PRIMITIVE(UseLegacyZOrderAndVisibility) {
+    std::string name;
+    inArgs >> SymbolName(name);
+    FIND_NODE(Element, elem, ToWxString(name));
+    elem->UseLegacyZOrderAndVisibility();
+}
+
 DEFINE_PRIMITIVE(Wait) {
     std::string name;
     int32 frame = LAST_FRAME;
@@ -1173,6 +1180,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(StateDBClear);
     REGISTER_PRIMITIVE(MaybeExitScriptGui);
     REGISTER_PRIMITIVE(TextAA);
+    REGISTER_PRIMITIVE(UseLegacyZOrderAndVisibility);
     REGISTER_PRIMITIVE(Wait);
     REGISTER_PRIMITIVE(WantsCursorGet);
     REGISTER_PRIMITIVE(WantsCursorSet);

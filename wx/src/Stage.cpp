@@ -44,6 +44,7 @@
 #include "StageFrame.h"
 #include "ProgramTree.h"
 #include "MediaInfoPane.h"
+#include "Card.h"
 #include "Element.h"
 #include "MovieElement.h"
 #include "LocationBox.h"
@@ -1083,6 +1084,20 @@ void Stage::AddNode(NodePtr inNode) {
     // Delete any existing Node with the same name.
     DeleteNodeByName(inNode->GetName());
 
+    // If inNode is a card, then update our current card.
+    CardPtr as_card(inNode, dynamic_cast_tag());
+    if (as_card) {
+        ASSERT(!mCurrentCard);
+        mCurrentCard = as_card;
+
+        // If we have any elements that were artificially registered with
+        // our previous card to emulate old-style Z-order and visibility
+        // semantics, and those elements have survivied, register them with
+        // our new card.
+        BOOST_FOREACH(ElementPtr elem, mElementsWithLegacyZOrderAndVisibility)
+            elem->RegisterChildElement(elem);
+    }
+
     // Add the new Node to our list.
     gLog.Trace("halyard.node", "%s: Added to stage", inNode->GetLogName());
     ElementPtr as_elem(inNode, dynamic_cast_tag());
@@ -1101,6 +1116,22 @@ void Stage::AddRootNode(NodePtr inNode) {
         THROW("Trying to create the root node twice");
     AddNode(inNode);
     mRootNode = inNode;
+}
+
+void Stage::RegisterLegacyZOrderAndVisibility(ElementPtr inNode) {
+    mElementsWithLegacyZOrderAndVisibility.push_back(inNode);
+    if (mCurrentCard && inNode->GetParent() != mCurrentCard)
+        mCurrentCard->RegisterChildElement(inNode);
+}
+
+void Stage::UnregisterLegacyZOrderAndVisibility(ElementPtr inNode) {
+    ElementCollection::iterator found =
+        std::find(mElementsWithLegacyZOrderAndVisibility.begin(),
+                  mElementsWithLegacyZOrderAndVisibility.end(), inNode);
+    ASSERT(found != mElementsWithLegacyZOrderAndVisibility.end());
+    mElementsWithLegacyZOrderAndVisibility.erase(found);
+    if (mCurrentCard && inNode->GetParent() != mCurrentCard)
+        mCurrentCard->UnregisterChildElement(inNode);
 }
 
 NodePtr Stage::FindNode(const wxString &inName) {
@@ -1177,6 +1208,13 @@ void Stage::DestroyNode(NodePtr inNode) {
         ASSERT(as_cursor != mActualCursor);
     }
 
+    // If inNode is a card, then clear our current card.
+    CardPtr as_card(inNode, dynamic_cast_tag());
+    if (as_card) {
+        ASSERT(mCurrentCard == as_card);
+        mCurrentCard.reset();
+    }
+
     // We don't have to destroy the object explicity, because the
     // NodePtr smart-pointer class will take care of that for us.
     //
@@ -1219,6 +1257,7 @@ void Stage::DeleteNodes() {
     BOOST_REVERSE_FOREACH(NodeMap::value_type kv, mNodes)
         DestroyNode(kv.second);
     mElements.clear();
+    ASSERT(mElementsWithLegacyZOrderAndVisibility.empty());
     mNodes.clear();
     mRootNode.reset();
     NotifyNodesChanged();

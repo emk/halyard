@@ -113,6 +113,13 @@
     (after-updating shown?
       (set! (element-shown? self) (.shown?)))
 
+    ;;; In previous versions of Halyard, %custom-element% objects were
+    ;;; drawn in creation order, with no attention paid to the element
+    ;;; containment hierarchy.  Similarly, the children of a hidden
+    ;;; %element% could still be visible.  When this attribute is set to
+    ;;; #t, Halyard emulates the old semantics.
+    (attr has-legacy-z-order-and-visibility? #t :type <boolean>)
+
     (def (finish-initializing-engine-node)
       ;; NOTE - As a performance optimization, because of the expense of
       ;; primitive calls, we only set SHOWN? in the engine if it is
@@ -123,7 +130,11 @@
       ;; more code added here, please check to see if we need to change
       ;; %invisible-element% as well.
       (unless (.shown?)
-        (set! (element-shown? self) (.shown?))))
+        (set! (element-shown? self) (.shown?)))
+      ;; Let C++ know that whether want old-school semantics.  Again, this
+      ;; is overridden for invisible elements.
+      (when (.has-legacy-z-order-and-visibility?)
+        (call-prim 'UseLegacyZOrderAndVisibility (self .full-name))))
 
     ;;; Return the bounding box of this element, or #f if it has no
     ;;; bounding-box.
@@ -155,6 +166,7 @@
   (define-class %invisible-element% (%element%)
     (value at (point 0 0)) 
     (value shown? #f)
+    (value has-legacy-z-order-and-visibility? #f)
 
     (def (create-engine-node)
       (call-prim 'InvisibleElement (.full-name)
@@ -163,7 +175,7 @@
     (def (finish-initializing-engine-node)
       ;; By default, we don't have an engine node, so there's not much 
       ;; initialization we can do.  This overrides the setup of
-      ;; SHOWN? in %element%.
+      ;; SHOWN? and HAS-LEGACY-Z-ORDER-AND-VISIBILITY? in %element%.
       (void)))
 
   ;;; The superclass of all native GUI elements which can be displayed

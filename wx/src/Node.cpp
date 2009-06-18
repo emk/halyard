@@ -68,6 +68,14 @@ void Node::OperationNotSupported(const char *inOperationName) {
     THROW("Cannot " + op + " node: " + name);
 }
 
+bool Node::IsRealChild(ElementPtr inElem) {
+    return (inElem->GetParent().get() == this);
+}
+
+bool Node::IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem) {
+    return IsRealChild(inElem) && !inElem->HasLegacyZOrderAndVisibility();
+}
+
 wxString Node::GetDisplayName(bool *outIsAnonymous) {
     wxString result;
     bool is_anonymous = false;
@@ -127,13 +135,15 @@ void Node::Register() {
 void Node::Unregister() {
     NodePtr as_shared(shared_from_this());
     wxGetApp().GetStageFrame()->GetElementsPane()->UnregisterNode(as_shared);
+    
 }
 
 void Node::RecursivelyReregisterWithElementsPane(ElementsPane *inPane) {
     NodePtr as_shared(shared_from_this());
     inPane->RegisterNode(as_shared);
     BOOST_FOREACH(ElementPtr elem, mElements)
-        elem->RecursivelyReregisterWithElementsPane(inPane);
+        if (IsRealChild(elem))
+            elem->RecursivelyReregisterWithElementsPane(inPane);
 }
 
 void Node::RegisterChildElement(ElementPtr inElem) {

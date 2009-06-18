@@ -36,6 +36,8 @@ class Element;
 typedef shared_ptr<Element> ElementPtr;
 class MediaElement;
 typedef shared_ptr<MediaElement> MediaElementPtr;
+class Card;
+typedef shared_ptr<Card> CardPtr;
 class EventDispatcher;
 class ImageCache;
 class CursorManager;
@@ -124,11 +126,19 @@ class Stage : public wxWindow, public Halyard::TReloadNotified {
     /// mNodes, below.
     ElementCollection mElements;
 
+    /// All elements using our backwards-compatibility mode.
+    ///
+    /// \see Element::HasLegacyZOrderAndVisibility()
+    ElementCollection mElementsWithLegacyZOrderAndVisibility;
+
     /// A map from node names to NodePtr objects.
     NodeMap mNodes;
 
     /// All other nodes are children of this node.
     NodePtr mRootNode;
+
+    /// The card we're currently on, or NULL.
+    CardPtr mCurrentCard;
 
     /// The element which most recently contained the mouse.
     ///
@@ -466,6 +476,20 @@ public:
 
     /// Add the root node to the stage.
     void AddRootNode(NodePtr inNode);
+
+    /// Mark inNode as using our old Z-order and visibility rules.
+    ///
+    /// \see Element::HasLegacyZOrderAndVisibility()
+    void RegisterLegacyZOrderAndVisibility(ElementPtr inNode);
+
+    /// Clean up extra references to a node with old Z-order and visibility
+    /// rules.
+    void UnregisterLegacyZOrderAndVisibility(ElementPtr inNode);
+
+    /// Return a reference to a list of all elements obeying the old
+    /// Z-order and visibility rules.
+    ElementCollection &GetElementsWithLegacyZOrderAndVisibility()
+        { return mElementsWithLegacyZOrderAndVisibility; }
 
     /// Find a node by name.
     ///
