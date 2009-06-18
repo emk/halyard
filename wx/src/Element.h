@@ -89,16 +89,6 @@ public:
     /// Return the DrawingArea associated with this element, if any.
     virtual DrawingArea *GetDrawingArea() { return NULL; }
 
-    /// Certain elements can be temporarily raised into the "drag layer",
-    /// which is above other LightweightElements (e.g., zones and
-    /// overlays) but below Widgets (e.g., QuickTime movies).
-    virtual bool IsInDragLayer() const { return false; }
-
-    /// Composite our data into the specified CairoContext.  The Cairo
-    /// clipping region will be set up correctly before this function is
-    /// called.
-    virtual void CompositeInto(CairoContext &inCr) {}
-
     /// Get the accessibility information for this element, or NULL, if
     /// it has no accessibility information.
     virtual wxAccessible *GetAccessible() { return NULL; }

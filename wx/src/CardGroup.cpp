@@ -35,6 +35,26 @@ CardGroup::CardGroup(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
 {
 }
 
+void CardGroup::RecursivelyCompositeInto(CairoContext &inCr,
+                                         bool inIsCompositingDragLayer,
+                                          bool inAncestorIsInDragLayer)
+{
+    // Since there are only CardGroup objects in our ancestory, we should
+    // never be in the drag layer.
+    ASSERT(!inAncestorIsInDragLayer);
+    ASSERT(!IsInDragLayer());
+
+    // First, composite this node and all our elements, and then
+    // recursively composite mMember.  This order is intentional--we assume
+    // that elements are very tightly tied to their parents, and we don't
+    // want our elements to float over mMember's elements.
+    GroupMember::RecursivelyCompositeInto(inCr, inIsCompositingDragLayer,
+                                          inAncestorIsInDragLayer);
+    if (mMember)
+        mMember->RecursivelyCompositeInto(inCr, inIsCompositingDragLayer,
+                                          inAncestorIsInDragLayer);
+}
+
 void CardGroup::RecursivelyReregisterWithElementsPane(ElementsPane *inPane) {
     GroupMember::RecursivelyReregisterWithElementsPane(inPane);
     if (mMember)

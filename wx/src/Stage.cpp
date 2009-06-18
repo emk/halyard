@@ -184,14 +184,12 @@ wxBitmap &Stage::GetCompositingPixmap() {
         // Draw our background.
         GetBackgroundDrawingArea()->CompositeInto(cr);
 
-        // Composite elements in two passes: regular elements first,
-        // and then elements in the drag layer.
-        BOOST_FOREACH(ElementPtr elem, mElements)
-            if (!elem->IsInDragLayer())
-                elem->CompositeInto(cr);
-        BOOST_FOREACH(ElementPtr elem, mElements)
-            if (elem->IsInDragLayer())
-                elem->CompositeInto(cr);
+        // Composite elements in two passes: regular nodes first,
+        // and then nodes in the drag layer.
+        if (mRootNode) {
+            mRootNode->RecursivelyCompositeInto(cr, false);
+            mRootNode->RecursivelyCompositeInto(cr, true);
+        }
 
         wxLogTrace(TRACE_STAGE_DRAWING, wxT("End compositing."));
         mRectsToComposite.clear();

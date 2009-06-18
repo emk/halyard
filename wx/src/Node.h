@@ -30,6 +30,7 @@ typedef shared_ptr<Node> NodePtr;
 class Element;
 typedef shared_ptr<Element> ElementPtr;
 class ElementsPane;
+class CairoContext;
 
 /// A Node represents something in the "tree" of the program: a card, a group
 /// or an element.
@@ -159,6 +160,25 @@ public:
     /// \return Return true if clipping was applied, and false if ioRegion
     ///    was left alone.
     virtual bool ApplyClippingToStage(wxRegion &ioRegion) { return false; }
+
+    /// Certain nodes can be temporarily raised into the "drag layer",
+    /// which is above other LightweightElements (e.g., zones and
+    /// overlays) but below Widgets (e.g., QuickTime movies).
+    virtual bool IsInDragLayer() const { return false; }
+
+    /// Composite this node and its children into the specified
+    /// CairoContext.  The Cairo clipping region will be set up correctly
+    /// before this function is called.  We only composite those layers
+    /// specified by inLayers.
+    virtual void
+    RecursivelyCompositeInto(CairoContext &inCr,
+                             bool inIsCompositingDragLayer = false,
+                             bool inAncestorIsInDragLayer = false);
+    
+    /// Composite just this node into the specified CairoContext.
+    ///
+    /// \see RecursivelyCompositeInto()
+    virtual void CompositeInto(CairoContext &inCr) {}
 
     /// Register this node with its parent, and with other objects (except
     /// the Stage).  This is not part of the constructor because it needs

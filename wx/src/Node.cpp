@@ -127,6 +127,26 @@ void Node::DoShow(bool inShow) {
         OperationNotSupported("hide");
 }
 
+void Node::RecursivelyCompositeInto(CairoContext &inCr,
+                                    bool inIsCompositingDragLayer,
+                                    bool inAncestorIsInDragLayer)
+{
+    // Keep track of whether this node (or any of its ancestors) returned
+    // true from IsInDragLayer().
+    bool is_in_drag_layer = inAncestorIsInDragLayer || IsInDragLayer();
+
+    // Composite this node if we're in the right layer.
+    if (is_in_drag_layer == inIsCompositingDragLayer)
+        CompositeInto(inCr);
+
+    // Iterate over our child elements.
+    BOOST_FOREACH(ElementPtr elem, mElements) {
+        if (IsChildForPurposeOfZOrderAndVisibility(elem))
+            elem->RecursivelyCompositeInto(inCr, inIsCompositingDragLayer,
+                                           is_in_drag_layer);
+    }
+}
+
 void Node::Register() {
     NodePtr as_shared(shared_from_this());
     wxGetApp().GetStageFrame()->GetElementsPane()->RegisterNode(as_shared);
