@@ -474,7 +474,7 @@ void Stage::UpdateCurrentElementAndCursor(const wxPoint &inPosition) {
     // check to see if either of those can be optimized.
 
     // Find which element we're in.
-    ElementPtr obj = FindLightWeightElementAt(inPosition);
+    LightweightElementPtr obj(FindLightWeightElementAt(inPosition));
 
     // Change the cursor, if necessary.  I haven't refactored this
     // into EnterElement/LeaveElement yet because of how we handle
@@ -517,7 +517,8 @@ void Stage::UpdateCurrentElementAndCursor(const wxPoint &inPosition) {
         // check elements which don't allow mouse interaction, because we
         // want to display the names of all elements, not just those which
         // allow interaction with the user.
-        ElementPtr named_obj = FindLightWeightElementAt(inPosition, false);
+        LightweightElementPtr named_obj =
+            FindLightWeightElementAt(inPosition, false);
 
         // If we've moved to a different element, update the status bar.
         if (named_obj != mCurrentElementNamedInStatusBar) {
@@ -1145,8 +1146,8 @@ NodePtr Stage::FindNode(const wxString &inName) {
         return i->second;
 }
 
-ElementPtr Stage::FindLightWeightElementAt(const wxPoint &inPoint,
-                                           bool inMustWantCursor)
+LightweightElementPtr Stage::FindLightWeightElementAt(const wxPoint &inPoint,
+                                                      bool inMustWantCursor)
 {
     
     if (mRootNode) {
@@ -1157,7 +1158,7 @@ ElementPtr Stage::FindLightWeightElementAt(const wxPoint &inPoint,
         NodePtr found(mRootNode->FindNodeAt(inPoint, inMustWantCursor));
         return LightweightElementPtr(found, dynamic_cast_tag());
     }
-    return ElementPtr();
+    return LightweightElementPtr();
 }
 
 EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint) {
@@ -1166,7 +1167,7 @@ EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint) {
         return mGrabbedElement->GetEventDispatcher().get();
 
     // Otherwise, look things up normally.
-    ElementPtr elem = FindLightWeightElementAt(inPoint);
+    LightweightElementPtr elem(FindLightWeightElementAt(inPoint));
     if (elem && elem->GetEventDispatcher())
         return elem->GetEventDispatcher().get();
     else

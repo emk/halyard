@@ -80,11 +80,6 @@ public:
     /// Move the element to the specified location.
     virtual void MoveTo(const wxPoint &inPoint);
     
-    /// Get an appropriate cursor for this object.  We use the cursor name,
-    /// not the actual Cursor, so that we don't hold onto an illegal
-    /// CursorPtr reference.  See the Cursor documentation for details.
-    virtual std::string GetCursorName() { return "hand"; }
-
     /// Recomposite this Element and any of its children.
     virtual void RecursivelyInvalidateCompositing();
 

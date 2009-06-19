@@ -505,8 +505,9 @@ public:
     /// \param inPoint  The point to check.
     /// \param inMustWantCursor  Only find elements where WantsCursor is true.
     /// \return  A pointer to the Element, or NULL.
-    ElementPtr FindLightWeightElementAt(const wxPoint &inPoint,
-                                        bool inMustWantCursor = true);
+    LightweightElementPtr
+    FindLightWeightElementAt(const wxPoint &inPoint,
+                             bool inMustWantCursor = true);
 
     /// Find the appropriate event dispatcher for the given point.
     /// We normally call this function when we want to find a

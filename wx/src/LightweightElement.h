@@ -61,7 +61,11 @@ public:
     virtual bool WantsCursor() const { return mWantsCursor; }
     void SetWantsCursor(bool wantsCursor) { mWantsCursor = wantsCursor; }
 
+    /// Get an appropriate cursor for this object.  We use the cursor name,
+    /// not the actual Cursor, so that we don't hold onto an illegal
+    /// CursorPtr reference.  See the Cursor documentation for details.
     virtual std::string GetCursorName() { return mCursorName; }
+
     virtual void SetCursorName(const std::string &inCursorName);
 
     virtual bool IsInDragLayer() const;
