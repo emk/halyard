@@ -22,6 +22,8 @@
 
 #include "AppHeaders.h"
 
+#include <boost/foreach.hpp>
+
 #include "Element.h"
 #include "HalyardApp.h"
 #include "Stage.h"
@@ -66,3 +68,9 @@ void Element::Unregister() {
         wxGetApp().GetStage()->UnregisterLegacyZOrderAndVisibility(as_shared);
 }
 
+void Element::RecursivelyInvalidateCompositing() {
+    InvalidateCompositing();
+    BOOST_FOREACH(ElementPtr elem, GetElements())
+        if (IsChildForPurposeOfZOrderAndVisibility(elem))
+            elem->RecursivelyInvalidateCompositing();
+}

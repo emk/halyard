@@ -79,6 +79,10 @@ void Overlay::SetInDragLayer(bool inDragLayer) {
     }
 }
 
+void Overlay::InvalidateCompositing() {
+    mDrawingArea.InvalidateCompositing();
+}
+
 void Overlay::CompositeInto(CairoContext &inCr) {
     mDrawingArea.CompositeInto(inCr);
 }

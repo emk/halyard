@@ -34,6 +34,7 @@ class Overlay : public LightweightElement {
 
 protected:
     virtual void DoShow(bool inShow);
+    virtual void InvalidateCompositing();
 
 public:
     Overlay(const wxString &inName, const wxRect &inBounds,

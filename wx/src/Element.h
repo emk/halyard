@@ -42,6 +42,13 @@ class CairoContext;
 class Element : public Node {
     bool mHasLegacyZOrderAndVisibility;
 
+protected:
+    /// Invalidate just the portion of the stage covered by this element,
+    /// and don't do anything about its children.
+    ///
+    /// \see RecursivelyInvalidateCompositing()
+    virtual void InvalidateCompositing() {}
+
 public:
     /// Create a new Element and attach it to inStage.  The stage is
     /// responsible for deleting the element.
@@ -77,6 +84,9 @@ public:
     /// not the actual Cursor, so that we don't hold onto an illegal
     /// CursorPtr reference.  See the Cursor documentation for details.
     virtual std::string GetCursorName() { return "hand"; }
+
+    /// Recomposite this Element and any of its children.
+    virtual void RecursivelyInvalidateCompositing();
 
     /// Return the DrawingArea associated with this element, if any.
     virtual DrawingArea *GetDrawingArea() { return NULL; }

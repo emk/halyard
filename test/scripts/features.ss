@@ -617,7 +617,14 @@
     
     ;; This needs to be a child element.  We want to see if it gets raised
     ;; along with its parent.
-    (text text-elem ((point 10 10) $title-style (.label))))
+    (text text-elem ((point 10 10) $title-style (.label)
+                     :has-legacy-z-order-and-visibility? #t))
+
+    ;; Another child element, with different Z-order semantics.  Note that
+    ;; we need to be careful about recompositing this one, because it's
+    ;; outside our own bounding box.
+    (rectangle-outline border ((rect -2 -2 102 102) (color 255 255 255) 1
+                               :has-legacy-z-order-and-visibility? #f)))
 
   (card /features/z-order
       (%standard-test-card% :title "Changing the Z-Order")

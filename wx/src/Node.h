@@ -57,6 +57,9 @@ class Node : boost::noncopyable, public boost::enable_shared_from_this<Node> {
     ElementList mElements;
 
 protected:
+    /// Return mElements so subclasses can iterate over it.
+    ElementList &GetElements() { return mElements; }
+
     /// Throw an error saying inOperationName is not allowed.
     void OperationNotSupported(const char *inOperationName);
 
@@ -216,6 +219,9 @@ public:
 
     /// Detach a child Element from this node.
     void UnregisterChildElement(ElementPtr inElem);
+
+    /// Move a child element to the end of our inElements list.
+    void RaiseToTop(ElementPtr inElem);
 };
 
 #endif // Node_H

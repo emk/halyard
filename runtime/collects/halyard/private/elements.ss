@@ -146,8 +146,10 @@
       ;; TODO - Rearrange element order in Scheme, too?
       (call-prim 'RaiseToTop (.full-name))
       (define elems (node-elements self))
+      ;; If our child elements aren't firmly attached, raise them too.
       (foreach [elem elems]
-        (elem .raise-to-top!)))
+        (when (elem .has-legacy-z-order-and-visibility?)
+          (elem .raise-to-top!))))
 
     ;;; Center this element on its parent.
     (def (center-on-parent!)

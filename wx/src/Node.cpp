@@ -198,3 +198,14 @@ void Node::UnregisterChildElement(ElementPtr inElem) {
     ASSERT(found != mElements.end());
     mElements.erase(found);
 }
+
+void Node::RaiseToTop(ElementPtr inElem) {
+    // Move inElem to the end of mElements.
+    ElementList::iterator found =
+        std::find(mElements.begin(), mElements.end(), inElem);
+    ASSERT(found != mElements.end());
+    mElements.erase(found);
+    mElements.push_back(inElem);
+
+    // TODO: If IsRealChild(inElem), then update ElementsPane.
+}

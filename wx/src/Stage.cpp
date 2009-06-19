@@ -281,20 +281,25 @@ void Stage::RefreshSplashScreen() {
 }
 
 void Stage::RaiseToTop(ElementPtr inElem) {
-    // Move inElem to the end of our elements list.
+    // Move inElem to the end of mElementsWithLegacyZOrderAndVisibility.
     ElementCollection::iterator found =
-        std::find(mElements.begin(), mElements.end(), inElem);
-    ASSERT(found != mElements.end());
-    mElements.erase(found);
-    mElements.push_back(inElem);
+        std::find(mElementsWithLegacyZOrderAndVisibility.begin(),
+                  mElementsWithLegacyZOrderAndVisibility.end(), inElem);
+    ASSERT(found != mElementsWithLegacyZOrderAndVisibility.end());
+    mElementsWithLegacyZOrderAndVisibility.erase(found);
+    mElementsWithLegacyZOrderAndVisibility.push_back(inElem);
 
-    // If there's a DrawingArea attached to this element, we're going to
-    // have to recomposite it (in case it has moved above or below another
-    // element).  Note that this won't actually do anything if the Element
-    // is being displayed over Quake 2.  See also Overlay::SetInDragLayer.
-    DrawingArea *drawing_area = inElem->GetDrawingArea();
-    if (drawing_area)
-        drawing_area->InvalidateCompositing();
+    // Ask our parent to move us to the end of its own list of elements.
+    inElem->GetParent()->RaiseToTop(inElem);
+
+    // If we're artificially parented to the card, then move us to the end
+    // of its list of elements, too.
+    if (inElem->HasLegacyZOrderAndVisibility() &&
+        inElem->GetParent() != mCurrentCard)
+        mCurrentCard->RaiseToTop(inElem);
+
+    // Recomposite the affected areas of the screen.
+    inElem->RecursivelyInvalidateCompositing();
 }
 
 bool Stage::IsIdleAllowed() const {
