@@ -44,7 +44,7 @@ void Overlay::DoShow(bool inShow) {
     LightweightElement::DoShow(inShow);
 }
 
-bool Overlay::IsPointInElement(const wxPoint &inPoint) {
+bool Overlay::IsPointInNode(const wxPoint &inPoint) {
     wxRect bounds = mDrawingArea.GetBounds();
     if (!bounds.Contains(inPoint)) {
         // Outside our bounding box.

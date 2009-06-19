@@ -38,6 +38,8 @@ public:
     virtual void RecursivelyCompositeInto(CairoContext &inCr,
                                           bool inIsCompositingDragLayer = false,
                                           bool inAncestorIsInDragLayer = false);
+    virtual NodePtr FindNodeAt(const wxPoint &inPoint,
+                               bool inMustWantCursor = true);
     virtual void RecursivelyReregisterWithElementsPane(ElementsPane *inPane);
 
     /// Register the child GroupMember of this CardGroup.  Since C++ nodes

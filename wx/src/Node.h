@@ -120,6 +120,14 @@ public:
     /// casts.
     virtual Type GetType() = 0;
 
+    /// Is the specified point in the node?  If this function ever returns
+    /// true, then GetEventDispatcher must _not_ return NULL.  Note that
+    /// this function returns false for Widget and its subclasses, because
+    /// they have not historically been tracked by this code.
+    ///
+    /// \see FindNodeAt()
+    virtual bool IsPointInNode(const wxPoint &inPoint) { return false; }
+
     /// Get the event dispatcher associated with this node.
     EventDispatcherPtr GetEventDispatcher() {
         ASSERT(mEventDispatcher.get());
@@ -179,6 +187,15 @@ public:
     ///
     /// \see RecursivelyCompositeInto()
     virtual void CompositeInto(CairoContext &inCr) {}
+
+    /// Find the node located at inPoint on the screen, subject to various
+    /// complications and caveats.
+    ///
+    /// \param inMustWantCursor  If true, ignore all nodes which don't want
+    ///   cursor events.
+    /// \return The node at inPoint, or NULL if no node is found.
+    virtual NodePtr FindNodeAt(const wxPoint &inPoint,
+                               bool inMustWantCursor = true);
 
     /// Register this node with its parent, and with other objects (except
     /// the Stage).  This is not part of the constructor because it needs

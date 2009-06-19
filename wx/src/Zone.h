@@ -36,7 +36,7 @@ public:
          const Halyard::TPolygon &inPoly,
          Halyard::TCallbackPtr inDispatch, const std::string &inCursorName);
 
-    virtual bool IsPointInElement(const wxPoint &inPoint);
+    virtual bool IsPointInNode(const wxPoint &inPoint);
     virtual void MoveTo(const wxPoint &inPoint);
     virtual void DrawBorder(wxDC &inDC);
 

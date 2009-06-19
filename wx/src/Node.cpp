@@ -147,6 +147,26 @@ void Node::RecursivelyCompositeInto(CairoContext &inCr,
     }
 }
 
+NodePtr Node::FindNodeAt(const wxPoint &inPoint, bool inMustWantCursor) {
+    // First check our elements (in reverse of our compositing order) to
+    // see if any of them are interested.
+    BOOST_REVERSE_FOREACH(ElementPtr elem, mElements) {
+        if (IsChildForPurposeOfZOrderAndVisibility(elem)) {
+            NodePtr found(elem->FindNodeAt(inPoint, inMustWantCursor));
+            if (found)
+                return found;
+        }
+    }
+
+    // None of our elements matched, so what about us?
+    if (IsShown() && (WantsCursor() || !inMustWantCursor) &&
+        IsPointInNode(inPoint))
+        return shared_from_this();
+
+    // Nope, nobody here is interested in inPoint.
+    return NodePtr();
+}
+
 void Node::Register() {
     NodePtr as_shared(shared_from_this());
     wxGetApp().GetStageFrame()->GetElementsPane()->RegisterNode(as_shared);

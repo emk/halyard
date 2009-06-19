@@ -55,6 +55,19 @@ void CardGroup::RecursivelyCompositeInto(CairoContext &inCr,
                                           inAncestorIsInDragLayer);
 }
 
+NodePtr CardGroup::FindNodeAt(const wxPoint &inPoint, bool inMustWantCursor) {
+    // First, ask mMember to look for a node, because it's drawn on top of
+    // us.
+    if (mMember) {
+        NodePtr found(mMember->FindNodeAt(inPoint, inMustWantCursor));
+        if (found)
+            return found;
+    }
+
+    // If that fails, check our elements and ourself.
+    return GroupMember::FindNodeAt(inPoint, inMustWantCursor);
+}
+
 void CardGroup::RecursivelyReregisterWithElementsPane(ElementsPane *inPane) {
     GroupMember::RecursivelyReregisterWithElementsPane(inPane);
     if (mMember)

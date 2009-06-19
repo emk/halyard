@@ -53,14 +53,6 @@ public:
     virtual void Register();
     virtual void Unregister();
     
-    /// Does this element need to receive events from the Stage?
-    virtual bool IsLightWeight() { return false; }
-
-    /// Is the specified point in the element?  If this function ever returns
-    /// true, then GetEventDispatcher must not return NULL.
-    /// NOT USEFUL UNLESS IsLightWeight RETURNS TRUE.
-    virtual bool IsPointInElement(const wxPoint &inPoint) { return false; }
-
     /// Ideally, elements should be treated as an inseperable part of their
     /// parent node.  But historically, elements were treated as immediate
     /// children of the current card for two purposes: Z-order, and

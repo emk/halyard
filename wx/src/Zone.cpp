@@ -34,7 +34,7 @@ Zone::Zone(const wxString &inName, const TPolygon &inPoly,
 {
 }
 
-bool Zone::IsPointInElement(const wxPoint &inPoint) {
+bool Zone::IsPointInNode(const wxPoint &inPoint) {
     return mPolygon.Contains(WxToTPoint(inPoint));
 }
 

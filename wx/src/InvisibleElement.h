@@ -38,8 +38,6 @@ public:
     virtual wxRect GetRect() { return wxRect(0, 0, 0, 0); }
     virtual bool HasVisibleRepresentation() { return false; }
     virtual bool IsShown() { return false; }
-    virtual bool IsLightWeight() { return true; }
-    virtual bool IsPointInElement(const wxPoint &inPoint) { return false; }
 };
 
 #endif // InvisibleElement_H

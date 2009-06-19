@@ -40,7 +40,7 @@ public:
             Halyard::TCallbackPtr inDispatch, const std::string &inCursorName,
             bool inHasAlpha, bool inAreTransparentAreasClickable = false);
 
-    virtual bool IsPointInElement(const wxPoint &inPoint);
+    virtual bool IsPointInNode(const wxPoint &inPoint);
     virtual void MoveTo(const wxPoint &inPoint);
     virtual void DrawBorder(wxDC &inDC);
     virtual DrawingArea *GetDrawingArea() { return &mDrawingArea; }

@@ -469,7 +469,7 @@ void Stage::UpdateCurrentElementAndCursor(const wxPoint &inPosition) {
     // check to see if either of those can be optimized.
 
     // Find which element we're in.
-    ElementPtr obj = FindLightWeightElement(inPosition);
+    ElementPtr obj = FindLightWeightElementAt(inPosition);
 
     // Change the cursor, if necessary.  I haven't refactored this
     // into EnterElement/LeaveElement yet because of how we handle
@@ -512,7 +512,7 @@ void Stage::UpdateCurrentElementAndCursor(const wxPoint &inPosition) {
         // check elements which don't allow mouse interaction, because we
         // want to display the names of all elements, not just those which
         // allow interaction with the user.
-        ElementPtr named_obj = FindLightWeightElement(inPosition, false);
+        ElementPtr named_obj = FindLightWeightElementAt(inPosition, false);
 
         // If we've moved to a different element, update the status bar.
         if (named_obj != mCurrentElementNamedInStatusBar) {
@@ -1140,17 +1140,19 @@ NodePtr Stage::FindNode(const wxString &inName) {
         return i->second;
 }
 
-ElementPtr Stage::FindLightWeightElement(const wxPoint &inPoint,
-                                         bool inMustWantCursor)
+ElementPtr Stage::FindLightWeightElementAt(const wxPoint &inPoint,
+                                           bool inMustWantCursor)
 {
-    // Look for the most-recently-added Element containing inPoint.
-    ElementPtr result;
-    BOOST_FOREACH(ElementPtr elem, mElements)
-        if (elem->IsLightWeight() && elem->IsShown() &&
-            (elem->WantsCursor() || !inMustWantCursor) &&
-            elem->IsPointInElement(inPoint))
-            result = elem;
-    return result;
+    
+    if (mRootNode) {
+        // Only return our result if it's actually a LightweightElement.
+        // At some point, we should probably modify our callers to handle
+        // arbitrary Node objects (or at least arbitrary Element objects),
+        // but that will have to wait until another time.
+        NodePtr found(mRootNode->FindNodeAt(inPoint, inMustWantCursor));
+        return LightweightElementPtr(found, dynamic_cast_tag());
+    }
+    return ElementPtr();
 }
 
 EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint) {
@@ -1159,7 +1161,7 @@ EventDispatcher *Stage::FindEventDispatcher(const wxPoint &inPoint) {
         return mGrabbedElement->GetEventDispatcher().get();
 
     // Otherwise, look things up normally.
-    ElementPtr elem = FindLightWeightElement(inPoint);
+    ElementPtr elem = FindLightWeightElementAt(inPoint);
     if (elem && elem->GetEventDispatcher())
         return elem->GetEventDispatcher().get();
     else

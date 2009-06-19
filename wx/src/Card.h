@@ -32,6 +32,7 @@ public:
          Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
 
     Type GetType() { return CARD; }
+    virtual bool IsPointInNode(const wxPoint &inPoint) { return true; }
     virtual bool IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem);
 };
 

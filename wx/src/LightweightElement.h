@@ -60,7 +60,6 @@ public:
 
     virtual bool WantsCursor() const { return mWantsCursor; }
     void SetWantsCursor(bool wantsCursor) { mWantsCursor = wantsCursor; }
-    virtual bool IsLightWeight() { return true; }
 
     virtual std::string GetCursorName() { return mCursorName; }
     virtual void SetCursorName(const std::string &inCursorName);
