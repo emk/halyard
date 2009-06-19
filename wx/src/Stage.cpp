@@ -943,7 +943,7 @@ void Stage::OnMouseCaptureChanged(wxMouseCaptureChangedEvent &inEvent) {
     // directly.  So this may be redudant 99% of the time on windows.  But
     // the other 1% of the time, it happens because somebody popped up an
     // error window while the mouse was grabbed.
-    mGrabbedElement = ElementPtr();
+    mGrabbedElement.reset();
 }
 
 void Stage::CopyStringToClipboard(const wxString &inString) {
@@ -1281,8 +1281,7 @@ void Stage::EndMediaElements() {
     }
 }
 
-void Stage::MouseGrab(ElementPtr inElement) {
-    ASSERT(inElement->IsLightWeight());
+void Stage::MouseGrab(LightweightElementPtr inElement) {
     ASSERT(inElement->GetEventDispatcher().get());
     if (mGrabbedElement) {
         std::string name(inElement->GetName().mb_str());
@@ -1296,8 +1295,7 @@ void Stage::MouseGrab(ElementPtr inElement) {
     CaptureMouse();
 }
 
-void Stage::MouseUngrab(ElementPtr inElement) {
-    ASSERT(inElement->IsLightWeight());
+void Stage::MouseUngrab(LightweightElementPtr inElement) {
     if (!mGrabbedElement) {
         std::string name(inElement->GetName().mb_str());
         gLog.Error("halyard.stage.grab",
@@ -1317,7 +1315,7 @@ void Stage::MouseUngrab(ElementPtr inElement) {
         mCurrentElement = ElementPtr();
 
     // Release our grab.
-    mGrabbedElement = ElementPtr();
+    mGrabbedElement.reset();
     ReleaseMouse();
     UpdateCurrentElementAndCursor();
 }

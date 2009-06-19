@@ -34,6 +34,8 @@ class Node;
 typedef shared_ptr<Node> NodePtr;
 class Element;
 typedef shared_ptr<Element> ElementPtr;
+class LightweightElement;
+typedef shared_ptr<LightweightElement> LightweightElementPtr;
 class MediaElement;
 typedef shared_ptr<MediaElement> MediaElementPtr;
 class Card;
@@ -154,7 +156,7 @@ class Stage : public wxWindow, public Halyard::TReloadNotified {
     ElementPtr mCurrentElementNamedInStatusBar;
 
     /// The element which has a "grab" on the mouse.
-    ElementPtr mGrabbedElement;
+    LightweightElementPtr mGrabbedElement;
 
     /// The movie we're waiting on, or NULL if we're not waiting on anything.
     MediaElementPtr mWaitElement;
@@ -534,16 +536,16 @@ public:
     /// that all mouse events will be sent to that element until further
     /// notice, regardless of where the event occurred.  Grabs are used to
     /// implement standard buttons without busy-looping during mouse down.
-    void MouseGrab(ElementPtr inElement);
+    void MouseGrab(LightweightElementPtr inElement);
 
     /// Ungrab the mouse.  'inElement' should match the previous grab.
-    void MouseUngrab(ElementPtr inElement);
+    void MouseUngrab(LightweightElementPtr inElement);
 
     /// Is the mouse grabbed right now?
     bool MouseIsGrabbed() { return mGrabbedElement ? true : false; }
 
     /// Is the mouse grabbed by the specified element?
-    bool MouseIsGrabbedBy(ElementPtr inElement)
+    bool MouseIsGrabbedBy(LightweightElementPtr inElement)
         { return mGrabbedElement == inElement; }
 
     /// Should we send mouse events to the specified element?  This is
