@@ -44,6 +44,14 @@ LightweightElement::LightweightElement(const wxString &inName,
 #endif // wxUSE_ACCESSIBILITY
 }
 
+std::string LightweightElement::GetCursorName() {
+    // If we have our own cursor, return it.
+    if (mCursorName == "inherit")
+        return GetParent()->GetCursorName();
+    else
+        return mCursorName;
+}
+
 void LightweightElement::SetCursorName(const std::string &inCursorName) {
     mCursorName = inCursorName; 
     // We need to notify the stage that elements have changed so it can

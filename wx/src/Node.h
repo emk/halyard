@@ -155,6 +155,11 @@ public:
     /// Does this node want the engine to display a cursor?
     virtual bool WantsCursor() const { return false; }
 
+    /// Get an appropriate cursor for this object.  We use the cursor name,
+    /// not the actual Cursor, so that we don't hold onto an illegal
+    /// CursorPtr reference.  See the Cursor documentation for details.
+    virtual std::string GetCursorName() { return "arrow"; }
+
     /// Draw a border around the Node.
     virtual void DrawBorder(wxDC &inDC) {}
 

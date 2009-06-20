@@ -267,10 +267,18 @@
     ;; Change our default :wants-cursor? value from #f to the magic 'auto,
     ;; which is used in conjunction with some .define-method magic in
     ;; events.ss to set .wants-cursor? to #t whenever a mouse handler is
-    ;; defined by one of our subclasses.
+    ;; defined by one of our subclasses.  We also change 'auto to #t (in
+    ;; our own initialize method) when we're certain that
+    ;; .has-legacy-z-order-and-visibility? is #f.
     (default wants-cursor? 'auto)
 
-    (attr cursor     'hand :type <symbol>  :label "Cursor" :writable? #t)
+    ;; Our cursor should default to 'inherit if
+    ;; .has-legacy-z-order-and-visibility? is true, and 'hand otherwise.
+    ;; But we don't necessarily know .has-legacy-z-order-and-visibility?
+    ;; when we're processing the default for .cursor, so set it to 'auto
+    ;; and clean it up in .initiatilize.
+    (attr cursor     'auto :type <symbol>  :label "Cursor" :writable? #t)
+
     (attr overlay?   #t    :type <boolean> :label "Has overlay?")
     (attr alpha?     #f    :type <boolean> :label "Overlay transparent?")
     (attr dragging?  #f    :type <boolean> :label "In drag layer?" 
@@ -318,6 +326,20 @@
           (error (cat "%custom-element%: " (.full-name)
                       " may not have a negative-sized shape: " 
                       original-shape "."))))
+
+      ;; If .wants-cursor? is still 'auto, and we're not using the legacy
+      ;; Z-order, set it to #t.
+      (when (eq? (.wants-cursor?) 'auto)
+        (unless (.has-legacy-z-order-and-visibility?)
+          (set! (.wants-cursor?) #t)))
+
+      ;; If .cursor is 'auto, pick an appropriate default dependending on
+      ;; the value of .has-legacy-z-order-and-visibility?.
+      (when (eq? (.cursor) 'auto)
+        (set! (.cursor)
+              (if (.has-legacy-z-order-and-visibility?)
+                  'hand
+                  'inherit)))
       )
     
     (def (create-engine-node)
@@ -418,6 +440,7 @@
   ;; like buttons.  If you need this function to be public, please ask.
   (define (mix-in-standard-click-method! klass)
     (with-instance klass
+      (default cursor 'hand)
       (attr command  #f :label "Command symbol" :writable? #t)
       (attr action   #f :label "On click" :writable? #t)
       ;;; Override this method to specify what happens when you click.
