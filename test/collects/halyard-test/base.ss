@@ -12,8 +12,8 @@
   (define $color-highlight (color #xFF #xD8 #x45))
   
   (provide $base-style $splash-style $transition-style $audio-stream-style
-           $menu-style $title-style $text16 $caption-style $login-style
-           $login-button-style)
+           $menu-style $title-style $text16 $caption-style $button-style
+           $login-style $login-button-style)
 
   ;; A stylesheet for text.  For now, you can get a list of available
   ;; font names by looking in Fonts/cache.dat.  We'll probably want to

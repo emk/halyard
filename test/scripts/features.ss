@@ -635,42 +635,86 @@
 
 
   ;;=======================================================================
-  ;;  Compositing
+  ;;  Legacy Z-order and visibility
   ;;=======================================================================
 
-  (define-class %composite-demo% (%rectangle%)
-    (attr children-have-legacy-z-order-and-visibility? :type <boolean>)
+  (define-class %z-order-demo% (%rectangle%)
     (attr label-text :type <string>)
 
     (value shape (shape 200 220))
     (value color (color 255 0 0))
+    (value cursor 'hand)
 
     (text label ((point 10 10) $title-style (.label-text)
                  :has-legacy-z-order-and-visibility?
-                   (.children-have-legacy-z-order-and-visibility?)))
+                   (.has-legacy-z-order-and-visibility?)))
 
-    (elem input (%edit-box% :rect (rect 10 180 190 210) :font-size 18))
+    (elem input (%edit-box% :rect (rect 10 180 190 210) :font-size 18
+                            :has-legacy-z-order-and-visibility?
+                              (.has-legacy-z-order-and-visibility?)))
 
     (def (mouse-down event)
       (set! (.shown?) #f))
     )
 
-  (card /features/compositing
-      (%standard-test-card% :title "Compositing (modern and legacy)")
-    (elem modern (%composite-demo%
+  (card /features/legacy-z-order-and-visibility
+      (%standard-test-card% :title "Z-order and visibility")
+    (elem modern (%z-order-demo%
                   :at (point 100 100) :label-text "Modern"
-                  :children-have-legacy-z-order-and-visibility? #f))
-    (elem legacy (%composite-demo%
+                  :has-legacy-z-order-and-visibility? #f))
+    (elem legacy (%z-order-demo%
                   :at (point 400 100) :label-text "Legacy"
-                  :children-have-legacy-z-order-and-visibility? #t))
-    (rectangle overlay ((rect 90 150 610 250) (color 255 255 0)))
+                  :has-legacy-z-order-and-visibility? #t))
+    (rectangle yellow ((rect 90 150 610 250) (color 255 255 0)
+                       :has-legacy-z-order-and-visibility? #f))
+
+    (elem button (%basic-button%)
+      (attr label-text "Show All")
+
+      (value at (point 100 340))
+      (value shape (move-rect-left-top-to
+                    (inset-rect (measure-text $button-style (.label-text)) -5)
+                    (point 0 0)))
+      (value has-legacy-z-order-and-visibility? #f)
+
+      (text label ((point 5 5) $button-style (.label-text)
+                   :has-legacy-z-order-and-visibility? #f
+                   :clickable-where-transparent? #f))
+
+      (def (click)
+        (set! (.parent.modern.shown?) #t)
+        (set! (.parent.legacy.shown?) #t))
+
+      (def (draw)
+        (draw-rectangle (dc-rect)
+                        (case (.button-state)
+                          [[disabled normal] (color #x80 #x00 #x80)] 
+                          [[active]          (color #xC0 #x00 #xC0)]
+                          [[pressed]         (color #x40 #x00 #x40)]))))
+
+    (text instructions-modern
+        ((point 100 400) $text16
+         (cat "Yellow should pass over blue. Clicking on red or blue should "
+              "hide contents of red square.  Cursor should be hand for red and "
+              "blue. Button color should not change when moving over text in "
+              "'active' or 'pressed' state.\n\nCursor should be arrow for "
+              "yellow.")
+         :max-width 200))
+
+    (text instructions-legacy
+        ((point 400 400) $text16
+         (cat "Yellow should pass under blue. Clicking on red or blue should "
+              "hide only red.  Cursor should be hand for red, and for blue "
+              "which does not pass over yellow. After red is hidden, cursor "
+              "should be arrow for blue.")
+         :max-width 200))
 
     (def (make-child-rect parent)
       (%rectangle% .new
         :name 'blue :parent parent :at (point 30 30) :shape (shape 140 140)
         :color (color 0 0 255)
         :has-legacy-z-order-and-visibility?
-          (parent .children-have-legacy-z-order-and-visibility?)))
+          (parent .has-legacy-z-order-and-visibility?)))
 
     (setup
       (.make-child-rect (.modern))
