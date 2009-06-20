@@ -1329,5 +1329,6 @@ void Stage::MouseUngrab(LightweightElementPtr inElement) {
 }
 
 bool Stage::ShouldSendMouseEventsToElement(ElementPtr inElement) {
-    return !mGrabbedElement || (inElement == mGrabbedElement);
+    return (!mGrabbedElement ||
+            inElement->ShouldReceiveEventsWhenGrabbing(mGrabbedElement));
 }

@@ -273,6 +273,9 @@ public:
     /// Return our current root node, or NULL if we don't have one.
     NodePtr GetRootNode() const { return mRootNode; }
 
+    /// Return our current card, or NULL if we don't have one.
+    CardPtr GetCurrentCard() const { return mCurrentCard; }
+
     /// Load a special-purpose graphic associated with our currently running
     /// Halyard script. Such graphics currently include script icons and
     /// the splash screens.

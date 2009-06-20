@@ -101,6 +101,15 @@ public:
     /// is false.
     NodePtr GetParent() { ASSERT(mParent); return mParent; }
 
+    /// Like GetParent(), but returns the current card if
+    /// Element::HasLegacyZOrderAndVisibility() is true.
+    virtual NodePtr GetParentForPurposeOfZOrderAndVisibility();
+
+    /// Should we receive events when inNode is grabbed?  Returns true if
+    /// and only if this node is inNode, or we can reach inNode by
+    /// repeatedly calling GetParentForPurposeOfZOrderAndVisibility().
+    bool ShouldReceiveEventsWhenGrabbing(NodePtr inNode);
+
     /// Return the name of the node.  Should be unique.
     wxString GetName() { return mName; }
 

@@ -25,6 +25,7 @@
 #include <boost/foreach.hpp>
 
 #include "Element.h"
+#include "Card.h"
 #include "HalyardApp.h"
 #include "Stage.h"
 
@@ -38,6 +39,21 @@ using namespace Halyard;
 Element::Element(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
     : Node(inName, inDispatcher), mHasLegacyZOrderAndVisibility(false)
 {
+}
+
+NodePtr Element::GetParentForPurposeOfZOrderAndVisibility() {
+    if (HasLegacyZOrderAndVisibility()) {
+        CardPtr card(wxGetApp().GetStage()->GetCurrentCard());
+        if (card)
+            return card;
+
+        // We don't have a reasonable return value when there isn't a
+        // current card, so just fall through.
+        gLog.Warn("halyard.node",
+                  "Called GetParentForPurposeOfZOrderAndVisibility on %s "
+                  "when there isn't a current card.", GetLogName());
+    }
+    return GetParent();
 }
 
 void Element::UseLegacyZOrderAndVisibility() {

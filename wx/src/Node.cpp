@@ -76,6 +76,21 @@ bool Node::IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem) {
     return IsRealChild(inElem) && !inElem->HasLegacyZOrderAndVisibility();
 }
 
+NodePtr Node::GetParentForPurposeOfZOrderAndVisibility() {
+    return GetParent();
+}
+
+bool Node::ShouldReceiveEventsWhenGrabbing(NodePtr inNode) {
+    if (shared_from_this() == inNode) {
+        return true;
+    } else if (IsRootNode()) {
+        return false;
+    } else {
+        NodePtr parent(GetParentForPurposeOfZOrderAndVisibility());
+        return parent->ShouldReceiveEventsWhenGrabbing(inNode);
+    }
+}
+
 wxString Node::GetDisplayName(bool *outIsAnonymous) {
     wxString result;
     bool is_anonymous = false;
