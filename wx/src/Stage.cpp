@@ -1094,12 +1094,13 @@ void Stage::AddNode(NodePtr inNode) {
         ASSERT(!mCurrentCard);
         mCurrentCard = as_card;
 
-        // If we have any elements that were artificially registered with
-        // our previous card to emulate old-style Z-order and visibility
-        // semantics, and those elements have survivied, register them with
-        // our new card.
+        // If we have any elements that should be artificially registered
+        // with our new card to emulate old-style Z-order and visibility
+        // (that is, elements that are parented to the group and have
+        // legacy emulation turned on), register them now, putting them
+        // at the bottom of the Z-order.
         BOOST_FOREACH(ElementPtr elem, mElementsWithLegacyZOrderAndVisibility)
-            elem->RegisterChildElement(elem);
+            mCurrentCard->RegisterChildElement(elem);
     }
 
     // Add the new Node to our list.

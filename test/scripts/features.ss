@@ -605,7 +605,7 @@
   ;;  Changing the Z-Order
   ;;=======================================================================
 
-  (define-class %self-raising-square% (%custom-element% )
+  (define-class %self-raising-square% (%custom-element%)
     (attr color) 
     (attr label)
     (value shape (rect 0 0 100 100))
@@ -626,17 +626,52 @@
     (rectangle-outline border ((rect -2 -2 102 102) (color 255 255 255) 1
                                :has-legacy-z-order-and-visibility? #f)))
 
-  (card /features/z-order
+  (card /features/raise-to-top
       (%standard-test-card% :title "Changing the Z-Order")
     (elem a (%self-raising-square%
              :at (point 200 200) :color (color 255 0 0) :label "A"))
     (elem b (%self-raising-square%
-             :at (point 250 250) :color (color 0 255 0) :label "B")))
+             :at (point 225 225) :color (color 0 255 0) :label "B")))
 
 
   ;;=======================================================================
   ;;  Legacy Z-order and visibility
   ;;=======================================================================
+
+
+  (define-class %legacy-self-raising-square% (%self-raising-square%)
+    (value has-legacy-z-order-and-visibility? #t))
+
+  (group /features/legacy-z-order-group ()
+    (elem group-a (%legacy-self-raising-square% 
+                   :at (point 250 250) :color (color 0 0 255)
+                   :label "Group A"))
+    (elem group-b (%legacy-self-raising-square%
+                   :at (point 275 275) :color (color 255 255 0)
+                   :label "Group B")))
+
+  (card /features/legacy-z-order-group/raise-to-top
+      (%standard-test-card% 
+       :title "Preserving legacy Z-order on group-parented elements")
+    (elem a (%legacy-self-raising-square%
+             :at (point 200 200) :color (color 255 0 0) :label "A"))
+    (elem b (%legacy-self-raising-square%
+             :at (point 225 225) :color (color 0 255 0) :label "B"))
+
+    (text instructions
+        ((point 500 150) $text16
+         (cat "When loading this card for the first time, element order "
+              "should be from top to bottom: B (Green), A (Red), Group B "
+              "(Yellow), Group A (Blue). Clicking any element should raise "
+              "it, and its children (label and border), to the top. Jumping "
+              "to the next card and returning should preserve the order of "
+              "the Group elements relative to each other, but leave them "
+              "behind the other elements.")
+         :max-width 200)))
+
+  (card /features/legacy-z-order-group/blank-card
+      (%standard-test-card% 
+       :title "Blank card for testing group-parented elements"))
 
   (define-class %z-order-demo% (%rectangle%)
     (attr label-text :type <string>)
