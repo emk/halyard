@@ -42,13 +42,6 @@ class CairoContext;
 class Element : public Node {
     bool mHasLegacyZOrderAndVisibility;
 
-protected:
-    /// Invalidate just the portion of the stage covered by this element,
-    /// and don't do anything about its children.
-    ///
-    /// \see RecursivelyInvalidateCompositing()
-    virtual void InvalidateCompositing() {}
-
 public:
     /// Create a new Element and attach it to inStage.  The stage is
     /// responsible for deleting the element.
@@ -56,10 +49,17 @@ public:
             Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
     virtual ~Element() {}
 
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Inherited from Node
+    //@{
+
     virtual Type GetType() { return ELEMENT; }
     virtual NodePtr GetParentForPurposeOfZOrderAndVisibility();
-    virtual void Register();
-    virtual void Unregister();
+
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Legacy Z-order and visibility support
+    //@{
     
     /// Ideally, elements should be treated as an inseperable part of their
     /// parent node.  But historically, elements were treated as immediate
@@ -78,18 +78,46 @@ public:
     /// \see HasLegacyZOrderAndVisibility()
     virtual void UseLegacyZOrderAndVisibility();
 
-    /// Move the element to the specified location.
-    virtual void MoveTo(const wxPoint &inPoint);
-    
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Compositing
+    //@{
+
+protected:
+    /// Invalidate just the portion of the stage covered by this element,
+    /// and don't do anything about its children.
+    ///
+    /// \see RecursivelyInvalidateCompositing()
+    virtual void InvalidateCompositing() {}
+
+public:
     /// Recomposite this Element and any of its children.
     virtual void RecursivelyInvalidateCompositing();
 
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Registration and unregistration
+    //@{
+
+    virtual void Register();
+    virtual void Unregister();
+
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Other member functions
+    //@{
+
+    /// Move the element to the specified location.
+    virtual void MoveTo(const wxPoint &inPoint);
+    
     /// Return the DrawingArea associated with this element, if any.
     virtual DrawingArea *GetDrawingArea() { return NULL; }
 
     /// Get the accessibility information for this element, or NULL, if
     /// it has no accessibility information.
     virtual wxAccessible *GetAccessible() { return NULL; }
+
+    //@}
 };
 
 #endif // Element_H

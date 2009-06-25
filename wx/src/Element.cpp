@@ -33,13 +33,18 @@ using namespace Halyard;
 
 
 //=========================================================================
-//  Element Methods
+//  Constructor and destructor
 //=========================================================================
 
 Element::Element(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
     : Node(inName, inDispatcher), mHasLegacyZOrderAndVisibility(false)
 {
 }
+
+
+//=========================================================================
+//  Inherited from Node
+//=========================================================================
 
 NodePtr Element::GetParentForPurposeOfZOrderAndVisibility() {
     if (HasLegacyZOrderAndVisibility()) {
@@ -56,6 +61,11 @@ NodePtr Element::GetParentForPurposeOfZOrderAndVisibility() {
     return GetParent();
 }
 
+
+//=========================================================================
+//  Legacy Z-order and visibility support
+//=========================================================================
+
 void Element::UseLegacyZOrderAndVisibility() {
     ASSERT(!mHasLegacyZOrderAndVisibility);
     mHasLegacyZOrderAndVisibility = true;
@@ -64,9 +74,22 @@ void Element::UseLegacyZOrderAndVisibility() {
     wxGetApp().GetStage()->RegisterLegacyZOrderAndVisibility(as_shared);
 }
 
-void Element::MoveTo(const wxPoint &inPoint) {
-    OperationNotSupported("move");
+
+//=========================================================================
+//  Compositing
+//=========================================================================
+
+void Element::RecursivelyInvalidateCompositing() {
+    InvalidateCompositing();
+    BOOST_FOREACH(ElementPtr elem, GetElements())
+        if (IsChildForPurposeOfZOrderAndVisibility(elem))
+            elem->RecursivelyInvalidateCompositing();
 }
+
+
+//=========================================================================
+//  Registration and unregistration
+//=========================================================================
 
 void Element::Register() {
     ElementPtr as_shared(shared_from_this(), dynamic_cast_tag());
@@ -84,9 +107,12 @@ void Element::Unregister() {
         wxGetApp().GetStage()->UnregisterLegacyZOrderAndVisibility(as_shared);
 }
 
-void Element::RecursivelyInvalidateCompositing() {
-    InvalidateCompositing();
-    BOOST_FOREACH(ElementPtr elem, GetElements())
-        if (IsChildForPurposeOfZOrderAndVisibility(elem))
-            elem->RecursivelyInvalidateCompositing();
+
+//=========================================================================
+//  Other member functions
+//=========================================================================
+
+void Element::MoveTo(const wxPoint &inPoint) {
+    OperationNotSupported("move");
 }
+
