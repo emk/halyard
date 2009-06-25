@@ -40,9 +40,12 @@ void CardGroup::RecursivelyCompositeInto(CairoContext &inCr,
                                           bool inAncestorIsInDragLayer)
 {
     // Since there are only CardGroup objects in our ancestory, we should
-    // never be in the drag layer.
+    // never be in the drag layer.  And we should always be visible,
+    // because only Elements can be hidden, and not classes inheriting from
+    // GroupMember.
     ASSERT(!inAncestorIsInDragLayer);
     ASSERT(!IsInDragLayer());
+    ASSERT(IsVisible());
 
     // First, composite this node and all our elements, and then
     // recursively composite mMember.  This order is intentional--we assume

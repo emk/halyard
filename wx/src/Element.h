@@ -42,6 +42,11 @@ class CairoContext;
 class Element : public Node {
     bool mHasLegacyZOrderAndVisibility;
 
+    // These two values should not be used directly, because they will be
+    // ignored if HasVisibleRepresentation() is false.
+    bool mIsVisible; ///< \see IsVisible()
+    bool mIsShown;   ///< \see GetIsShown()
+
 public:
     /// Create a new Element and attach it to inStage.  The stage is
     /// responsible for deleting the element.
@@ -77,6 +82,53 @@ public:
     ///
     /// \see HasLegacyZOrderAndVisibility()
     virtual void UseLegacyZOrderAndVisibility();
+
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Visibility
+    //@{
+
+private:
+    /// Compute the visibility of this node only.
+    void CalculateVisibility();
+
+    /// Recompute the visibility of this node and its descendants.
+    void RecursivelyCalculateVisibility();
+
+protected:
+    /// Is there any way to display this element on the screen?
+    virtual bool HasVisibleRepresentation() { return true; }
+
+    /// Called after the visibility of this element changes.  Override this
+    /// to show and hide associated wxWindow objects, etc.
+    virtual void NotifyVisibilityChanged() {}
+
+public:
+    /// An element is visibile if it and all its ancestors return true from
+    /// GetIsShown().  Ancestors are determined using the same rules as
+    /// GetParentForPurposeOfZOrderAndVisibility().
+    virtual bool IsVisible();
+
+    /// Is this element shown?  Note that a "shown" element can still be
+    /// invisible if one of more of its parents are not currently
+    /// shown--this property is local to this particular node.
+    ///
+    /// This method is named GetIsShown() (and not the more succinct
+    /// IsShown()), because it reads a flag local to this element, and it
+    /// cannot actually tell you whether the element is truly visible.  By
+    /// using a slightly awkward name, we prevent people from calling this
+    /// function accidentally.
+    ///
+    /// \see IsVisible()
+    virtual bool GetIsShown();
+
+    /// Mark an element as shown.  This may not be sufficient to make an
+    /// element visible--if any of the elements ancestors are not shown,
+    /// this element will not be visible.
+    ///
+    /// \see GetIsShown()
+    /// \see IsVisible()
+    virtual void SetIsShown(bool inIsShown);
 
     //@}
     ///////////////////////////////////////////////////////////////////////

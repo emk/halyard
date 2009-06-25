@@ -537,7 +537,7 @@ DEFINE_PRIMITIVE(ElementIsShown) {
     std::string name;
     inArgs >> SymbolName(name);
     FIND_NODE(Element, element, ToWxString(name));
-    ::SetPrimitiveResult(element->IsShown());
+    ::SetPrimitiveResult(element->GetIsShown());
 }
 
 DEFINE_PRIMITIVE(ElementSetShown) {
@@ -545,8 +545,7 @@ DEFINE_PRIMITIVE(ElementSetShown) {
     bool show;
     inArgs >> SymbolName(name) >> show;
     FIND_NODE(Element, element, ToWxString(name));
-    element->Show(show);
-    // TODO - Override MovieElement::Show for unshowable movies.
+    element->SetIsShown(show);
 }
 
 DEFINE_PRIMITIVE(ElementSetInDragLayer) {

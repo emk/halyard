@@ -146,23 +146,8 @@ public:
     /// \name Visibility
     //@{
 
-protected:
-    /// This function will be called by Show() when a hidden node needs to
-    /// be shown or hidden.
-    virtual void DoShow(bool inShow);
-
-public:
-    /// Return true if the node can be shown.
-    virtual bool HasVisibleRepresentation() { return true; }
-
     /// Return true if the node is shown on the screen.
-    virtual bool IsShown() { return true; }
-
-    /// Show or hide the Node.  This function cannot be overridden, though
-    /// it does call functions which can.
-    ///
-    /// \see DoShow()
-    void Show(bool inShow);
+    virtual bool IsVisible() { return true; }
 
     //@}
     ///////////////////////////////////////////////////////////////////////

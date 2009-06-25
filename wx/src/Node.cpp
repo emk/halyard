@@ -129,30 +129,6 @@ NodePtr Node::GetParentForPurposeOfZOrderAndVisibility() {
 
 
 //=========================================================================
-//  Visibility
-//=========================================================================
-
-void Node::DoShow(bool inShow) {
-    if (inShow)
-        OperationNotSupported("show");
-    else
-        OperationNotSupported("hide");
-}
-
-void Node::Show(bool inShow) {
-    if (inShow != IsShown()) {
-        // Let our subclasses do the actual showing and hiding.
-        DoShow(inShow);
-
-        // Notify the Stage and the ElementsPane.
-        wxGetApp().GetStage()->NotifyNodesChanged();
-        wxGetApp().GetStageFrame()->GetElementsPane()->
-            NotifyNodeStateChanged(shared_from_this());
-    }
-}
-
-
-//=========================================================================
 //  Events
 //=========================================================================
 
@@ -176,6 +152,11 @@ void Node::RecursivelyCompositeInto(CairoContext &inCr,
                                     bool inIsCompositingDragLayer,
                                     bool inAncestorIsInDragLayer)
 {
+    // If this element isn't visible, don't composite it or any of its
+    // child elements.
+    if (!IsVisible())
+        return;
+
     // Keep track of whether this node (or any of its ancestors) returned
     // true from IsInDragLayer().
     bool is_in_drag_layer = inAncestorIsInDragLayer || IsInDragLayer();
@@ -209,7 +190,7 @@ NodePtr Node::FindNodeAt(const wxPoint &inPoint, bool inMustWantCursor) {
     }
 
     // None of our elements matched, so what about us?
-    if (IsShown() && (WantsCursor() || !inMustWantCursor) &&
+    if (IsVisible() && (WantsCursor() || !inMustWantCursor) &&
         IsPointInNode(inPoint))
         return shared_from_this();
 

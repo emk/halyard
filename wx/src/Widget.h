@@ -49,7 +49,7 @@ protected:
     ///                 hooked up correctly.
     void InitializeWidgetWindow(wxWindow *inWindow);
 
-    virtual void DoShow(bool inShow);
+    virtual void NotifyVisibilityChanged();
 
 public:
     /// Create a new Widget, and add it to the stage.

@@ -63,10 +63,8 @@ wxRect Widget::GetRect() {
     return mWindow->GetRect();
 }
 
-void Widget::DoShow(bool inShow) {
-    if (inShow && !HasVisibleRepresentation())
-        OperationNotSupported("show");
-    mWindow->Show(inShow);
+void Widget::NotifyVisibilityChanged() {
+    mWindow->Show(IsVisible());
 }
 
 bool Widget::IsShown() {

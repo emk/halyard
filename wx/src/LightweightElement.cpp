@@ -37,7 +37,7 @@ LightweightElement::LightweightElement(const wxString &inName,
                                        Halyard::TCallbackPtr inDispatch,
                                        const std::string &inCursorName)
     : Element(inName, inDispatch), mCursorName(inCursorName),
-      mIsShown(true), mWantsCursor(false), mIsInDragLayer(false)
+      mWantsCursor(false), mIsInDragLayer(false)
 {
 #if wxUSE_ACCESSIBILITY
     mAccessible = shared_ptr<wxAccessible>(new LightweightAccessible(this));

@@ -364,7 +364,7 @@ bool Stage::ShouldShowCursor() {
 
     // See if any of our nodes want a cursor.
     BOOST_FOREACH(NodeMap::value_type kv, mNodes)
-        if (kv.second->IsShown() && kv.second->WantsCursor())
+        if (kv.second->IsVisible() && kv.second->WantsCursor())
             return true;
 
     // By default, we want to hide it.
@@ -751,7 +751,7 @@ void Stage::ClipNodesThatDrawThemselves(wxDC &inDC) {
     bool need_clipping = false;
     wxRegion clip_to(wxRect(wxPoint(0, 0), GetSize()));
     BOOST_FOREACH(NodeMap::value_type kv, mNodes)
-        if (kv.second->IsShown() && kv.second->ApplyClippingToStage(clip_to))
+        if (kv.second->IsVisible() && kv.second->ApplyClippingToStage(clip_to))
             need_clipping = true;
 
     // If we actually made any changes to our clipping region, apply it.
@@ -807,7 +807,7 @@ void Stage::PaintStage(wxDC &inDC, const wxRegion &inDirtyRegion) {
     // If necessary, draw the borders.
     if (mIsDisplayingBorders) {
         BOOST_FOREACH(NodeMap::value_type kv, mNodes)
-            if (kv.second->IsShown())
+            if (kv.second->IsVisible())
                 DrawNodeBorder(inDC, kv.second);
     }
 }

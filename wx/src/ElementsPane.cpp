@@ -144,7 +144,7 @@ void ElementsPane::UpdateItemForDynamicNodeState(wxTreeItemId inItem,
     ASSERT(IsShown());
 
     // Show visible nodes in black, and hidden nodes in grey.
-    if (inNode->IsShown())
+    if (inNode->IsVisible())
         SetItemTextColour(inItem, *wxBLACK);
     else
         SetItemTextColour(inItem, wxColour(0x60, 0x60, 0x60));

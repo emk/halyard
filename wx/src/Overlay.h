@@ -33,7 +33,7 @@ class Overlay : public LightweightElement {
     bool mAreTransparentAreasClickable;
 
 protected:
-    virtual void DoShow(bool inShow);
+    virtual void NotifyVisibilityChanged();
     virtual void InvalidateCompositing();
 
 public:

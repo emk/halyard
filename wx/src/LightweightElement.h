@@ -40,7 +40,6 @@ class wxAccessible;
 /// event-handling system we're using.
 class LightweightElement : public Element {
     std::string mCursorName;
-    bool mIsShown;
     bool mWantsCursor;
     bool mIsInDragLayer;
 
@@ -48,15 +47,10 @@ class LightweightElement : public Element {
     shared_ptr<wxAccessible> mAccessible;
 #endif // wxUSE_ACCESSIBILITY
 
-protected:
-    virtual void DoShow(bool inShow) { mIsShown = inShow; }
-    
 public:
     LightweightElement(const wxString &inName,
                        Halyard::TCallbackPtr inDispatch,
                        const std::string &inCursorName);
-
-    virtual bool IsShown() { return mIsShown; }
 
     virtual bool WantsCursor() const { return mWantsCursor; }
     void SetWantsCursor(bool wantsCursor) { mWantsCursor = wantsCursor; }
