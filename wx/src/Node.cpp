@@ -36,10 +36,15 @@ using namespace Halyard;
 //  Constructor and destructor
 //=========================================================================
 
+int Node::sNodeCount = 0;
+
 Node::Node(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
     : mName(inName), mLogName(inName.mb_str())
 {
     ASSERT(mName != wxT(""));
+
+    // Increment the number of nodes which currently exist.
+    sNodeCount++;
 
     // If we're not the root node, look up our parent node.
     if (mName != wxT("/")) {
@@ -60,6 +65,12 @@ Node::Node(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
         mEventDispatcher = ptr;
         mEventDispatcher->SetDispatcher(inDispatcher);
     }
+}
+
+Node::~Node() {
+    // Decrement the number of nodes which exist.
+    ASSERT(sNodeCount >= 1);
+    sNodeCount--;
 }
 
 

@@ -1268,6 +1268,10 @@ void Stage::DeleteNodes() {
     mNodes.clear();
     mRootNode.reset();
     NotifyNodesChanged();
+
+    // Make sure that all our nodes have actually disappeared, and that we
+    // haven't leaked any shared_ptr references.
+    ASSERT(Node::NodeCount() == 0);
 }
 
 bool Stage::IsMediaPlaying() {

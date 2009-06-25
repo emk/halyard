@@ -38,6 +38,9 @@ class Node : boost::noncopyable, public boost::enable_shared_from_this<Node> {
     /// A list of elements.
     typedef std::deque<ElementPtr> ElementList;
 
+    /// How many nodes currently exist?
+    static int sNodeCount;
+
     /// The parent of this node, or NULL if this is the root node.
     NodePtr mParent;
 
@@ -60,7 +63,10 @@ public:
     /// Create a new Node.  The stage is responsible for deleting the node.
     Node(const wxString &inName,
          Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
-    virtual ~Node() {}
+    virtual ~Node();
+
+    /// Return the number of nodes that currently exist.
+    static int NodeCount() { return sNodeCount; }
 
     ///////////////////////////////////////////////////////////////////////
     /// \name Node type
