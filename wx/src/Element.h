@@ -56,8 +56,8 @@ public:
             Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
     virtual ~Element() {}
 
-    virtual NodePtr GetParentForPurposeOfZOrderAndVisibility();
     virtual Type GetType() { return ELEMENT; }
+    virtual NodePtr GetParentForPurposeOfZOrderAndVisibility();
     virtual void Register();
     virtual void Unregister();
     

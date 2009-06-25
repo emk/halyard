@@ -33,7 +33,7 @@ using namespace Halyard;
 
 
 //=========================================================================
-//  Node Methods
+//  Constructor and destructor
 //=========================================================================
 
 Node::Node(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
@@ -62,34 +62,10 @@ Node::Node(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
     }
 }
 
-void Node::OperationNotSupported(const char *inOperationName) {
-    std::string op(inOperationName);
-    std::string name(mName.mb_str());
-    THROW("Cannot " + op + " node: " + name);
-}
 
-bool Node::IsRealChild(ElementPtr inElem) {
-    return (inElem->GetParent().get() == this);
-}
-
-bool Node::IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem) {
-    return IsRealChild(inElem) && !inElem->HasLegacyZOrderAndVisibility();
-}
-
-NodePtr Node::GetParentForPurposeOfZOrderAndVisibility() {
-    return GetParent();
-}
-
-bool Node::ShouldReceiveEventsWhenGrabbing(NodePtr inNode) {
-    if (shared_from_this() == inNode) {
-        return true;
-    } else if (IsRootNode()) {
-        return false;
-    } else {
-        NodePtr parent(GetParentForPurposeOfZOrderAndVisibility());
-        return parent->ShouldReceiveEventsWhenGrabbing(inNode);
-    }
-}
+//=========================================================================
+//  Name
+//=========================================================================
 
 wxString Node::GetDisplayName(bool *outIsAnonymous) {
     wxString result;
@@ -123,6 +99,35 @@ wxString Node::GetDisplayName(bool *outIsAnonymous) {
     return result;
 }
 
+
+//=========================================================================
+//  Parent and child relationships
+//=========================================================================
+
+bool Node::IsRealChild(ElementPtr inElem) {
+    return (inElem->GetParent().get() == this);
+}
+
+bool Node::IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem) {
+    return IsRealChild(inElem) && !inElem->HasLegacyZOrderAndVisibility();
+}
+
+NodePtr Node::GetParentForPurposeOfZOrderAndVisibility() {
+    return GetParent();
+}
+
+
+//=========================================================================
+//  Visibility
+//=========================================================================
+
+void Node::DoShow(bool inShow) {
+    if (inShow)
+        OperationNotSupported("show");
+    else
+        OperationNotSupported("hide");
+}
+
 void Node::Show(bool inShow) {
     if (inShow != IsShown()) {
         // Let our subclasses do the actual showing and hiding.
@@ -135,12 +140,26 @@ void Node::Show(bool inShow) {
     }
 }
 
-void Node::DoShow(bool inShow) {
-    if (inShow)
-        OperationNotSupported("show");
-    else
-        OperationNotSupported("hide");
+
+//=========================================================================
+//  Events
+//=========================================================================
+
+bool Node::ShouldReceiveEventsWhenGrabbing(NodePtr inNode) {
+    if (shared_from_this() == inNode) {
+        return true;
+    } else if (IsRootNode()) {
+        return false;
+    } else {
+        NodePtr parent(GetParentForPurposeOfZOrderAndVisibility());
+        return parent->ShouldReceiveEventsWhenGrabbing(inNode);
+    }
 }
+
+
+//=========================================================================
+//  Compositing
+//=========================================================================
 
 void Node::RecursivelyCompositeInto(CairoContext &inCr,
                                     bool inIsCompositingDragLayer,
@@ -162,6 +181,11 @@ void Node::RecursivelyCompositeInto(CairoContext &inCr,
     }
 }
 
+
+//=========================================================================
+//  Hit-testing
+//=========================================================================
+
 NodePtr Node::FindNodeAt(const wxPoint &inPoint, bool inMustWantCursor) {
     // First check our elements (in reverse of our compositing order) to
     // see if any of them are interested.
@@ -181,6 +205,11 @@ NodePtr Node::FindNodeAt(const wxPoint &inPoint, bool inMustWantCursor) {
     // Nope, nobody here is interested in inPoint.
     return NodePtr();
 }
+
+
+//=========================================================================
+//  Node registration and unregistration
+//=========================================================================
 
 void Node::Register() {
     NodePtr as_shared(shared_from_this());
@@ -212,6 +241,17 @@ void Node::UnregisterChildElement(ElementPtr inElem) {
         std::find(mElements.begin(), mElements.end(), inElem);
     ASSERT(found != mElements.end());
     mElements.erase(found);
+}
+
+
+//=========================================================================
+//  Other member functions
+//=========================================================================
+
+void Node::OperationNotSupported(const char *inOperationName) {
+    std::string op(inOperationName);
+    std::string name(mName.mb_str());
+    THROW("Cannot " + op + " node: " + name);
 }
 
 void Node::RaiseToTop(ElementPtr inElem) {

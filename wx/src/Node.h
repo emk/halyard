@@ -56,32 +56,16 @@ class Node : boost::noncopyable, public boost::enable_shared_from_this<Node> {
     /// The elements attached to this node.
     ElementList mElements;
 
-protected:
-    /// Return mElements so subclasses can iterate over it.
-    ElementList &GetElements() { return mElements; }
-
-    /// Throw an error saying inOperationName is not allowed.
-    void OperationNotSupported(const char *inOperationName);
-
-    /// This function will be called by Show() when a hidden node needs to
-    /// be shown or hidden.
-    virtual void DoShow(bool inShow);
-
-    /// Is inElem a real child of this node?
-    ///
-    /// \see IsChildForPurposeOfZOrderAndVisibility()
-    bool IsRealChild(ElementPtr inElem);
-
-    /// Should we treat inElem as a child of this node when calculating
-    /// Z-order and element visibility?  This is a backwards-compatible
-    /// emulation mode needed to run old code.  Precondition: inElem is a
-    /// member of inElements.
-    ///
-    /// \see IsRealChild()
-    /// \see Element::HasLegacyZOrderAndVisibility()
-    virtual bool IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem);
-
 public:
+    /// Create a new Node.  The stage is responsible for deleting the node.
+    Node(const wxString &inName,
+         Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
+    virtual ~Node() {}
+
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Node type
+    //@{
+
     /// A very high-level breakdown of different Node types.
     enum Type {
         CARD_GROUP,
@@ -89,26 +73,16 @@ public:
         ELEMENT
     };
 
-    /// Create a new Node.  The stage is responsible for deleting the node.
-    Node(const wxString &inName,
-         Halyard::TCallbackPtr inDispatcher = Halyard::TCallbackPtr());
-    virtual ~Node() {}
+    /// What type of node is this?  This predicate allows other parts of
+    /// the engine to distinguish between a few high-level types of Node
+    /// without adding new virtual functions to this class or using dynamic
+    /// casts.
+    virtual Type GetType() = 0;
 
-    /// Is this the root of our node hierarchy?
-    bool IsRootNode() { return (mParent == NULL); }
-
-    /// Get the parent of this node.  Should only be called if IsRootNode()
-    /// is false.
-    NodePtr GetParent() { ASSERT(mParent); return mParent; }
-
-    /// Like GetParent(), but returns the current card if
-    /// Element::HasLegacyZOrderAndVisibility() is true.
-    virtual NodePtr GetParentForPurposeOfZOrderAndVisibility();
-
-    /// Should we receive events when inNode is grabbed?  Returns true if
-    /// and only if this node is inNode, or we can reach inNode by
-    /// repeatedly calling GetParentForPurposeOfZOrderAndVisibility().
-    bool ShouldReceiveEventsWhenGrabbing(NodePtr inNode);
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Name
+    //@{
 
     /// Return the name of the node.  Should be unique.
     wxString GetName() { return mName; }
@@ -126,31 +100,54 @@ public:
     /// node is destroyed.
     const char *GetLogName() { return mLogName.c_str(); }
 
-    /// What type of node is this?  This predicate allows other parts of
-    /// the engine to distinguish between a few high-level types of Node
-    /// without adding new virtual functions to this class or using dynamic
-    /// casts.
-    virtual Type GetType() = 0;
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Parent and child relationships
+    //@{
 
-    /// Is the specified point in the node?  If this function ever returns
-    /// true, then GetEventDispatcher must _not_ return NULL.  Note that
-    /// this function returns false for Widget and its subclasses, because
-    /// they have not historically been tracked by this code.
+protected:
+    /// Return mElements so subclasses can iterate over it.
+    ElementList &GetElements() { return mElements; }
+
+    /// Is inElem a real child of this node?
     ///
-    /// \see FindNodeAt()
-    virtual bool IsPointInNode(const wxPoint &inPoint) { return false; }
+    /// \see IsChildForPurposeOfZOrderAndVisibility()
+    bool IsRealChild(ElementPtr inElem);
 
-    /// Get the event dispatcher associated with this node.
-    EventDispatcherPtr GetEventDispatcher() {
-        ASSERT(mEventDispatcher.get());
-        return mEventDispatcher;
-    }
+    /// Should we treat inElem as a child of this node when calculating
+    /// Z-order and element visibility?  This is a backwards-compatible
+    /// emulation mode needed to run old code.  Precondition: inElem is a
+    /// member of inElements.
+    ///
+    /// \see IsRealChild()
+    /// \see Element::HasLegacyZOrderAndVisibility()
+    virtual bool IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem);
 
+public:
+    /// Is this the root of our node hierarchy?
+    bool IsRootNode() { return (mParent == NULL); }
+
+    /// Get the parent of this node.  Should only be called if IsRootNode()
+    /// is false.
+    NodePtr GetParent() { ASSERT(mParent); return mParent; }
+
+    /// Like GetParent(), but returns the current card if
+    /// Element::HasLegacyZOrderAndVisibility() is true.
+    virtual NodePtr GetParentForPurposeOfZOrderAndVisibility();
+
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Visibility
+    //@{
+
+protected:
+    /// This function will be called by Show() when a hidden node needs to
+    /// be shown or hidden.
+    virtual void DoShow(bool inShow);
+
+public:
     /// Return true if the node can be shown.
     virtual bool HasVisibleRepresentation() { return true; }
-
-    /// Let the node do any idle-time processing it needs to do.
-    virtual void Idle() {}
 
     /// Return true if the node is shown on the screen.
     virtual bool IsShown() { return true; }
@@ -161,6 +158,30 @@ public:
     /// \see DoShow()
     void Show(bool inShow);
 
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Events
+    //@{
+
+    /// Get the event dispatcher associated with this node.
+    EventDispatcherPtr GetEventDispatcher() {
+        ASSERT(mEventDispatcher.get());
+        return mEventDispatcher;
+    }
+
+    /// Should we receive events when inNode is grabbed?  Returns true if
+    /// and only if this node is inNode, or we can reach inNode by
+    /// repeatedly calling GetParentForPurposeOfZOrderAndVisibility().
+    bool ShouldReceiveEventsWhenGrabbing(NodePtr inNode);
+
+    /// Let the node do any idle-time processing it needs to do.
+    virtual void Idle() {}
+
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Cursors
+    //@{
+
     /// Does this node want the engine to display a cursor?
     virtual bool WantsCursor() const { return false; }
 
@@ -168,6 +189,11 @@ public:
     /// not the actual Cursor, so that we don't hold onto an illegal
     /// CursorPtr reference.  See the Cursor documentation for details.
     virtual std::string GetCursorName() { return "arrow"; }
+
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Redrawing the stage
+    //@{
 
     /// Draw a border around the Node.
     virtual void DrawBorder(wxDC &inDC) {}
@@ -185,6 +211,11 @@ public:
     /// \return Return true if clipping was applied, and false if ioRegion
     ///    was left alone.
     virtual bool ApplyClippingToStage(wxRegion &ioRegion) { return false; }
+
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Compositing
+    //@{
 
     /// Certain nodes can be temporarily raised into the "drag layer",
     /// which is above other LightweightElements (e.g., zones and
@@ -205,6 +236,11 @@ public:
     /// \see RecursivelyCompositeInto()
     virtual void CompositeInto(CairoContext &inCr) {}
 
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Hit-testing
+    //@{
+
     /// Find the node located at inPoint on the screen, subject to various
     /// complications and caveats.
     ///
@@ -213,6 +249,19 @@ public:
     /// \return The node at inPoint, or NULL if no node is found.
     virtual NodePtr FindNodeAt(const wxPoint &inPoint,
                                bool inMustWantCursor = true);
+
+    /// Is the specified point in the node?  If this function ever returns
+    /// true, then GetEventDispatcher must _not_ return NULL.  Note that
+    /// this function returns false for Widget and its subclasses, because
+    /// they have not historically been tracked by this code.
+    ///
+    /// \see FindNodeAt()
+    virtual bool IsPointInNode(const wxPoint &inPoint) { return false; }
+
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Node registration and unregistration
+    //@{
 
     /// Register this node with its parent, and with other objects (except
     /// the Stage).  This is not part of the constructor because it needs
@@ -234,8 +283,20 @@ public:
     /// Detach a child Element from this node.
     void UnregisterChildElement(ElementPtr inElem);
 
+    //@}
+    ///////////////////////////////////////////////////////////////////////
+    /// \name Other member functions
+    //@{
+
+protected:
+    /// Throw an error saying inOperationName is not allowed.
+    void OperationNotSupported(const char *inOperationName);
+
+public:
     /// Move a child element to the end of our inElements list.
     void RaiseToTop(ElementPtr inElem);
+
+    //@}
 };
 
 #endif // Node_H
