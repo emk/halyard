@@ -58,15 +58,10 @@ Element::Element(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
 
 NodePtr Element::GetParentForPurposeOfZOrderAndVisibility() {
     if (HasLegacyZOrderAndVisibility()) {
-        CardPtr card(wxGetApp().GetStage()->GetCurrentCard());
-        if (card)
-            return card;
-
-        // We don't have a reasonable return value when there isn't a
-        // current card, so just fall through.
-        gLog.Warn("halyard.node",
-                  "Called GetParentForPurposeOfZOrderAndVisibility on %s "
-                  "when there isn't a current card.", GetLogName());
+        GroupMemberPtr group_member(wxGetApp().GetStage()
+                                    ->GetCurrentGroupMember());
+        ASSERT(group_member);
+        return group_member;
     }
     return GetParent();
 }

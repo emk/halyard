@@ -44,7 +44,7 @@
 #include "StageFrame.h"
 #include "ProgramTree.h"
 #include "MediaInfoPane.h"
-#include "Card.h"
+#include "GroupMember.h"
 #include "Element.h"
 #include "MovieElement.h"
 #include "LocationBox.h"
@@ -295,8 +295,8 @@ void Stage::RaiseToTop(ElementPtr inElem) {
     // If we're artificially parented to the card, then move us to the end
     // of its list of elements, too.
     if (inElem->HasLegacyZOrderAndVisibility() &&
-        inElem->GetParent() != mCurrentCard)
-        mCurrentCard->RaiseToTop(inElem);
+        inElem->GetParent() != mCurrentGroupMember)
+        mCurrentGroupMember->RaiseToTop(inElem);
 
     // Recomposite the affected areas of the screen.
     inElem->RecursivelyInvalidateCompositing();
@@ -1088,19 +1088,22 @@ void Stage::AddNode(NodePtr inNode) {
     // Delete any existing Node with the same name.
     DeleteNodeByName(inNode->GetName());
 
-    // If inNode is a card, then update our current card.
-    CardPtr as_card(inNode, dynamic_cast_tag());
-    if (as_card) {
-        ASSERT(!mCurrentCard);
-        mCurrentCard = as_card;
-
-        // If we have any elements that should be artificially registered
-        // with our new card to emulate old-style Z-order and visibility
-        // (that is, elements that are parented to the group and have
-        // legacy emulation turned on), register them now, putting them
-        // at the bottom of the Z-order.
-        BOOST_FOREACH(ElementPtr elem, mElementsWithLegacyZOrderAndVisibility)
-            mCurrentCard->RegisterChildElement(elem);
+    // If inNode is a group member, then update our current group member.
+    GroupMemberPtr as_group_member(inNode, dynamic_cast_tag());
+    if (as_group_member) {
+        // Check to make sure our new group member is actually a child of
+        // our current group member, or we're adding the root node in which
+        // case there is no existing current group member.
+        ASSERT((!mCurrentGroupMember && inNode->IsRootNode())
+               || inNode->GetParent() == mCurrentGroupMember);
+        
+        // Remove any artificial group member children from the current
+        // group member, change our current group member, and add our 
+        // artificial children to the new group member.
+        if (mCurrentGroupMember)
+            UnregisterElementsWithLegacyZOrderAndVisibilityFromCurrentGroupMember();
+        mCurrentGroupMember = as_group_member;
+        RegisterElementsWithLegacyZOrderAndVisibilityWithCurrentGroupMember();
     }
 
     // Add the new Node to our list.
@@ -1125,8 +1128,9 @@ void Stage::AddRootNode(NodePtr inNode) {
 
 void Stage::RegisterLegacyZOrderAndVisibility(ElementPtr inNode) {
     mElementsWithLegacyZOrderAndVisibility.push_back(inNode);
-    if (mCurrentCard && inNode->GetParent() != mCurrentCard)
-        mCurrentCard->RegisterChildElement(inNode);
+    ASSERT(mCurrentGroupMember);
+    if (inNode->GetParent() != mCurrentGroupMember)
+        mCurrentGroupMember->RegisterChildElement(inNode);
 }
 
 void Stage::UnregisterLegacyZOrderAndVisibility(ElementPtr inNode) {
@@ -1135,8 +1139,25 @@ void Stage::UnregisterLegacyZOrderAndVisibility(ElementPtr inNode) {
                   mElementsWithLegacyZOrderAndVisibility.end(), inNode);
     ASSERT(found != mElementsWithLegacyZOrderAndVisibility.end());
     mElementsWithLegacyZOrderAndVisibility.erase(found);
-    if (mCurrentCard && inNode->GetParent() != mCurrentCard)
-        mCurrentCard->UnregisterChildElement(inNode);
+    ASSERT(mCurrentGroupMember);
+    if (inNode->GetParent() != mCurrentGroupMember)
+        mCurrentGroupMember->UnregisterChildElement(inNode);
+}
+
+void 
+Stage::UnregisterElementsWithLegacyZOrderAndVisibilityFromCurrentGroupMember() {
+    ASSERT(mCurrentGroupMember);
+    BOOST_FOREACH(ElementPtr elem, mElementsWithLegacyZOrderAndVisibility)
+        if (elem->GetParent() != mCurrentGroupMember)
+            mCurrentGroupMember->UnregisterChildElement(elem);
+}
+
+void 
+Stage::RegisterElementsWithLegacyZOrderAndVisibilityWithCurrentGroupMember() {
+    ASSERT(mCurrentGroupMember);
+    BOOST_FOREACH(ElementPtr elem, mElementsWithLegacyZOrderAndVisibility)
+        if (elem->GetParent() != mCurrentGroupMember)
+            mCurrentGroupMember->RegisterChildElement(elem);
 }
 
 NodePtr Stage::FindNode(const wxString &inName) {
@@ -1150,7 +1171,6 @@ NodePtr Stage::FindNode(const wxString &inName) {
 LightweightElementPtr Stage::FindLightWeightElementAt(const wxPoint &inPoint,
                                                       bool inMustWantCursor)
 {
-    
     if (mRootNode) {
         // Only return our result if it's actually a LightweightElement.
         // At some point, we should probably modify our callers to handle
@@ -1215,11 +1235,21 @@ void Stage::DestroyNode(NodePtr inNode) {
         ASSERT(as_cursor != mActualCursor);
     }
 
-    // If inNode is a card, then clear our current card.
-    CardPtr as_card(inNode, dynamic_cast_tag());
-    if (as_card) {
-        ASSERT(mCurrentCard == as_card);
-        mCurrentCard.reset();
+    // If inNode is a group member, which should be our current group
+    // member, then set our current group member to its parent.
+    GroupMemberPtr as_group_member(inNode, dynamic_cast_tag());
+    if (as_group_member) {
+        UnregisterElementsWithLegacyZOrderAndVisibilityFromCurrentGroupMember();
+        ASSERT(mCurrentGroupMember == as_group_member);
+        if (as_group_member->IsRootNode()) {
+            ASSERT(mElementsWithLegacyZOrderAndVisibility.empty());
+            mCurrentGroupMember.reset();
+        } else {
+            GroupMemberPtr parent_group(mCurrentGroupMember->GetParent(), 
+                                        dynamic_cast_tag());
+            mCurrentGroupMember = parent_group;
+            RegisterElementsWithLegacyZOrderAndVisibilityWithCurrentGroupMember();
+        }
     }
 
     // We don't have to destroy the object explicity, because the

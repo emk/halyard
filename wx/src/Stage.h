@@ -38,8 +38,8 @@ class LightweightElement;
 typedef shared_ptr<LightweightElement> LightweightElementPtr;
 class MediaElement;
 typedef shared_ptr<MediaElement> MediaElementPtr;
-class Card;
-typedef shared_ptr<Card> CardPtr;
+class GroupMember;
+typedef shared_ptr<GroupMember> GroupMemberPtr;
 class EventDispatcher;
 class ImageCache;
 class CursorManager;
@@ -140,7 +140,7 @@ class Stage : public wxWindow, public Halyard::TReloadNotified {
     NodePtr mRootNode;
 
     /// The card we're currently on, or NULL.
-    CardPtr mCurrentCard;
+    GroupMemberPtr mCurrentGroupMember;
 
     /// The element which most recently contained the mouse.
     ///
@@ -274,7 +274,7 @@ public:
     NodePtr GetRootNode() const { return mRootNode; }
 
     /// Return our current card, or NULL if we don't have one.
-    CardPtr GetCurrentCard() const { return mCurrentCard; }
+    GroupMemberPtr GetCurrentGroupMember() const { return mCurrentGroupMember; }
 
     /// Load a special-purpose graphic associated with our currently running
     /// Halyard script. Such graphics currently include script icons and
@@ -490,6 +490,16 @@ public:
     /// Clean up extra references to a node with old Z-order and visibility
     /// rules.
     void UnregisterLegacyZOrderAndVisibility(ElementPtr inNode);
+
+    /// Remove elements from their legacy parent in preparation for
+    /// changing mCurrentGroupMember.
+    void 
+    UnregisterElementsWithLegacyZOrderAndVisibilityFromCurrentGroupMember();
+
+    /// Add all legacy elements to the current group member; should be
+    /// called after the group member has changed, and the matching
+    /// unregister method has been called.
+    void RegisterElementsWithLegacyZOrderAndVisibilityWithCurrentGroupMember();
 
     /// Return a reference to a list of all elements obeying the old
     /// Z-order and visibility rules.
