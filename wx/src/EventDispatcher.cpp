@@ -52,11 +52,15 @@ bool EventDispatcher::IsEventStale(const wxEvent &event) {
     // modified to apply to all event types. But we don't have wxEvent
     // objects for all our events yet, so there's no easy way to make this
     // consistent. Oh, well.
-    return PlatformGetEventTimestamp(event) <= sMaxStaleTime;
+    // For some reason, it is fairly common for new events to come in
+    // with a timestamp that is equal to sMaxStaleTime.  These events
+    // don't actually appear to be stale, so to avoid throwing away
+    // valid events, this needs to be a < isntead of a <=.
+    return PlatformGetEventTimestamp(event) < sMaxStaleTime;
 }
 
 void EventDispatcher::UpdateMaxStaleTime() {
-    sMaxStaleTime = PlatformGetTickCount();    
+    sMaxStaleTime = PlatformGetTickCount();
 }
 
 void EventDispatcher::SetDispatcher(TCallbackPtr inCallback) {
