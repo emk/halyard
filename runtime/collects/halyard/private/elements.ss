@@ -63,7 +63,8 @@
   (provide local->card parent->card below to-the-right-of %element%
            %invisible-element% %custom-element% %box% box new-box
            %clickable-zone% clickable-zone new-clickable-zone delete-element
-           delete-elements element-exists?  delete-element-if-exists)
+           delete-elements element-exists?  delete-element-if-exists 
+           find-node-at)
 
   (define $black (color 0 0 0))
   (define $transparent (color 0 0 0 0))
@@ -515,6 +516,13 @@
     (when (element-exists? name :parent parent)
       (delete-element (find-node (string->symbol (cat (parent .full-name)
                                                       "/" name)) #t))))
+
+  ;;; Find the node which would recieve mouse events at the given point.
+  ;;; This can be used for certain kinds of hit testing, drag and drop,
+  ;;; etc.  This will return #f if we find no such nodes.
+  (define (find-node-at p)
+    (define node-name (call-prim 'FindNodeAt p))
+    (find-node node-name #t))
 
 
   ;;;======================================================================

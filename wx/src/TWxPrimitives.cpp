@@ -570,6 +570,23 @@ DEFINE_PRIMITIVE(ErrortraceCompileEnabled) {
     ::SetPrimitiveResult(wxGetApp().GetStage()->IsErrortraceCompileEnabled());
 }
 
+DEFINE_PRIMITIVE(FindNodeAt) {
+    TPoint p;
+    inArgs >> p;
+
+    NodePtr root_node = wxGetApp().GetStage()->GetRootNode();
+    if (root_node) {
+        NodePtr node = root_node->FindNodeAt(TToWxPoint(p));
+        if (node) {
+            ::SetPrimitiveResult(TSymbol(ToStdString(node->GetName())));
+        } else {
+            ::SetPrimitiveResult(false);
+        }
+    } else {
+        ::SetPrimitiveResult(false);
+    }
+}
+
 DEFINE_PRIMITIVE(Focus) {
     std::string name;
     inArgs >> SymbolName(name);
@@ -1128,6 +1145,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(EnableExpensiveEvents);
     REGISTER_PRIMITIVE(ErrortraceCompileEnabled);
     REGISTER_PRIMITIVE(Focus);
+    REGISTER_PRIMITIVE(FindNodeAt);
     REGISTER_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_PRIMITIVE(Heartbeat);
     REGISTER_PRIMITIVE(InvisibleElement);

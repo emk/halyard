@@ -134,7 +134,25 @@
         (set! (foo .shape) (rect 10 10 0 0)))
       
       ;; Because of the veto, the shape should remain unchanged.
-      (assert-equals original-shape (foo .shape))))
+      (assert-equals original-shape (foo .shape)))
+    (test "FIND-NODE-AT should return the top node at a point, or #f"
+      (define elem-1 (%custom-element% .new :bounds (rect 0 0 50 50)
+                                       :wants-cursor? #t))
+      (define elem-2 (%custom-element% .new :bounds (rect 0 0 25 25)
+                                       :wants-cursor? #t))
+      (define no-cursor (%custom-element% .new :bounds (rect 0 0 200 200)
+                                          :wants-cursor? #f))
+      (define hidden (%custom-element% .new :bounds (rect 0 0 200 200)
+                                       :wants-cursor? #t :shown? #f))
+      (assert-equals elem-1 (find-node-at 
+                             (local->card (.element-parent) (point 40 40))))
+      (assert-equals elem-2 (find-node-at
+                             (local->card (.element-parent) (point 10 10))))
+      (elem-1 .raise-to-top!)
+      (assert-equals elem-1 (find-node-at
+                             (local->card (.element-parent) (point 10 10))))
+      (assert-equals #f     (find-node-at 
+                             (local->card (.element-parent) (point 100 100))))))
   
   (card /tests/custom-element-test
       (%element-test-suite%
