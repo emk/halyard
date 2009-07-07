@@ -29,6 +29,11 @@
   ;; 'CALL-PRIM' INSTEAD.
   (require #%engine-primitives)
   
+  ;; We don't change any of the compatibility-defaults, but we allow the
+  ;; user to do so.
+  (require (lib "compatibility-defaults.ss" "halyard/private"))
+  (provide (all-from (lib "compatibility-defaults.ss" "halyard/private")))
+
   (provide app-log debug-log debug-caution warning report-error fatal-error
            non-fatal-error caution)
 

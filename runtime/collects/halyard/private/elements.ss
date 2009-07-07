@@ -30,6 +30,7 @@
   (require (lib "kernel.ss" "halyard/private"))
   (require (lib "api.ss" "halyard/private"))
   (require (lib "events.ss" "halyard/private"))
+  (require (lib "compatibility-defaults.ss" "halyard/private"))
 
   (require (lib "after-updating.ss" "halyard/private"))
   (provide (all-from (lib "after-updating.ss" "halyard/private")))
@@ -118,7 +119,9 @@
     ;;; containment hierarchy.  Similarly, the children of a hidden
     ;;; %element% could still be visible.  When this attribute is set to
     ;;; #t, Halyard emulates the old semantics.
-    (attr has-legacy-z-order-and-visibility? #t :type <boolean>)
+    (attr has-legacy-z-order-and-visibility?
+          (compatibility-default 'has-legacy-z-order-and-visibility?)
+          :type <boolean>)
 
     (def (finish-initializing-engine-node)
       ;; NOTE - As a performance optimization, because of the expense of
