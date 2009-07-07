@@ -1,3 +1,136 @@
+0.5.35 - 7 July 2009
+
+This version of Halyard fixes many long-standing Z-order, visibility and
+cursor-grabbing bugs.  To fix these bugs, we replaced our flat C++ element
+list with a hierarchy based on the Scheme node hierarchy.
+
+The new behavior is currently turned off by default, although this will
+change in the next engine release.  In the meantime, you can observe the
+new semantics by passing the following parameter to .new:
+
+  :has-legacy-z-order-and-visibility? #f
+
+You will want to add the following to the startup code of all existing
+Halyard programs:
+
+  (require (lib "deprecated.ss" "halyard"))
+  (set! (compatibility-default 'has-legacy-z-order-and-visibility?) #t)
+
+We strongly recommend against changing this default at the library
+level--instead, change the default on a per-program basis.  Most libraries
+should work correctly in either mode, with the occasional addition of
+a :has-legacy-z-order-and-visibility? override.
+
+Here's a summary of what changes when the new features are enabled:
+
+  1. Elements are now drawn immediately after their parent node, and not in
+     order of global creation.  Hit-testing has been updated in a similar
+     fashion.
+  2. By default, all elements specify ':wants-cursor? #t'.  The default
+     cursor, however, has changed from 'hand to 'inherit, _except_ for
+     subclasses of %basic-button% and %clickable-zone%.  Other
+     %custom-element% subclasses with mouse-* handlers should be updated
+     to explicitly set their cursor to something appropriate.
+  3. Mouse grabbing will now send events to the children of the grabbed
+     element.  Under normal circumstances, these will propagate back up
+     to the element itself.
+  4. %element% .raise-to-top! now raises an element above its immediate
+     siblings, but not necessarily above all other elements on the card.
+  5. Putting an element into the drag layer should also put all of its
+     children into the drag layer as well.
+  6. Calling (set! (elem .shown?) #f) will also make its children
+     invisible.  Calling (set! (elem .shown?) #t) will make the children
+     visible _only_ if they were visible before.
+
+When upgrading to this new engine, select 'Reset to Default Perspective'
+from the 'Window' menu, and you will gain access to a new 'Elements' pane.
+This pane shows all currently-active elements.  Hidden elements are shown
+using grey text.
+
+This engine introduces the new API (find-node-at point), which takes a
+point in screen coordinates, and returns the node at that point;
+currently, it only returns elements, but if cards or groups become
+clickable in the future, may return those.
+
+This engine also includes an important bug-fix for stale event handling,
+and some preliminary Linux/wxGTK patches from Robinson.
+
+Brian Campbell (5):
+      C++ nodes: Bugfix for legacy z-order emulation on group-parented elems
+      C++ nodes: Use current group member as legacy element parent
+      Don't mark events as stale if their timestamp equals sMaxStaleTime
+      C++ nodes: Add FindNodeAt primitive and FIND-NODE-AT function
+      C++ nodes: Fix sementics of legacy children for current group member
+
+Eric Kidd (59):
+      Cleanup: Add 'indent-tabs-mode: nil' to fix-prologues.pl
+      Cleanup: Change C++ prologues to include 'indent-tabs-mode: nil'
+      Cleanup: Convert tabs to spaces
+      Cleanup: Modify fix-comments to strip "/////" clutter
+      Cleanup: Strip "/////" clutter from comments
+      Cleanup: Add tool for updating brace style
+      Cleanup: Convert braces to Java style
+      Merge branch 'cleanup' of git@github.com:emk/halyard
+      Merge branch 'for-merge' of git://github.com/colonelqubit/halyard
+      Cairo: Fix text in compile-time error message
+      gnome-autogen.sh: Look for glibtool on the Mac
+      gitignore: Ignore libtool-generated files
+      fix-comments.pl: Modify to strip more "//////////" clutter
+      Cleanup: Strip top-level "//////////" clutter
+      ASSERT: Check condition at call site, not in separate function
+      Doxygen: Run 'doxygen -u' to update Doxyfile
+      Doxygen: Fix infinite loop when generating API docs
+      wxAui: Fix incomplete comment found in code review
+      boost: Upgrade to 1.39.0
+      C++ nodes: Make Node a superclass of Element
+      C++ nodes: Modify Wait primitive to look up element like other primitives
+      C++ nodes: Use BOOST_FOREACH to loop over mElements
+      C++ nodes: Add a name-to-Node map to Stage
+      C++ nodes: Replace Stage::FindElement with FindNode
+      C++ nodes: Convert more mElements loops to use mNodes
+      Stage: Make our use of dynamic_cast_tag more consistent
+      C++ nodes: Convert Element addition and removal to support Nodes
+      C++ nodes: Rename more Stage APIs to refer to Nodes
+      configure: Require Boost 1.34.0 or later
+      C++ nodes: Add C++ counterpart to %group-member%
+      C++ nodes: Add C++ counterpart to %invisible-element%
+      C++ nodes: Add C++ counterpart to %root-node%
+      Node: Don't pass inStage to every constructor
+      C++ nodes: Break Card and CardGroup into separate classes
+      C++ nodes: Implement Node::GetParent()
+      C++ nodes: Implement Node::(RegisterWith|UnregisterFrom)Parent
+      configure: Require Boost 1.38.0
+      Elements pane: Add a primitive "Elements" pane
+      Elements pane: Use "display names" for nodes
+      Elements pane: Expand GroupMembers automatically
+      Elements pane: Display icons for nodes
+      Elements pane: Display italic class names for anonymous nodes
+      Elements pane: Show the names of hidden nodes in grey
+      Bug fix: Elements pane: Base event table on correct class
+      Elements pane: Only update when visible
+      C++ nodes: Keep track of legacy Z-order relationships
+      C++ nodes: Composite using new Z-order code
+      C++ nodes: Make mouse grabbing use LightweightElement explicitly
+      C++ nodes: Hit-test using new Z-order code
+      C++ nodes: "Raise to top" using new Z-order semantics
+      C++ nodes: Add demo code and instructions for planned features
+      C++ nodes: Remove useless Element::GetCursorName() function
+      C++ nodes: Tweak cursor handling for new Z-order semantics
+      C++ nodes: Send mouse-(enter|leave) to children of grabbed element
+      C++ nodes: Reorganize Node.h and break into sections
+      C++ nodes: Reorganize Element.h and break into sections
+      C++ nodes: Try to detect leaked Node objects
+      C++ nodes: Hide and show elements using new Z-order semantics
+      C++ nodes: Allow default z-order semantics to be changed
+
+Robinson Tryon (6):
+      autotools: Look for BOOST_PRG_EXEC instead of BOOST_TEST_EXEC
+      Make HalyardCheckAssertion inTest an unsigned long
+      FileSystem: Use proper syntax to declare operator== friend
+      /m4: Pick correct mzscheme libs based on $ac_mzscheme_want_precise_gc
+      TValue: Make template specializations in the proper namespace
+      HalyardEventLoop: Make __WXGTK__ builds use the standard loop
+
 0.5.34 - 12 June 2009
 
 This release significantly improves the Halyard developer GUI in a number
