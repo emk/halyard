@@ -33,7 +33,6 @@ public:
 
     Type GetType() { return CARD; }
     virtual bool IsPointInNode(const wxPoint &inPoint) { return true; }
-    virtual bool IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem);
 };
 
 #endif // Card_H

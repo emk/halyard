@@ -34,9 +34,3 @@ Card::Card(const wxString &inName, Halyard::TCallbackPtr inDispatcher)
     : GroupMember(inName, inDispatcher)
 {
 }
-
-bool Card::IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem) {
-    // We draw all members of mElements, regardless of the value of
-    // HasLegacyZOrderAndVisibility.
-    return true;
-}

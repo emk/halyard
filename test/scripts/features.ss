@@ -5,6 +5,7 @@
   (require (lib "animate.ss" "halyard"))
   (require (lib "state-db.ss" "halyard"))
   (require (lib "base.ss" "halyard-test"))
+  (require (lib "mizzen-unit.ss" "mizzen"))
 
   ;; Experimental slot initializer library.
   (require (lib "initialize-slot.ss" "halyard"))
@@ -648,7 +649,12 @@
                    :label "Group A"))
     (elem group-b (%legacy-self-raising-square%
                    :at (point 275 275) :color (color 255 255 0)
-                   :label "Group B")))
+                   :label "Group B"))
+    (setup
+      ;; This tests that our node walking machinery all works properly
+      ;; even when we have no current card; legacy elements parented
+      ;; to the group should still be traversible and hit testable.
+      (assert-equals (.group-a) (find-node-at (point 340 260)))))
 
   (card /features/legacy-z-order-group/raise-to-top
       (%standard-test-card% 

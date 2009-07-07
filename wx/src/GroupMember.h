@@ -33,6 +33,7 @@ public:
 
     virtual void Register();
     virtual void Unregister();
+    virtual bool IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem);
 };
 typedef shared_ptr<GroupMember> GroupMemberPtr;
 

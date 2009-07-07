@@ -120,7 +120,13 @@ bool Node::IsRealChild(ElementPtr inElem) {
 }
 
 bool Node::IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem) {
-    return IsRealChild(inElem) && !inElem->HasLegacyZOrderAndVisibility();
+    // The only reason we should have an element that is not a real
+    // child is if it is an artificial element parented to the current
+    // group member.  But that case should be caught by the code in
+    // GroupMember that overrides this, so we assert that we are only
+    // ever dealing with a real child.
+    ASSERT(IsRealChild(inElem));
+    return !inElem->HasLegacyZOrderAndVisibility();
 }
 
 NodePtr Node::GetParentForPurposeOfZOrderAndVisibility() {

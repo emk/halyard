@@ -23,6 +23,8 @@
 #include "AppHeaders.h"
 #include "GroupMember.h"
 #include "CardGroup.h"
+#include "HalyardApp.h"
+#include "Stage.h"
 
 using namespace Halyard;
 
@@ -56,5 +58,18 @@ void GroupMember::Unregister() {
         CardGroupPtr parent(GetParent(), dynamic_cast_tag());
         ASSERT(parent);
         parent->UnregisterMember(as_shared);
+    }
+}
+
+bool GroupMember::IsChildForPurposeOfZOrderAndVisibility(ElementPtr inElem) {
+    // We draw all members of mElements, regardless of the value of
+    // HasLegacyZOrderAndVisibility, if we are the current group
+    // member.  Otherwise, we only draw our real, non legacy
+    // children, as the current group member should be drawing
+    // our legacy children.
+    if (wxGetApp().GetStage()->GetCurrentGroupMember().get() == this) {
+        return true;
+    } else { 
+        return Node::IsChildForPurposeOfZOrderAndVisibility(inElem);
     }
 }
