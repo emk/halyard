@@ -264,12 +264,13 @@
       (assert-set-equal '("release.spec" "release.spec.sig"
                           "manifests" "pool" "temp")
                         (map path->string (directory-list download-dir)))
-      ;; TODO - this is actually not optimal, since we already have a file 
-      ;; that hashes to null-digest on our machine. A future optimization 
-      ;; may simply copy any files we know we have, instead of downloading 
-      ;; them. This would be a big win if we did a reorg of media.
+      ;; Note that we have new files which hash to null-digest; but we
+      ;; should not be downloading those, since we already have files
+      ;; which have that hash on disk; instead, the update installer
+      ;; is expected to copy those files from wherever they already
+      ;; are.
       (assert-set-equal 
-       (list foo-digest null-digest)
+       (list foo-digest)
        (map path->string 
             (directory-list (build-path download-dir "pool"))))
       (assert-set-equal 
@@ -287,16 +288,12 @@
                               (build-path download-dir "manifests" "Update"))))
       (assert-file-equals "foo\r\n" 
                           (build-path download-dir "pool" foo-digest))
-      (assert-file-equals "" (build-path download-dir "pool" null-digest))
-          
+
       ;; XXX - this is an unstable test. Because there are two files that 
       ;; are being updated to "foo\r\n", we might be reporting either one
-      ;; of them as the one we download. Also, we might be doing this in 
-      ;; either order.
+      ;; of them as the one we download.
       (assert-set-equal '((0 "foo.txt") 
-                          (1 "foo.txt") 
-                          (1 "sub/quux.txt")
-                          (1 "sub/quux.txt")) callback-args))
+                          (1 "foo.txt")) callback-args))
 
     (test "Updater should check signature on *.spec file"
       (assert (auto-update-possible? (.base-directory)))

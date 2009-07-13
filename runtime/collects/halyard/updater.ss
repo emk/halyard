@@ -24,6 +24,11 @@
   (require (lib "kernel.ss" "halyard/private"))
   (require (lib "elements.ss" "halyard/private"))
 
+  ;; We're doing a lot of list processing; lets use a good list processing
+  ;; lib.  Lots of identifiers in srfi-1 conflict with identifiers we get
+  ;; from elsewhere, like Swindle, so we have to require only what we need.
+  (require (only (lib "1.ss" "srfi") find delete-duplicates!))
+
   ;; TODO - these should probably be factored out into some sort of file-utils
   ;; library.
   (provide delete-directory-recursive copy-recursive copy-recursive-excluding
@@ -522,29 +527,45 @@
                  (+ total (manifest-size entry)))))
              0 diffs))
   
+  ;; Do two manifest entries have the same digest?
+  (define (same-digest? file-1 file-2)
+    (equal? (manifest-digest file-1) (manifest-digest file-2)))
+
+  ;; Do we already have this file downloaded in our pool, perhaps from a
+  ;; previous interrupted update?
+  (define (file-exists-in-pool? file)
+    (file-exists? (pool-dir (manifest-digest file))))
+  
+  ;; Do we already have this file somewhere in our existing installation?
+  (define (file-exists-in-tree? file)
+    (define existing-files (parse-manifests-in-dir 
+                            (updater-root-directory *updater*)))
+    (find (fn (existing-file) (same-digest? file existing-file))
+          existing-files))
+
   ;; Downloads a particular update. Takes a progress indicator callback. The 
   ;; progress indicator callback will take two arguments, a percentage and a 
   ;; string that indicates what is currently happening. 
-  ;; TODO - implement progress indicator
-  ;; TODO - unit test errors
   (define (download-update progress)
+    ;; TODO - unit test errors
+    ;; Get our manifest diff, the full list of files that we need need to
+    ;; update.
     (define diffs (get-manifest-diffs))
-    (define seen (make-hash-table 'equal))
-    (define download-files 
-      (filter (fn (file) 
-                (define not-seen? 
-                  (not (or (file-exists? (pool-dir (manifest-digest file)))
-                           (hash-table-get 
-                            seen (manifest-digest file) (fn () #f)))))
-                (hash-table-put! seen (manifest-digest file) #t)
-                not-seen?)
+    ;; Filter out files we already have on disk, either in our pool or
+    ;; in our existing installed tree.
+    (define new-files 
+      (filter (fn (file) (not (or (file-exists-in-pool? file) 
+                                  (file-exists-in-tree? file))))
               diffs))
-    (define total-size (foldl + 0 (map manifest-size download-files)))
+    ;; Filter out duplicates from our list, since we won't need to download
+    ;; the same digest more than once.
+    (define files-to-download (delete-duplicates! new-files same-digest?))
+    (define total-size (foldl + 0 (map manifest-size files-to-download)))
     (define current-size 0)
     (define (report-progress file) 
       (progress (if (= total-size 0) 1 (/ current-size total-size)) 
                 (manifest-file file)))
-    (foreach (file download-files)
+    (foreach [file files-to-download]
       (report-progress file)
       (download-verified (manifest-digest file)
                          (build-url (updater-url-prefix *updater*)
