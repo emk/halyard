@@ -207,16 +207,20 @@
     (teardown-test 
       (delete-directory-recursive (.test-directory))
       (clear-updater!))
-    (test "diff-manifests should work."
+    (test "diff-manifests should list everything the update installer must change."
       (define manifest-a '(("123" 0 "foo.txt")
                            ("456" 1 "bar.txt")
                            ("ABC" 2 "sub/thing.txt")))
       (define manifest-b '(("125" 2 "foo.txt")
                            ("456" 1 "bar.txt")
-                           ("ABC" 2 "sub/thing.txt")
-                           ("DEF" 3 "sub/zot.txt")))
+                           ("ABC" 2 "SUB/thing.txt")
+                           ("DEF" 3 "SUB/zot.txt")
+                           ("ABC" 2 "SUB/thing-dup.txt")))
       (assert-set-equal '() (diff-manifests manifest-a manifest-a))
-      (assert-set-equal '(("125" 2 "foo.txt") ("DEF" 3 "sub/zot.txt")) 
+      (assert-set-equal '(("125" 2 "foo.txt")
+                          ("ABC" 2 "SUB/thing.txt")
+                          ("DEF" 3 "SUB/zot.txt")
+                          ("ABC" 2 "SUB/thing-dup.txt")) 
                         (diff-manifests manifest-a manifest-b)))
     (test "Automatic update should be possible." 
       (assert (auto-update-possible? (.base-directory)))
