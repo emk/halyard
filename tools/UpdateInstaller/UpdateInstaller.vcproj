@@ -325,6 +325,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\ManifestDiff.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\UpdateInstaller.cpp"
 				>
 				<FileConfiguration
@@ -362,6 +382,10 @@
 			</File>
 			<File
 				RelativePath=".\src\Manifest.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ManifestDiff.h"
 				>
 			</File>
 			<File

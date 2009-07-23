@@ -28,6 +28,7 @@
 #include <vector>
 #include <string>
 #include "Manifest.h"
+#include "ManifestDiff.h"
 #include "CommandLine.h"
 #include "UpdateInstaller.h"
 #include "Interface.h"
@@ -67,11 +68,46 @@ BOOST_AUTO_TEST_CASE(test_parse_manifest) {
     CHECK_ENTRY(null_digest, 0, "bar.txt", base_manifest.entries()[0]);
     CHECK_ENTRY(foo_digest, 5, "foo.txt", base_manifest.entries()[1]);
 
+    Manifest::Entry foo(foo_digest, 5, "foo.txt");
+    BOOST_CHECK(base_manifest.has_matching_entry(foo));
+
     Manifest sub_manifest(path("Updates/manifests/update/MANIFEST.sub"));
     BOOST_CHECK(3 == sub_manifest.entries().size());
     CHECK_ENTRY(null_digest, 0, "sub/baz.txt", sub_manifest.entries()[0]);
     CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", sub_manifest.entries()[1]);
     CHECK_ENTRY(null_digest, 0, "sub/quux.txt", sub_manifest.entries()[2]);
+
+    Manifest::Entry quux(null_digest, 0, "sub/quux.txt");
+    BOOST_CHECK(sub_manifest.has_matching_entry(quux));
+    
+    Manifest::Entry bad_entry("not-a-digest", 0, "sub/quux.txt");
+    BOOST_CHECK(!sub_manifest.has_matching_entry(bad_entry));
+}
+
+BOOST_AUTO_TEST_CASE(test_all_manifests_in_dir) {
+    path update_dir("Updates/manifests/update/");
+    Manifest full_manifest(Manifest::all_manifests_in_dir(update_dir));
+    
+    BOOST_CHECK(5 == full_manifest.entries().size());
+    CHECK_ENTRY(null_digest, 0, "bar.txt", full_manifest.entries()[0]);
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", full_manifest.entries()[1]);
+    CHECK_ENTRY(null_digest, 0, "sub/baz.txt", full_manifest.entries()[2]);
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", full_manifest.entries()[3]);
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", full_manifest.entries()[4]);
+
+    Manifest::Entry sub_foo(foo_digest, 5, "sub/foo.txt");
+    Manifest::Entry foo(foo_digest, 5, "foo.txt");
+    BOOST_CHECK(full_manifest.has_matching_entry(sub_foo));
+    BOOST_CHECK(full_manifest.has_matching_entry(foo));
+}
+
+BOOST_AUTO_TEST_CASE(test_diff_manifests) {
+    ManifestDiff diff(path("."), path("Updates/manifests/update/"));
+
+    BOOST_CHECK(3 == diff.entries().size());
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.entries()[0]);
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.entries()[1]);
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.entries()[2]);
 }
 
 BOOST_AUTO_TEST_CASE(test_parse_spec) {

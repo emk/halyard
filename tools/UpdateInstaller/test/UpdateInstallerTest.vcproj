@@ -193,6 +193,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\ManifestDiff.cpp"
+				>
+			</File>
+			<File
 				RelativePath="test.cpp"
 				>
 			</File>

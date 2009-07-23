@@ -38,6 +38,8 @@ public:
               const std::string &inPath)
             : mDigest(inDigest), mSize(inSize), mPath(inPath) {}
 
+        bool operator==(const Entry &other) const;
+        
         std::string digest() const { return mDigest; }
         size_t size() const { return mSize; }
         std::string path() const { return mPath; }
@@ -51,12 +53,21 @@ public:
 
     Manifest(const boost::filesystem::path &path);
     Manifest(const std::string &contents);
+    Manifest() {}
+    
+    static Manifest all_manifests_in_dir(const boost::filesystem::path &path);
     const EntryVector &entries() const { return mEntries; }
+    bool has_matching_entry(const Entry &entry);
 
-private:
+protected:
+    void init(const std::string &contents);
+    void add_entry(const Entry &entry);
+
+private: 
     EntryVector mEntries;
 
-    void init(const std::string &contents);
+    typedef std::map<std::string, Entry> FileMap;
+    FileMap mFileMap;
 };
 
 class SpecFile {

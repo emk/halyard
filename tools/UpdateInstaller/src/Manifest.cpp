@@ -23,12 +23,20 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem.hpp>
 #include "Manifest.h"
+
+using boost::filesystem::path;
+using boost::filesystem::directory_iterator;
 
 enum { BLOCK_SIZE = /*4096*/ 10 };
 
 enum ParseState { DIGEST, SIZE, PATH };
+
+bool Manifest::Entry::operator==(const Entry &other) const {
+    return mDigest == other.mDigest && mSize == other.mSize
+        && mPath == other.mPath;
+}
 
 Manifest::Manifest(const boost::filesystem::path &path) {
     std::string data = read_file(path);
@@ -38,6 +46,23 @@ Manifest::Manifest(const boost::filesystem::path &path) {
 
 Manifest::Manifest(const std::string &contents) {
     init(contents);
+}
+
+Manifest Manifest::all_manifests_in_dir(const boost::filesystem::path &path) {
+    Manifest m;
+    
+    directory_iterator end_iter;
+    for (directory_iterator iter(path); iter != end_iter; ++iter)
+        if (!is_directory(iter->status()) && iter->path().stem() == "MANIFEST")
+            m.init(read_file(iter->path()));
+
+    return m;
+}
+
+bool Manifest::has_matching_entry(const Manifest::Entry &entry) {
+    FileMap::iterator iter(mFileMap.find(entry.path()));
+
+    return iter != mFileMap.end() && iter->second == entry;
 }
 
 void Manifest::init(const std::string &contents) {
@@ -62,9 +87,9 @@ void Manifest::init(const std::string &contents) {
 
         case PATH:
             if (*iter == '\n') {
-                mEntries.push_back(Entry(digest_buf, 
-                                         atoi(size_buf.c_str()),
-                                         path_buf));
+                Entry e(digest_buf, atoi(size_buf.c_str()), path_buf);
+                add_entry(e);
+
                 digest_buf = size_buf = path_buf = "";
                 state = DIGEST;
             } else {
@@ -72,6 +97,11 @@ void Manifest::init(const std::string &contents) {
             }
         }
     }
+}
+
+void Manifest::add_entry(const Manifest::Entry &entry) {
+    mEntries.push_back(entry);
+    mFileMap.insert(FileMap::value_type(entry.path(), entry));
 }
 
 std::string read_file(const boost::filesystem::path &path) {
