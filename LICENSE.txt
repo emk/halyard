@@ -52,6 +52,12 @@ Lesser General Public License:
   * PLT Scheme
   * Christophe Devine's SHA-1 implementation in libs/sha1
 
+We use the following third-party libraries under the terms of the Boost
+license:
+
+  * uuid_alt_v13_pod in libs/uuid
+  * Most components of boost itself
+
 We use the following libraries under the wxWidgets Library License:
 
   * wxWidgets
