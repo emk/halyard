@@ -79,4 +79,4 @@ private:
     Manifest mManifest;
 };
 
-#endif Manifest_H
+#endif // Manifest_H

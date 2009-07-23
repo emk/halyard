@@ -50,15 +50,28 @@ void UpdateProgress(size_t steps_completed) {
         BOOST_CHECK((PATH) == _e.path()); \
     } while(0)
 
+const char *foo_digest = "855426068ee8939df6bce2c2c4b1e7346532a133";
+const char *null_digest = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
+
 BOOST_AUTO_TEST_CASE(test_parse_diff) {
     Manifest diff(path("Updates/temp/MANIFEST-DIFF"));
     BOOST_CHECK(3 == diff.entries().size());
-    CHECK_ENTRY("855426068ee8939df6bce2c2c4b1e7346532a133", 5, "sub/foo.txt",
-                diff.entries()[0]);
-    CHECK_ENTRY("da39a3ee5e6b4b0d3255bfef95601890afd80709", 0, "sub/quux.txt",
-                diff.entries()[1]);
-    CHECK_ENTRY("855426068ee8939df6bce2c2c4b1e7346532a133", 5, "foo.txt",
-                diff.entries()[2]);
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.entries()[0]);
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.entries()[1]);
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.entries()[2]);
+}
+
+BOOST_AUTO_TEST_CASE(test_parse_manifest) {
+    Manifest base_manifest(path("Updates/manifests/update/MANIFEST.base"));
+    BOOST_CHECK(2 == base_manifest.entries().size());
+    CHECK_ENTRY(null_digest, 0, "bar.txt", base_manifest.entries()[0]);
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", base_manifest.entries()[1]);
+
+    Manifest sub_manifest(path("Updates/manifests/update/MANIFEST.sub"));
+    BOOST_CHECK(3 == sub_manifest.entries().size());
+    CHECK_ENTRY(null_digest, 0, "sub/baz.txt", sub_manifest.entries()[0]);
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", sub_manifest.entries()[1]);
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", sub_manifest.entries()[2]);
 }
 
 BOOST_AUTO_TEST_CASE(test_parse_spec) {
