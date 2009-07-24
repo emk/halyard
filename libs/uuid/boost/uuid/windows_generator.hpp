@@ -37,8 +37,10 @@ public:
     uuid operator()()
     {
         UUID u_;
-        UuidCreate(&u_);
-        char *p = reinterpret_cast<char*>(&u_);
+        RPC_STATUS status = UuidCreate(&u_);
+        if (status != RPC_S_OK)
+            throw std::runtime_error("Cannot generate UUID");
+        unsigned char *p = reinterpret_cast<unsigned char*>(&u_);
         uuid u;
         u.assign(p, p + sizeof(UUID));
         return u;
@@ -47,7 +49,7 @@ public:
 
 #ifndef BOOST_UUID_NATIVE_GENERATOR_DEFINED
 #define BOOST_UUID_NATIVE_GENERATOR_DEFINED
-typedef windows_generator<> native_generator;
+typedef windows_generator native_generator;
 #endif
 
 }} //namespace boost::uuids

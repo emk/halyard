@@ -26,7 +26,8 @@
 #include "TCommonPrimitives.h"
 
 // Needed to implement primitives.
-#include "sha1.h"
+#include <sha1.h>
+#include <boost/uuid.hpp>
 #include "TStyleSheet.h"
 #include "TStateDB.h"
 #include "TStateListenerManager.h"
@@ -244,6 +245,55 @@ DEFINE_PRIMITIVE(ExitScriptNonGui) {
     TInterpreterManager::GetInstance()->RequestQuitApplication();
 }
 
+//-------------------------------------------------------------------------
+// (GenerateUuid)
+//-------------------------------------------------------------------------
+// Generate a universally unique identifier (UUID).
+
+//#include <boost/nondet_random.hpp>
+//
+//// Ideally, we want to use a high-quality cryptographic random number
+//// generator on all platforms, but random_device is only implemented on
+//// Linux.
+//namespace {
+//    boost::random_device urandom;
+//    boost::uuids::random_generator<boost::random_device&> uuid_gen(urandom);
+//};
+
+#if APP_PLATFORM_WIN32
+
+#include <boost/uuid/windows_generator.hpp>
+
+namespace {
+    // Generate UUIDs using UuidCreate.
+    boost::uuids::windows_generator uuid_gen;
+};
+
+#else // !APP_PLATFORM_WIN32
+
+namespace {
+    // Use the built-in random number generator and seeding code.
+    //
+    // SECURITY - This does not necessarily generate cryptographically
+    // secure UUIDs!  An attacker can probably guess these.
+    //
+    // TODO - We explicitly use the internal seed_rng class here, because
+    // the Mersenne-Twister-based default generates suspicious warnings
+    // when seeding the generator.  This class actually attempts to use
+    // /dev/urandom when available, but I haven't audited any of the other
+    // cryptographic qualities of this generator.  So don't trust it.
+    boost::uuids::random_generator<boost::uuids::detail::seed_rng> uuid_gen;
+};
+
+#endif // !APP_PLATFORM_WIN32
+
+DEFINE_PRIMITIVE(GenerateUuid) {
+    boost::uuids::uuid uuid = uuid_gen();
+    
+    std::ostringstream out;
+    out << uuid;
+    ::SetPrimitiveResult(out.str());
+}
 
 //-------------------------------------------------------------------------
 // (IsInCommandLineMode)
@@ -409,6 +459,7 @@ void Halyard::RegisterCommonPrimitives() {
     REGISTER_PRIMITIVE(VariableInitialized);
     REGISTER_PRIMITIVE(DefStyle);
     REGISTER_PRIMITIVE(ExitScriptNonGui);
+    REGISTER_PRIMITIVE(GenerateUuid);
     REGISTER_PRIMITIVE(IsInCommandLineMode);
     REGISTER_PRIMITIVE(IsLazyLoadingEnabled);
     REGISTER_PRIMITIVE(LoadScriptFailed);

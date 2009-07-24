@@ -20,19 +20,20 @@
 ;;
 ;; @END_LICENSE
 
-;; This module requires all our other unit test modules.  If you include
-;; this module, you will get a top-level "tests" sequence containing
-;; various unit-test cards.
-(module tests "halyard.ss"
-  (require "halyard-unit-test.ss"
-           "private/util-test.ss"
-           "private/nodes-test.ss"
-           "private/paths-test.ss"
-           "private/events-test.ss"
-           "updater-test.ss"
-           "state-db-test.ss"
-           "data-file-test.ss"
-           "electric-gibbon-test.ss"
-           "uuid-test.ss"
-           "deprecated-test.ss")
+(module uuid (lib "halyard.ss" "halyard")
+  (require (lib "kernel.ss" "halyard/private"))
+  
+  (provide uuid)
+
+  ;;; Generate a universally unique identifier (UUID).
+  ;;;
+  ;;; SECURITY - This does not necessarily generate cryptographically
+  ;;; secure UUIDs!  On Windows, we call the standard UuidCreate function.
+  ;;; On other platforms, we rely on boost::uuid's built-in random
+  ;;; generator, which has probably never been audited for security.  So
+  ;;; (particularly on non-Windows platforms), it's probably possible for
+  ;;; an attacker to guess these UUID values.
+  (define (uuid)
+    (call-prim 'GenerateUuid))
+
   )

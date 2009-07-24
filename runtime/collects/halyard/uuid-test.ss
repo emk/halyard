@@ -20,19 +20,21 @@
 ;;
 ;; @END_LICENSE
 
-;; This module requires all our other unit test modules.  If you include
-;; this module, you will get a top-level "tests" sequence containing
-;; various unit-test cards.
-(module tests "halyard.ss"
-  (require "halyard-unit-test.ss"
-           "private/util-test.ss"
-           "private/nodes-test.ss"
-           "private/paths-test.ss"
-           "private/events-test.ss"
-           "updater-test.ss"
-           "state-db-test.ss"
-           "data-file-test.ss"
-           "electric-gibbon-test.ss"
-           "uuid-test.ss"
-           "deprecated-test.ss")
+(module uuid-test (lib "halyard.ss" "halyard")
+  (require (lib "halyard-unit.ss" "halyard"))
+  (require (lib "uuid.ss" "halyard"))
+
+  (define-class %uuid-test% (%test-case%)
+    (test "UUIDs should have the correct format"
+      (assert (regexp-match (pregexp (cat "^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}"
+                                          "[0-9a-fA-F]{12}$"))
+                            (uuid))))
+    (test "UUIDs should not match"
+      (assert (not (equals? (uuid) (uuid))))))
+
+  (card /tests/uuid
+      (%test-suite%
+       :tests (list %uuid-test%)))
+
   )
+  

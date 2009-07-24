@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1;..\..\..\libs\log4cplus\include;../../../libs/cairo/src"
+				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\uuid;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1;..\..\..\libs\log4cplus\include;../../../libs/cairo/src"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;LIBXML_STATIC;MZ_PRECISE_GC;LOG4CPLUS_STATIC;CAIRO_WIN32_STATIC_BUILD;BOOST_ALL_NO_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -71,7 +71,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="../../../libs/plt/lib/msvc/libmzsch3mxxxxxxx.lib"
 				OutputFile=".\Release\Common.lib"
 				SuppressStartupBanner="true"
 			/>
@@ -119,7 +118,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1;..\..\..\libs\log4cplus\include;../../../libs/cairo/src"
+				AdditionalIncludeDirectories="..\..\..\Common;..\..\..\libs\libxml2\include;..\..\..\libs\freetype2\include;..\..\..\libs\plt\src\mzscheme\include;..\..\..\libs\crypto;..\..\..\libs\boost;..\..\..\libs\uuid;..\..\..\libs\sqlite;&quot;..\..\..\libs\sqlite3-plus\sqlite3-plus&quot;;..\..\..\libs\CrashRpt\crashrpt\include;..\..\..\libs\plt\src\worksp;..\..\..\libs\sha1;..\..\..\libs\log4cplus\include;../../../libs/cairo/src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;LIBXML_STATIC;MZ_PRECISE_GC;LOG4CPLUS_STATIC;CAIRO_WIN32_STATIC_BUILD;BOOST_ALL_NO_LIB"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -149,7 +148,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="../../../libs/plt/lib/msvc/libmzsch3mxxxxxxx.lib"
 				OutputFile=".\Debug\Common.lib"
 				SuppressStartupBanner="true"
 			/>
