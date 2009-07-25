@@ -50,8 +50,8 @@ UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root)
     if (!exists(dst_root / "release.spec"))
         throw std::exception("No release.spec in target directory");
     
-    path diff_path(src_root / "Updates/temp/MANIFEST-DIFF");
-    FileSet diff(FileSet::ReadManifestFile(diff_path));
+    FileSet diff;
+    diff.InitFromManifestFile(path(src_root / "Updates/temp/MANIFEST-DIFF"));
 
     FileSet::EntryVector::const_iterator iter = diff.entries().begin();
     for (; iter != diff.entries().end(); ++iter) {

@@ -53,17 +53,16 @@ public:
     
     FileSet() {}
     
-    static FileSet ReadManifestFile(const boost::filesystem::path &path);
-    static FileSet FromContents(const std::string &contents);
-    static FileSet ReadManifestsInDir(const boost::filesystem::path &path);
-    static FileSet FilesToAdd(const boost::filesystem::path &inBase, 
-                              const boost::filesystem::path &inUpdate);
+    FileSet& InitFromManifestFile(const boost::filesystem::path &path);
+    FileSet& InitFromContents(const std::string &contents);
+    FileSet& InitFromManifestsInDir(const boost::filesystem::path &path);
+    FileSet& InitFilesToAdd(const boost::filesystem::path &inBase,
+                        const boost::filesystem::path &inUpdate);
 
     const EntryVector &entries() const { return mEntries; }
     bool has_matching_entry(const Entry &entry);
 
 protected:
-    void init(const std::string &contents);
     void add_entry(const Entry &entry);
 
 private: 

@@ -38,57 +38,14 @@ bool FileSet::Entry::operator==(const Entry &other) const {
         && mPath == other.mPath;
 }
 
-FileSet FileSet::ReadManifestFile(const boost::filesystem::path &path) {
+FileSet& FileSet::InitFromManifestFile(const boost::filesystem::path &path) {
     std::string data = read_file(path);
-    FileSet manifest;
-    manifest.init(data);
+    InitFromContents(data);
 
-    return manifest;
+    return *this;
 }
 
-FileSet FileSet::FromContents(const std::string &contents) {
-    FileSet f;
-    f.init(contents);
-
-    return f;
-}
-
-FileSet FileSet::ReadManifestsInDir(const boost::filesystem::path &path) {
-    FileSet m;
-    
-    directory_iterator end_iter;
-    for (directory_iterator iter(path); iter != end_iter; ++iter)
-        if (!is_directory(iter->status()) && iter->path().stem() == "MANIFEST")
-            m.init(read_file(iter->path()));
-
-    return m;
-}
-
-FileSet FileSet::FilesToAdd(const boost::filesystem::path &inBase, 
-                            const boost::filesystem::path &inUpdate) 
-{
-    FileSet base_manifest(FileSet::ReadManifestsInDir(inBase));
-    FileSet update_manifest(FileSet::ReadManifestsInDir(inUpdate));
-    
-    FileSet ret;
-
-    FileSet::EntryVector::const_iterator iter = 
-        update_manifest.entries().begin();
-    for(; iter != update_manifest.entries().end(); ++iter)
-        if (!base_manifest.has_matching_entry(*iter))
-            ret.add_entry(*iter);
-
-    return ret;
-}
-
-
-bool FileSet::has_matching_entry(const FileSet::Entry &entry) {
-    FileMap::iterator iter(mFileMap.find(entry.path()));
-
-    return iter != mFileMap.end() && iter->second == entry;
-}
-
-void FileSet::init(const std::string &contents) {
+FileSet& FileSet::InitFromContents(const std::string &contents) {
     std::string digest_buf, size_buf, path_buf;
     ParseState state = DIGEST;
     std::string::const_iterator iter = contents.begin();
@@ -120,6 +77,40 @@ void FileSet::init(const std::string &contents) {
             }
         }
     }
+    return *this;
+}
+
+FileSet& FileSet::InitFromManifestsInDir(const boost::filesystem::path &path) {
+    directory_iterator end_iter;
+    for (directory_iterator iter(path); iter != end_iter; ++iter)
+        if (!is_directory(iter->status()) && iter->path().stem() == "MANIFEST")
+            InitFromContents(read_file(iter->path()));
+
+    return *this;
+}
+
+FileSet& FileSet::InitFilesToAdd(const boost::filesystem::path &inBase,
+                                 const boost::filesystem::path &inUpdate) 
+{
+    FileSet base_manifest;
+    base_manifest.InitFromManifestsInDir(inBase);
+    FileSet update_manifest;
+    update_manifest.InitFromManifestsInDir(inUpdate);
+    
+    FileSet::EntryVector::const_iterator iter = 
+        update_manifest.entries().begin();
+    for(; iter != update_manifest.entries().end(); ++iter)
+        if (!base_manifest.has_matching_entry(*iter))
+            add_entry(*iter);
+
+    return *this;
+}
+
+
+bool FileSet::has_matching_entry(const FileSet::Entry &entry) {
+    FileMap::iterator iter(mFileMap.find(entry.path()));
+
+    return iter != mFileMap.end() && iter->second == entry;
 }
 
 void FileSet::add_entry(const FileSet::Entry &entry) {

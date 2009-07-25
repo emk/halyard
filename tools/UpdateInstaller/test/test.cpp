@@ -55,8 +55,9 @@ const char *foo_digest = "855426068ee8939df6bce2c2c4b1e7346532a133";
 const char *null_digest = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 
 BOOST_AUTO_TEST_CASE(test_parse_diff) {
-    path diff_path("Updates/temp/MANIFEST-DIFF");
-    FileSet diff(FileSet::ReadManifestFile(diff_path));
+    FileSet diff;
+    diff.InitFromManifestFile(path("Updates/temp/MANIFEST-DIFF"));
+
     BOOST_CHECK(3 == diff.entries().size());
     CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.entries()[0]);
     CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.entries()[1]);
@@ -64,8 +65,9 @@ BOOST_AUTO_TEST_CASE(test_parse_diff) {
 }
 
 BOOST_AUTO_TEST_CASE(test_parse_manifest) {
+    FileSet base_manifest;
     path base_path("Updates/manifests/update/MANIFEST.base");
-    FileSet base_manifest(FileSet::ReadManifestFile(base_path));
+    base_manifest.InitFromManifestFile(base_path);
     BOOST_CHECK(2 == base_manifest.entries().size());
     CHECK_ENTRY(null_digest, 0, "bar.txt", base_manifest.entries()[0]);
     CHECK_ENTRY(foo_digest, 5, "foo.txt", base_manifest.entries()[1]);
@@ -74,7 +76,8 @@ BOOST_AUTO_TEST_CASE(test_parse_manifest) {
     BOOST_CHECK(base_manifest.has_matching_entry(foo));
 
     path sub_path("Updates/manifests/update/MANIFEST.sub");
-    FileSet sub_manifest(FileSet::ReadManifestFile(sub_path));
+    FileSet sub_manifest;
+    sub_manifest.InitFromManifestFile(sub_path);
     BOOST_CHECK(3 == sub_manifest.entries().size());
     CHECK_ENTRY(null_digest, 0, "sub/baz.txt", sub_manifest.entries()[0]);
     CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", sub_manifest.entries()[1]);
@@ -88,9 +91,9 @@ BOOST_AUTO_TEST_CASE(test_parse_manifest) {
 }
 
 BOOST_AUTO_TEST_CASE(test_all_manifests_in_dir) {
-    path update_dir("Updates/manifests/update/");
-    FileSet full_manifest(FileSet::ReadManifestsInDir(update_dir));
-    
+    FileSet full_manifest;
+    full_manifest.InitFromManifestsInDir(path("Updates/manifests/update/"));
+
     BOOST_CHECK(5 == full_manifest.entries().size());
     CHECK_ENTRY(null_digest, 0, "bar.txt", full_manifest.entries()[0]);
     CHECK_ENTRY(foo_digest, 5, "foo.txt", full_manifest.entries()[1]);
@@ -105,8 +108,9 @@ BOOST_AUTO_TEST_CASE(test_all_manifests_in_dir) {
 }
 
 BOOST_AUTO_TEST_CASE(test_diff_manifests) {
-    FileSet diff(FileSet::FilesToAdd(path("."), 
-                                     path("Updates/manifests/update/")));
+    FileSet diff;
+    diff.InitFilesToAdd(path("."), 
+                        path("Updates/manifests/update/"));
 
     BOOST_CHECK(3 == diff.entries().size());
     CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.entries()[0]);
