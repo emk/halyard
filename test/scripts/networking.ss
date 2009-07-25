@@ -120,7 +120,7 @@
       (assert-equals "post: Hello" (.post "/upload" "text/plain" "Hello")))
     )
 
-  (define-class %json-request-test% (%test-case%)
+  (define-class %json-request-test% (%url-request-test-case%)
     (test "JSON GET requests should work"
       (define request (%json-request% .new :url (cat $server "/add?x=1&y=2")))
       (request .wait)
