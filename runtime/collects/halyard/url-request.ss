@@ -167,6 +167,34 @@
 
 
   ;;=======================================================================
+  ;;  %http-post-form-request%
+  ;;=======================================================================
+
+  (provide %http-post-form-request%)
+
+  ;; Encode an assoc mapping parameter names strings to parameter values
+  ;; as type application/x-www-form-urlencoded.
+  (define (escape-form-data parameters)
+    (call-prim 'UrlRequestEscapeFormData
+               ;; Flatten parameters into a list.
+               (let recurse [[parameters parameters]]
+                 (if (null? parameters)
+                     '()
+                     (cons (car (car parameters))
+                           (cons (cdr (car parameters))
+                                 (recurse (cdr parameters))))))))
+
+  ;;; An HTTP POST containing ordinary form parameters.
+  (define-class %http-post-form-request% (%easy-url-request%)
+    ;;; The HTTP POST parameters to use for this request, represented
+    ;;; as a assoc mapping parameter names strings to parameter values.
+    (attr parameters)
+    (value body (escape-form-data (.parameters)))
+    (default content-type "application/x-www-form-urlencoded")
+    )
+
+
+  ;;=======================================================================
   ;;  %json-request%
   ;;=======================================================================
 

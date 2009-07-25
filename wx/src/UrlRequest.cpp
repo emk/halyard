@@ -132,6 +132,26 @@ size_t UrlRequest::WriteCallback(char* ptr, size_t size, size_t nmemb,
     return static_cast<UrlRequest*>(data)->DoWrite(ptr, size, nmemb);
 }
 
+std::string UrlRequest::Escape(const std::string &inStr) {
+    // We could call curl_easy_escape here, but it requires a CURL *.  So
+    // we just reinvent the wheel ourselves.
+    std::ostringstream out;
+    out << std::hex << std::right;
+    out.fill('0');
+    for (size_t i = 0; i < inStr.size(); i++) {
+        char c = inStr[i];
+        if (isalnum(c)) {
+            out << c;
+        } else {
+            out << '%';
+            out.width(2);
+            out << (int) c;
+            out.width(1);
+        }
+    }
+    return out.str();
+}
+
 
 //========================================================================
 //  Proxy configuration

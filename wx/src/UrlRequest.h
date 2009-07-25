@@ -85,6 +85,9 @@ public:
     /// Run idle-time tasks for all outstanding UrlRequest objects.
     static void ProcessAllRequests();
 
+    // Encode the specified string for use in a URL parameter.
+    static std::string Escape(const std::string &inStr);
+
     /// Do any proxy server configuration needed for inHandle, assuming we
     /// want to download inUrl.  Note that this is a public, static
     /// function (and not a private member function) so that we can call it
