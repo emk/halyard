@@ -189,11 +189,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\Manifest.cpp"
+				RelativePath="..\src\FileSet.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\ManifestDiff.cpp"
+				RelativePath="..\src\SpecFile.cpp"
 				>
 			</File>
 			<File

@@ -27,8 +27,8 @@
 
 #include <vector>
 #include <string>
-#include "Manifest.h"
-#include "ManifestDiff.h"
+#include "FileSet.h"
+#include "SpecFile.h"
 #include "CommandLine.h"
 #include "UpdateInstaller.h"
 #include "Interface.h"
@@ -45,7 +45,7 @@ void UpdateProgress(size_t steps_completed) {
 
 #define CHECK_ENTRY(DIGEST,SIZE,PATH,ENTRY) \
     do { \
-        Manifest::Entry _e(ENTRY); \
+        FileSet::Entry _e(ENTRY); \
         BOOST_CHECK((DIGEST) == _e.digest()); \
         BOOST_CHECK((SIZE) == _e.size()); \
         BOOST_CHECK((PATH) == _e.path()); \
@@ -55,7 +55,8 @@ const char *foo_digest = "855426068ee8939df6bce2c2c4b1e7346532a133";
 const char *null_digest = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 
 BOOST_AUTO_TEST_CASE(test_parse_diff) {
-    Manifest diff(path("Updates/temp/MANIFEST-DIFF"));
+    path diff_path("Updates/temp/MANIFEST-DIFF");
+    FileSet diff(FileSet::ReadManifestFile(diff_path));
     BOOST_CHECK(3 == diff.entries().size());
     CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.entries()[0]);
     CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.entries()[1]);
@@ -63,30 +64,32 @@ BOOST_AUTO_TEST_CASE(test_parse_diff) {
 }
 
 BOOST_AUTO_TEST_CASE(test_parse_manifest) {
-    Manifest base_manifest(path("Updates/manifests/update/MANIFEST.base"));
+    path base_path("Updates/manifests/update/MANIFEST.base");
+    FileSet base_manifest(FileSet::ReadManifestFile(base_path));
     BOOST_CHECK(2 == base_manifest.entries().size());
     CHECK_ENTRY(null_digest, 0, "bar.txt", base_manifest.entries()[0]);
     CHECK_ENTRY(foo_digest, 5, "foo.txt", base_manifest.entries()[1]);
 
-    Manifest::Entry foo(foo_digest, 5, "foo.txt");
+    FileSet::Entry foo(foo_digest, 5, "foo.txt");
     BOOST_CHECK(base_manifest.has_matching_entry(foo));
 
-    Manifest sub_manifest(path("Updates/manifests/update/MANIFEST.sub"));
+    path sub_path("Updates/manifests/update/MANIFEST.sub");
+    FileSet sub_manifest(FileSet::ReadManifestFile(sub_path));
     BOOST_CHECK(3 == sub_manifest.entries().size());
     CHECK_ENTRY(null_digest, 0, "sub/baz.txt", sub_manifest.entries()[0]);
     CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", sub_manifest.entries()[1]);
     CHECK_ENTRY(null_digest, 0, "sub/quux.txt", sub_manifest.entries()[2]);
 
-    Manifest::Entry quux(null_digest, 0, "sub/quux.txt");
+    FileSet::Entry quux(null_digest, 0, "sub/quux.txt");
     BOOST_CHECK(sub_manifest.has_matching_entry(quux));
     
-    Manifest::Entry bad_entry("not-a-digest", 0, "sub/quux.txt");
+    FileSet::Entry bad_entry("not-a-digest", 0, "sub/quux.txt");
     BOOST_CHECK(!sub_manifest.has_matching_entry(bad_entry));
 }
 
 BOOST_AUTO_TEST_CASE(test_all_manifests_in_dir) {
     path update_dir("Updates/manifests/update/");
-    Manifest full_manifest(Manifest::all_manifests_in_dir(update_dir));
+    FileSet full_manifest(FileSet::ReadManifestsInDir(update_dir));
     
     BOOST_CHECK(5 == full_manifest.entries().size());
     CHECK_ENTRY(null_digest, 0, "bar.txt", full_manifest.entries()[0]);
@@ -95,14 +98,15 @@ BOOST_AUTO_TEST_CASE(test_all_manifests_in_dir) {
     CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", full_manifest.entries()[3]);
     CHECK_ENTRY(null_digest, 0, "sub/quux.txt", full_manifest.entries()[4]);
 
-    Manifest::Entry sub_foo(foo_digest, 5, "sub/foo.txt");
-    Manifest::Entry foo(foo_digest, 5, "foo.txt");
+    FileSet::Entry sub_foo(foo_digest, 5, "sub/foo.txt");
+    FileSet::Entry foo(foo_digest, 5, "foo.txt");
     BOOST_CHECK(full_manifest.has_matching_entry(sub_foo));
     BOOST_CHECK(full_manifest.has_matching_entry(foo));
 }
 
 BOOST_AUTO_TEST_CASE(test_diff_manifests) {
-    ManifestDiff diff(path("."), path("Updates/manifests/update/"));
+    FileSet diff(FileSet::FilesToAdd(path("."), 
+                                     path("Updates/manifests/update/")));
 
     BOOST_CHECK(3 == diff.entries().size());
     CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.entries()[0]);

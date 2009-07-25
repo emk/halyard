@@ -24,7 +24,7 @@
 #include <vector>
 #include <string>
 #include <boost/filesystem.hpp>
-#include "Manifest.h"
+#include "FileSet.h"
 
 using boost::filesystem::path;
 using boost::filesystem::directory_iterator;
@@ -33,23 +33,28 @@ enum { BLOCK_SIZE = /*4096*/ 10 };
 
 enum ParseState { DIGEST, SIZE, PATH };
 
-bool Manifest::Entry::operator==(const Entry &other) const {
+bool FileSet::Entry::operator==(const Entry &other) const {
     return mDigest == other.mDigest && mSize == other.mSize
         && mPath == other.mPath;
 }
 
-Manifest::Manifest(const boost::filesystem::path &path) {
+FileSet FileSet::ReadManifestFile(const boost::filesystem::path &path) {
     std::string data = read_file(path);
+    FileSet manifest;
+    manifest.init(data);
 
-    init(data);
+    return manifest;
 }
 
-Manifest::Manifest(const std::string &contents) {
-    init(contents);
+FileSet FileSet::FromContents(const std::string &contents) {
+    FileSet f;
+    f.init(contents);
+
+    return f;
 }
 
-Manifest Manifest::all_manifests_in_dir(const boost::filesystem::path &path) {
-    Manifest m;
+FileSet FileSet::ReadManifestsInDir(const boost::filesystem::path &path) {
+    FileSet m;
     
     directory_iterator end_iter;
     for (directory_iterator iter(path); iter != end_iter; ++iter)
@@ -59,13 +64,31 @@ Manifest Manifest::all_manifests_in_dir(const boost::filesystem::path &path) {
     return m;
 }
 
-bool Manifest::has_matching_entry(const Manifest::Entry &entry) {
+FileSet FileSet::FilesToAdd(const boost::filesystem::path &inBase, 
+                            const boost::filesystem::path &inUpdate) 
+{
+    FileSet base_manifest(FileSet::ReadManifestsInDir(inBase));
+    FileSet update_manifest(FileSet::ReadManifestsInDir(inUpdate));
+    
+    FileSet ret;
+
+    FileSet::EntryVector::const_iterator iter = 
+        update_manifest.entries().begin();
+    for(; iter != update_manifest.entries().end(); ++iter)
+        if (!base_manifest.has_matching_entry(*iter))
+            ret.add_entry(*iter);
+
+    return ret;
+}
+
+
+bool FileSet::has_matching_entry(const FileSet::Entry &entry) {
     FileMap::iterator iter(mFileMap.find(entry.path()));
 
     return iter != mFileMap.end() && iter->second == entry;
 }
 
-void Manifest::init(const std::string &contents) {
+void FileSet::init(const std::string &contents) {
     std::string digest_buf, size_buf, path_buf;
     ParseState state = DIGEST;
     std::string::const_iterator iter = contents.begin();
@@ -99,7 +122,7 @@ void Manifest::init(const std::string &contents) {
     }
 }
 
-void Manifest::add_entry(const Manifest::Entry &entry) {
+void FileSet::add_entry(const FileSet::Entry &entry) {
     mEntries.push_back(entry);
     mFileMap.insert(FileMap::value_type(entry.path(), entry));
 }
@@ -123,59 +146,3 @@ std::string read_file(const boost::filesystem::path &path) {
     return buffer;
 }
 
-SpecFile::SpecFile(const boost::filesystem::path &path)
-    : mContents(read_file(path)), mHeader(parseHeader()), 
-      mUrl(mHeader["Update-URL"]), mBuild(mHeader["Build"]), 
-      mManifest(mContents) 
-{ }
-
-enum HeaderParseState { NEWLINE, KEY, VALUE };
-
-SpecFile::StringMap SpecFile::parseHeader() {
-    HeaderParseState state = NEWLINE;
-    std::string key_buf, val_buf;
-    StringMap ret;
-
-    std::string::iterator iter = mContents.begin();
-    for (; iter != mContents.end(); ++iter) {
-        switch(state) {
-        case NEWLINE: 
-            if (*iter == '\n') {
-                // We have a blank line, so we're done with the header
-                mContents = std::string(++iter, mContents.end());
-                return ret;
-            } else { 
-                key_buf += *iter;
-                state = KEY;
-            }
-            break;
-        case KEY:
-            if (*iter == ':') {
-                // check if we have ": "
-                if (++iter == mContents.end()) {
-                    mContents = "";
-                    return ret;
-                } else if (*iter = ' ') {
-                    state = VALUE;
-                } else {
-                    key_buf += ':';
-                    key_buf += *iter;
-                }
-            } else {
-                key_buf += *iter;
-            }
-            break;
-        case VALUE:
-            if (*iter == '\n') {
-                ret[key_buf] = val_buf;
-                key_buf = val_buf = "";
-                state = NEWLINE;
-            } else {
-                val_buf += *iter;
-            }
-        }
-    }
-
-    mContents = "";
-    return ret;
-}

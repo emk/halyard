@@ -30,7 +30,8 @@
 #include <boost/filesystem/exception.hpp>
 
 #include "UpdateInstaller.h"
-#include "Manifest.h"
+#include "FileSet.h"
+#include "SpecFile.h"
 #include "Interface.h"
 
 using namespace boost::filesystem;
@@ -48,10 +49,11 @@ UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root)
     // accidentally be used to mess up a user's system.
     if (!exists(dst_root / "release.spec"))
         throw std::exception("No release.spec in target directory");
+    
+    path diff_path(src_root / "Updates/temp/MANIFEST-DIFF");
+    FileSet diff(FileSet::ReadManifestFile(diff_path));
 
-    Manifest diff(src_root / "Updates/temp/MANIFEST-DIFF");
-
-    Manifest::EntryVector::const_iterator iter = diff.entries().begin();
+    FileSet::EntryVector::const_iterator iter = diff.entries().begin();
     for (; iter != diff.entries().end(); ++iter) {
         path src_path = src_root / "Updates/pool" / iter->digest();
         path dst_path = dst_root / iter->path();

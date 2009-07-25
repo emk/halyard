@@ -20,55 +20,12 @@
 //
 // @END_LICENSE
 
-#ifndef Manifest_H
-#define Manifest_H
+#ifndef SpecFile_H
+#define SpecFile_H
 
-#include <vector>
 #include <string>
 #include <map>
-#include <boost/filesystem/path.hpp>
-
-std::string read_file(const boost::filesystem::path &path);
-
-class Manifest {
-public:
-    class Entry {
-    public:
-        Entry(const std::string &inDigest, size_t inSize,
-              const std::string &inPath)
-            : mDigest(inDigest), mSize(inSize), mPath(inPath) {}
-
-        bool operator==(const Entry &other) const;
-        
-        std::string digest() const { return mDigest; }
-        size_t size() const { return mSize; }
-        std::string path() const { return mPath; }
-
-    private:
-        std::string mDigest, mPath;
-        size_t mSize;
-    };
-
-    typedef std::vector<Entry> EntryVector;
-
-    Manifest(const boost::filesystem::path &path);
-    Manifest(const std::string &contents);
-    Manifest() {}
-    
-    static Manifest all_manifests_in_dir(const boost::filesystem::path &path);
-    const EntryVector &entries() const { return mEntries; }
-    bool has_matching_entry(const Entry &entry);
-
-protected:
-    void init(const std::string &contents);
-    void add_entry(const Entry &entry);
-
-private: 
-    EntryVector mEntries;
-
-    typedef std::map<std::string, Entry> FileMap;
-    FileMap mFileMap;
-};
+#include "FileSet.h"
 
 class SpecFile {
 public:
@@ -76,7 +33,7 @@ public:
 
     std::string url() const { return mUrl; }
     std::string build() const { return mBuild; }
-    const Manifest &manifest() const { return mManifest; }
+    const FileSet &manifest() const { return mManifest; }
 
 private:
     typedef std::map<std::string, std::string> StringMap;
@@ -87,7 +44,7 @@ private:
     std::string mContents;
     StringMap mHeader;
     std::string mUrl, mBuild;
-    Manifest mManifest;
+    FileSet mManifest;
 };
 
-#endif // Manifest_H
+#endif // FileSet_H

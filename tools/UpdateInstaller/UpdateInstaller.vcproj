@@ -265,6 +265,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\FileSet.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\LogFile.cpp"
 				>
 				<FileConfiguration
@@ -305,27 +325,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\Manifest.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\ManifestDiff.cpp"
+				RelativePath=".\src\SpecFile.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -373,6 +373,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\FileSet.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\Interface.h"
 				>
 			</File>
@@ -381,11 +385,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\Manifest.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\ManifestDiff.h"
+				RelativePath=".\src\SpecFile.h"
 				>
 			</File>
 			<File
