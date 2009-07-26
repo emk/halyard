@@ -42,42 +42,81 @@ static void CopyFileWithRetries(const path &source, const path &dest);
 static void TouchFile(const path &name);
 
 UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root)
-    : mDestRoot(dst_root)
-{
-    // Basic sanity check: Don't install to a target directory that lacks
-    // a release.spec.  This reduces the chance the updater could
-    // accidentally be used to mess up a user's system.
-    if (!exists(dst_root / "release.spec"))
-        throw std::exception("No release.spec in target directory");
-    
-    FileSet diff;
-    diff.InitFromManifestFile(path(src_root / "Updates/temp/MANIFEST-DIFF"));
+    : mSrcRoot(src_root), mDestRoot(dst_root), 
+      mSpecFile(mSrcRoot / "Updates/release.spec"),
+      mSrcManifestDir(mSrcRoot / "Updates/manifests" / mSpecFile.build())
+{ 
+    mUpdateFiles.InitFromManifestsInDir(mSrcManifestDir);
+    mExistingFiles.InitFromManifestsInDir(mDestRoot);
+}
 
-    FileSet::EntryVector::const_iterator iter = diff.entries().begin();
-    for (; iter != diff.entries().end(); ++iter) {
-        path src_path = src_root / "Updates/pool" / iter->digest();
-        path dst_path = dst_root / iter->path();
+void UpdateInstaller::PrepareForUpdate() {
+    CalculatePoolToTreeCopiesNeeded();
+    PopulatePoolFromTree();
+}
+
+void UpdateInstaller::CalculatePoolToTreeCopiesNeeded() {
+    FileSet diff;
+    diff.InitFilesToAdd(mExistingFiles, mUpdateFiles);
+
+    // Add copy specs for all of files we need to copy from the pool to
+    // the tree.
+    FileSet::EntryVector::const_iterator iter = diff.Entries().begin();
+    for (; iter != diff.Entries().end(); ++iter) {
+        path src_path = mSrcRoot / "Updates/pool" / iter->digest();
+        path dst_path = mDestRoot / iter->path();
         mCopies.push_back(CopySpec(src_path, dst_path));
     }
 
+    // Add copy specs for all of the manifests we need to copy from
+    // our update manifest dir to the root of the tree.
     // TODO - add test case for subset of manifests installed
-    SpecFile spec(src_root / "Updates/release.spec");
-    directory_iterator dir_iter(dst_root);
+    directory_iterator dir_iter(mDestRoot);
     for(; dir_iter != directory_iterator(); ++dir_iter) {
         if (dir_iter->leaf().substr(0, 9) == "MANIFEST.") {
-            path src_path = src_root / "Updates/manifests" / spec.build() 
-                / dir_iter->leaf();
-            
+            path src_path = mSrcManifestDir / dir_iter->leaf();
             mCopies.push_back(CopySpec(src_path, *dir_iter));
         }
     }
 
-    mCopies.push_back(CopySpec(src_root / "Updates/release.spec", 
-                               dst_root / "release.spec"));
+    // Add a copy spec for our updated release.spec
+    mCopies.push_back(CopySpec(mSrcRoot / "Updates/release.spec", 
+                               mDestRoot / "release.spec"));    
+}
+
+void UpdateInstaller::PopulatePoolFromTree() {
+    CopyVector::const_iterator copy;
+    for (copy = mCopies.begin(); copy != mCopies.end(); ++copy) {
+        if (!exists(copy->source)) {
+            FileSet::DigestMap map(mExistingFiles.DigestEntryMap());
+            
+            // XXX - a hopefully temporary hack, assumes that the file we
+            // need is a pool file, not a manifest or release.spec.
+            std::string digest_needed = copy->source.filename();
+
+            // This is a multimap, since there can be more than one
+            // file with the same digest, but we only need one of them.
+            FileSet::DigestMap::const_iterator iter = map.find(digest_needed);
+            if (iter != map.end()) {
+                path file_from_tree = mSrcRoot / iter->second.path(); 
+                CopyFileWithRetries(file_from_tree, copy->source);
+            }
+            
+            // If we didn't find a file, we just punt, and let the 
+            // IsUpdatePossible called later notice that we don't have
+            // our source file and error out gracefully.
+        }
+    }
 }
 
 bool UpdateInstaller::IsUpdatePossible() {
-    std::vector<CopySpec>::const_iterator copy = mCopies.begin();
+    // Basic sanity check: Don't install to a target directory that lacks
+    // a release.spec.  This reduces the chance the updater could
+    // accidentally be used to mess up a user's system.
+    if (!exists(mDestRoot / "release.spec"))
+        return false;
+    
+    CopyVector::const_iterator copy = mCopies.begin();
     for (; copy != mCopies.end(); ++copy) {
         if (!copy->IsCopyPossible()) {
             return false;

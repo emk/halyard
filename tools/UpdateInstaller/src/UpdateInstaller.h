@@ -24,6 +24,8 @@
 #define UpdateInstaller_H
 
 #include <boost/filesystem/path.hpp>
+#include "FileSet.h"
+#include "SpecFile.h"
 
 using namespace boost::filesystem;
 
@@ -31,6 +33,9 @@ class UpdateInstaller {
 public:
     UpdateInstaller(const path &src_root, const path &dst_root);
     
+    void CalculatePoolToTreeCopiesNeeded();
+    void PopulatePoolFromTree();
+    void PrepareForUpdate();
     bool IsUpdatePossible();
     void InstallUpdate();
 
@@ -45,8 +50,13 @@ private:
         bool IsCopyPossible() const;
         void CopyOverwriting() const;
     };
-    path mDestRoot;
-    std::vector<CopySpec> mCopies;
+    typedef std::vector<CopySpec> CopyVector;
+
+    path mSrcRoot, mDestRoot;
+    SpecFile mSpecFile;
+    path mSrcManifestDir;
+    FileSet mUpdateFiles, mExistingFiles;
+    CopyVector mCopies;
 
     void LockDestinationDirectory();
     void UnlockDestinationDirectory();

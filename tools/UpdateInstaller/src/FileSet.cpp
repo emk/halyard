@@ -68,7 +68,7 @@ FileSet& FileSet::InitFromContents(const std::string &contents) {
         case PATH:
             if (*iter == '\n') {
                 Entry e(digest_buf, atoi(size_buf.c_str()), path_buf);
-                add_entry(e);
+                AddEntry(e);
 
                 digest_buf = size_buf = path_buf = "";
                 state = DIGEST;
@@ -89,6 +89,17 @@ FileSet& FileSet::InitFromManifestsInDir(const boost::filesystem::path &path) {
     return *this;
 }
 
+FileSet& FileSet::InitFilesToAdd(const FileSet &inBase, 
+                                 const FileSet &inUpdate) 
+{
+    FileSet::EntryVector::const_iterator iter = inUpdate.Entries().begin();
+    for(; iter != inUpdate.Entries().end(); ++iter)
+        if (!inBase.HasMatchingEntry(*iter))
+            AddEntry(*iter);
+
+    return *this;    
+}
+
 FileSet& FileSet::InitFilesToAdd(const boost::filesystem::path &inBase,
                                  const boost::filesystem::path &inUpdate) 
 {
@@ -97,25 +108,20 @@ FileSet& FileSet::InitFilesToAdd(const boost::filesystem::path &inBase,
     FileSet update_manifest;
     update_manifest.InitFromManifestsInDir(inUpdate);
     
-    FileSet::EntryVector::const_iterator iter = 
-        update_manifest.entries().begin();
-    for(; iter != update_manifest.entries().end(); ++iter)
-        if (!base_manifest.has_matching_entry(*iter))
-            add_entry(*iter);
-
-    return *this;
+    return InitFilesToAdd(base_manifest, update_manifest);
 }
 
 
-bool FileSet::has_matching_entry(const FileSet::Entry &entry) {
-    FileMap::iterator iter(mFileMap.find(entry.path()));
+bool FileSet::HasMatchingEntry(const FileSet::Entry &entry) const {
+    FileMap::const_iterator iter(mFileMap.find(entry.path()));
 
     return iter != mFileMap.end() && iter->second == entry;
 }
 
-void FileSet::add_entry(const FileSet::Entry &entry) {
+void FileSet::AddEntry(const FileSet::Entry &entry) {
     mEntries.push_back(entry);
     mFileMap.insert(FileMap::value_type(entry.path(), entry));
+    mDigestMap.insert(DigestMap::value_type(entry.digest(), entry));
 }
 
 std::string read_file(const boost::filesystem::path &path) {

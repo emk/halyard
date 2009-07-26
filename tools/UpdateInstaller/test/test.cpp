@@ -46,9 +46,9 @@ void UpdateProgress(size_t steps_completed) {
 #define CHECK_ENTRY(DIGEST,SIZE,PATH,ENTRY) \
     do { \
         FileSet::Entry _e(ENTRY); \
-        BOOST_CHECK((DIGEST) == _e.digest()); \
-        BOOST_CHECK((SIZE) == _e.size()); \
-        BOOST_CHECK((PATH) == _e.path()); \
+        BOOST_CHECK_EQUAL((DIGEST), _e.digest());   \
+        BOOST_CHECK_EQUAL((SIZE)  , _e.size()  );   \
+        BOOST_CHECK_EQUAL((PATH)  , _e.path()  );   \
     } while(0)
 
 const char *foo_digest = "855426068ee8939df6bce2c2c4b1e7346532a133";
@@ -58,53 +58,53 @@ BOOST_AUTO_TEST_CASE(test_parse_diff) {
     FileSet diff;
     diff.InitFromManifestFile(path("Updates/temp/MANIFEST-DIFF"));
 
-    BOOST_CHECK(3 == diff.entries().size());
-    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.entries()[0]);
-    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.entries()[1]);
-    CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.entries()[2]);
+    BOOST_CHECK(3 == diff.Entries().size());
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.Entries()[0]);
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.Entries()[1]);
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.Entries()[2]);
 }
 
 BOOST_AUTO_TEST_CASE(test_parse_manifest) {
     FileSet base_manifest;
     path base_path("Updates/manifests/update/MANIFEST.base");
     base_manifest.InitFromManifestFile(base_path);
-    BOOST_CHECK(2 == base_manifest.entries().size());
-    CHECK_ENTRY(null_digest, 0, "bar.txt", base_manifest.entries()[0]);
-    CHECK_ENTRY(foo_digest, 5, "foo.txt", base_manifest.entries()[1]);
+    BOOST_CHECK(2 == base_manifest.Entries().size());
+    CHECK_ENTRY(null_digest, 0, "bar.txt", base_manifest.Entries()[0]);
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", base_manifest.Entries()[1]);
 
     FileSet::Entry foo(foo_digest, 5, "foo.txt");
-    BOOST_CHECK(base_manifest.has_matching_entry(foo));
+    BOOST_CHECK(base_manifest.HasMatchingEntry(foo));
 
     path sub_path("Updates/manifests/update/MANIFEST.sub");
     FileSet sub_manifest;
     sub_manifest.InitFromManifestFile(sub_path);
-    BOOST_CHECK(3 == sub_manifest.entries().size());
-    CHECK_ENTRY(null_digest, 0, "sub/baz.txt", sub_manifest.entries()[0]);
-    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", sub_manifest.entries()[1]);
-    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", sub_manifest.entries()[2]);
+    BOOST_CHECK(3 == sub_manifest.Entries().size());
+    CHECK_ENTRY(null_digest, 0, "sub/baz.txt", sub_manifest.Entries()[0]);
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", sub_manifest.Entries()[1]);
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", sub_manifest.Entries()[2]);
 
     FileSet::Entry quux(null_digest, 0, "sub/quux.txt");
-    BOOST_CHECK(sub_manifest.has_matching_entry(quux));
+    BOOST_CHECK(sub_manifest.HasMatchingEntry(quux));
     
     FileSet::Entry bad_entry("not-a-digest", 0, "sub/quux.txt");
-    BOOST_CHECK(!sub_manifest.has_matching_entry(bad_entry));
+    BOOST_CHECK(!sub_manifest.HasMatchingEntry(bad_entry));
 }
 
 BOOST_AUTO_TEST_CASE(test_all_manifests_in_dir) {
     FileSet full_manifest;
     full_manifest.InitFromManifestsInDir(path("Updates/manifests/update/"));
 
-    BOOST_CHECK(5 == full_manifest.entries().size());
-    CHECK_ENTRY(null_digest, 0, "bar.txt", full_manifest.entries()[0]);
-    CHECK_ENTRY(foo_digest, 5, "foo.txt", full_manifest.entries()[1]);
-    CHECK_ENTRY(null_digest, 0, "sub/baz.txt", full_manifest.entries()[2]);
-    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", full_manifest.entries()[3]);
-    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", full_manifest.entries()[4]);
+    BOOST_CHECK(5 == full_manifest.Entries().size());
+    CHECK_ENTRY(null_digest, 0, "bar.txt", full_manifest.Entries()[0]);
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", full_manifest.Entries()[1]);
+    CHECK_ENTRY(null_digest, 0, "sub/baz.txt", full_manifest.Entries()[2]);
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", full_manifest.Entries()[3]);
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", full_manifest.Entries()[4]);
 
     FileSet::Entry sub_foo(foo_digest, 5, "sub/foo.txt");
     FileSet::Entry foo(foo_digest, 5, "foo.txt");
-    BOOST_CHECK(full_manifest.has_matching_entry(sub_foo));
-    BOOST_CHECK(full_manifest.has_matching_entry(foo));
+    BOOST_CHECK(full_manifest.HasMatchingEntry(sub_foo));
+    BOOST_CHECK(full_manifest.HasMatchingEntry(foo));
 }
 
 BOOST_AUTO_TEST_CASE(test_diff_manifests) {
@@ -112,17 +112,17 @@ BOOST_AUTO_TEST_CASE(test_diff_manifests) {
     diff.InitFilesToAdd(path("."), 
                         path("Updates/manifests/update/"));
 
-    BOOST_CHECK(3 == diff.entries().size());
-    CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.entries()[0]);
-    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.entries()[1]);
-    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.entries()[2]);
+    BOOST_CHECK(3 == diff.Entries().size());
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.Entries()[0]);
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.Entries()[1]);
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.Entries()[2]);
 }
 
 BOOST_AUTO_TEST_CASE(test_parse_spec) {
     SpecFile spec(path("Updates/release.spec"));
     BOOST_CHECK("http://www.example.com/updates/" == spec.url());
     BOOST_CHECK("update" == spec.build());
-    BOOST_CHECK(2 == spec.manifest().entries().size());
+    BOOST_CHECK(2 == spec.manifest().Entries().size());
 }
 
 BOOST_AUTO_TEST_CASE(test_windows_command_line_quoting) {
@@ -144,6 +144,9 @@ BOOST_AUTO_TEST_CASE(test_windows_command_line_quoting) {
 BOOST_AUTO_TEST_CASE(test_is_update_possible) {
     UpdateInstaller installer = UpdateInstaller(path("."), path("."));
     
+    installer.PrepareForUpdate();
+    BOOST_REQUIRE(installer.IsUpdatePossible());    
+
     rename(path("Updates/pool/da39a3ee5e6b4b0d3255bfef95601890afd80709"), 
            path("Updates/pool/temp"));
     BOOST_CHECK(!installer.IsUpdatePossible());

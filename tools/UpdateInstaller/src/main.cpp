@@ -82,6 +82,8 @@ void UpdaterMain(size_t argc, const char **argv) {
         logger.Log("Checking if install is possible.");
         UpdateInstaller installer = UpdateInstaller(path(argv[1], native),
                                                     path(argv[2], native));
+
+        installer.PrepareForUpdate();
         if (!installer.IsUpdatePossible()) {
             // If we determine, safely, that updating is impossible, we should
             // just relaunch the program.
@@ -91,6 +93,7 @@ void UpdaterMain(size_t argc, const char **argv) {
             LaunchProgram(false, argc, argv);
             exit(1);
         }
+
         logger.Log("Install is possible; beginning install.");
         installer.InstallUpdate();
     } catch (std::exception &e) {

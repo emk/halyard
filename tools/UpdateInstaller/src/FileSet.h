@@ -25,7 +25,7 @@
 
 #include <vector>
 #include <string>
-#include <map>
+#include <hash_map>
 #include <boost/filesystem/path.hpp>
 
 std::string read_file(const boost::filesystem::path &path);
@@ -50,26 +50,31 @@ public:
     };
 
     typedef std::vector<Entry> EntryVector;
+    typedef stdext::hash_multimap<std::string, Entry> DigestMap;
     
     FileSet() {}
     
     FileSet& InitFromManifestFile(const boost::filesystem::path &path);
     FileSet& InitFromContents(const std::string &contents);
     FileSet& InitFromManifestsInDir(const boost::filesystem::path &path);
+    FileSet& InitFilesToAdd(const FileSet &inBase, const FileSet &inUpdate);
     FileSet& InitFilesToAdd(const boost::filesystem::path &inBase,
-                        const boost::filesystem::path &inUpdate);
+                            const boost::filesystem::path &inUpdate);
 
-    const EntryVector &entries() const { return mEntries; }
-    bool has_matching_entry(const Entry &entry);
+    const EntryVector &Entries() const { return mEntries; }
+    bool HasMatchingEntry(const Entry &entry) const;
+    const DigestMap &DigestEntryMap() const { return mDigestMap; }
 
 protected:
-    void add_entry(const Entry &entry);
+    void AddEntry(const Entry &entry);
 
 private: 
     EntryVector mEntries;
 
-    typedef std::map<std::string, Entry> FileMap;
+    typedef stdext::hash_map<std::string, Entry> FileMap;
     FileMap mFileMap;
+
+    DigestMap mDigestMap;
 };
 
 #endif // FileSet_H
