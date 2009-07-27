@@ -1,0 +1,163 @@
+=== Notes on entire update process ==
+
+* Make updater smarter about moved files
+  x Downloader should not download a file if we already have one with
+    a matching hash
+  * Update installer should learn how to do all necessary diffs to get
+    the tree into the state it needs to be
+  * Update installer should copy or move files on disk as appropriate
+  * See below sections for more details
+* Case change
+  x Downloader should ignore case when doing manifest diff
+    x No need, since the smarter downloader above should handle this
+  * Update installer should fix case of files or directories with wrong case
+    * What do we do if the manifest has mixed case for the same dir?
+  * Update installer should delete extra files that may break things
+    * .ss, .zo, and .dep in scripts/
+  * Installer should fix case
+    * Will shell out to update installer
+* Multi-stage update
+  * Update updater.ss
+    * Backport lazy downloader to old updater.ss
+    * Build a release of the old program with the new updater.ss
+      * Engine fork?
+      * Just slip that one file in by hand?
+  * Add a one-off dialog saying what's going on
+
+Things to think about:
+   need to make sure we delete bad files in scripts (.ss, .zo, and .dep)
+     without deleting all out of place files; people can install over other
+     directories and we don't want to delete files that we didn't put
+     there
+   need to make sure we don't move a file out of the way and then need it
+     to copy elsewhere
+
+=== Update installer operations ===
+
+For the update installer:
+* Naive approach:
+  * (optimization: treat files moved specially)
+    * In this case, the optimization is actually very important for
+      correctness; if we do the naive approach and do everything as
+      copies via the pool, we could end up with 3 copies of all media
+      on disk at once, which may end up filling up the user's disk and
+      causing the update to fail in a way that breaks the program
+  * Copy all needed digests into pool
+    * Need to find all digests from our diff that aren't in the pool, and where
+      to get them from (can be a map built from old manifest)
+  * Copy all items from pool into tree
+  * Delete files deleted from manifest
+  * Ensure case of everything is correct
+  * Delete extra files (.zo, .ss, .dep, and empty dirs) from:
+    * scripts/
+    * collects/
+    * engine/win32/{collects,plt}
+
+=== Formal Model ===
+
+Or maybe semi-formal model? Or maybe kinda business casual model. But
+at least a model that's wearing a button down shirt and slacks.
+
+- <filename,digest> pair: Called "file", represents a filename and contents
+- Set of files: FileSet in C++ (which also carries around a size for each file)
+- Can be treated as set of filenames or set of digests, depending on
+  circumstnaces:
+  - if we're interested in what raw materials we have, set of digests
+  - if we're interested in files to delete or case rename, set of filenames
+- move(file|pool,file), copy(file|pool,file): 
+  A pair of a source and a destination, where the source can either be the
+  pool, or a file, and the destination is a file.  Note that since we used
+  to only do copies, and only from the pool, the file alone was sufficient
+  to identify the operation in question.  Now that we are trying to do
+  moves and copies, and use other files as sources, we now have to be
+  more explicit.  We may still use the file alone to denote either a
+  move or a copy from the pool.
+
+Notations:
+  tree:          The installed copy of the program
+  tree':         What we want to arrive at in the end
+  pool:          The pool of file contents, indexed by digest, that
+                 the downloader has provided us with
+  files(x):      The set of files associated with x (a location on disk or a
+                 manifest).
+  files(x->y):   The set of files that needs to be moved or copied from x to y.
+                 As mentioned above, we may use this structure to represent
+                 a set of moves or copies from the pool to the given file
+  digests(x), digests(x->y), filenames(x), filenames(x->y): 
+                 Ditto, considering only the digest or filename
+  files(x)[digests(y)], files(x)[filenames(y)]:
+                 All files in x associated with the given set of filenames or
+                 digests y
+  moves(x->y):   Set of moves from x to y
+  copies(x->y):  Set of copies from x to y
+  x->: Deleting x
+  *->y: A move or copy where we don't yet know the source
+  &: set intersection
+  |: set union
+  -: set difference (relative complement)
+  ^: symmetric difference
+
+What we're given:
+  files(tree)   - the actual set of files in our tree
+  files(base)   - set of files from our base manifest (should be a
+                  subset of files(tree); not necessarily the same set,
+                  since we could have random user files or files left
+                  over from previous updates that didn't delete files)
+  files(update) - set of files from our update manifest
+  digests(pool) - set of digests we've downloaded in our pool
+
+What we need in order to perform all of our operations:
+  files(pool->tree')  - files to copy or move out of the pool
+  moves(tree->tree')  - files to move within the tree
+  copies(tree->tree') - files to copy within the tree; those that don't have
+                        a move available
+  (note: the above two may be implemented by moving or copying via the pool)
+  filenames(tree->)   - files that need to be deleted out of the tree
+                        because they were in files(base) but not 
+                        files(update), and weren't moved earlier
+
+Special purpose, available from installer:
+  filenames(update->tree') - filenames (including directories) which
+                             have a case on disk different than their
+                             case in files(update)
+  cleanup                  - A pass at the end that cleans up well
+                             known trouble directories; should do a
+                             check if its possible at the beginning as
+                             well, so we don't wind up in a broken
+                             state after everything
+
+Getting from our givens to our goal:
+  digests(total) = digests(base) |  digests(pool)
+     The total set of file contents that we have available to us, is the
+     union of the contents we know about in our tree, and the contents
+     we have in our pool
+
+  files(*->tree') = files(update) - files(base)
+     The new files we need to add to our tree; this is all we've been
+     dealing with in previous versions of the updater, and has been
+     called MANIFEST-DIFF
+
+  filenames(tree->) = filenames(base) - filenames(update)
+     The set of filenames to delete is simply the set of filenames that
+     appear in our base manifest, but do not appear in our update manifest.
+
+  files(pool->tree') = files(*->tree')[digests(*->tree') & digests(pool)]
+     The set of files that we can move or copy from the pool is equal
+     to the files that we need which have digests in the pool
+
+  files(tree->tree') = files(*->tree')[digests(*->tree') & digests(base)]
+     The set of files that we will add to our tree by moving or
+     copyting them from somewhere else in the tree.  This set does not
+     yet have the sources of the files encoded in it; it is the set of
+     files we need that we will get from somewhere the tree.
+     Currently, we are simply copying each of these digests into our
+     pool and then copying everything out from there, but this will
+     need to change.
+
+  TODO - how to compute our moves(tree->tree') and copies(tree->tree')
+         from the above.  Quick thoughts:
+         * moves(tree->tree') can be based on join on digest of 
+           files(base)[filenames(tree->)] with files(tree->tree')
+         * copies(tree->tree') - where the sources come from depends
+           on whether it happens before or after the moves
+           
