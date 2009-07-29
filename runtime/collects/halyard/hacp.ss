@@ -25,7 +25,8 @@
 
   (provide hacp-extension-register-user-request
            hacp-extension-new-session-request
-           hacp-get-param-request)
+           hacp-get-param-request
+           hacp-put-param-request)
 
   (define (hacp-extension-register-user-request hacp-url uuid
                                                 student-name
@@ -52,5 +53,26 @@
       :parameters (list (cons "command" "getparam")
                         (cons "version" "4.0")
                         (cons "session_id" session-id))))
+
+  (define (hacp-put-param-request hacp-url session-id
+                                  &key [location ""] [status "incomplete"]
+                                  [time "00:00:00"] [score ""] [data ""])
+    (define aicc-data
+      (cat "[Core]\n"
+           "Lesson_Location = " location "\n"
+           "Lesson_Status = " status "\n"
+           "Score = " score "\n"
+           "Time = " time "\n"
+           "[Core_Lesson]\n"
+           ;; Note that data cannot "[" or "]", and that any leading and
+           ;; trailing whitespace will be ignored.
+           data))
+    (%easy-url-request% .new
+      :url hacp-url
+      :method 'post
+      :parameters (list (cons "command" "putparam")
+                        (cons "version" "4.0")
+                        (cons "session_id" session-id)
+                        (cons "aicc_data" aicc-data))))
 
   )

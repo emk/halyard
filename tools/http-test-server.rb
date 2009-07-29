@@ -59,8 +59,8 @@ require 'test/unit/assertions'
 
 Sinatra::Application.send(:include, Test::Unit::Assertions)
 
-HACP_UUID = "44463f20-b4c6-4a3e-abf6-b942d010deb3"
-HACP_SESSION_ID = "#{HACP_UUID}:123:4567"
+HACP_UUID ||= "44463f20-b4c6-4a3e-abf6-b942d010deb3"
+HACP_SESSION_ID ||= "#{HACP_UUID}:123:4567"
 
 post '/hacp/register' do
   assert_equal HACP_UUID, params[:uuid]
@@ -102,6 +102,20 @@ Time = 0
 [Core_Lesson]
 
 [Core_Vendor]
+EOD
+  when "putparam"
+    assert_equal <<EOD, params[:aicc_data]
+[Core]
+Lesson_Location = /start
+Lesson_Status = incomplete
+Score = 72,100
+Time = 00:05:00
+[Core_Lesson]
+data
+EOD
+    <<EOD
+error=0
+error_text=Successful
 EOD
   else
     raise ArgumentError, "Unkown HACP command: #{params[:command]}"

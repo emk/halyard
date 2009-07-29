@@ -200,7 +200,15 @@
       (assert (request .succeeded?)))
 
     (test "hacp-put-param-request should write current state to HACP server"
-      (void))
+      (define request
+        (hacp-put-param-request $hacp-url $hacp-session-id
+                                :location '/start
+                                :status 'incomplete
+                                :time "00:05:00"
+                                :score "72,100"
+                                :data "data\n"))
+      (request .wait)
+      (assert (request .succeeded?)))
 
     (test "hacp-put-objectives-request should write objectives to server"
       (void))
