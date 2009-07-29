@@ -630,11 +630,11 @@ DEFINE_PRIMITIVE(UrlRequestConfigureSetHeader) {
     request->ConfigureSetHeader(header, value);
 }
 
-DEFINE_PRIMITIVE(UrlRequestEscapeFormData) {
+DEFINE_PRIMITIVE(UrlRequestEncodeUrlParameters) {
     TValueList names_and_values;
     inArgs >> names_and_values;
     if (names_and_values.size() % 2 != 0)
-        THROW("Odd number of arguments to UrlRequestEncodeFormData");
+        THROW("Odd number of arguments to UrlRequestEncodeUrlParameters");
     std::ostringstream out;
     for (size_t i = 0; i < names_and_values.size(); i += 2) {
         std::string name(tvalue_cast<std::string>(names_and_values[i]));
@@ -1168,7 +1168,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(UrlRequest);
     REGISTER_PRIMITIVE(UrlRequestConfigurePost);
     REGISTER_PRIMITIVE(UrlRequestConfigureSetHeader);
-    REGISTER_PRIMITIVE(UrlRequestEscapeFormData);
+    REGISTER_PRIMITIVE(UrlRequestEncodeUrlParameters);
     REGISTER_PRIMITIVE(UrlRequestGetResponseContentType);
     REGISTER_PRIMITIVE(UrlRequestStart);
     REGISTER_PRIMITIVE(IsVistaOrNewer);

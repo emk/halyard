@@ -27,6 +27,26 @@
 
 
   ;;=======================================================================
+  ;;  Helper Routines
+  ;;=======================================================================
+
+  (provide encode-url-parameters)
+
+  ;; Encode an assoc mapping parameter names strings to parameter values
+  ;; as type application/x-www-form-urlencoded.  For now, parameter values
+  ;; must be strings.
+  (define (encode-url-parameters parameters)
+    (call-prim 'UrlRequestEncodeUrlParameters
+               ;; Flatten parameters into a list.
+               (let recurse [[parameters parameters]]
+                 (if (null? parameters)
+                     '()
+                     (cons (car (car parameters))
+                           (cons (cdr (car parameters))
+                                 (recurse (cdr parameters))))))))
+
+
+  ;;=======================================================================
   ;;  %url-request%
   ;;=======================================================================
 
@@ -105,14 +125,37 @@
   ;;; is finished, override .transfer-finished and call (super) before
   ;;; running your own code.
   (define-class %easy-url-request% (%url-request%)
+    ;;; An optional alist of HTTP request parameters, mapping attribute
+    ;;; name strings to value strings.  This will be passed as ordinary URL
+    ;;; parameters for a GET request, and as an HTTP body of type
+    ;;; application/x-www-form-urlencoded for a POST request.
+    (attr parameters #f)
+
     (def (initialize &rest keys)
       (super)
       (set! (slot 'finished?) #f)
       (set! (slot 'succeeded?) #f)
       (set! (slot 'response-body-chunks) '())
       (set! (slot 'response-body) #f)
-      (set! (slot 'transfer-finished-event) #f))
+      (set! (slot 'transfer-finished-event) #f)
 
+      ;; If we have parameters, figure out how to pass them.
+      (when (.parameters)
+        (let [[encoded (encode-url-parameters (.parameters))]]
+          (case (.method)
+            [[get]
+             (when (regexp-match (pregexp "\\?") (.url))
+               (error (cat "Cannot add more parameters to " (.url))))
+             (set! (.url) (cat (.url) "?" encoded))]
+            [[post]
+             (when (.body)
+               (error (cat "Already have a body to POST to " (.url))))
+             (set! (.content-type) "application/x-www-form-urlencoded")
+             (set! (.body) encoded)]
+          [else
+           (error (cat "Do not know how to pass URL parameters to HTTP method "
+                       (.method)))]))))
+      
     (def (data-received event)
       (set! (slot 'response-body-chunks)
             (cons (event .data) (slot 'response-body-chunks))))
@@ -163,34 +206,6 @@
     (def (parse-response)
       (.response-body))
 
-    )
-
-
-  ;;=======================================================================
-  ;;  %http-post-form-request%
-  ;;=======================================================================
-
-  (provide %http-post-form-request%)
-
-  ;; Encode an assoc mapping parameter names strings to parameter values
-  ;; as type application/x-www-form-urlencoded.
-  (define (escape-form-data parameters)
-    (call-prim 'UrlRequestEscapeFormData
-               ;; Flatten parameters into a list.
-               (let recurse [[parameters parameters]]
-                 (if (null? parameters)
-                     '()
-                     (cons (car (car parameters))
-                           (cons (cdr (car parameters))
-                                 (recurse (cdr parameters))))))))
-
-  ;;; An HTTP POST containing ordinary form parameters.
-  (define-class %http-post-form-request% (%easy-url-request%)
-    ;;; The HTTP POST parameters to use for this request, represented
-    ;;; as a assoc mapping parameter names strings to parameter values.
-    (attr parameters)
-    (value body (escape-form-data (.parameters)))
-    (default content-type "application/x-www-form-urlencoded")
     )
 
 

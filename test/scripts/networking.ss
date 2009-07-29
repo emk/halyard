@@ -122,19 +122,21 @@
 
   (define-class %http-post-form-test% (%url-request-test-case%)
     (test "Parameters should be sent as application/x-www-form-urlencoded"
-      (define request (%http-post-form-request% .new
+      (define request (%easy-url-request% .new
                         :url (cat $server "/echo")
                         :method 'post
                         :parameters '(("foo" . "bar")
-                                      ("escaped" . "&= "))))
+                                      ("escaped" . "&= q"))))
       (request .wait)
       (assert-equals "application/x-www-form-urlencoded"
                      (request .response-content-type))
-      (assert-equals "foo=bar&escaped=%26%3d%20" (request .response))))
+      (assert-equals "foo=bar&escaped=%26%3d%20q" (request .response))))
 
   (define-class %json-request-test% (%url-request-test-case%)
     (test "JSON GET requests should work"
-      (define request (%json-request% .new :url (cat $server "/add?x=1&y=2")))
+      (define request
+        (%json-request% .new :url (cat $server "/add")
+                             :parameters '(("x" . "1") ("y" . "2"))))
       (request .wait)
       (assert-equals 3 (request .response)))
 
