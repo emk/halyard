@@ -24,7 +24,8 @@
   (require (lib "url-request.ss" "halyard"))
 
   (provide hacp-extension-register-user-request
-           hacp-extension-new-session-request)
+           hacp-extension-new-session-request
+           hacp-get-param-request)
 
   (define (hacp-extension-register-user-request hacp-url uuid
                                                 student-name
@@ -41,5 +42,15 @@
       :url (cat hacp-url "/new_session")
       :method 'post
       :parameters (list (cons "uuid" uuid))))
+
+  ;; WARNING: The (.result) member of the newly created request is expected
+  ;; to change in the future.
+  (define (hacp-get-param-request hacp-url session-id)
+    (%easy-url-request% .new
+      :url hacp-url
+      :method 'post
+      :parameters (list (cons "command" "getparam")
+                        (cons "version" "4.0")
+                        (cons "session_id" session-id))))
 
   )

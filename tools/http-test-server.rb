@@ -59,8 +59,11 @@ require 'test/unit/assertions'
 
 Sinatra::Application.send(:include, Test::Unit::Assertions)
 
+HACP_UUID = "44463f20-b4c6-4a3e-abf6-b942d010deb3"
+HACP_SESSION_ID = "#{HACP_UUID}:123:4567"
+
 post '/hacp/register' do
-  assert_equal "44463f20-b4c6-4a3e-abf6-b942d010deb3", params[:uuid]
+  assert_equal HACP_UUID, params[:uuid]
   assert_equal "J. Student", params[:name]
   assert_equal "12345", params[:student_id]
 
@@ -69,9 +72,38 @@ post '/hacp/register' do
 end
 
 post '/hacp/new_session' do
-  assert_equal "44463f20-b4c6-4a3e-abf6-b942d010deb3", params[:uuid]
+  assert_equal HACP_UUID, params[:uuid]
   
   content_type :json
   { 'aicc_url' => "http://localhost:4567/hacp",
-    'aicc_sid' => "#{params[:uuid]}:123:4567" }.to_json
+    'aicc_sid' => HACP_SESSION_ID }.to_json
+end
+
+post '/hacp' do
+  assert_equal HACP_SESSION_ID, params[:session_id]
+  assert_equal "4.0", params[:version]
+
+  content_type :text
+  case params[:command].downcase
+  when "getparam"
+    <<EOD
+error=0
+error_text=Successful
+aicc_data=
+[Core]
+Student_ID = 12345
+Student_Name = J. Student
+Lesson_Location = 
+Credit = credit
+Lesson_Status = 'not attempted'
+Score = 
+Time = 0
+
+[Core_Lesson]
+
+[Core_Vendor]
+EOD
+  else
+    raise ArgumentError, "Unkown HACP command: #{params[:command]}"
+  end
 end

@@ -174,7 +174,9 @@
   (define $student-name "J. Student")
   (define $student-id   "12345")
 
-  (define-class %hacp-low-level-test% (%test-case%)
+  (define $hacp-session-id (cat $student-uuid ":123:4567"))
+
+  (define-class %hacp-low-level-test% (%element-test-case%)
     (test "hacp-extension-register-user-request should register user"
       (define request
         (hacp-extension-register-user-request $hacp-url $student-uuid
@@ -191,7 +193,11 @@
                             (hash-table-get (request .response) "aicc_sid"))))
 
     (test "hacp-get-param-request should issue an HACP GetParam request"
-      (void))
+      (define request (hacp-get-param-request $hacp-url $hacp-session-id))
+      (request .wait)
+      ;; TODO - Actually parse GetParam result.  Someday.  For now, the
+      ;; (.result) value is undefined.
+      (assert (request .succeeded?)))
 
     (test "hacp-put-param-request should write current state to HACP server"
       (void))
