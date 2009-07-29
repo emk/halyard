@@ -220,13 +220,22 @@
   ;;; web applications.
   (define-class %json-request% (%easy-url-request%)
     ;;; The data to send in a JSON POST request (optional).
-    (attr data #f)
+    (attr data :mandatory? #f)
 
     (default accept "application/json")
-    (default content-type "application/json")
+
+    ;; If :data was passed, then set up :content-type and :body for a JSON
+    ;; request.  Otherwise, assume only the response uses JSON.  The
+    ;; rarely-used ':skip-if-missing-values? #t' argument will cause these
+    ;; defaults to be ignored if :data was not passed.
+    (default content-type
+      ;; Make sure we try to read the value (.data).
+      (begin (.data) "application/json")
+      :skip-if-missing-values? #t)
     (default body
       (with-output-to-string
-        (lambda () (json-write (.data)))))
+        (lambda () (json-write (.data))))
+      :skip-if-missing-values? #t)
 
     (def (parse-response)
       (json-read (open-input-string (.response-body))))
