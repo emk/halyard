@@ -41,7 +41,7 @@
      (hash-table-map ht cons)))
 
   (define (vector->hashtable v)
-    (let ((ht (make-hash-table)))
+    (let ((ht (make-hash-table 'equal)))
       (for-each (lambda (entry) (hash-table-put! ht (car entry) (cdr entry)))
 		(vector->list v))
       ht))
@@ -159,7 +159,7 @@
 					  (make-result n results)
 					  (make-expected-result (parse-results-position starting-results) 'number)))))))
 			  any)
-			(any ((white '#\{ entries <- table-entries white '#\}) (list->vector entries))
+			(any ((white '#\{ entries <- table-entries white '#\}) (vector->hashtable (list->vector entries)))
 			     ((white '#\[ entries <- array-entries white '#\]) entries)
 			     ((s <- jstring) s)
 			     ((n <- jnumber) n)
