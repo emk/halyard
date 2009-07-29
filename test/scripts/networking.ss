@@ -5,6 +5,7 @@
   (require (lib "halyard-unit.ss" "halyard"))
   (require (lib "test-elements.ss" "halyard"))
   (require (lib "url-request.ss" "halyard"))
+  (require (lib "hacp.ss" "halyard"))
   (require (lib "base.ss" "halyard-test"))
 
   (group /networking (%card-group% :skip-when-jumping-to-each-card? #t))
@@ -161,5 +162,47 @@
                     %http-post-test%
                     %http-post-form-test%
                     %json-request-test%)))
+
+
+  ;;=======================================================================
+  ;;  HACP unit tests
+  ;;=======================================================================
+
+  (define $hacp-url (cat $server "/hacp"))
+
+  (define $student-uuid "44463f20-b4c6-4a3e-abf6-b942d010deb3")
+  (define $student-name "J. Student")
+  (define $student-id   "12345")
+
+  (define-class %hacp-low-level-test% (%test-case%)
+    (test "hacp-extension-register-user-request should register user"
+      (define request
+        (hacp-extension-register-user-request $hacp-url $student-uuid
+                                              $student-name $student-id))
+      (request .wait)
+      (assert (hash-table? (request .response))))
+
+    (test "hacp-extension-new-session-request should return HACP session info"
+      (define request
+        (hacp-extension-new-session-request $hacp-url $student-uuid))
+      (request .wait)
+      (assert-equals $hacp-url (hash-table-get (request .response) "aicc_url"))
+      (assert (regexp-match (pregexp (cat $student-uuid ":\\d+:\\d+"))
+                            (hash-table-get (request .response) "aicc_sid"))))
+
+    (test "hacp-get-param-request should issue an HACP GetParam request"
+      (void))
+
+    (test "hacp-put-param-request should write current state to HACP server"
+      (void))
+
+    (test "hacp-put-objectives-request should write objectives to server"
+      (void))
+
+    )
+
+  (card /networking/tests/hacp
+      (%test-suite%
+       :tests (list %hacp-low-level-test%)))
 
   )

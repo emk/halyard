@@ -7,6 +7,7 @@
 
 require 'rubygems'
 require 'sinatra'
+require 'json'
 
 get '/' do
   "This is a primitive web server used for testing Halyard."
@@ -40,11 +41,37 @@ get '/headers/:name' do
 end
 
 get '/add' do
-  content_type 'application/json'
-  (params[:x].to_i + params[:y].to_i).to_s
+  content_type :json
+  (params[:x].to_i + params[:y].to_i).to_json
 end
 
 post '/echo' do
   content_type request.content_type
   request.body
+end
+
+
+#==========================================================================
+#  Simulated HACP LMS API
+#==========================================================================
+
+require 'test/unit/assertions'
+
+Sinatra::Application.send(:include, Test::Unit::Assertions)
+
+post '/hacp/register' do
+  assert_equal "44463f20-b4c6-4a3e-abf6-b942d010deb3", params[:uuid]
+  assert_equal "J. Student", params[:name]
+  assert_equal "12345", params[:student_id]
+
+  content_type :json
+  {}.to_json
+end
+
+post '/hacp/new_session' do
+  assert_equal "44463f20-b4c6-4a3e-abf6-b942d010deb3", params[:uuid]
+  
+  content_type :json
+  { 'aicc_url' => "http://localhost:4567/hacp",
+    'aicc_sid' => "#{params[:uuid]}:123:4567" }.to_json
 end
