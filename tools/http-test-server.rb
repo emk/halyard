@@ -110,6 +110,10 @@ Lesson_Location = /start
 Lesson_Status = incomplete
 Score = 72,100
 Time = 00:05:00
+J_ID.1 = /part1
+J_Status.1 = completed
+J_ID.2 = /part2
+J_Status.2 = incomplete
 [Core_Lesson]
 data
 EOD

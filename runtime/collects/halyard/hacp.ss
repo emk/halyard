@@ -54,15 +54,16 @@
                         (cons "version" "4.0")
                         (cons "session_id" session-id))))
 
-  (define (hacp-put-param-request hacp-url session-id
-                                  &key [location ""] [status "incomplete"]
-                                  [time "00:00:00"] [score ""] [data ""])
+  (define (hacp-put-param-request hacp-url session-id key-val data)
+    (define core (regexp-replace "&" (encode-url-parameters key-val) "\n"))
     (define aicc-data
       (cat "[Core]\n"
-           "Lesson_Location = " location "\n"
-           "Lesson_Status = " status "\n"
-           "Score = " score "\n"
-           "Time = " time "\n"
+           (let recurse [[key-val key-val]]
+             (if (null? key-val)
+               ""
+               (string-append
+                (caar key-val) " = " (cdar key-val) "\n"
+                (recurse (cdr key-val)))))
            "[Core_Lesson]\n"
            ;; Note that data cannot "[" or "]", and that any leading and
            ;; trailing whitespace will be ignored.

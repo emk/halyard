@@ -202,16 +202,17 @@
     (test "hacp-put-param-request should write current state to HACP server"
       (define request
         (hacp-put-param-request $hacp-url $hacp-session-id
-                                :location '/start
-                                :status 'incomplete
-                                :time "00:05:00"
-                                :score "72,100"
-                                :data "data\n"))
+                                '(("Lesson_Location" . "/start")
+                                  ("Lesson_Status" . "incomplete")
+                                  ("Score" . "72,100")
+                                  ("Time" . "00:05:00")
+                                  ("J_ID.1" . "/part1")
+                                  ("J_Status.1" . "completed")
+                                  ("J_ID.2" . "/part2")
+                                  ("J_Status.2" . "incomplete"))
+                                "data\n"))
       (request .wait)
       (assert (request .succeeded?)))
-
-    (test "hacp-put-objectives-request should write objectives to server"
-      (void))
 
     )
 
