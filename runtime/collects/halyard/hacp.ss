@@ -22,6 +22,9 @@
 
 (module hacp (lib "halyard.ss" "halyard")
   (require (lib "url-request.ss" "halyard"))
+  (require (lib "data-file.ss" "halyard"))
+  (require (lib "uuid.ss" "halyard"))
+
 
   ;;=======================================================================
   ;;  Low-level HACP API
@@ -51,6 +54,9 @@
       :method 'post
       :parameters (list (cons "uuid" uuid))))
 
+  ;; Get our HACP data from the server.  For now, we just throw that
+  ;; data away without parsing it.
+  ;;
   ;; WARNING: The (.result) member of the newly created request is expected
   ;; to change in the future.
   (define (hacp-get-param-request hacp-url session-id)
@@ -154,4 +160,23 @@
   ;;  High-level HACP API
   ;;=======================================================================
 
+  (provide hacp-initialize hacp-write hacp-done)
+
+  ;;; Initialize an HACP session.
+  (define (hacp-initialize hacp-url student-name)
+    ;; If the user doesn't already have a UUID, assign one.
+    (unless (user-pref 'uuid)
+      (set! (user-pref 'uuid) (uuid)))
+    (void))
+
+  ;;; Attempt to write our data to the server.  If sync? if #f, then
+  ;;; perform the write in the background.  If sync? is #t, wait for the
+  ;;; write to succeed or fail.
+  (define (hacp-write &key sync?)
+    (void))
+
+  ;;; Terminate our HACP session, if one is running, and attempt to flush
+  ;;; our data to the server synchronously.
+  (define (hacp-done)
+    (void))
   )

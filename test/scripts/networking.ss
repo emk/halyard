@@ -7,6 +7,7 @@
   (require (lib "url-request.ss" "halyard"))
   (require (lib "hacp.ss" "halyard"))
   (require (lib "data-file.ss" "halyard"))
+  (require (lib "uuid.ss" "halyard"))
   (require (lib "base.ss" "halyard-test"))
 
   (group /networking (%card-group% :skip-when-jumping-to-each-card? #t))
@@ -284,9 +285,28 @@
     )
 
   (define-class %hacp-high-level-test% (%element-test-case%)
+    (setup-test
+      ;; TODO: Reset test server state.
+      (void))
+
+    (test "hacp-initialize should assign a UUID if the user doesn't have one"
+      (with-temporary-user-data ()
+        (assert (not (uuid? (user-pref 'uuid))))
+        (hacp-initialize (cat $server "/hacp2") $student-name)
+        (assert (uuid? (user-pref 'uuid)))
+        (hacp-done)))
+
     (test "High-level HACP API should write user data to server in background"
       (with-temporary-user-data ()
-        (void)))
+        ;; Use a known UUID for convenience.
+        (set! (user-pref "uuid") $student-uuid)
+
+        (hacp-initialize (cat $server "/hacp2") $student-name)
+        (hacp-write :sync? #f)
+        (hacp-done)
+        ;; TODO: Expect register / new-session / GetParam / PutParam x2,
+        ;; with appropriate arguments.
+        ))
     )
 
   (card /networking/tests/hacp
