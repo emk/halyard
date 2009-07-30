@@ -61,6 +61,19 @@
 
 
   ;;=======================================================================
+  ;;  percent-encode unit tests
+  ;;=======================================================================
+
+  (define-class %percent-encode-test% (%test-case%)
+    (test "percent-encode should escape everything but unreserved characters"
+      (assert-equals "abc%26%3d%20123_-.~" (percent-encode "abc&= 123_-.~")))
+    (test "percent-encode-parameters should encode an assoc of URL parameters"
+      (assert-equals "foo=bar&escaped=%26%3d%20q"
+                     (percent-encode-parameters '(("foo" . "bar")
+                                                  ("escaped" . "&= q"))))))
+
+
+  ;;=======================================================================
   ;;  %url-request% unit tests
   ;;=======================================================================
 
@@ -157,7 +170,8 @@
 
   (card /networking/tests/url-request
       (%test-suite%
-       :tests (list %test-server-present-test%
+       :tests (list %percent-encode-test%
+                    %test-server-present-test%
                     %http-get-test%
                     %http-post-test%
                     %http-post-form-test%
@@ -210,7 +224,7 @@
                                   ("J_Status.1" . "completed")
                                   ("J_ID.2" . "/part2")
                                   ("J_Status.2" . "incomplete"))
-                                "data\n"))
+                                "data\n[foo]"))
       (request .wait)
       (assert (request .succeeded?)))
 

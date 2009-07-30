@@ -106,16 +106,16 @@ EOD
   when "putparam"
     assert_equal <<EOD, params[:aicc_data]
 [Core]
-Lesson_Location = /start
-Lesson_Status = incomplete
-Score = 72,100
-Time = 00:05:00
-J_ID.1 = /part1
-J_Status.1 = completed
-J_ID.2 = /part2
-J_Status.2 = incomplete
+Lesson_Location=%2fstart
+Lesson_Status=incomplete
+Score=72%2c100
+Time=00%3a05%3a00
+J_ID.1=%2fpart1
+J_Status.1=completed
+J_ID.2=%2fpart2
+J_Status.2=incomplete
 [Core_Lesson]
-data
+data%0a%5bfoo%5d
 EOD
     <<EOD
 error=0

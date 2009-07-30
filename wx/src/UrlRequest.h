@@ -86,7 +86,7 @@ public:
     static void ProcessAllRequests();
 
     // Encode the specified string for use in a URL parameter.
-    static std::string Escape(const std::string &inStr);
+    static std::string PercentEncode(const std::string &inStr);
 
     /// Do any proxy server configuration needed for inHandle, assuming we
     /// want to download inUrl.  Note that this is a public, static

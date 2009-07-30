@@ -132,7 +132,7 @@ size_t UrlRequest::WriteCallback(char* ptr, size_t size, size_t nmemb,
     return static_cast<UrlRequest*>(data)->DoWrite(ptr, size, nmemb);
 }
 
-std::string UrlRequest::Escape(const std::string &inStr) {
+std::string UrlRequest::PercentEncode(const std::string &inStr) {
     // We could call curl_easy_escape here, but it requires a CURL *.  So
     // we just reinvent the wheel ourselves.
     std::ostringstream out;
@@ -140,9 +140,13 @@ std::string UrlRequest::Escape(const std::string &inStr) {
     out.fill('0');
     for (size_t i = 0; i < inStr.size(); i++) {
         char c = inStr[i];
-        if (isalnum(c)) {
+        if (isalnum(c) || c == '-' || c == '.' || c == '_' || c == '~') {
+            // Do not encode RFC 3986 "unreserved characters", as
+            // recommended in the RFC.  This also gets us better results
+            // when percent-encoding HACP [Core] key names.
             out << c;
         } else {
+            // Encode all other characters.
             out << '%';
             out.width(2);
             out << (int) c;

@@ -30,13 +30,17 @@
   ;;  Helper Routines
   ;;=======================================================================
 
-  (provide encode-url-parameters)
+  (provide percent-encode percent-encode-parameters)
+
+  ;; Perform URL-style "percent encoding" on a string.
+  (define (percent-encode value)
+    (call-prim 'UrlRequestPercentEncode value))
 
   ;; Encode an assoc mapping parameter names strings to parameter values
   ;; as type application/x-www-form-urlencoded.  For now, parameter values
   ;; must be strings.
-  (define (encode-url-parameters parameters)
-    (call-prim 'UrlRequestEncodeUrlParameters
+  (define (percent-encode-parameters parameters)
+    (call-prim 'UrlRequestPercentEncodeParameters
                ;; Flatten parameters into a list.
                (let recurse [[parameters parameters]]
                  (if (null? parameters)
@@ -141,7 +145,7 @@
 
       ;; If we have parameters, figure out how to pass them.
       (when (.parameters)
-        (let [[encoded (encode-url-parameters (.parameters))]]
+        (let [[encoded (percent-encode-parameters (.parameters))]]
           (case (.method)
             [[get]
              (when (regexp-match (pregexp "\\?") (.url))

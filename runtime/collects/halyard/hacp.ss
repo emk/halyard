@@ -55,19 +55,15 @@
                         (cons "session_id" session-id))))
 
   (define (hacp-put-param-request hacp-url session-id key-val data)
-    (define core (regexp-replace "&" (encode-url-parameters key-val) "\n"))
+    ;; Note that we do not percent-encode the "~" as required by the HACP
+    ;; specification, because modern standards like RFC 3986 consider it an
+    ;; "unreserved character" that should generally not be escaped when
+    ;; encoding data in URLs.  Since HACP claims to use URL-encoding, we'll
+    ;; just live dangerously and obey the current standards.
+    (define core (regexp-replace* "&" (percent-encode-parameters key-val) "\n"))
     (define aicc-data
-      (cat "[Core]\n"
-           (let recurse [[key-val key-val]]
-             (if (null? key-val)
-               ""
-               (string-append
-                (caar key-val) " = " (cdar key-val) "\n"
-                (recurse (cdr key-val)))))
-           "[Core_Lesson]\n"
-           ;; Note that data cannot "[" or "]", and that any leading and
-           ;; trailing whitespace will be ignored.
-           data))
+      (string-append "[Core]\n" core "\n"
+                     "[Core_Lesson]\n" (percent-encode data) "\n"))
     (%easy-url-request% .new
       :url hacp-url
       :method 'post

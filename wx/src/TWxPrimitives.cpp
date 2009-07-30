@@ -630,7 +630,13 @@ DEFINE_PRIMITIVE(UrlRequestConfigureSetHeader) {
     request->ConfigureSetHeader(header, value);
 }
 
-DEFINE_PRIMITIVE(UrlRequestEncodeUrlParameters) {
+DEFINE_PRIMITIVE(UrlRequestPercentEncode) {
+    std::string value;
+    inArgs >> value;
+    ::SetPrimitiveResult(UrlRequest::PercentEncode(value));
+}
+
+DEFINE_PRIMITIVE(UrlRequestPercentEncodeParameters) {
     TValueList names_and_values;
     inArgs >> names_and_values;
     if (names_and_values.size() % 2 != 0)
@@ -641,7 +647,8 @@ DEFINE_PRIMITIVE(UrlRequestEncodeUrlParameters) {
         std::string value(tvalue_cast<std::string>(names_and_values[i+1]));
         if (i != 0)
             out << "&";
-        out << UrlRequest::Escape(name) << "=" << UrlRequest::Escape(value);
+        out << UrlRequest::PercentEncode(name) << "="
+            << UrlRequest::PercentEncode(value);
     }
     ::SetPrimitiveResult(out.str());
 }
@@ -1168,7 +1175,8 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(UrlRequest);
     REGISTER_PRIMITIVE(UrlRequestConfigurePost);
     REGISTER_PRIMITIVE(UrlRequestConfigureSetHeader);
-    REGISTER_PRIMITIVE(UrlRequestEncodeUrlParameters);
+    REGISTER_PRIMITIVE(UrlRequestPercentEncode);
+    REGISTER_PRIMITIVE(UrlRequestPercentEncodeParameters);
     REGISTER_PRIMITIVE(UrlRequestGetResponseContentType);
     REGISTER_PRIMITIVE(UrlRequestStart);
     REGISTER_PRIMITIVE(IsVistaOrNewer);
