@@ -23,6 +23,13 @@
 (module hacp (lib "halyard.ss" "halyard")
   (require (lib "url-request.ss" "halyard"))
 
+  ;;=======================================================================
+  ;;  Low-level HACP API
+  ;;=======================================================================
+  ;;  These functions send the actual HACP network requests directly.
+  ;;  Generally speaking, these will only be used internally.  For detailed
+  ;;  documentation, please see the HACP standard and the unit tests.
+
   (provide hacp-extension-register-user-request
            hacp-extension-new-session-request
            hacp-get-param-request
@@ -71,5 +78,19 @@
                         (cons "version" "4.0")
                         (cons "session_id" session-id)
                         (cons "aicc_data" aicc-data))))
+
+
+  ;;=======================================================================
+  ;;  High-level HACP API
+  ;;=======================================================================
+
+  (provide valid-hacp-status?)
+
+  ;;; Is 'value' a valid HACP status value?  This is mostly used for
+  ;;; internal type-checking.
+  (define (valid-hacp-status? value)
+    (and (memq value '(passed completed failed incomplete browsed
+                       not-attempted))
+         #t))
 
   )

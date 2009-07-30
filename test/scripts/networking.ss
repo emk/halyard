@@ -230,8 +230,19 @@
 
     )
 
+  (define-class %hacp-high-level-test% (%element-test-case%)
+    (test "valid-hacp-status? should return true for all valid statuses"
+      (foreach [status '(passed completed failed incomplete browsed
+                                not-attempted)]
+        (assert (valid-hacp-status? status))))
+    (test "valid-hacp-status? should return false for other values"
+      (foreach [status '(not-valid "not valid" 1)]
+        (assert (not (valid-hacp-status? status)))))
+    )
+
   (card /networking/tests/hacp
       (%test-suite%
-       :tests (list %hacp-low-level-test%)))
+       :tests (list %hacp-low-level-test%
+                    %hacp-high-level-test%)))
 
   )
