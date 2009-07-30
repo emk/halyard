@@ -231,6 +231,9 @@
     )
 
   (define-class %hacp-high-level-test% (%element-test-case%)
+    (setup-test
+      (hacp-clear-fields!))
+
     (test "valid-hacp-status? should return true for all valid statuses"
       (foreach [status '(passed completed failed incomplete browsed
                                 not-attempted)]
@@ -238,6 +241,34 @@
     (test "valid-hacp-status? should return false for other values"
       (foreach [status '(not-valid "not valid" 1)]
         (assert (not (valid-hacp-status? status)))))
+
+    (test "hacp-field and set-hacp-field! should get and set field values"
+      (assert-equals #f (hacp-field "foo"))
+      (set! (hacp-field "foo") "bar")
+      (assert-equals "bar" (hacp-field "foo")))
+    (test "hacp-clear-fields! should clear all field values"
+      (set! (hacp-field "foo") "bar")
+      (hacp-clear-fields!)
+      (assert-equals #f (hacp-field "foo")))
+    (test "hacp-field should treat field names as case insensitive"
+      (set! (hacp-field "FOO") "bar")
+      (assert-equals "bar" (hacp-field "foo")))
+    (test "set-hacp-field! should clear the field when passed #f"
+      (set! (hacp-field "foo") "bar")
+      (set! (hacp-field "foo") #f)
+      (assert-equals #f (hacp-field "foo")))
+    (test "set-hacp-field! should require keys to be strings"
+      (assert-raises exn:fail? (set! (hacp-field 'foo) "bar")))
+    (test "set-hacp-field! should not allow values besides strings and #f"
+      (assert-raises exn:fail? (set! (hacp-field "foo") 'bar)))
+
+    (test "set-hacp-status! should save status symbols as strings"
+      (set! (hacp-status) 'incomplete)
+      (assert-equals "incomplete" (hacp-field "Status"))
+      (set! (hacp-status) 'not-attempted)
+      (assert-equals "not attempted" (hacp-field "Status")))
+    (test "set-hacp-status! should raise an error if status is invalid"
+      (assert-raises exn:fail? (set! (hacp-status) 'not-valid)))
     )
 
   (card /networking/tests/hacp

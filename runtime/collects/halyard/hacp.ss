@@ -84,7 +84,8 @@
   ;;  High-level HACP API
   ;;=======================================================================
 
-  (provide valid-hacp-status?)
+  (provide valid-hacp-status? hacp-clear-fields! hacp-field set-hacp-field!
+           set-hacp-status!)
 
   ;;; Is 'value' a valid HACP status value?  This is mostly used for
   ;;; internal type-checking.
@@ -92,5 +93,35 @@
     (and (memq value '(passed completed failed incomplete browsed
                        not-attempted))
          #t))
+
+  (define *hacp-fields* (make-hash-table 'equal))
+
+  ;;; Clear all HACP fields.
+  (define (hacp-clear-fields!)
+    (set! *hacp-fields* (make-hash-table 'equal)))
+
+  ;;; Get the value of an HACP field.
+  (define (hacp-field name)
+    (hash-table-get *hacp-fields* (string-downcase name) #f))
+
+  ;;; Set the value of an HACP field.
+  (define (set-hacp-field! name value)
+    ;; Check errors aggressively, because these values aren't used until
+    ;; later, and it will be hard to link them back to their original
+    ;; callers if they're invalid.
+    (unless (string? name)
+      (error (cat "set-hacp-field! expects <<" name ">> to be a string")))
+    (unless (or (string? value) (eq? value #f))
+      (error (cat "set-hacp-field! expects <<" value
+                  ">> to be a string or #f")))
+    (hash-table-put! *hacp-fields* (string-downcase name) value))
+
+  ;;; A thin wrapped around set-hacp-field! which translates status symbols
+  ;;; to strings.
+  (define (set-hacp-status! value)
+    (unless (valid-hacp-status? value)
+      (error (cat "Expected a valid HACP status: " value)))
+    (set! (hacp-field "Status")
+          (regexp-replace "-" (symbol->string value) " ")))
 
   )
