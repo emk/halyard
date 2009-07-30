@@ -23,7 +23,7 @@
 (module uuid (lib "halyard.ss" "halyard")
   (require (lib "kernel.ss" "halyard/private"))
   
-  (provide uuid)
+  (provide uuid uuid?)
 
   ;;; Generate a universally unique identifier (UUID).
   ;;;
@@ -35,5 +35,12 @@
   ;;; an attacker to guess these UUID values.
   (define (uuid)
     (call-prim 'GenerateUuid))
+
+  (define $uuid-regexp
+    (pregexp "^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$"))
+
+  ;;; Return true iff value is a string in normal UUID format.
+  (define (uuid? value)
+    (and (string? value) (regexp-match $uuid-regexp value)))
 
   )

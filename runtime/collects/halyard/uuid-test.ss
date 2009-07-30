@@ -25,10 +25,12 @@
   (require (lib "uuid.ss" "halyard"))
 
   (define-class %uuid-test% (%test-case%)
+    (test "uuid? should return true only when passed a valid UUID string"
+      (assert (uuid? "2726490c-3229-4af1-8d17-85fdc6e5e371"))
+      (assert (not (uuid? "2726490c-3229-4af1-8d17-")))
+      (assert (not (uuid? 10))))
     (test "UUIDs should have the correct format"
-      (assert (regexp-match (pregexp (cat "^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}"
-                                          "[0-9a-fA-F]{12}$"))
-                            (uuid))))
+      (assert (uuid? (uuid))))
     (test "UUIDs should not match"
       (assert (not (equals? (uuid) (uuid))))))
 
