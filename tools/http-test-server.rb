@@ -59,8 +59,8 @@ require 'test/unit/assertions'
 
 Sinatra::Application.send(:include, Test::Unit::Assertions)
 
-HACP_UUID ||= "44463f20-b4c6-4a3e-abf6-b942d010deb3"
-HACP_SESSION_ID ||= "#{HACP_UUID}:123:4567"
+HACP_UUID = "44463f20-b4c6-4a3e-abf6-b942d010deb3" unless defined?(HACP_UUID)
+HACP_SESSION_ID = "#{HACP_UUID}:123:4567" unless defined?(HACP_SESSION_ID)
 
 post '/hacp/register' do
   assert_equal HACP_UUID, params[:uuid]
