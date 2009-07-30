@@ -85,20 +85,33 @@
   ;;=======================================================================
 
   (provide valid-hacp-status? hacp-clear-fields! hacp-field set-hacp-field!
-           set-hacp-status!)
+           set-hacp-status! set-hacp-objective-status!)
 
   ;;; Is 'value' a valid HACP status value?  This is mostly used for
-  ;;; internal type-checking.
+  ;;; internal type-checking.  Note that you should <i>not</i> use
+  ;;; 'browsed' without first reading the HACP manual carefully; it can
+  ;;; only be used in a non-for-credit mode that we don't support.
   (define (valid-hacp-status? value)
     (and (memq value '(passed completed failed incomplete browsed
                        not-attempted))
          #t))
 
-  (define *hacp-fields* (make-hash-table 'equal))
+  ;; Internal: Convert an HACP status symbol to a string.
+  (define (hacp-status->string status)
+    (unless (valid-hacp-status? status)
+      (error (cat "Expected a valid HACP status: " status)))
+    (regexp-replace "-" (symbol->string status) " "))
 
   ;;; Clear all HACP fields.
   (define (hacp-clear-fields!)
-    (set! *hacp-fields* (make-hash-table 'equal)))
+    (set! *hacp-fields* (make-hash-table 'equal))
+    (set! *hacp-next-objective-id* 1)
+    (set! *hacp-objective-ids* (make-hash-table)))
+
+  (define *hacp-fields* #f)
+  (define *hacp-next-objective-id* #f)
+  (define *hacp-objective-ids* #f)
+  (hacp-clear-fields!)
 
   ;;; Get the value of an HACP field.
   (define (hacp-field name)
@@ -119,9 +132,19 @@
   ;;; A thin wrapped around set-hacp-field! which translates status symbols
   ;;; to strings.
   (define (set-hacp-status! value)
-    (unless (valid-hacp-status? value)
-      (error (cat "Expected a valid HACP status: " value)))
-    (set! (hacp-field "Status")
-          (regexp-replace "-" (symbol->string value) " ")))
+    (set! (hacp-field "Status") (hacp-status->string value)))
+
+  ;; Internal: Get the integer ID for the objective 'name'.
+  (define (objective-name->id name)
+    (unless (hash-table-has-key? *hacp-objective-ids* name)
+      (hash-table-put! *hacp-objective-ids* name *hacp-next-objective-id*)
+      (inc! *hacp-next-objective-id*))
+    (hash-table-get *hacp-objective-ids* name))
+
+  ;;; Set the status of the objective 'name' to a valid HACP status.
+  (define (set-hacp-objective-status! name value)
+    (define id (objective-name->id name))
+    (set! (hacp-field (cat "J_ID." id)) (symbol->string name))
+    (set! (hacp-field (cat "J_Status." id)) (hacp-status->string value)))
 
   )

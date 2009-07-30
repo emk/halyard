@@ -269,6 +269,17 @@
       (assert-equals "not attempted" (hacp-field "Status")))
     (test "set-hacp-status! should raise an error if status is invalid"
       (assert-raises exn:fail? (set! (hacp-status) 'not-valid)))
+
+    (test "set-hacp-objective-status! should set objective fields"
+      (set! (hacp-objective-status '/section1) 'passed)
+      (set! (hacp-objective-status '/section2) 'not-attempted)
+      (assert-equals "/section1"     (hacp-field "J_ID.1"))
+      (assert-equals "passed"        (hacp-field "J_Status.1"))
+      (assert-equals "/section2"     (hacp-field "J_ID.2"))
+      (assert-equals "not attempted" (hacp-field "J_Status.2"))
+      (set! (hacp-objective-status '/section2) 'incomplete)
+      (assert-equals "incomplete"    (hacp-field "J_Status.2")))
+
     )
 
   (card /networking/tests/hacp
