@@ -81,8 +81,10 @@
 
 
   ;;=======================================================================
-  ;;  High-level HACP API
+  ;;  HACP Fields
   ;;=======================================================================
+  ;;  These functions are used in conjunction with the high-level API
+  ;;  below.
 
   (provide valid-hacp-status? hacp-clear-fields! hacp-field set-hacp-field!
            set-hacp-status! set-hacp-objective-status!)
@@ -146,5 +148,10 @@
     (define id (objective-name->id name))
     (set! (hacp-field (cat "J_ID." id)) (symbol->string name))
     (set! (hacp-field (cat "J_Status." id)) (hacp-status->string value)))
+
+
+  ;;=======================================================================
+  ;;  High-level HACP API
+  ;;=======================================================================
 
   )

@@ -6,6 +6,7 @@
   (require (lib "test-elements.ss" "halyard"))
   (require (lib "url-request.ss" "halyard"))
   (require (lib "hacp.ss" "halyard"))
+  (require (lib "data-file.ss" "halyard"))
   (require (lib "base.ss" "halyard-test"))
 
   (group /networking (%card-group% :skip-when-jumping-to-each-card? #t))
@@ -230,7 +231,7 @@
 
     )
 
-  (define-class %hacp-high-level-test% (%element-test-case%)
+  (define-class %hacp-fields-test% (%test-case%)
     (setup-test
       (hacp-clear-fields!))
 
@@ -282,9 +283,16 @@
 
     )
 
+  (define-class %hacp-high-level-test% (%element-test-case%)
+    (test "High-level HACP API should write user data to server in background"
+      (with-temporary-user-data ()
+        (void)))
+    )
+
   (card /networking/tests/hacp
       (%test-suite%
        :tests (list %hacp-low-level-test%
+                    %hacp-fields-test%
                     %hacp-high-level-test%)))
 
   )
