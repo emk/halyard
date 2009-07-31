@@ -318,9 +318,9 @@
         (hacp-write :sync? #f)
         (hacp-done)
 
-        ;; TODO: Expect register / new-session / GetParam / PutParam x2,
+        ;; TODO: Expect register / new_session / GetParam / PutParam x2,
         ;; with appropriate arguments.
-        (assert-equals "register" (.hacp-log))))
+        (assert-equals "register new_session" (.hacp-log))))
     )
 
   (card /networking/tests/hacp

@@ -155,3 +155,12 @@ post '/hacp2/register' do
   content_type :json
   {}.to_json
 end
+
+post '/hacp2/new_session' do
+  assert_equal HACP_UUID, params[:uuid]
+  $hacp2_log << "new_session"
+  
+  content_type :json
+  { 'aicc_url' => "http://localhost:4567/hacp2.1",
+    'aicc_sid' => HACP_SESSION_ID }.to_json
+end
