@@ -162,12 +162,18 @@
 
   (provide hacp-initialize hacp-write hacp-done)
 
+  (define *current-hacp-request* #f)
+
   ;;; Initialize an HACP session.
+  ;;; TODO - Should we use symbols or strings for user prefs?
   (define (hacp-initialize hacp-url student-name)
     ;; If the user doesn't already have a UUID, assign one.
     (unless (user-pref 'uuid)
       (set! (user-pref 'uuid) (uuid)))
-    (void))
+    ;; Register the user with the server.
+    (set! *current-hacp-request*
+          (hacp-extension-register-user-request
+           hacp-url (user-pref 'uuid) student-name (user-pref 'uuid))))
 
   ;;; Attempt to write our data to the server.  If sync? if #f, then
   ;;; perform the write in the background.  If sync? is #t, wait for the
@@ -178,5 +184,6 @@
   ;;; Terminate our HACP session, if one is running, and attempt to flush
   ;;; our data to the server synchronously.
   (define (hacp-done)
-    (void))
+    (*current-hacp-request* .wait)
+    (set! *current-hacp-request* #f))
   )

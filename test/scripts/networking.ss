@@ -286,8 +286,21 @@
 
   (define-class %hacp-high-level-test% (%element-test-case%)
     (setup-test
-      ;; TODO: Reset test server state.
-      (void))
+      ;; Reset our HACP request log on the server.
+      (define request
+        (%easy-url-request% .new
+          :url (cat $server "/hacp2/log/reset")
+          :method 'post :parameters '()))
+      (request .wait)
+      (assert (request .succeeded?))
+      (delete-element request))
+
+    (def (hacp-log)
+      ;; Fetch the contents of our HACP request log.
+      (define request
+        (%easy-url-request% .new :url (cat $server "/hacp2/log")))
+      (request .wait)
+      (request .response))
 
     (test "hacp-initialize should assign a UUID if the user doesn't have one"
       (with-temporary-user-data ()
@@ -299,14 +312,15 @@
     (test "High-level HACP API should write user data to server in background"
       (with-temporary-user-data ()
         ;; Use a known UUID for convenience.
-        (set! (user-pref "uuid") $student-uuid)
+        (set! (user-pref 'uuid) $student-uuid)
 
         (hacp-initialize (cat $server "/hacp2") $student-name)
         (hacp-write :sync? #f)
         (hacp-done)
+
         ;; TODO: Expect register / new-session / GetParam / PutParam x2,
         ;; with appropriate arguments.
-        ))
+        (assert-equals "register" (.hacp-log))))
     )
 
   (card /networking/tests/hacp

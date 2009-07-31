@@ -125,3 +125,33 @@ EOD
     raise ArgumentError, "Unkown HACP command: #{params[:command]}"
   end
 end
+
+
+#==========================================================================
+#  Simulated HACP LMS API #2
+#==========================================================================
+#  We use this second version of the HACP interface to test whether the
+#  high-level API makes all the protocol calls in the correct order.
+
+$hacp2_log ||= []
+
+post '/hacp2/log/reset' do
+  $hacp2_log = []
+  content_type :text
+  "Log is reset."
+end
+
+get '/hacp2/log' do
+  content_type :text
+  $hacp2_log.join(' ')
+end
+
+post '/hacp2/register' do
+  assert_equal HACP_UUID, params[:uuid]
+  assert_equal "J. Student", params[:name]
+  assert_equal HACP_UUID, params[:student_id]
+  $hacp2_log << "register"
+
+  content_type :json
+  {}.to_json
+end
