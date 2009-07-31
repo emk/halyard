@@ -120,7 +120,8 @@
   ;;  Stack trace error handler
   ;;=======================================================================
 
-  (provide report-exception report-fatal-exception with-exceptions-blocked)
+  (provide make-log-exception-fn report-exception report-fatal-exception
+           with-exceptions-blocked)
 
   ;;; Return a string containing a backtrace for EXN, or #f if no backtrace
   ;;; can be generated.
