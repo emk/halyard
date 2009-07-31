@@ -168,7 +168,7 @@ post '/hacp2/new_session' do
   
   content_type :json
   { 'aicc_url' => "http://localhost:4567/hacp2.1",
-    'aicc_sid' => HACP_SESSION_ID }.to_json
+    'aicc_sid' => "#{params[:uuid]}:123:4567" }.to_json
 end
 
 post '/hacp2.1' do
@@ -195,6 +195,16 @@ Time = 00%3a00%3a00
 
 [Core_Lesson]
 EOD
+  when "putparam"
+    if should_validate_and_log
+      assert_equal <<EOD, params[:aicc_data]
+[Core]
+lesson_location=%2fnetworking%2ftests%2fhacp
+[Core_Lesson]
+
+EOD
+      $hacp2_log << "PutParam"
+    end
   else
     raise ArgumentError, "Unkown HACP command: #{params[:command]}"
   end

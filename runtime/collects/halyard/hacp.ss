@@ -167,7 +167,10 @@
 
   (define (run-request request)
     (request .wait)
-    (request .response))
+    (define response (request .response))
+    ;; TODO - We leak an element here if .response raises an error.
+    (delete-element request)
+    response)
 
   ;;; Initialize an HACP session.
   ;;; TODO - Should we use symbols or strings for user prefs?
@@ -196,10 +199,24 @@
   ;;; perform the write in the background.  If sync? is #t, wait for the
   ;;; write to succeed or fail.
   (define (hacp-write &key sync?)
-    (void))
+    ;; TODO - Implement asynchronous writes.
+    (when *hacp-url*
+      ;; Finish filling in our HACP fields.
+      (set! (hacp-field "Lesson_Location")
+            (symbol->string ((current-card) .full-name)))
+
+      ;; Export and sort our HACP fields.
+      (define fields
+        (sort (hash-table-map *hacp-fields* (fn (k v) (cons k v)))
+              (fn (a b) (string<? (car a) (car b)))))
+
+      ;; Write our data to the server.
+      (run-request
+       (hacp-put-param-request *hacp-url* *hacp-sid* fields ""))))
 
   ;;; Terminate our HACP session, if one is running, and attempt to flush
   ;;; our data to the server synchronously.
   (define (hacp-done)
-    (void))
+    (hacp-write :sync? #t))
+
   )

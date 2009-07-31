@@ -320,7 +320,8 @@
 
         ;; TODO: Expect register / new_session / GetParam / PutParam x2,
         ;; with appropriate arguments.
-        (assert-equals "register new_session GetParam" (.hacp-log))))
+        (assert-equals "register new_session GetParam PutParam PutParam"
+                       (.hacp-log))))
     )
 
   (card /networking/tests/hacp
