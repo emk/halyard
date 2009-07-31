@@ -318,10 +318,19 @@
         (hacp-write :sync? #f)
         (hacp-done)
 
-        ;; TODO: Expect register / new_session / GetParam / PutParam x2,
-        ;; with appropriate arguments.
         (assert-equals "register new_session GetParam PutParam PutParam"
                        (.hacp-log))))
+
+    (test "hacp-initialize should not re-register known users"
+      (with-temporary-user-data ()
+        ;; Use a known UUID for convenience and mark as registered.
+        (set! (user-pref 'uuid) $student-uuid)
+        (set! (user-pref '*hacp-user-registered?*) #t)
+
+        (hacp-initialize (cat $server "/hacp2") $student-name)
+        (hacp-done)
+        
+        (assert-equals "new_session GetParam PutParam" (.hacp-log))))
     )
 
   (card /networking/tests/hacp

@@ -180,8 +180,10 @@
       (set! (user-pref 'uuid) (uuid)))
 
     ;; Register the user with the server.
-    (run-request (hacp-extension-register-user-request
-                  hacp-url (user-pref 'uuid) student-name (user-pref 'uuid)))
+    (unless (user-pref '*hacp-user-registered?* :default #f)
+      (run-request (hacp-extension-register-user-request
+                    hacp-url (user-pref 'uuid) student-name (user-pref 'uuid)))
+      (set! (user-pref '*hacp-user-registered?*) #t))
 
     ;; Create a new HACP session.
     (define session-info
