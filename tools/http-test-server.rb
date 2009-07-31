@@ -147,18 +147,23 @@ get '/hacp2/log' do
 end
 
 post '/hacp2/register' do
-  assert_equal HACP_UUID, params[:uuid]
-  assert_equal "J. Student", params[:name]
-  assert_equal HACP_UUID, params[:student_id]
-  $hacp2_log << "register"
+  # If this is our standard test user, verify all the other fields and log
+  # this request.
+  if params[:uuid] == HACP_UUID
+    assert_equal "J. Student", params[:name]
+    assert_equal HACP_UUID, params[:student_id]
+    $hacp2_log << "register"
+  end
 
   content_type :json
   {}.to_json
 end
 
 post '/hacp2/new_session' do
-  assert_equal HACP_UUID, params[:uuid]
-  $hacp2_log << "new_session"
+  # If this is our standard test user, log this request.
+  if params[:uuid] == HACP_UUID
+    $hacp2_log << "new_session"
+  end
   
   content_type :json
   { 'aicc_url' => "http://localhost:4567/hacp2.1",
