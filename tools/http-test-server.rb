@@ -8,6 +8,7 @@
 require 'rubygems'
 require 'sinatra'
 require 'json'
+require 'cgi'
 
 get '/' do
   "This is a primitive web server used for testing Halyard."
@@ -92,12 +93,12 @@ error_text=Successful
 aicc_data=
 [Core]
 Student_ID = 12345
-Student_Name = J. Student
+Student_Name = J.+Student
 Lesson_Location = 
 Credit = credit
-Lesson_Status = 'not attempted'
+Lesson_Status = not+attempted
 Score = 
-Time = 0
+Time = 00%3a00%3a00
 
 [Core_Lesson]
 
@@ -168,4 +169,33 @@ post '/hacp2/new_session' do
   content_type :json
   { 'aicc_url' => "http://localhost:4567/hacp2.1",
     'aicc_sid' => HACP_SESSION_ID }.to_json
+end
+
+post '/hacp2.1' do
+  # If this is our standard test user, verify all the other fields and log
+  # this request.
+  should_validate_and_log = (HACP_SESSION_ID == params[:session_id])
+
+  content_type :text
+  case params[:command].downcase
+  when "getparam"
+    $hacp2_log << "GetParam" if should_validate_and_log
+    <<"EOD"
+error=0
+error_text=Successful
+aicc_data=
+[Core]
+Student_ID = #{CGI.escape(HACP_UUID)}
+Student_Name = J.+Student
+Lesson_Location = 
+Credit = credit
+Lesson_Status = not+attempted
+Score = 
+Time = 00%3a00%3a00
+
+[Core_Lesson]
+EOD
+  else
+    raise ArgumentError, "Unkown HACP command: #{params[:command]}"
+  end
 end

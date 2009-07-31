@@ -176,18 +176,21 @@
     (unless (user-pref 'uuid)
       (set! (user-pref 'uuid) (uuid)))
 
-    (with-exceptions-blocked [(make-log-exception-fn 'debug)]
-      ;; Register the user with the server.
-      (run-request (hacp-extension-register-user-request
-                    hacp-url (user-pref 'uuid) student-name (user-pref 'uuid)))
+    ;; Register the user with the server.
+    (run-request (hacp-extension-register-user-request
+                  hacp-url (user-pref 'uuid) student-name (user-pref 'uuid)))
 
-      ;; Create a new HACP session.
-      (define session-info
-        (run-request (hacp-extension-new-session-request hacp-url
-                                                         (user-pref 'uuid))))
-      (set! *hacp-url* (hash-table-get session-info "aicc_url"))
-      (set! *hacp-sid* (hash-table-get session-info "aicc_sid"))
-      ))
+    ;; Create a new HACP session.
+    (define session-info
+      (run-request (hacp-extension-new-session-request hacp-url
+                                                       (user-pref 'uuid))))
+    (set! *hacp-url* (hash-table-get session-info "aicc_url"))
+    (set! *hacp-sid* (hash-table-get session-info "aicc_sid"))
+
+    ;; Make our initial GetParam request, which is required by the HACP
+    ;; protocol.
+    (run-request (hacp-get-param-request *hacp-url* *hacp-sid*))
+    )
 
   ;;; Attempt to write our data to the server.  If sync? if #f, then
   ;;; perform the write in the background.  If sync? is #t, wait for the
