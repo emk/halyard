@@ -134,6 +134,9 @@ end
 #  We use this second version of the HACP interface to test whether the
 #  high-level API makes all the protocol calls in the correct order.
 
+# Strip invalid characters from UUID to make student ID.
+HACP_STUDENT_ID = HACP_UUID.gsub('-', '') unless defined? HACP_STUDENT_ID
+
 $hacp2_log ||= []
 
 post '/hacp2/log/reset' do
@@ -152,7 +155,7 @@ post '/hacp2/register' do
   # this request.
   if params[:uuid] == HACP_UUID
     assert_equal "J. Student", params[:name]
-    assert_equal HACP_UUID, params[:student_id]
+    assert_equal HACP_STUDENT_ID, params[:student_id]
     $hacp2_log << "register"
   end
 
@@ -185,7 +188,7 @@ error=0
 error_text=Successful
 aicc_data=
 [Core]
-Student_ID = #{CGI.escape(HACP_UUID)}
+Student_ID = #{CGI.escape(HACP_STUDENT_ID)}
 Student_Name = J.+Student
 Lesson_Location = 
 Credit = credit
