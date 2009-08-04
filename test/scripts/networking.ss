@@ -264,13 +264,13 @@
     (test "set-hacp-field! should not allow values besides strings and #f"
       (assert-raises exn:fail? (set! (hacp-field "foo") 'bar)))
 
-    (test "set-hacp-status! should save status symbols as strings"
-      (set! (hacp-status) 'incomplete)
-      (assert-equals "incomplete" (hacp-field "Status"))
-      (set! (hacp-status) 'not-attempted)
-      (assert-equals "not attempted" (hacp-field "Status")))
+    (test "set-hacp-lesson-status! should save status symbols as strings"
+      (set! (hacp-lesson-status) 'incomplete)
+      (assert-equals "incomplete" (hacp-field "Lesson_Status"))
+      (set! (hacp-lesson-status) 'not-attempted)
+      (assert-equals "not attempted" (hacp-field "Lesson_Status")))
     (test "set-hacp-status! should raise an error if status is invalid"
-      (assert-raises exn:fail? (set! (hacp-status) 'not-valid)))
+      (assert-raises exn:fail? (set! (hacp-lesson-status) 'not-valid)))
 
     (test "set-hacp-objective-status! should set objective fields"
       (set! (hacp-objective-status '/section1) 'passed)

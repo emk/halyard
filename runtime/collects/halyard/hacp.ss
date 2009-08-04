@@ -93,7 +93,7 @@
   ;;  below.
 
   (provide valid-hacp-status? hacp-clear-fields! hacp-field set-hacp-field!
-           set-hacp-status! set-hacp-objective-status!)
+           set-hacp-lesson-status! set-hacp-objective-status!)
 
   ;;; Is 'value' a valid HACP status value?  This is mostly used for
   ;;; internal type-checking.  Note that you should <i>not</i> use
@@ -139,8 +139,8 @@
 
   ;;; A thin wrapped around set-hacp-field! which translates status symbols
   ;;; to strings.
-  (define (set-hacp-status! value)
-    (set! (hacp-field "Status") (hacp-status->string value)))
+  (define (set-hacp-lesson-status! value)
+    (set! (hacp-field "Lesson_Status") (hacp-status->string value)))
 
   ;; Internal: Get the integer ID for the objective 'name'.
   (define (objective-name->id name)
