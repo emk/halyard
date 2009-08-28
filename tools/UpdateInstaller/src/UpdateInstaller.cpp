@@ -44,10 +44,10 @@ static void TouchFile(const path &name);
 UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root)
     : mSrcRoot(src_root), mDestRoot(dst_root), 
       mSpecFile(mSrcRoot / "Updates/release.spec"),
-      mSrcManifestDir(mSrcRoot / "Updates/manifests" / mSpecFile.build())
+      mSrcManifestDir(mSrcRoot / "Updates/manifests" / mSpecFile.build()),
+      mUpdateFiles(FileSet::FromManifestsInDir(mSrcManifestDir)),
+      mExistingFiles(FileSet::FromManifestsInDir(mDestRoot))
 { 
-    mUpdateFiles.InitFromManifestsInDir(mSrcManifestDir);
-    mExistingFiles.InitFromManifestsInDir(mDestRoot);
 }
 
 void UpdateInstaller::PrepareForUpdate() {
@@ -56,8 +56,7 @@ void UpdateInstaller::PrepareForUpdate() {
 }
 
 void UpdateInstaller::CalculatePoolToTreeCopiesNeeded() {
-    FileSet diff;
-    diff.InitFilesToAdd(mExistingFiles, mUpdateFiles);
+    FileSet diff(mUpdateFiles.MinusExactMatches(mExistingFiles));
 
     // Add copy specs for all of files we need to copy from the pool to
     // the tree.

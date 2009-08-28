@@ -54,12 +54,12 @@ public:
     
     FileSet() {}
     
-    FileSet& InitFromManifestFile(const boost::filesystem::path &path);
-    FileSet& InitFromContents(const std::string &contents);
-    FileSet& InitFromManifestsInDir(const boost::filesystem::path &path);
-    FileSet& InitFilesToAdd(const FileSet &inBase, const FileSet &inUpdate);
-    FileSet& InitFilesToAdd(const boost::filesystem::path &inBase,
-                            const boost::filesystem::path &inUpdate);
+    static FileSet FromManifestFile(const boost::filesystem::path &path);
+    static FileSet FromContents(const std::string &contents);
+    static FileSet FromManifestsInDir(const boost::filesystem::path &path);
+
+    FileSet& ParseAndAddEntries(const std::string &contents);
+    FileSet MinusExactMatches(const FileSet &other) const;
 
     const EntryVector &Entries() const { return mEntries; }
     bool HasMatchingEntry(const Entry &entry) const;

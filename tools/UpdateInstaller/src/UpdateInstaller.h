@@ -52,10 +52,26 @@ private:
     };
     typedef std::vector<CopySpec> CopyVector;
 
+    // These are the inputs we get when we are launched, representing
+    // the directory containing our update, and the directory our program
+    // is installed in.
     path mSrcRoot, mDestRoot;
+
+    // This is the parsed contents of the spec file for the new version
+    // of the program (the update, read out of mSrcRoot).
     SpecFile mSpecFile;
+
+    // This is the directory that we will be reading our new (update)
+    // manifessts from.  Our old manifests should just be in mDestRoot.
     path mSrcManifestDir;
+
+    // These are the unions of the manifests in our new (update) and old
+    // (base) manifests.  These are the inputs to our algorithm that
+    // determines all of the copies and moves we will need to do.
     FileSet mUpdateFiles, mExistingFiles;
+
+    // This is the set of file copies that we will have to do, in the
+    // order that we will need to do them.
     CopyVector mCopies;
 
     void LockDestinationDirectory();

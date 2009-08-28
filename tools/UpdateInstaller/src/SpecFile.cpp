@@ -26,9 +26,9 @@
 
 SpecFile::SpecFile(const boost::filesystem::path &path)
     : mContents(read_file(path)), mHeader(parseHeader()), 
-      mUrl(mHeader["Update-URL"]), mBuild(mHeader["Build"])
+      mUrl(mHeader["Update-URL"]), mBuild(mHeader["Build"]),
+      mManifest(FileSet::FromContents(mContents))
 {
-    mManifest.InitFromContents(mContents);
 }
 
 enum HeaderParseState { NEWLINE, KEY, VALUE };

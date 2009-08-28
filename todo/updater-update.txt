@@ -129,59 +129,62 @@ Special purpose post processing, also available from installer:
                              state after everything
 
 Getting from our givens to our goal:
+(now including Eric's names for reference)
+
+  filesNeededForNewTree
+  files(*->tree') = files(update) - files(base)
+     The new files we need to add to our tree; this is all we've been
+     dealing with in previous versions of the updater, and has been
+     called MANIFEST-DIFF.
+
+  (not explicitly represented in Eric's pseudocode; corresponds roughly
+   to digestsToGetFromOldTree)
+* files(tree->pool') = files(*->tree')[digests(*->tree') & digests(base)]
+                     = files(*->tree') - files(pool->tree')
+                     = files(*->tree')[digests(*->tree') - digests(pool)]
+     The set of files that we will add to our tree by moving or
+     copyting them from somewhere else in the tree.  This set does not
+     yet have the sources of the files encoded in it; it is the set of
+     files we need that we will get from somewhere the tree.
+
+  filesToMoveFromTreeToPool
+* moves(tree->pool') = files(tree->pool')[files(base) - files(update)]
+     We will simplify our situation by doing all of the moves and copies
+     via the pool.  Thus, we will first move any files that we want to
+     delete but need elsewhere into the pool.
+
+  filesToCopyFromTreeToPool
+* copies(tree->pool') = files(tree->pool') - moves(tree->pool')
+     The files we need to copy out of the tree are the ones that we need
+     elsewhere in the tree, but which are not to be removed from the tree.
+
+  filesToDeleteFromTree
+  deletes(tree) = files(base) - files(update) - moves(tree->pool')
+     The actual files we need to simply delete is the set of files that we
+     want gone (either because they will be replaced from the pool or
+     because we want them gone entirely), minus the files that will already
+     be gone because we've moved them out of the way.
+
+Not needed, but can be used for assertions (none of these are used in
+    Eric's pseudocode):
   digests(total) = digests(base) |  digests(pool)
      The total set of file contents that we have available to us, is the
      union of the contents we know about in our tree, and the contents
      we have in our pool.  Not necessary for later steps, but can be used
      to verify that updates are possible.
 
-  files(*->tree') = files(update) - files(base)
-     The new files we need to add to our tree; this is all we've been
-     dealing with in previous versions of the updater, and has been
-     called MANIFEST-DIFF.
-
-  filenames(tree->) = filenames(base) - filenames(update)
-     The set of filenames to delete is simply the set of filenames that
-     appear in our base manifest, but do not appear in our update manifest.
-     Note that some of these deletions will be done via moves, and some
-     via simple deletes.
-
-  files(pool->tree') = files(*->tree')[digests(*->tree') & digests(pool)]
-     The set of files that we can move or copy from the pool is equal
-     to the files that we need which have digests in the pool.  
-     This representation should be sufficient to do everything we need;
-     copy each file out until we only need it in one location, and then
-     move it out.
-
-  files(tree->tree') = files(*->tree')[digests(*->tree') & digests(base)]
-                     = files(*->tree') - files(pool->tree')
-     The set of files that we will add to our tree by moving or
-     copyting them from somewhere else in the tree.  This set does not
-     yet have the sources of the files encoded in it; it is the set of
-     files we need that we will get from somewhere the tree.
-     Currently, we are simply copying each of these digests into our
-     pool and then copying everything out from there, but this will
-     need to change; at the very least, we will need to optimize it
-     by doing moves in cases in which we can.
-
-  moves(tree->pool') = files(tree->tree')[filenames(tree->)]
-     We will simplify our situation by doing all of the moves and copies
-     via the pool.  Thus, we will first move any files that we want to
-     delete but need elsewhere into the pool.
-
-  deletes(tree) = filenames(tree->) - filenames(tree->pool')
-     The actual files we need to simply delete is the set of filenames that we
-     want gone, minus the ones that moves will deal with.
-
-  copies(tree->pool') = files(tree->tree') - moves(tree->pool')
-     The files we need to copy out of the tree are the ones that we need
-     elsewhere in the tree, but which are not to be removed from the tree.
-
   digests(pool') = digests(pool) | digests(moves(tree->pool')) 
                    | digests(copies(tree->pool'))
      Something to help us keep track and verify that we have everything that
      we need.
 
+  files(pool->tree') = files(*->tree')[digests(*->tree') & digests(pool)]
+     The set of files that we can move or copy from the pool is equal
+     to the files that we need which have digests in the pool.  
+     This is not necessarily required for any later steps, but can be
+     used to check the files(tree->pool') step.
+
+  (represented as filesNeededForNewTree, because it is equivalent)
   files(pool'->tree') = files(*->tree')
                       = files(pool->tree') | files(tree->tree')
                       = files(pool->tree') 
@@ -191,3 +194,49 @@ Getting from our givens to our goal:
      it has been populated from the tree.  The several different variations
      here give us some assertions to be able to check that everything is
      sane.
+
+Eric's notes:
+
+Inputs:
+  newManifest: input to program
+  oldManifest: input to program
+  digestsInPool: readdir of pool on disk
+
+Calculated:
+  filesNeededForNewTree
+  filesToCopyFromTreeToPool
+  filesToMoveFromTreeToPool
+  filesToDeleteFromTree  
+
+class FileSet:
+  def contains(file):
+    file.digest == self[file.path].digest:
+  def minusExactMatches(otherManifest):
+    this - otherManifest
+
+def computeUpdateOperations(newManifest, oldManifest, digestsInPool):
+  filesNeededForNewTree = newManifest.minusExactMatches(oldManifest)
+
+  digestsToGetFromOldTree = digests(filesNeededForNewTree) - digestsInPool
+  for digest in digestsNeededForNewTree:
+    oldFile = oldManifest.filesWithDigest(digest)[0] # Pick one.
+    if newManifest.contains(file)
+      filesToCopyFromTreeToPool += file
+    else:
+      filesToMoveFromTreeToPool += file
+
+  # Here's what's left after moving files out of the tree.
+  filesToDeleteFromTree =
+    oldManifest.minusExactMatches(filesToMoveFromTreeToPool)
+  # We don't have to delete these because they're unchanged.
+  filesToDeleteFromTree = filesToDeleteFromTree.minusExactMatches(newManifest)
+
+  return (filesNeededForNewTree, filesToCopyFromTreeToPool,
+          filesToMoveFromTreeToPool, filesToDeleteFromTree)
+
+def moveFilesFromPoolToNewTree(...):
+  for file in filesNeededForNewTree:
+    if this is the last file using file.digest:
+      Move from file.digest in pool to file.path
+    else:
+      Copy from file.digest in pool to file.path
