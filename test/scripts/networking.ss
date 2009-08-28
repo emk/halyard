@@ -148,6 +148,26 @@
                      (request .response-content-type))
       (assert-equals "foo=bar&escaped=%26%3d%20q" (request .response))))
 
+  (define-class %http-callback-test% (%url-request-test-case%)
+    (def (get-with-callback url)
+      (define saved-request #f)
+      (define (callback request)
+        (set! saved-request request))
+      (define request (%easy-url-request% .new
+                        :url (cat $server url)
+                        :on-transfer-finished callback))
+      (request .wait)
+      (assert saved-request)
+      saved-request)
+
+    (test "HTTP callback should be run after successful download"
+      (assert-equals "Hello!\n" ((.get-with-callback "/hello") .response)))
+
+    (test "HTTP callback should be run after failed download"
+      (define request (.get-with-callback "/not-found"))
+      (assert-raises exn:fail? (request .response)))
+    )
+
   (define-class %json-request-test% (%url-request-test-case%)
     (test "JSON GET requests should work"
       (define request
@@ -177,6 +197,7 @@
                     %http-get-test%
                     %http-post-test%
                     %http-post-form-test%
+                    %http-callback-test%
                     %json-request-test%)))
 
 

@@ -135,6 +135,10 @@
     ;;; application/x-www-form-urlencoded for a POST request.
     (attr parameters #f)
 
+    ;;; An optional callback to be run when the transfer has succeeded or
+    ;;; finished.  The callback will be passed this request object.
+    (attr on-transfer-finished #f)
+
     (def (initialize &rest keys)
       (super)
       (set! (slot 'finished?) #f)
@@ -171,7 +175,9 @@
       (when (.succeeded?)
         (set! (slot 'response-body)
               (apply string-append (reverse (slot 'response-body-chunks)))))
-      (set! (slot 'response-body-chunks) '()))
+      (set! (slot 'response-body-chunks) '())
+      (when (.on-transfer-finished)
+        ((.on-transfer-finished) self)))
 
     ;;; Has this request finished?
     (def (finished?)
