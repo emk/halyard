@@ -1,3 +1,17 @@
+0.5.37 - 28 Aug 2009
+
+This release of Halyard replaces the high-level HACP client with
+asynchronous implementation that handles errors internally.  It also
+includes a new DATA-FILE->HASH-TABLE function which, when given a path,
+will load a user preference file in data-file.ss format and convert it to a
+hash table.  See the commit message for that patch for example code.
+
+Eric Kidd (4):
+      %easy-url-request%: Add on-transfer-finished callback
+      HACP: Allow keyword parameters to be passed to %url-request%s
+      HACP: Rewrite high-level client to run asynchronously
+      data-file.ss: Export data-file->hash-table for reading old prefs
+
 0.5.36 - 4 Aug 2009
 
 This release of Halyard includes a preliminary implementation of HACP, a
