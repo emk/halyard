@@ -310,7 +310,7 @@
       ;; Reset our HACP request log on the server.
       (define request
         (%easy-url-request% .new
-          :url (cat $server "/hacp2/log/reset")
+          :url (cat $server "/hacp2/reset_test_state")
           :method 'post :parameters '()))
       (request .wait)
       (assert (request .succeeded?))
@@ -330,13 +330,13 @@
         (assert (uuid? (user-pref 'uuid)))
         (hacp-done)))
 
-    (test "High-level HACP API should write user data to server in background"
+    (test "High-level HACP API should write user data to server"
       (with-temporary-user-data ()
         ;; Use a known UUID for convenience.
         (set! (user-pref 'uuid) $student-uuid)
 
         (hacp-initialize (cat $server "/hacp2") $student-name)
-        (hacp-write :sync? #f)
+        (hacp-write :sync? #t) ; Force sync so next write doesn't clobber us.
         (hacp-done)
 
         (assert-equals "register new_session GetParam PutParam PutParam"
@@ -352,6 +352,76 @@
         (hacp-done)
         
         (assert-equals "new_session GetParam PutParam" (.hacp-log))))
+
+    (def (disable-commands . commands)
+      (foreach [command commands]
+        (define request
+          (%easy-url-request% .new
+            :url (cat $server "/hacp2/fail_on")
+            :method 'post
+            :parameters `(("command" . ,(symbol->string command)))))
+        (request .wait)
+        (request .response)
+        (delete-element request)))
+    
+    (def (enable-command command)
+      (define request
+        (%easy-url-request% .new
+          :url (cat $server "/hacp2/succeed_on")
+          :method 'post
+          :parameters `(("command" . ,(symbol->string command)))))
+      (request .wait)
+      (request .response)
+      (delete-element request))
+    
+    (def (should-pass-through-states-and-fail . states)
+      (define reversed (reverse states))
+      (define final-state (car reversed))
+      (define intermediate-states (reverse (cdr reversed)))
+      
+      ;; Wait until we've gone through all the expected state
+      ;; transitions.
+      (foreach [state intermediate-states]
+        (while (eq? (hacp-client-state) state)
+          (idle)))
+
+      ;; Make sure we're really done.
+      (hacp-client-wait) 
+      
+      ;; Make sure we wind up in the expected state.
+      (assert-equals final-state (hacp-client-state))
+      (assert (hacp-client-encountered-error?))
+      )
+    
+    (test "HACP client should run asynchronously"
+      (with-temporary-user-data ()
+        ;; Use a known UUID for convenience.
+        (set! (user-pref 'uuid) $student-uuid)
+        
+        ;; Disable HACP protocol commands.
+        (.disable-commands 'register 'new_session 'getparam 'putparam)
+        
+        ;; Walk through a session, enabling protocol commands as we go.
+        (hacp-initialize (cat $server "/hacp2") $student-name)
+        (.should-pass-through-states-and-fail 'unregistered)
+        
+        (.enable-command 'register)
+        (hacp-write)
+        (.should-pass-through-states-and-fail 'unregistered 'registered)
+        
+        (.enable-command 'new_session)
+        (hacp-write)
+        (.should-pass-through-states-and-fail 'registered 'session-started)
+        
+        (.enable-command 'getparam)
+        (hacp-write)
+        (hacp-client-wait) ; Wait until we can see error.
+        (.should-pass-through-states-and-fail 'connected)
+
+        (.enable-command 'putparam)
+        (hacp-done)
+
+        (assert-equals "register new_session GetParam PutParam" (.hacp-log))))
     )
 
   (card /networking/tests/hacp

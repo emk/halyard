@@ -165,66 +165,192 @@
   ;;  High-level HACP API
   ;;=======================================================================
 
-  (provide hacp-initialize hacp-write hacp-done)
-
-  (define *hacp-url* #f)
-  (define *hacp-sid* #f)
-
-  (define (run-request request)
-    (request .wait)
-    (define response (request .response))
-    ;; TODO - We leak an element here if .response raises an error.
-    (delete-element request)
-    response)
+  (provide hacp-initialize hacp-write hacp-done
+           ;; These are slightly lower-level functions which you can
+           ;; generally ignore.  They probably don't work the way you
+           ;; expect them to, and they're really only needed for test
+           ;; suites.
+           hacp-client-state hacp-client-encountered-error? hacp-client-wait)
 
   ;;; Initialize an HACP session.
-  ;;; TODO - Should we use symbols or strings for user prefs?
   (define (hacp-initialize hacp-url student-name)
-    ;; If the user doesn't already have a UUID, assign one.
-    (unless (user-pref 'uuid)
-      (set! (user-pref 'uuid) (uuid)))
+    (%hacp-client% .new
+      :parent (running-root-node) :name 'hacp-client
+      :url hacp-url :student-name student-name))
 
-    ;; Register the user with the server.
-    (unless (user-pref '*hacp-user-registered?* :default #f)
-      (run-request (hacp-extension-register-user-request
-                    hacp-url (user-pref 'uuid) student-name
-                    (regexp-replace* "-" (user-pref 'uuid) "")))
-      (set! (user-pref '*hacp-user-registered?*) #t))
+  ;;; Return the current state of our HACP client.  This function is
+  ;;; mostly used for unit tests.
+  (define (hacp-client-state)
+    (@/hacp-client .state))
 
-    ;; Create a new HACP session.
-    (define session-info
-      (run-request (hacp-extension-new-session-request hacp-url
-                                                       (user-pref 'uuid))))
-    (set! *hacp-url* (hash-table-get session-info "aicc_url"))
-    (set! *hacp-sid* (hash-table-get session-info "aicc_sid"))
+  ;;; Report whether the most recent HACP command ecountered an error.
+  (define (hacp-client-encountered-error?)
+    (@/hacp-client .error?))
 
-    ;; Make our initial GetParam request, which is required by the HACP
-    ;; protocol.
-    (run-request (hacp-get-param-request *hacp-url* *hacp-sid*))
-    )
+  ;;; Block until either all outstanding requests have been processed, or
+  ;;; we have encountered an error.
+  (define (hacp-client-wait)
+    (@/hacp-client .wait))
 
   ;;; Attempt to write our data to the server.  If sync? if #f, then
   ;;; perform the write in the background.  If sync? is #t, wait for the
   ;;; write to succeed or fail.
   (define (hacp-write &key sync?)
-    ;; TODO - Implement asynchronous writes.
-    (when *hacp-url*
-      ;; Finish filling in our HACP fields.
-      (set! (hacp-field "Lesson_Location")
-            (symbol->string ((current-card) .full-name)))
-
-      ;; Export and sort our HACP fields.
-      (define fields
-        (sort (hash-table-map *hacp-fields* (fn (k v) (cons k v)))
-              (fn (a b) (string<? (car a) (car b)))))
-
-      ;; Write our data to the server.
-      (run-request
-       (hacp-put-param-request *hacp-url* *hacp-sid* fields ""))))
+    (@/hacp-client .write)
+    (when sync?
+      (hacp-client-wait)))
 
   ;;; Terminate our HACP session, if one is running, and attempt to flush
   ;;; our data to the server synchronously.
   (define (hacp-done)
-    (hacp-write :sync? #t))
+    (hacp-write :sync? #t)
+    (delete-element @/hacp-client))
+
+  ;;; Used internally to implement the high-level HACP client.
+  (define-class %hacp-client% (%invisible-element%)
+    ;;; The URL of our HACP server.  May be updated at the request of the
+    ;;; remote server once the HACP session has been initialized.
+    (attr url :type <string> :writable? #t)
+
+    ;;; The full name of the student.  This is only needed for initial
+    ;;; registration.
+    (attr student-name :type <string>)
+
+    ;; Our HACP session ID, as provided by the server.
+    (attr session-id #f :writable? #t)
+
+    ;; The current state of our client.
+    (attr state #f :writable? #t)
+
+    ;; Did our last HACP request encounter some sort of error?
+    (attr error? #f :writable? #t)
+
+    ;; If this field contains a string, write it to the server as
+    ;; soon as possible.
+    (attr data-to-write #f :writable? #t)
+
+    ;; Initialize our HACP client and try to connect to the server.
+    (run
+      ;; If the current user doesn't already have a UUID, assign one.
+      (unless (user-pref 'uuid)
+        (set! (user-pref 'uuid) (uuid)))
+
+      ;; Is the current user already registered with our HACP server?
+      (set! (.state)
+            (if (user-pref '*hacp-user-registered?* :default #f)
+                'registered
+                'unregistered))
+
+      ;; Start our state machine running.
+      (.%start-next-request-if-appropriate))
+
+    ;; Do we have a request running right now?
+    (def (%request-is-running?)
+      (element-exists? 'request :parent self))
+
+    ;; If we should try to run a new request now, do it.
+    (def (%start-next-request-if-appropriate)
+      ;; We should not be called when this HACP client is in an error state.
+      (assert (not (.error?)))
+      ;; We should not called when a request object exists.
+      (assert (not (.%request-is-running?)))
+
+      ;; Build a function to handle our response.
+      (define (make-handler method-name next-state)
+        (fn (request)
+          (if (request .succeeded?)
+            ;; Update our state and call the appropriate handler.
+            (begin
+              (set! (.state) next-state)
+              (send self method-name request)
+              (delete-element request)
+              (.%start-next-request-if-appropriate))
+            ;; Mark ourselves as having encountered an error.
+            (begin
+              (delete-element request)
+              (set! (.error?) #t)))))
+
+      ;; Figure out what request we should make now.
+      (case (.state)
+        [[unregistered]
+         (hacp-extension-register-user-request
+          (.url) (user-pref 'uuid) (.student-name)
+          (regexp-replace* "-" (user-pref 'uuid) "")
+          :parent self :name 'request
+          :on-transfer-finished (make-handler '%registered 'registered))]
+        [[registered]
+         (hacp-extension-new-session-request
+          (.url) (user-pref 'uuid)
+          :parent self :name 'request
+          :on-transfer-finished
+          (make-handler '%session-started 'session-started))]
+        [[session-started]
+         (hacp-get-param-request
+          (.url) (.session-id)
+          :parent self :name 'request
+          :on-transfer-finished (make-handler '%connected 'connected))]
+        [[connected]
+         ;; Normally, we don't need to do anything here, but if we have
+         ;; some data to write to the server, we should start doing so
+         ;; now.
+         (when (.data-to-write)
+           (let [[data (.data-to-write)]]
+             (set! (.data-to-write) #f)
+             (hacp-put-param-request
+              (.url) (.session-id) data ""
+              :parent self :name 'request
+              :on-transfer-finished (make-handler '%connected 'connected))))]))
+
+    (def (%registered request)
+      ;; Mark this user as registered.
+      (set! (user-pref '*hacp-user-registered?*) #t))
+
+    (def (%session-started request)
+      ;; Store our session information.
+      (define session-info (request .response))
+      (set! (.url) (hash-table-get session-info "aicc_url"))
+      (set! (.session-id) (hash-table-get session-info "aicc_sid")))
+
+    (def (%connected request)
+      ;; We don't need to anything special once we're connected.
+      (void))
+
+    ;;; Attempt to write our current HACP field state to our server.
+    (def (write)
+      ;; Finish filling in our HACP fields.
+      ;; TODO - We may want to offer an override for this so that we
+      ;; can exclude "are you sure you want to exit the program?"
+      ;; cards.
+      (set! (hacp-field "Lesson_Location")
+            (symbol->string ((current-card) .full-name)))
+
+      ;; Clear any error state.
+      (when (.error?)
+        (set! (.error?) #f))
+
+      ;; Record the data we need to write.  Note that this may replace
+      ;; existing data that we were hoping to write.  (We sort our HACP
+      ;; fields to make it easier to write unit tests that expect certain
+      ;; raw HACP messages to be received by the server.)
+      (set! (.data-to-write)
+        (sort (hash-table-map *hacp-fields* (fn (k v) (cons k v)))
+              (fn (a b) (string<? (car a) (car b)))))
+ 
+      ;; If we don't have a current running request, restart our state
+      ;; machine.
+      (unless (.%request-is-running?)
+        (.%start-next-request-if-appropriate)))
+
+    ;;; Block until we have no running requests.  This generally means that
+    ;;; either all outstanding requests have been completed, or we have
+    ;;; encountered a network error.
+    (def (wait)
+      ;; Note that (.%request-is-running?) will occasionally be false
+      ;; while we're switching from one request to another, but that
+      ;; should happen entirely inside of (idle), making it invisible to
+      ;; us.
+      (while (.%request-is-running?)
+        (idle)))
+    )
 
   )

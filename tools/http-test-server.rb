@@ -138,11 +138,28 @@ end
 HACP_STUDENT_ID = HACP_UUID.gsub('-', '') unless defined? HACP_STUDENT_ID
 
 $hacp2_log ||= []
+$hacp2_failing_commands ||= {}
 
-post '/hacp2/log/reset' do
+# If 'command' has been marked as failing, abort with 500 Internal Error.
+def fail_if_requested command
+  halt 500 if $hacp2_failing_commands[command]
+end
+
+post '/hacp2/reset_test_state' do
   $hacp2_log = []
+  $hacp2_failing_commands = {}
   content_type :text
   "Log is reset."
+end
+
+# Trigger artificial failures for the specified command.
+post '/hacp2/fail_on' do
+  $hacp2_failing_commands[params[:command]] = true
+end
+
+# Stop triggering artificial failures for the specified command.
+post '/hacp2/succeed_on' do
+  $hacp2_failing_commands.delete(params[:command])
 end
 
 get '/hacp2/log' do
@@ -151,6 +168,8 @@ get '/hacp2/log' do
 end
 
 post '/hacp2/register' do
+  fail_if_requested 'register'
+
   # If this is our standard test user, verify all the other fields and log
   # this request.
   if params[:uuid] == HACP_UUID
@@ -164,6 +183,8 @@ post '/hacp2/register' do
 end
 
 post '/hacp2/new_session' do
+  fail_if_requested 'new_session'
+
   # If this is our standard test user, log this request.
   if params[:uuid] == HACP_UUID
     $hacp2_log << "new_session"
@@ -179,8 +200,11 @@ post '/hacp2.1' do
   # this request.
   should_validate_and_log = (HACP_SESSION_ID == params[:session_id])
 
+  command = params[:command].downcase
+  fail_if_requested command
+
   content_type :text
-  case params[:command].downcase
+  case command
   when "getparam"
     $hacp2_log << "GetParam" if should_validate_and_log
     <<"EOD"
