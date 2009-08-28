@@ -41,9 +41,21 @@
     (test "Wrapping run-test-method with with-temporary-user-data should work"
       (assert-equals 'default-value *example-user-pref-for-testing*)))
   
+  (define-class %loading-preferences-from-path-test% (%test-case%)
+    (def (run-test-method report)
+      (with-temporary-user-data ['another_fake]
+        (super)))
+    (test "Reading preferences directly should return a hash table"
+      (set! *example-user-pref-for-testing* 'another-value)
+      (define path (build-path (script-user-data-directory) "another_fake.dat"))
+      (define prefs (data-file->hash-table path))
+      (assert-equals 'another-value
+                     (hash-table-get prefs '*example-user-pref-for-testing*))))
+
   (card /tests/data-file
       (%test-suite%
        :tests (list %with-temporary-user-data-test%
-                    %wrapping-run-test-method-test%)))
+                    %wrapping-run-test-method-test%
+                    %loading-preferences-from-path-test%)))
   
   )

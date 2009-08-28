@@ -25,6 +25,7 @@
   (provide ;; TODO - Remove these two functions from API.  They are obsoleted
            ;; by pref and set-pref!.
            read-data
+           data-file->hash-table
            write-data
            user-has-saved-data?  ;determine if a given user-id has stored data
 
@@ -68,7 +69,7 @@
   (define (find-table table-name)
     (unless (hash-table-has-key? *tables* table-name)
       (hash-table-put! *tables* table-name
-                       (maybe-read-data-from-file table-name)))
+                       (data-file->hash-table (datafile-path table-name))))
     (hash-table-get *tables* table-name))
 
   (define (read-data table key &key (default #f))
@@ -82,17 +83,18 @@
                      (eof-object? value)))
         (hash-table-put! the-table key value))))
 
-  (define (maybe-read-data-from-file table)
-    (define file-with-path (datafile-path table))
+  ;;; Open 'path' and read a hash table from it.  If 'path' does not exist,
+  ;;; return an empty hash table.
+  (define (data-file->hash-table path)
     (define the-table (make-hash-table 'equal))
-    (when (file-exists? file-with-path)
-      (let ((file-port (open-input-file file-with-path)))
+    (when (file-exists? path)
+      (let ((file-port (open-input-file path)))
         (letrec ((read-pair
                   (lambda ()
                     (with-handlers 
                       [[exn:fail? 
                         (lambda (ex) 
-                          (debug 'halyard "maybe-read-data-from-file: "
+                          (debug 'halyard "data-file->hash-table: "
                                  (exn-message ex))
                           (read-pair))]]
                       (let ((next-line (read-line file-port)))
