@@ -40,34 +40,38 @@
 
   (define (hacp-extension-register-user-request hacp-url uuid
                                                 student-name
-                                                student-id)
-    (%json-request% .new
+                                                student-id
+                                                &rest keys)
+    (apply send %json-request% 'new
       :url (cat hacp-url "/register")
       :method 'post
       :parameters (list (cons "uuid" uuid)
                         (cons "name" student-name)
-                        (cons "student_id" student-id))))
+                        (cons "student_id" student-id))
+      keys))
 
-  (define (hacp-extension-new-session-request hacp-url uuid)
-    (%json-request% .new
+  (define (hacp-extension-new-session-request hacp-url uuid &rest keys)
+    (apply send %json-request% 'new
       :url (cat hacp-url "/new_session")
       :method 'post
-      :parameters (list (cons "uuid" uuid))))
+      :parameters (list (cons "uuid" uuid))
+      keys))
 
   ;; Get our HACP data from the server.  For now, we just throw that
   ;; data away without parsing it.
   ;;
   ;; WARNING: The (.result) member of the newly created request is expected
-  ;; to change in the future.
-  (define (hacp-get-param-request hacp-url session-id)
-    (%easy-url-request% .new
+  ;; to change to some sort of parsed representation in the future.
+  (define (hacp-get-param-request hacp-url session-id &rest keys)
+    (apply send %easy-url-request% 'new
       :url hacp-url
       :method 'post
       :parameters (list (cons "command" "getparam")
                         (cons "version" "4.0")
-                        (cons "session_id" session-id))))
+                        (cons "session_id" session-id))
+      keys))
 
-  (define (hacp-put-param-request hacp-url session-id key-val data)
+  (define (hacp-put-param-request hacp-url session-id key-val data &rest keys)
     ;; Note that we do not percent-encode the "~" as required by the HACP
     ;; specification, because modern standards like RFC 3986 consider it an
     ;; "unreserved character" that should generally not be escaped when
@@ -77,13 +81,14 @@
     (define aicc-data
       (string-append "[Core]\n" core "\n"
                      "[Core_Lesson]\n" (percent-encode data) "\n"))
-    (%easy-url-request% .new
+    (apply send %easy-url-request% 'new
       :url hacp-url
       :method 'post
       :parameters (list (cons "command" "putparam")
                         (cons "version" "4.0")
                         (cons "session_id" session-id)
-                        (cons "aicc_data" aicc-data))))
+                        (cons "aicc_data" aicc-data))
+      keys))
 
 
   ;;=======================================================================
