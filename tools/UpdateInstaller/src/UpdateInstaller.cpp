@@ -60,7 +60,7 @@ void UpdateInstaller::CalculatePoolToTreeCopiesNeeded() {
 
     // Add copy specs for all of files we need to copy from the pool to
     // the tree.
-    FileSet::EntryVector::const_iterator iter = diff.Entries().begin();
+    FileSet::EntrySet::const_iterator iter = diff.Entries().begin();
     for (; iter != diff.Entries().end(); ++iter) {
         path src_path = mSrcRoot / "Updates/pool" / iter->digest();
         path dst_path = mDestRoot / iter->path();

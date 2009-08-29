@@ -25,7 +25,6 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 
-#include <vector>
 #include <string>
 #include "FileSet.h"
 #include "SpecFile.h"
@@ -43,12 +42,11 @@ void UpdateProgress(size_t steps_completed) {
     // Do nothing.
 }
 
-#define CHECK_ENTRY(DIGEST,SIZE,PATH,ENTRY) \
+#define CHECK_ENTRY(DIGEST,SIZE,PATH,ENTRIES) \
     do { \
-        FileSet::Entry _e(ENTRY); \
-        BOOST_CHECK_EQUAL((DIGEST), _e.digest());   \
-        BOOST_CHECK_EQUAL((SIZE)  , _e.size()  );   \
-        BOOST_CHECK_EQUAL((PATH)  , _e.path()  );   \
+        FileSet::EntrySet _e(ENTRIES); \
+        BOOST_CHECK(_e.find(FileSet::Entry((DIGEST), (SIZE), (PATH))) \
+                    != _e.end()); \
     } while(0)
 
 const char *foo_digest = "855426068ee8939df6bce2c2c4b1e7346532a133";
@@ -58,17 +56,17 @@ BOOST_AUTO_TEST_CASE(test_parse_diff) {
     FileSet diff(FileSet::FromManifestFile(path("Updates/temp/MANIFEST-DIFF")));
 
     BOOST_CHECK(3 == diff.Entries().size());
-    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.Entries()[0]);
-    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.Entries()[1]);
-    CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.Entries()[2]);
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.Entries());
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.Entries());
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.Entries());
 }
 
 BOOST_AUTO_TEST_CASE(test_parse_manifest) {
     path base_path("Updates/manifests/update/MANIFEST.base");
     FileSet base_manifest(FileSet::FromManifestFile(base_path));
     BOOST_CHECK(2 == base_manifest.Entries().size());
-    CHECK_ENTRY(null_digest, 0, "bar.txt", base_manifest.Entries()[0]);
-    CHECK_ENTRY(foo_digest, 5, "foo.txt", base_manifest.Entries()[1]);
+    CHECK_ENTRY(null_digest, 0, "bar.txt", base_manifest.Entries());
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", base_manifest.Entries());
 
     FileSet::Entry foo(foo_digest, 5, "foo.txt");
     BOOST_CHECK(base_manifest.HasMatchingEntry(foo));
@@ -76,9 +74,9 @@ BOOST_AUTO_TEST_CASE(test_parse_manifest) {
     path sub_path("Updates/manifests/update/MANIFEST.sub");
     FileSet sub_manifest(FileSet::FromManifestFile(sub_path));
     BOOST_CHECK(3 == sub_manifest.Entries().size());
-    CHECK_ENTRY(null_digest, 0, "sub/baz.txt", sub_manifest.Entries()[0]);
-    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", sub_manifest.Entries()[1]);
-    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", sub_manifest.Entries()[2]);
+    CHECK_ENTRY(null_digest, 0, "sub/baz.txt", sub_manifest.Entries());
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", sub_manifest.Entries());
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", sub_manifest.Entries());
 
     FileSet::Entry quux(null_digest, 0, "sub/quux.txt");
     BOOST_CHECK(sub_manifest.HasMatchingEntry(quux));
@@ -92,11 +90,11 @@ BOOST_AUTO_TEST_CASE(test_all_manifests_in_dir) {
     FileSet full_manifest(FileSet::FromManifestsInDir(update_manifest_dir));
 
     BOOST_CHECK(5 == full_manifest.Entries().size());
-    CHECK_ENTRY(null_digest, 0, "bar.txt", full_manifest.Entries()[0]);
-    CHECK_ENTRY(foo_digest, 5, "foo.txt", full_manifest.Entries()[1]);
-    CHECK_ENTRY(null_digest, 0, "sub/baz.txt", full_manifest.Entries()[2]);
-    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", full_manifest.Entries()[3]);
-    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", full_manifest.Entries()[4]);
+    CHECK_ENTRY(null_digest, 0, "bar.txt", full_manifest.Entries());
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", full_manifest.Entries());
+    CHECK_ENTRY(null_digest, 0, "sub/baz.txt", full_manifest.Entries());
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", full_manifest.Entries());
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", full_manifest.Entries());
 
     FileSet::Entry sub_foo(foo_digest, 5, "sub/foo.txt");
     FileSet::Entry foo(foo_digest, 5, "foo.txt");
@@ -110,9 +108,9 @@ BOOST_AUTO_TEST_CASE(test_diff_manifests) {
     FileSet diff(update.MinusExactMatches(base));
 
     BOOST_CHECK(3 == diff.Entries().size());
-    CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.Entries()[0]);
-    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.Entries()[1]);
-    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.Entries()[2]);
+    CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.Entries());
+    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.Entries());
+    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.Entries());
 }
 
 BOOST_AUTO_TEST_CASE(test_parse_spec) {

@@ -23,9 +23,16 @@
 #ifndef FileSet_H
 #define FileSet_H
 
-#include <vector>
 #include <string>
-#include <hash_map>
+// We're using boost::unordered_map and boost::unordered_set, rather
+// than the non-standard stdext::hash_set and hash_map, or the TR1
+// versions, because the Boost classes are better documented.  These
+// should be fairly close to the TR1 versions, but the documentation I
+// could find for boost was better, and I don't believe that Visual
+// Studio 2005 implements TR1, so we would just be using the boost
+// libraries anyhow.
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 #include <boost/filesystem/path.hpp>
 
 std::string read_file(const boost::filesystem::path &path);
@@ -39,6 +46,7 @@ public:
             : mDigest(inDigest), mSize(inSize), mPath(inPath) {}
 
         bool operator==(const Entry &other) const;
+        friend size_t hash_value(const FileSet::Entry &e);
         
         std::string digest() const { return mDigest; }
         size_t size() const { return mSize; }
@@ -49,8 +57,9 @@ public:
         size_t mSize;
     };
 
-    typedef std::vector<Entry> EntryVector;
-    typedef stdext::hash_multimap<std::string, Entry> DigestMap;
+    typedef boost::unordered_set<Entry> EntrySet;
+    typedef boost::unordered_set<std::string> DigestSet;
+    typedef boost::unordered_multimap<std::string, Entry> DigestMap;
     
     FileSet() {}
     
@@ -58,23 +67,24 @@ public:
     static FileSet FromContents(const std::string &contents);
     static FileSet FromManifestsInDir(const boost::filesystem::path &path);
 
-    FileSet& ParseAndAddEntries(const std::string &contents);
+    void AddEntry(const Entry &entry);
     FileSet MinusExactMatches(const FileSet &other) const;
 
-    const EntryVector &Entries() const { return mEntries; }
+    const EntrySet &Entries() const { return mEntries; }
     bool HasMatchingEntry(const Entry &entry) const;
     const DigestMap &DigestEntryMap() const { return mDigestMap; }
-
-protected:
-    void AddEntry(const Entry &entry);
+    const DigestSet &Digests() const { return mDigests; }
 
 private: 
-    EntryVector mEntries;
+    EntrySet mEntries;
+    DigestSet mDigests;
 
-    typedef stdext::hash_map<std::string, Entry> FileMap;
+    typedef boost::unordered_map<std::string, Entry> FileMap;
     FileMap mFileMap;
 
     DigestMap mDigestMap;
+
+    FileSet& ParseAndAddEntries(const std::string &contents);
 };
 
 #endif // FileSet_H

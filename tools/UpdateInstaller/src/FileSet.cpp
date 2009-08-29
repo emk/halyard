@@ -21,7 +21,6 @@
 // @END_LICENSE
 
 #include <stdio.h>
-#include <vector>
 #include <string>
 #include <boost/filesystem.hpp>
 #include "FileSet.h"
@@ -36,6 +35,14 @@ enum ParseState { DIGEST, SIZE, PATH };
 bool FileSet::Entry::operator==(const Entry &other) const {
     return mDigest == other.mDigest && mSize == other.mSize
         && mPath == other.mPath;
+}
+
+size_t hash_value(const FileSet::Entry &e) { 
+    size_t seed = 0;
+    boost::hash_combine(seed, e.mDigest);
+    boost::hash_combine(seed, e.mSize);
+    boost::hash_combine(seed, e.mPath);
+    return seed;
 }
 
 FileSet& FileSet::ParseAndAddEntries(const std::string &contents) {
@@ -99,7 +106,7 @@ FileSet FileSet::MinusExactMatches(const FileSet &other) const
 {
     FileSet diff;
 
-    FileSet::EntryVector::const_iterator iter = Entries().begin();
+    FileSet::EntrySet::const_iterator iter = Entries().begin();
     for(; iter != Entries().end(); ++iter)
         if (!other.HasMatchingEntry(*iter))
             diff.AddEntry(*iter);
@@ -108,14 +115,12 @@ FileSet FileSet::MinusExactMatches(const FileSet &other) const
 }
 
 bool FileSet::HasMatchingEntry(const FileSet::Entry &entry) const {
-    FileMap::const_iterator iter(mFileMap.find(entry.path()));
-
-    return iter != mFileMap.end() && iter->second == entry;
+    return mEntries.find(entry) != mEntries.end();
 }
 
 void FileSet::AddEntry(const FileSet::Entry &entry) {
-    mEntries.push_back(entry);
-    mFileMap.insert(FileMap::value_type(entry.path(), entry));
+    mEntries.insert(entry);
+    mDigests.insert(entry.digest());
     mDigestMap.insert(DigestMap::value_type(entry.digest(), entry));
 }
 
