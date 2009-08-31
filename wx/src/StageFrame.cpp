@@ -39,6 +39,7 @@
 #include "AppGraphics.h"
 #include "HalyardApp.h"
 #include "StageFrame.h"
+#include "CustomDocArt.h"
 #include "Stage.h"
 #include "ProgramTree.h"
 #include "ElementsPane.h"
@@ -370,6 +371,10 @@ StageFrame::StageFrame(wxSize inSize)
         
     // Add a status bar.
     SetStatusBar(new FancyStatusBar(this));
+
+    // Remove the borders from this frame so they don't show up in full
+    // screen mode.
+    mAuiManager->SetArtProvider(new CustomDocArt());
 
     // Lay out our frame.
     FinishSettingUpAuiManager();

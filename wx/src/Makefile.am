@@ -66,6 +66,7 @@ halyard_SOURCES = \
 	Cursor.cpp Cursor.h \
 	CursorElement.cpp CursorElement.h \
 	CursorManager.cpp CursorManager.h \
+	CustomDocArt.cpp CustomDocArt.h \
 	CustomTreeCtrl.cpp CustomTreeCtrl.h \
 	DirtyList.cpp DirtyList.h \
 	dlg/AdjustScreenConfirmDlg.cpp dlg/AdjustScreenConfirmDlg.h \
