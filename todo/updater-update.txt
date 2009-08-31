@@ -234,7 +234,37 @@ def computeUpdateOperations(newManifest, oldManifest, digestsInPool):
   return (filesNeededForNewTree, filesToCopyFromTreeToPool,
           filesToMoveFromTreeToPool, filesToDeleteFromTree)
 
-def moveFilesFromPoolToNewTree(...):
+def checkUpdatesPossible(filesNeededForNewTree, filesToCopyFromTreeToPool,
+                         filesToMoveFromTreeToPool, filesToDeleteFromTree):
+  for file in filesToCopyFromTreeToPool:
+    checkTreeToPoolTransferPossible(file)
+    # Maybe also check SHA-1?
+  for file in filesToMoveFromTreeToPool:
+    checkTreeToPoolTransferPossible(file)
+    # Maybe also check SHA-1?
+  for file in filesToDeleteFromTree:
+    checkWritable(file)
+  for file in filesNeededForNewTree:
+    unless filesToCopyFromTreeToPool.digests.contains(file.digest) ||
+           filesToMoveFromTreeToPool.digests.contains(file.digest)
+      checkPoolToTreeTransferPossible(file)
+      # Maybe also check SHA-1?
+  for transfer in otherTransfers:
+    checkTransferPossible(transfer)
+
+def performUpdateOperations(filesNeededForNewTree, filesToCopyFromTreeToPool,
+                            filesToMoveFromTreeToPool, filesToDeleteFromTree):
+  for file in filesToCopyFromTreeToPool:
+    copyFromTreeToPool(file)
+  for file in filesToMoveFromTreeToPool:
+    moveFromTreeToPool(file)
+  for file in filesToDeleteFromTree:
+    deleteFromTree(file)
+  moveFilesFromPoolToNewTree(filesNeededForNewTree)
+  for transfer in otherTransfers:
+    performTransfer(transfer)
+
+def moveFilesFromPoolToNewTree(filesNeededForNewTree):
   for file in filesNeededForNewTree:
     if this is the last file using file.digest:
       Move from file.digest in pool to file.path

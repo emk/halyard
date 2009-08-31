@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include <cassert>
 #include <windows.h>
 #include <sys/utime.h>
 #include <boost/filesystem/operations.hpp>
@@ -38,7 +39,8 @@ using namespace boost::filesystem;
 
 static const char LOCK_NAME[] = "UPDATE.LCK";
 static bool IsWriteable(const path &name);
-static void CopyFileWithRetries(const path &source, const path &dest);
+static void CopyFileWithRetries(const path &source, const path &dest, 
+                                bool move);
 static void TouchFile(const path &name);
 
 UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root)
@@ -46,66 +48,143 @@ UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root)
       mSpecFile(mSrcRoot / "Updates/release.spec"),
       mSrcManifestDir(mSrcRoot / "Updates/manifests" / mSpecFile.build()),
       mUpdateFiles(FileSet::FromManifestsInDir(mSrcManifestDir)),
-      mExistingFiles(FileSet::FromManifestsInDir(mDestRoot))
-{ 
+      mExistingFiles(FileSet::FromManifestsInDir(mDestRoot)),
+      mFilesNeededForNewTree(mUpdateFiles.MinusExactMatches(mExistingFiles)),
+      mUpdateIsPossible(true)
+{
 }
 
 void UpdateInstaller::PrepareForUpdate() {
-    CalculatePoolToTreeCopiesNeeded();
-    PopulatePoolFromTree();
+    CalculateFileSetsForUpdates();
+    BuildFileOperationVector();
 }
 
-void UpdateInstaller::CalculatePoolToTreeCopiesNeeded() {
-    FileSet diff(mUpdateFiles.MinusExactMatches(mExistingFiles));
+void UpdateInstaller::CalculateFileSetsForUpdates() {
+    FileSet::DigestSet::const_iterator digest_iter = 
+        mFilesNeededForNewTree.Digests().begin();
 
-    // Add copy specs for all of files we need to copy from the pool to
-    // the tree.
-    FileSet::EntrySet::const_iterator iter = diff.Entries().begin();
-    for (; iter != diff.Entries().end(); ++iter) {
-        path src_path = mSrcRoot / "Updates/pool" / iter->digest();
-        path dst_path = mDestRoot / iter->path();
-        mCopies.push_back(CopySpec(src_path, dst_path));
+    // For each of the digests that we need to put somewhere in the new tree...
+    for (; digest_iter != mFilesNeededForNewTree.Digests().end(); ++digest_iter) {
+        // If we don't have them in the pool...
+        if (!exists(PathInPool(*digest_iter))) {
+            // There must be at least one file with this digest in the old tree
+            FileSet::DigestMap::const_iterator entries_with_digest =
+                mExistingFiles.DigestEntryMap().find(*digest_iter);
+            if (entries_with_digest != mExistingFiles.DigestEntryMap().end()) {
+                // Pick the first such file
+                FileSet::Entry file(entries_with_digest->second);
+                // If we still need this file at the same location with the
+                // same contents
+                if (mUpdateFiles.HasMatchingEntry(file)) {
+                    // Then add this to the list of files to copy into the pool
+                    mFilesToCopyFromTreeToPool.AddEntry(file);
+                } else {
+                    // Otherwise, add it to the list of files to move to the pool
+                    mFilesToMoveFromTreeToPool.AddEntry(file);
+                }
+            } else {
+                // Uh, oh! This doesn't appear to be in our tree or our pool.
+                // Looks like something went wrong, and we can't update.
+                mUpdateIsPossible = false;
+            }
+        }
     }
 
-    // Add copy specs for all of the manifests we need to copy from
+    // The files left that we need to delete are the files that we have
+    // in our current tree, minus the files we are going to move (since
+    // by the time we do the deletes the moves will have happened), minus
+    // the files that we do actually want exactly unchanged in our update.
+    mFilesToDeleteFromTree = 
+        mExistingFiles.MinusExactMatches(mFilesToMoveFromTreeToPool)
+                      .MinusExactMatches(mUpdateFiles);
+}
+
+void UpdateInstaller::BuildFileOperationVector() {
+    FileSet::EntrySet::const_iterator file_iter;
+
+    for (file_iter = mFilesToCopyFromTreeToPool.Entries().begin(); 
+         file_iter != mFilesToCopyFromTreeToPool.Entries().end();
+         ++file_iter) {
+        FileOperation::Ptr operation(new FileTransfer(PathInTree(*file_iter), 
+                                                      PathInPool(*file_iter),
+                                                      /* move */ false));
+        mOperations.push_back(operation);
+    }
+    for (file_iter = mFilesToMoveFromTreeToPool.Entries().begin();
+         file_iter != mFilesToMoveFromTreeToPool.Entries().end();
+         ++file_iter) {
+        FileOperation::Ptr operation(new FileTransfer(PathInTree(*file_iter),
+                                                      PathInPool(*file_iter),
+                                                      /* move */ true));
+        mOperations.push_back(operation);
+    }
+    for (file_iter = mFilesToDeleteFromTree.Entries().begin();
+         file_iter != mFilesToDeleteFromTree.Entries().end();
+         ++file_iter) {
+        FileOperation::Ptr operation(new FileDelete(PathInTree(*file_iter)));
+        mOperations.push_back(operation);
+    }
+
+    FileSet::DigestMap digest_tracker(mFilesNeededForNewTree.DigestEntryMap());
+    for (file_iter = mFilesNeededForNewTree.Entries().begin();
+         file_iter != mFilesNeededForNewTree.Entries().end();
+         ++file_iter) {
+        FileSet::DigestMap::const_iterator 
+            file_for_digest(digest_tracker.find(file_iter->digest()));
+        // If this is the last file with this digest, we should do a move
+        if (digest_tracker.count(file_iter->digest()) == 1) {
+            assert(file_for_digest->second == *file_iter);
+            digest_tracker.erase(file_for_digest);
+            FileOperation::Ptr
+                operation(new FileTransfer(PathInPool(*file_iter),
+                                           PathInTree(*file_iter),
+                                           /* move */ true,
+                                           FileShouldBeInPool(*file_iter)));
+            mOperations.push_back(operation);
+        } else {
+            while (file_for_digest != digest_tracker.end() &&
+                   !(file_for_digest->second == *file_iter)) {
+                ++file_for_digest;
+            }
+            assert(file_for_digest != digest_tracker.end());
+            digest_tracker.erase(file_for_digest);
+            
+            FileOperation::Ptr
+                operation(new FileTransfer(PathInPool(*file_iter),
+                                           PathInTree(*file_iter),
+                                           /* move */ false,
+                                           FileShouldBeInPool(*file_iter)));
+            mOperations.push_back(operation);
+        }
+    }
+
+    // Add copy for all of the manifests we need to copy from
     // our update manifest dir to the root of the tree.
     // TODO - add test case for subset of manifests installed
     directory_iterator dir_iter(mDestRoot);
     for(; dir_iter != directory_iterator(); ++dir_iter) {
         if (dir_iter->leaf().substr(0, 9) == "MANIFEST.") {
             path src_path = mSrcManifestDir / dir_iter->leaf();
-            mCopies.push_back(CopySpec(src_path, *dir_iter));
+            FileOperation::Ptr operation(new FileTransfer(src_path, *dir_iter));
+            mOperations.push_back(operation);
         }
     }
 
-    // Add a copy spec for our updated release.spec
-    mCopies.push_back(CopySpec(mSrcRoot / "Updates/release.spec", 
-                               mDestRoot / "release.spec"));    
+    // Add a copy for our updated release.spec
+    FileOperation::Ptr 
+        operation(new FileTransfer(mSrcRoot / "Updates/release.spec", 
+                                   mDestRoot / "release.spec"));
+    mOperations.push_back(operation);
 }
 
-void UpdateInstaller::PopulatePoolFromTree() {
-    CopyVector::const_iterator copy;
-    for (copy = mCopies.begin(); copy != mCopies.end(); ++copy) {
-        if (!exists(copy->source)) {
-            FileSet::DigestMap map(mExistingFiles.DigestEntryMap());
-            
-            // XXX - a hopefully temporary hack, assumes that the file we
-            // need is a pool file, not a manifest or release.spec.
-            std::string digest_needed = copy->source.filename();
-
-            // This is a multimap, since there can be more than one
-            // file with the same digest, but we only need one of them.
-            FileSet::DigestMap::const_iterator iter = map.find(digest_needed);
-            if (iter != map.end()) {
-                path file_from_tree = mSrcRoot / iter->second.path(); 
-                CopyFileWithRetries(file_from_tree, copy->source);
-            }
-            
-            // If we didn't find a file, we just punt, and let the 
-            // IsUpdatePossible called later notice that we don't have
-            // our source file and error out gracefully.
-        }
-    }
+bool UpdateInstaller::FileShouldBeInPool(const FileSet::Entry &e) {
+    bool found_in_copies = 
+        mFilesToCopyFromTreeToPool.Digests().find(e.digest()) 
+        != mFilesToCopyFromTreeToPool.Digests().end();
+    bool found_in_moves = 
+        mFilesToMoveFromTreeToPool.Digests().find(e.digest())
+        != mFilesToMoveFromTreeToPool.Digests().end();
+    return !found_in_copies && !found_in_moves;
 }
 
 bool UpdateInstaller::IsUpdatePossible() {
@@ -115,25 +194,34 @@ bool UpdateInstaller::IsUpdatePossible() {
     if (!exists(mDestRoot / "release.spec"))
         return false;
     
-    CopyVector::const_iterator copy = mCopies.begin();
-    for (; copy != mCopies.end(); ++copy) {
-        if (!copy->IsCopyPossible()) {
+    // If we ran across something weird earlier, bail.
+    if (!mUpdateIsPossible) {
+        return false;
+    }
+
+    // If one of our file operations appears to be impossible, because
+    // the necessary files don't exist or are not readable or writable,
+    // bail.
+    FileOperation::Vector::const_iterator operation = mOperations.begin();
+    for (; operation != mOperations.end(); ++operation) {
+        if (!(*operation)->IsPossible()) {
             return false;
         }
     }
+
+    // Otherwise, we're golden.
     return true;
 }
 
 void UpdateInstaller::InstallUpdate() {
     LockDestinationDirectory();
 
-    size_t total = mCopies.size();
+    size_t total = mOperations.size();
     UpdateProgressRange(total);
-    std::vector<CopySpec>::const_iterator copy = mCopies.begin();
-    for (size_t i = 0; copy != mCopies.end(); ++copy, ++i) {
+    FileOperation::Vector::const_iterator operation = mOperations.begin();
+    for (size_t i = 0; operation != mOperations.end(); ++operation, ++i) {
         UpdateProgress(i);
-        create_directories(copy->dest.branch_path());
-        copy->CopyOverwriting();
+        (*operation)->Perform();
     }
     UpdateProgress(total);
 
@@ -180,20 +268,48 @@ void UpdateInstaller::UnlockDestinationDirectory() {
     remove(lock);
 }
 
-bool UpdateInstaller::CopySpec::IsCopyPossible() const {
+/// The full path to where a file should be located in the tree.
+path UpdateInstaller::PathInTree(const FileSet::Entry &e) { 
+    return mDestRoot / e.path();
+}
+
+/// The full path to where a file is supposed to be located in the pool,
+/// based on its digest.
+path UpdateInstaller::PathInPool(const FileSet::Entry &e) {
+    return PathInPool(e.digest());
+}
+
+/// The full path to a file located in the pool, based on the digest passed
+/// in.
+path UpdateInstaller::PathInPool(const std::string &s) {
+    return mSrcRoot / "Updates/pool" / s;
+}
+
+bool FileDelete::IsPossible() const {
+    return IsWriteable(file);
+}
+
+void FileDelete::Perform() const {
+    if (exists(file))
+        remove(file);
+}
+
+bool FileTransfer::IsPossible() const {
     // Bug #1107: We've been having trouble with mysterious locks on our
     // source files, on at least one machine.  In an effort to avoid this,
     // we're experimentally adding a "IsWriteable(source)" to this
     // condition, in hopes of detecting any such locks early enough to
     // abort.
-    return exists(source) & IsWriteable(source) && IsWriteable(dest);
+    return (!mShouldExist || exists(mSource)) && 
+        IsWriteable(mSource) && IsWriteable(mDest);
 }
 
-void UpdateInstaller::CopySpec::CopyOverwriting() const {
-    if (exists(dest))
-        remove(dest);
-    CopyFileWithRetries(source, dest);
-    TouchFile(dest);
+void FileTransfer::Perform() const {
+    create_directories(mDest.branch_path());
+    if (exists(mDest))
+        remove(mDest);
+    CopyFileWithRetries(mSource, mDest, mMove);
+    TouchFile(mDest);
 }
 
 bool IsWriteable(const path &name) {
@@ -214,8 +330,8 @@ bool IsWriteable(const path &name) {
     return true;
 }
 
-/// Copy a file, retrying several times if the copy fails.
-void CopyFileWithRetries(const path &source, const path &dest) {
+/// Copy or move a file, retrying several times if the operation fails
+void CopyFileWithRetries(const path &source, const path &dest, bool move) {
     // Bug #1107: We've been having trouble with mysterious locks on our
     // source files, on at least one machine.  In an effort to avoid this,
     // we try to copy files to their final destination repeatedly before
@@ -229,7 +345,11 @@ void CopyFileWithRetries(const path &source, const path &dest) {
     bool succeeded = false;
     for (size_t i = 1; !succeeded && i <= max_retries; ++i) {
         try {
-            copy_file(source, dest);
+            if (move) {
+                rename(source, dest);
+            } else {
+                copy_file(source, dest);
+            }
             succeeded = true;
         } catch (filesystem_error &) {
             // If we've exhausted our last retry, then rethrow this error.

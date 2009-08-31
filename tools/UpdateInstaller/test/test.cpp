@@ -142,11 +142,11 @@ BOOST_AUTO_TEST_CASE(test_is_update_possible) {
     installer.PrepareForUpdate();
     BOOST_REQUIRE(installer.IsUpdatePossible());    
 
-    rename(path("Updates/pool/da39a3ee5e6b4b0d3255bfef95601890afd80709"), 
+    rename(path("Updates/pool") / foo_digest,
            path("Updates/pool/temp"));
     BOOST_CHECK(!installer.IsUpdatePossible());
     
     rename(path("Updates/pool/temp"),
-           path("Updates/pool/da39a3ee5e6b4b0d3255bfef95601890afd80709"));
+           path("Updates/pool") / foo_digest);
     BOOST_CHECK(installer.IsUpdatePossible());
 }
