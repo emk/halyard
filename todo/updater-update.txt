@@ -1,20 +1,24 @@
 === Notes on entire update process ==
 
-* Make updater smarter about moved files
+x Make updater smarter about moved files
   x Downloader should not download a file if we already have one with
     a matching hash
-  * Update installer should learn how to do all necessary diffs to get
+  x Update installer should learn how to do all necessary diffs to get
     the tree into the state it needs to be
-  * Update installer should copy or move files on disk as appropriate
-  * See below sections for more details
+  x Update installer should copy or move files on disk as appropriate
+  x See below sections for more details
 * Case change
   x Downloader should ignore case when doing manifest diff
     x No need, since the smarter downloader above should handle this
-  * Update installer should fix case of files or directories with wrong case
-    * What do we do if the manifest has mixed case for the same dir?
   * Update installer should delete extra files that may break things
-    * .ss, .zo, and .dep in scripts/
-  * Installer should fix case
+    * .ss, .zo, .dep, and empty dirs in scripts/, collects/, and 
+      engine/win32/{collects,plt}
+  * Update installer should fix case of files or directories with wrong case
+    x What do we do if the manifest has mixed case for the same dir?
+      x Nothing special.  We're going to assume our manifests aren't bogus,
+        and if they are, we'll just do something dumb like picking the first
+        case we find for the dir.
+  * Installer should fix case & delete extra files
     * Will shell out to update installer
 * Multi-stage update
   * Update updater.ss
@@ -35,23 +39,25 @@ Things to think about:
 === Update installer operations ===
 
 For the update installer:
-* Naive approach:
-  * (optimization: treat files moved specially)
-    * In this case, the optimization is actually very important for
+  x (optimization: treat files moved specially)
+    x In this case, the optimization is actually very important for
       correctness; if we do the naive approach and do everything as
       copies via the pool, we could end up with 3 copies of all media
       on disk at once, which may end up filling up the user's disk and
       causing the update to fail in a way that breaks the program
-  * Copy all needed digests into pool
-    * Need to find all digests from our diff that aren't in the pool, and where
-      to get them from (can be a map built from old manifest)
-  * Copy all items from pool into tree
-  * Delete files deleted from manifest
-  * Ensure case of everything is correct
+  x Bring all needed digests into pool
+    x Need to find all digests from our diff that aren't in the pool, and where
+      to get them from (can be a map built from old manifest; see below for
+      algorithm details)
+    x Copy files that must remain where they are
+    x Move files that we don't need in the tree any more
+  x Delete files no longer needed, that we didn't move
+  x Copy all items from pool into tree
   * Delete extra files (.zo, .ss, .dep, and empty dirs) from:
     * scripts/
     * collects/
     * engine/win32/{collects,plt}
+  * Ensure case of everything is correct
 
 === Formal Model ===
 
