@@ -52,15 +52,6 @@ void UpdateProgress(size_t steps_completed) {
 const char *foo_digest = "855426068ee8939df6bce2c2c4b1e7346532a133";
 const char *null_digest = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 
-BOOST_AUTO_TEST_CASE(test_parse_diff) {
-    FileSet diff(FileSet::FromManifestFile(path("Updates/temp/MANIFEST-DIFF")));
-
-    BOOST_CHECK(3 == diff.Entries().size());
-    CHECK_ENTRY(foo_digest, 5, "sub/foo.txt", diff.Entries());
-    CHECK_ENTRY(null_digest, 0, "sub/quux.txt", diff.Entries());
-    CHECK_ENTRY(foo_digest, 5, "foo.txt", diff.Entries());
-}
-
 BOOST_AUTO_TEST_CASE(test_parse_manifest) {
     path base_path("Updates/manifests/update/MANIFEST.base");
     FileSet base_manifest(FileSet::FromManifestFile(base_path));

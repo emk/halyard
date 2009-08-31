@@ -274,11 +274,6 @@
        (map path->string 
             (directory-list (build-path download-dir "pool"))))
       (assert-set-equal 
-       '("MANIFEST-DIFF") 
-       (map path->string
-            (directory-list (build-path download-dir "temp"))))
-      ;; TODO - test contents of MANIFEST-DIFF
-      (assert-set-equal 
        '("update") 
        (map path->string 
             (directory-list (build-path download-dir "manifests"))))
