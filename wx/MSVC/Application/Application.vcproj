@@ -346,6 +346,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\CustomDocArt.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\CustomTreeCtrl.cpp"
 				>
 			</File>
@@ -689,6 +693,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\CursorManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\CustomDocArt.h"
 				>
 			</File>
 			<File
