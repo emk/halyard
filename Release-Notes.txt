@@ -1,3 +1,35 @@
+0.5.38 - 1 Sep 2009
+
+This release of Halyard substantially improves the updater to no longer
+require downloads for files which are already present on the system,
+though they may be moved to other locations in the update.  This will
+allow updating of large programs in which, for example, the media
+directory has moved, without having to download all of the media again.
+
+We also fix a bug in which an extra 1-pixel wide light colored border
+appeared in full-screen mode, due to the wxAUI art provider.
+
+Brian Campbell (16):
+      UpdateInstaller: Add unit tests for parsing full manifest
+      UpdateInstaller: Begin implementing ManifestDiff class
+      UpdateInstaller: Rename Manifest -> FileSpec, merge ManifestDiff
+      UpdateInstaller: Change static members to init methods
+      UpdateInstaller: Add support for copying files from tree to pool
+      UpdateInstaller: Add notes on model behind new behavior
+      UpdateInstaller: More notes on model of new behavior
+      UpdateInstaller: Change init methods back to static members, tweak names
+      UpdateInstaller: Use boost:unordered_set, _map, and _multimap
+      UpdateInstaller: Implement file moves, deletes, and copies via the pool
+      UpdateInstaller: Record current state in todo/updater-update.txt
+      Updater: Provide stronger guarantees for MANIFEST-DIFF
+      Updater: Only download files that we do not already have on disk
+      Updater: Remove vestigial remains of MANIFEST-DIFF
+      UpdateInstaller: Code review cleanups
+      Merge branch 'master' of git://github.com/emk/halyard
+
+Eric Kidd (1):
+      Remove border from stage in full-screen mode
+
 0.5.37 - 28 Aug 2009
 
 This release of Halyard replaces the high-level HACP client with
