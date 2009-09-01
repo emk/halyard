@@ -72,15 +72,13 @@ public:
 
     const EntrySet &Entries() const { return mEntries; }
     bool HasMatchingEntry(const Entry &entry) const;
+
     const DigestMap &DigestEntryMap() const { return mDigestMap; }
     const DigestSet &Digests() const { return mDigests; }
 
 private: 
     EntrySet mEntries;
     DigestSet mDigests;
-
-    typedef boost::unordered_map<std::string, Entry> FileMap;
-    FileMap mFileMap;
 
     DigestMap mDigestMap;
 

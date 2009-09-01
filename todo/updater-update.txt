@@ -276,3 +276,31 @@ def moveFilesFromPoolToNewTree(filesNeededForNewTree):
       Move from file.digest in pool to file.path
     else:
       Copy from file.digest in pool to file.path
+
+=== Notes on script dirs cleanup ===
+
+* Walk through directories, finding all files
+* Ignore files that are in update manifest (since we want those there, perhaps
+  with different contents)
+* Ignore files that are in base manifest (since if we don't want those ones,
+  they'll be deleted by the normal updater steps; doesn't apply when being
+  called from installer, as we don't have a manifest, and we expect the
+  installer to actually leave these files around, so we really do need to
+  clean them up)
+* for all remaining files, if they end in .ss, .zo, .dep, or are a directory
+  that does not contain files in our manifests, add them to our list of
+  operations as a delete
+* If we encounter any other sort of file, flag update as impossible and end
+  loop
+
+=== Notes on case change fixes ===
+
+* Nothing really to check for update possible, I don't think.
+* We can't really check this beforehand, as the rest of the update process
+  may mess with directory or file case
+* So, this is a pure post-processing step
+* Walk through our update manifest, for each file, look at name on
+  disk of each dir in the path, as well as the filenmem itself
+* Check for a case mismatch (is this possible? or if we ask for
+  "foo.txt", will the OS/boost happily give us "FOO.txt" but make it
+  look like "foo.txt"?)

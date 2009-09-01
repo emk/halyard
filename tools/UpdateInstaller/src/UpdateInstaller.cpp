@@ -29,6 +29,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/exception.hpp>
+#include <boost/foreach.hpp>
 
 #include "UpdateInstaller.h"
 #include "FileSet.h"
@@ -42,6 +43,11 @@ static bool IsWriteable(const path &name);
 static void CopyFileWithRetries(const path &source, const path &dest, 
                                 bool move);
 static void TouchFile(const path &name);
+
+
+//=========================================================================
+//  UpdateInstaller setup
+//=========================================================================
 
 UpdateInstaller::UpdateInstaller(const path &src_root, const path &dst_root)
     : mSrcRoot(src_root), mDestRoot(dst_root), 
@@ -65,28 +71,32 @@ void UpdateInstaller::CalculateFileSetsForUpdates() {
 
     // For each of the digests that we need to put somewhere in the new tree...
     for (; digest_iter != mFilesNeededForNewTree.Digests().end(); ++digest_iter) {
-        // If we don't have them in the pool...
-        if (!exists(PathInPool(*digest_iter))) {
-            // There must be at least one file with this digest in the old tree
-            FileSet::DigestMap::const_iterator entries_with_digest =
-                mExistingFiles.DigestEntryMap().find(*digest_iter);
-            if (entries_with_digest != mExistingFiles.DigestEntryMap().end()) {
-                // Pick the first such file
-                FileSet::Entry file(entries_with_digest->second);
-                // If we still need this file at the same location with the
-                // same contents
-                if (mUpdateFiles.HasMatchingEntry(file)) {
-                    // Then add this to the list of files to copy into the pool
-                    mFilesToCopyFromTreeToPool.AddEntry(file);
-                } else {
-                    // Otherwise, add it to the list of files to move to the pool
-                    mFilesToMoveFromTreeToPool.AddEntry(file);
-                }
-            } else {
-                // Uh, oh! This doesn't appear to be in our tree or our pool.
-                // Looks like something went wrong, and we can't update.
-                mUpdateIsPossible = false;
-            }
+        // If its already in the pool, we're all set, move on to the next file
+        if (exists(PathInPool(*digest_iter)))
+            continue;
+
+        // Otherwise, there should be a file with this digest in the old tree
+        FileSet::DigestMap::const_iterator entries_with_digest =
+            mExistingFiles.DigestEntryMap().find(*digest_iter);
+        if (entries_with_digest == mExistingFiles.DigestEntryMap().end()) {
+            // Uh, oh! This doesn't appear to be in our tree or our pool.
+            // Looks like something went wrong, and we can't update; flag
+            // the update as impossible and return
+            mUpdateIsPossible = false;
+            return;
+        }
+
+        // Pick the first file with the given digest
+        FileSet::Entry file(entries_with_digest->second);
+
+        // If we still need this file at the same location with the
+        // same contents
+        if (mUpdateFiles.HasMatchingEntry(file)) {
+            // Then add this to the list of files to copy into the pool
+            mFilesToCopyFromTreeToPool.AddEntry(file);
+        } else {
+            // Otherwise, add it to the list of files to move to the pool
+            mFilesToMoveFromTreeToPool.AddEntry(file);
         }
     }
 
@@ -100,64 +110,62 @@ void UpdateInstaller::CalculateFileSetsForUpdates() {
 }
 
 void UpdateInstaller::BuildFileOperationVector() {
-    FileSet::EntrySet::const_iterator file_iter;
+    BuildTreeToPoolFileOperations();
+    BuildPoolToTreeFileOperations();
+    BuildUpdaterSpecialFileOperations();
+}
 
-    for (file_iter = mFilesToCopyFromTreeToPool.Entries().begin(); 
-         file_iter != mFilesToCopyFromTreeToPool.Entries().end();
-         ++file_iter) {
-        FileOperation::Ptr operation(new FileTransfer(PathInTree(*file_iter), 
-                                                      PathInPool(*file_iter),
-                                                      /* move */ false));
+void UpdateInstaller::BuildTreeToPoolFileOperations() {
+    BOOST_FOREACH(FileSet::Entry file, mFilesToCopyFromTreeToPool.Entries()) {
+        FileOperation::Ptr operation(new FileTransfer(PathInTree(file), 
+                                                      PathInPool(file),
+                                                      /* move? */ false));
         mOperations.push_back(operation);
     }
-    for (file_iter = mFilesToMoveFromTreeToPool.Entries().begin();
-         file_iter != mFilesToMoveFromTreeToPool.Entries().end();
-         ++file_iter) {
-        FileOperation::Ptr operation(new FileTransfer(PathInTree(*file_iter),
-                                                      PathInPool(*file_iter),
-                                                      /* move */ true));
+    BOOST_FOREACH(FileSet::Entry file, mFilesToMoveFromTreeToPool.Entries()) {
+        FileOperation::Ptr operation(new FileTransfer(PathInTree(file),
+                                                      PathInPool(file),
+                                                      /* move? */ true));
         mOperations.push_back(operation);
     }
-    for (file_iter = mFilesToDeleteFromTree.Entries().begin();
-         file_iter != mFilesToDeleteFromTree.Entries().end();
-         ++file_iter) {
-        FileOperation::Ptr operation(new FileDelete(PathInTree(*file_iter)));
+    BOOST_FOREACH(FileSet::Entry file, mFilesToDeleteFromTree.Entries()) {
+        FileOperation::Ptr operation(new FileDelete(PathInTree(file)));
         mOperations.push_back(operation);
     }
+}
 
+void UpdateInstaller::BuildPoolToTreeFileOperations() {
     FileSet::DigestMap digest_tracker(mFilesNeededForNewTree.DigestEntryMap());
-    for (file_iter = mFilesNeededForNewTree.Entries().begin();
-         file_iter != mFilesNeededForNewTree.Entries().end();
-         ++file_iter) {
+    BOOST_FOREACH(FileSet::Entry file, mFilesNeededForNewTree.Entries()) {
         FileSet::DigestMap::const_iterator 
-            file_for_digest(digest_tracker.find(file_iter->digest()));
+            file_for_digest(digest_tracker.find(file.digest()));
         // If this is the last file with this digest, we should do a move
-        if (digest_tracker.count(file_iter->digest()) == 1) {
-            assert(file_for_digest->second == *file_iter);
+        if (digest_tracker.count(file.digest()) == 1) {
+            assert(file_for_digest->second == file);
             digest_tracker.erase(file_for_digest);
             FileOperation::Ptr
-                operation(new FileTransfer(PathInPool(*file_iter),
-                                           PathInTree(*file_iter),
-                                           /* move */ true,
-                                           FileShouldBeInPool(*file_iter)));
+                operation(new FileTransfer(PathInPool(file), PathInTree(file),
+                                           /* move? */ true,
+                                           FileShouldBeInPool(file)));
             mOperations.push_back(operation);
         } else {
             while (file_for_digest != digest_tracker.end() &&
-                   !(file_for_digest->second == *file_iter)) {
+                   !(file_for_digest->second == file)) {
                 ++file_for_digest;
             }
             assert(file_for_digest != digest_tracker.end());
             digest_tracker.erase(file_for_digest);
             
             FileOperation::Ptr
-                operation(new FileTransfer(PathInPool(*file_iter),
-                                           PathInTree(*file_iter),
-                                           /* move */ false,
-                                           FileShouldBeInPool(*file_iter)));
+                operation(new FileTransfer(PathInPool(file), PathInTree(file),
+                                           /* move? */ false,
+                                           FileShouldBeInPool(file)));
             mOperations.push_back(operation);
         }
     }
+}
 
+void UpdateInstaller::BuildUpdaterSpecialFileOperations() {
     // Add copy for all of the manifests we need to copy from
     // our update manifest dir to the root of the tree.
     // TODO - add test case for subset of manifests installed
@@ -187,6 +195,11 @@ bool UpdateInstaller::FileShouldBeInPool(const FileSet::Entry &e) {
     return !found_in_copies && !found_in_moves;
 }
 
+
+//=========================================================================
+//  UpdateInstaller sanity check
+//=========================================================================
+
 bool UpdateInstaller::IsUpdatePossible() {
     // Basic sanity check: Don't install to a target directory that lacks
     // a release.spec.  This reduces the chance the updater could
@@ -212,6 +225,11 @@ bool UpdateInstaller::IsUpdatePossible() {
     // Otherwise, we're golden.
     return true;
 }
+
+
+//=========================================================================
+//  UpdateInstaller installation
+//=========================================================================
 
 void UpdateInstaller::InstallUpdate() {
     LockDestinationDirectory();
@@ -285,6 +303,11 @@ path UpdateInstaller::PathInPool(const std::string &s) {
     return mSrcRoot / "Updates/pool" / s;
 }
 
+
+//=========================================================================
+//  FileOperation subclasses
+//=========================================================================
+
 bool FileDelete::IsPossible() const {
     return IsWriteable(file);
 }
@@ -311,6 +334,11 @@ void FileTransfer::Perform() const {
     CopyFileWithRetries(mSource, mDest, mMove);
     TouchFile(mDest);
 }
+
+
+//=========================================================================
+//  File system helper functions
+//=========================================================================
 
 bool IsWriteable(const path &name) {
     if (exists(name)) {

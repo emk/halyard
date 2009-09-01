@@ -42,17 +42,27 @@ public:
 class FileDelete : public FileOperation {
 public:
     FileDelete(path inFile) : file(inFile) { }
-    path file;
     virtual bool IsPossible() const;
     virtual void Perform() const;
+
+protected:
+    path file;
 };
 
+// Represents a copy or a move from the source to the dest, depending
+// on the inMove flag passed in to the constructor.  inShouldExist
+// indicates whether the file is expected to exist at the source location
+// before we begin our update.
 class FileTransfer : public FileOperation {
 public:
     FileTransfer(const path &inSource, const path &inDest, 
                  bool inMove = false, bool inShouldExist = true) 
         : mSource(inSource), mDest(inDest), mMove(inMove),
           mShouldExist(inShouldExist) { }
+    virtual bool IsPossible() const;
+    virtual void Perform() const;
+
+protected:
     path mSource, mDest;
 
     // Should we do this as a move?  Default is to copy.
@@ -62,9 +72,6 @@ public:
     // update is possible.  This will be false when we are depending on
     // a prior transfer to put the source file into place.
     bool mShouldExist;
-
-    virtual bool IsPossible() const;
-    virtual void Perform() const;
 };
 
 class UpdateInstaller {
@@ -134,11 +141,14 @@ private:
 
     void CalculateFileSetsForUpdates();
     void BuildFileOperationVector();
-    bool FileShouldBeInPool(const FileSet::Entry &e);
+    void BuildTreeToPoolFileOperations();
+    void BuildPoolToTreeFileOperations();
+    void BuildUpdaterSpecialFileOperations();
 
     void LockDestinationDirectory();
     void UnlockDestinationDirectory();
 
+    bool FileShouldBeInPool(const FileSet::Entry &e);
     path PathInTree(const FileSet::Entry &e);
     path PathInPool(const FileSet::Entry &e);
     path PathInPool(const std::string &s);
