@@ -26,6 +26,7 @@
 #define BOOST_ALL_NO_LIB 1
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/foreach.hpp>
 #undef BOOST_ALL_NO_LIB
 
 #include "CommonHeaders.h"
@@ -109,20 +110,36 @@ namespace {
     }
 
     // Convert a Boost fs::path to a FileSystem::Path.
-    Path BoostPathToPath(const fs::path path, bool is_directory) {
+    Path BoostPathToPath(const fs::path &path, bool is_directory) {
         if (is_directory)
             return Path::NativePath(path.native_directory_string());
         else
             return Path::NativePath(path.native_file_string());
     }
 
+    // Collapse . and .. components
+    fs::path SimplifyBoostPath(const fs::path &path) { 
+        fs::path simplified_path;
+        BOOST_FOREACH(std::string component, path) {
+            if (component == ".")
+                continue;
+            if (component == "..")
+                simplified_path = simplified_path.parent_path();
+            else
+                simplified_path /= component;
+        }
+        return simplified_path;
+    }
+
     // Convert inDirectory to an absolute path, and make sure that it
     // actually exists.
     Path CompletePath(const Path &inDirectory) {
         // Convert our path to an absolute path.
-        Path result(BoostPathToPath(fs::complete(PathToBoostPath(inDirectory),
-                                                 fs::current_path()),
-                                    true));
+        fs::path completed_path(fs::complete(PathToBoostPath(inDirectory),
+                                             fs::current_path()));
+
+        // Simplify and convert back to a FileSystem::Path
+        Path result(BoostPathToPath(SimplifyBoostPath(completed_path), true));
 
         // Sanity-check our path, store it, and return it.
         CHECK(result.IsDirectory(),
@@ -328,6 +345,11 @@ Path Path::ParentDirectory() const {
     CHECK(MaybeGetParentDirectory(result), 
           "Cannot take the parent directory of a root path.");
     return result;
+}
+
+Path Path::Simplify() const {
+    fs::path simplified(SimplifyBoostPath(PathToBoostPath(*this)));
+    return BoostPathToPath(simplified, true);
 }
 
 std::string Path::ToNativePathString () const {

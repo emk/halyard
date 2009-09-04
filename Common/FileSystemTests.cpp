@@ -54,7 +54,7 @@ void test_FileSystem (void) {
 
     TEST(Path("f").AddParentComponent().AddComponent("g").ToNativePathString()
          == base+"\\f\\..\\g");
-
+    
 #elif APP_PLATFORM_MACINTOSH || APP_PLATFORM_OTHER
 
     // Test conversion to native path strings.
@@ -81,7 +81,7 @@ void test_FileSystem (void) {
     // Test the base directory.
     TEST(GetBaseDirectory() == Path());
     SetBaseDirectory(Path().AddParentComponent());
-    TEST(GetBaseDirectory() == Path().AddParentComponent());
+    TEST(GetBaseDirectory() == Path().AddParentComponent().Simplify());
     SetBaseDirectory(Path());
 
     // Test file extensions.
@@ -103,6 +103,9 @@ void test_FileSystem (void) {
 
     // Test "/" operator.
     TEST(Path("foo").AddComponent("bar") == Path("foo") / "bar");
+
+    TEST(Path(".").AddComponent("foo").AddParentComponent().Simplify() == Path());
+
 
     // Test our stat functions.
     TEST(Path("nosuch").DoesExist() == false);

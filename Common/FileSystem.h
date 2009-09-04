@@ -110,6 +110,11 @@ namespace FileSystem {
         /// filesystem root, ParentDirectory() will raise an exception.
         Path ParentDirectory() const;
         
+        /// Returns a new path which is a simplified version of the current
+        /// path, with "." components stripped out, and ".." components
+        /// stripped out along with their parent directory.
+        Path Simplify() const;
+
         /// Convert a Path object into a local path string.  This isn't
         /// entirely correct on the Macintosh (where two files can have the
         /// same pathname if two hard drives have the same name), but we
