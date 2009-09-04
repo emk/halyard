@@ -1,3 +1,11 @@
+0.5.38.1 - 4 Sep 2009
+
+This is a bugfix release, to fix a problem in which QuickTime media failed to
+play when launched in command line or runtime mode.
+
+Brian Campbell (1):
+      FileSystem: Simplify paths containing . and .. when setting base dirs
+
 0.5.38 - 1 Sep 2009
 
 This release of Halyard substantially improves the updater to no longer
