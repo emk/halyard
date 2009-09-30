@@ -25,11 +25,21 @@ require 'fileutils'
 require 'pathname'
 
 class UpdateInstallerTest < Test::Unit::TestCase
-  EXE_PATH="../../../runtime/UpdateInstaller.exe"
+  class << self
+    attr_accessor :fixture_dir
+
+    def suite
+      if name == "UpdateInstallerTest"
+        return Test::Unit::TestSuite.new(name)
+      else
+        super
+      end
+    end
+  end
 
   def setup
     FileUtils.rm_rf "fixture-temp"
-    FileUtils.cp_r "fixture", "fixture-temp"
+    FileUtils.cp_r self.class.fixture_dir, "fixture-temp"
     FileUtils.cd "fixture-temp"
   end
 
@@ -38,8 +48,34 @@ class UpdateInstallerTest < Test::Unit::TestCase
     FileUtils.rm_rf "fixture-temp"
   end
 
+  def assert_exists file
+    assert File.exists?(file), "#{file} does not exist"
+  end
+
+  def assert_file_equals contents, file
+    pn = Pathname.new(file)
+    assert_equal contents, pn.read
+  end
+  
+  def assert_files_equal file1, file2
+    pn = Pathname.new(file1)
+    assert_file_equals pn.read, file2
+  end
+
+  def exe_path
+    "../../../runtime/UpdateInstaller.exe"
+  end
+
+  def run_exe *args
+    system exe_path, *args
+  end
+end
+
+class UpdateInstallerSimpleTest < UpdateInstallerTest
+  @fixture_dir = "fixture"
+
   def test_exe_exists
-    assert_exists EXE_PATH
+    assert_exists exe_path
   end
 
   def test_run_cpp_tests
@@ -50,7 +86,7 @@ class UpdateInstallerTest < Test::Unit::TestCase
     download_mtime = 
       File.mtime("Updates/pool/855426068ee8939df6bce2c2c4b1e7346532a133")
     sleep 2
-    assert system(EXE_PATH, ".", ".")
+    assert run_exe(".", ".")
     assert !File.exists?("UPDATE.LCK")
     assert_exists "sub/quux.txt"
     assert_file_equals "", "sub/quux.txt"
@@ -70,7 +106,7 @@ EOF
   end
 
   def assert_fails_gracefully
-    assert !system(EXE_PATH, ".", ".")
+    assert !run_exe(".", ".")
     assert_file_equals "", "foo.txt"
     assert_file_equals "", "sub/foo.txt"
     assert !File.exists?("sub/quux.txt")
@@ -92,7 +128,7 @@ EOF
 
   def test_uninstall_removes_lock_file
     File.open("UPDATE.LCK", 'w') {|f| }
-    assert system(EXE_PATH, "--uninstall", ".")
+    assert run_exe("--uninstall", ".")
     assert !File.exists?("UPDATE.LCK")
     assert !File.exists?("Updates/temp/log")
   end
@@ -103,18 +139,5 @@ EOF
   #  FileUtils.rm "release.spec"
   #  assert !system(EXE_PATH, ".", ".")
   #end
-
-  def assert_exists file
-    assert File.exists?(file), "#{file} does not exist"
-  end
-
-  def assert_file_equals contents, file
-    pn = Pathname.new(file)
-    assert_equal contents, pn.read
-  end
-  
-  def assert_files_equal file1, file2
-    pn = Pathname.new(file1)
-    assert_file_equals pn.read, file2
-  end
 end
+
