@@ -431,6 +431,25 @@
     (foldl append '() 
            (map (fn (file) (parse-manifest (build-path dir file))) manifests)))
 
+  ;; Return a function that will lazily compute the value of a thunk, and
+  ;; memoize that for future reference.  This will reset if *updater*
+  ;; changes, as thunk may depend on the value of *updater* which can
+  ;; change between running unit tests.
+  (define (memoize-thunk-per-updater thunk)
+    (define value #f)
+    (define updater #f)
+    (fn ()
+      (cond 
+       [(and value (eq? updater *updater*)) value]
+       [else (begin 
+               (set! updater *updater*)
+               (set! value (thunk))
+               value)])))
+
+  (define parse-manifests-in-root-dir
+    (memoize-thunk-per-updater (fn () (parse-manifests-in-dir
+                                       (updater-root-directory *updater*)))))
+
   (define (manifest-url-prefix)
     (build-url (updater-url-prefix *updater*) 
                "manifests/" 
@@ -464,7 +483,7 @@
           (download-verified expected-digest
                              (build-url (manifest-url-prefix) manifest)
                              download-dir))
-        (define diffs (diff-manifests (parse-manifests-in-dir root-dir)
+        (define diffs (diff-manifests (parse-manifests-in-root-dir)
                                       (parse-manifests-in-dir download-dir)))
         (write-diffs-to-file (temp-dir "MANIFEST-DIFF") diffs)
         diffs)))
@@ -536,12 +555,20 @@
   (define (file-exists-in-pool? file)
     (file-exists? (pool-dir (manifest-digest file))))
   
+  ;; Hash table indicating if we have a digest in our tree already
+  (define existing-file-map
+    (memoize-thunk-per-updater
+     (fn ()
+       (define existing-files (parse-manifests-in-root-dir))
+       (define table (make-hash-table 'equal))
+       (foreach [entry existing-files]
+         (hash-table-put! table (manifest-digest entry) #t))
+       table)))
+
   ;; Do we already have this file somewhere in our existing installation?
   (define (file-exists-in-tree? file)
-    (define existing-files (parse-manifests-in-dir 
-                            (updater-root-directory *updater*)))
-    (find (fn (existing-file) (same-digest? file existing-file))
-          existing-files))
+    (define existing-files (existing-file-map))
+    (hash-table-get existing-files (manifest-digest file) #f))
 
   ;; Downloads a particular update. Takes a progress indicator callback. The 
   ;; progress indicator callback will take two arguments, a percentage and a 
