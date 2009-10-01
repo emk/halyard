@@ -41,13 +41,14 @@ class UpdateInstallerTest < Test::Unit::TestCase
   end
 
   def setup
+    @olddir = Dir.getwd
     FileUtils.rm_rf "fixture-temp"
     FileUtils.cp_r self.class.fixture_dir, "fixture-temp"
     FileUtils.cd "fixture-temp"
   end
 
   def teardown
-    FileUtils.cd ".."
+    FileUtils.cd @olddir
     FileUtils.rm_rf "fixture-temp"
   end
 
@@ -149,6 +150,10 @@ class FixtureBuilder
     @saved = { }
   end
 
+  def fullname name
+    Dir.getwd + "/" + name
+  end
+
   def dir name, &block
     FileUtils.mkdir_p name
     if block_given?
@@ -156,22 +161,40 @@ class FixtureBuilder
         yield self
       end
     end
-    name
+    fullname name
   end
 
   def file name, contents
+    FileUtils.mkdir_p File.dirname(name)
     File.open(name, "w") { |f| f << contents }
-    name
+    fullname name
+  end
+
+  def copy source, dest
+    FileUtils.cp_r source, dest
+    fullname dest
+  end
+
+  def []=(key, name)
+    @saved[key] = name
+  end
+  
+  def [](key)
+    @saved[key]
+  end
+end
+
+Build = Struct.new(:spec, :manifests)
+
+class UpdaterFixtureBuilder < FixtureBuilder
+  def initialize
+    super
+    @builds = { }
   end
 
   def pool_file contents
     name = Digest::SHA1.hexdigest(contents)
     file name, contents
-  end
-
-  def copy source, dest
-    FileUtils.cp_r source, dest
-    dest
   end
 
   def build_manifest component, files
@@ -181,7 +204,7 @@ class FixtureBuilder
         f << manifest_entry(path)
       end
     end
-    name
+    fullname name
   end
 
   def build_release_spec build_id
@@ -193,15 +216,33 @@ class FixtureBuilder
         f << manifest_entry(manifest)
       end
     end
-    name
+    fullname name
   end
 
-  def []=(key, name)
-    @saved[key] = Dir.getwd + "/" + name
+  def create_build dirname, id, components
+    dir dirname do |fb|
+      yield fb if block_given?
+      manifests = []
+      components.each do |name, files| 
+        manifests.push(fb.build_manifest(name, files))
+      end
+      release_spec = fb.build_release_spec id
+      @builds[id] = Build.new(release_spec, manifests)
+    end
   end
-  
-  def [](key)
-    @saved[key]
+
+  def create_download dirname, build
+    dir "#{dirname}/Updates" do |fb|
+      fb.copy @builds[build].spec, "release.spec"
+      fb.dir "pool" do |fb|
+        yield fb
+      end
+      fb.dir "manifests/#{build}" do |fb|
+        @builds[build].manifests.each do |manifest|
+          fb.copy manifest, "."
+        end
+      end
+    end
   end
 
   private
@@ -222,17 +263,22 @@ class UpdateInstallerSmarterUpdateTest < UpdateInstallerTest
   # Override the superclass that uses an existing fixture dir, and
   # simply generate the fixture dir that we need.
   def setup
+    @olddir = Dir.getwd
     FileUtils.rm_rf "fixture-temp"
-    FixtureBuilder.new.dir "fixture-temp" do |fb|
-      fb.dir "installed-program" do |fb|
+    UpdaterFixtureBuilder.new.dir "fixture-temp" do |fb|
+      fb.create_build("installed-program", "build-A", 
+                      :component => %w[copied deleted 
+                                       moved overwritten]) do |fb|
         fb.file "copied", COPIED_TEXT
         fb.file "deleted", "This file should be deleted"
         fb.file "moved", MOVED_TEXT
         fb.file "overwritten", "This file should be overwritten"
-        fb.build_manifest("component", %w[copied deleted moved overwritten])
-        fb.build_release_spec "build-A"
       end
-      fb.dir "new-version" do |fb|
+      fb.create_build("new-version", "build-B",
+                      :component => %w[copied from-copied from-moved
+                                       overwritten multiple-locations-1
+                                       multiple-locations-2
+                                       multiple-locations-3]) do |fb|
         fb.file "copied", COPIED_TEXT
         fb.file "from-copied", COPIED_TEXT
         fb.file "from-moved", MOVED_TEXT
@@ -240,22 +286,10 @@ class UpdateInstallerSmarterUpdateTest < UpdateInstallerTest
         %w[1 2 3].each do |i|
           fb.file "multiple-locations-#{i}", MULTIPLE_LOCATIONS_TEXT
         end
-        fb["manifest"] = fb.build_manifest("component", 
-                                           %w[copied from-copied from-moved
-                                              overwritten multiple-locations-1
-                                              multiple-locations-2
-                                              multiple-locations-3])
-        fb["release.spec"] = fb.build_release_spec "build-B"
       end
-      fb.dir "download-dir/Updates" do |fb|
-        fb.copy fb["release.spec"], "release.spec"
-        fb.dir "pool" do |fb|
-          fb.pool_file OVERWRITTEN_TEXT
-          fb.pool_file MULTIPLE_LOCATIONS_TEXT
-        end
-        fb.dir "manifests/build-B" do |fb|
-          fb.copy fb["manifest"], "MANIFEST.component"
-        end
+      fb.create_download "download-dir", "build-B" do |fb|
+        fb.pool_file OVERWRITTEN_TEXT
+        fb.pool_file MULTIPLE_LOCATIONS_TEXT
       end
     end
     FileUtils.cd "fixture-temp"
@@ -287,5 +321,73 @@ class UpdateInstallerSmarterUpdateTest < UpdateInstallerTest
                          "installed-program/multiple-locations-#{i}")
     end
     assert_equal [], Dir["download-dir/Updates/pool/*"]
+  end
+end
+
+class UpdateInstallerCleanupTest < UpdateInstallerTest
+  def setup
+    @olddir = Dir.getwd
+    FileUtils.rm_rf "fixture-temp"
+    UpdaterFixtureBuilder.new.dir "fixture-temp" do |fb|
+      fb.create_build("installed-program", "build-A",
+                      :component => %w[Scripts/constant Scripts/changed
+                                       top-level deleted]) do |fb|
+        fb.file "top-level", "some text"
+        fb.file "deleted", "this should be deleted"
+
+        fb.dir "Scripts" do |fb|
+          fb.file "constant", "constant"
+          fb.file "changed", "old text"  
+        end
+        
+        # These are some extra files which need to be cleaned up
+        fb.file "scripts/extra.ss", '(display "Hello, world!")'
+        fb.file "collects/somedir/extra.zo", "stuff"
+        fb.file "engine/win32/collects/extra.dep", "dep"
+        fb.file "engine/win32/plt/another-extra.ss", "(* 3 4)"
+      end
+      fb.create_build("new-version", "build-B",
+                      :component => %w[scripts/constant scripts/changed
+                                       top-level new]) do |fb|
+        fb.file "top-level", "some text"
+        fb.file "new", "this is new"
+
+        # Note that the case has changed on the scripts directory
+        fb.dir "scripts" do |fb|
+          fb.file "constant", "constant"
+          fb.file "changed", "new text"
+        end
+      end
+      fb.create_download "download-dir", "build-B" do |fb|
+        fb.pool_file "new text"
+        fb.pool_file "this is new"
+      end
+    end
+
+    FileUtils.cd "fixture-temp"
+  end
+
+  def test_cleanup_extra_files
+    assert File.exists?("installed-program/Scripts/extra.ss")
+    assert File.exists?("installed-program/collects/somedir/extra.zo")
+    assert run_exe("download-dir", "installed-program")
+
+    # Check with both capitalizations so we work regardless of whether
+    # or not the case change has happened and whether or not we're on
+    # a case insensitive file system.
+    assert !File.exists?("installed-program/scripts/extra.ss")
+    assert !File.exists?("installed-program/Scripts/extra.ss")
+    assert !File.exists?("installed-program/collects/somedir/extra.zo")
+    assert !File.exists?("installed-program/engine/win32/collects/extra.dep")
+    assert !File.exists?("installed-program/engine/win32/plt/another-extra.ss")
+  end
+
+  def test_no_cleanup_or_update_on_unexpectd_files
+    File.open("installed-program/Scripts/important-document.doc", 'w') {|f| }
+    assert !run_exe("download-dir", "installed-program")
+
+    assert File.exists?("installed-program/Scripts/important-document.doc")
+    assert File.exists?("installed-program/deleted")
+    assert !File.exists?("installed-program/new")
   end
 end

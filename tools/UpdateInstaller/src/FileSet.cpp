@@ -121,6 +121,7 @@ bool FileSet::HasMatchingEntry(const FileSet::Entry &entry) const {
 void FileSet::AddEntry(const FileSet::Entry &entry) {
     mEntries.insert(entry);
     mDigests.insert(entry.digest());
+    mFilenames.insert(entry.path());
     mDigestMap.insert(DigestMap::value_type(entry.digest(), entry));
 }
 

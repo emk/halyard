@@ -113,6 +113,7 @@ void UpdateInstaller::BuildFileOperationVector() {
     BuildTreeToPoolFileOperations();
     BuildPoolToTreeFileOperations();
     BuildUpdaterSpecialFileOperations();
+    BuildDirectoryCleanupFileOperations();
 }
 
 void UpdateInstaller::BuildTreeToPoolFileOperations() {
@@ -183,6 +184,66 @@ void UpdateInstaller::BuildUpdaterSpecialFileOperations() {
         operation(new FileTransfer(mSrcRoot / "Updates/release.spec", 
                                    mDestRoot / "release.spec"));
     mOperations.push_back(operation);
+}
+
+void UpdateInstaller::BuildDirectoryCleanupFileOperations() {
+    // Don't touch any files that we know about, in the existing files or
+    // update files lists.  Those files will be dealt with by other portions
+    // of the updater.
+    FileSet::FilenameSet known_files(mExistingFiles.Filenames());
+    known_files.insert(mUpdateFiles.Filenames().begin(), 
+                       mUpdateFiles.Filenames().end());
+
+    std::vector<path> dirs;
+    dirs.push_back(mDestRoot / "scripts");
+    // dirs.push_back(mDestRoot / "Scripts");
+    dirs.push_back(mDestRoot / "collects");
+    dirs.push_back(mDestRoot / "engine/win32/collects");
+    dirs.push_back(mDestRoot / "engine/win32/plt");
+
+    BOOST_FOREACH(path dir, dirs) {
+        BuildCleanupRecursive(known_files, dir);
+        if (!mUpdateIsPossible) return;
+    }
+}
+
+void UpdateInstaller::BuildCleanupRecursive
+    (const FileSet::FilenameSet &known_files, path dir) 
+{
+    if (!exists(dir)) return;
+
+    directory_iterator dir_iter(dir);
+    for (; dir_iter != directory_iterator(); ++dir_iter) {
+        path full_path(dir_iter->path());
+
+        path::iterator root_iter(mDestRoot.begin());
+        path::iterator relative_iter(full_path.begin());
+
+        while (++root_iter != mDestRoot.end())
+            ++relative_iter;
+        path relative_path;
+        while (++relative_iter != full_path.end())
+            relative_path /= *relative_iter;
+
+        if (is_directory(dir_iter->status())) {
+            BuildCleanupRecursive(known_files, full_path);
+        } else if (known_files.count(relative_path.string()) == 0) {
+            // This is not in our set of known files, so delete it if
+            // it has one of our own file types (as it's assumed to be
+            // junk left over from a previous update), or error
+            // out if it is not (since in that case we assume that it's
+            // some file that the user put there, and may be important
+            // to them).
+            std::string ext(relative_path.extension());
+            if (ext == ".zo" || ext == ".ss" || ext == ".dep") {
+                FileOperation::Ptr operation(new FileDelete(full_path));
+                mOperations.push_back(operation);
+            } else {
+                mUpdateIsPossible = false;
+                return;
+            }
+        }
+    }
 }
 
 bool UpdateInstaller::FileShouldBeInPool(const FileSet::Entry &e) {

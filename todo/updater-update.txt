@@ -23,10 +23,17 @@ x Make updater smarter about moved files
 * Multi-stage update
   * Update updater.ss
     * Backport lazy downloader to old updater.ss
-    * Build a release of the old program with the new updater.ss
-      * Engine fork?
-      * Just slip that one file in by hand?
-  * Add a one-off dialog saying what's going on
+  * Add a one-off dialog saying what's going on (in update installer
+    that has been backported to old SAE)
+  * Teach installer to call out to engine/win32/Halyard.exe even though
+    it was passed in Tamale.exe (but still use the same path for
+    relaunching)
+  * Build a release of the old program with the new updater.ss and 
+    update installer
+    * Just slip those two files in by hand
+  * Get updater to redirect to new SAE 1.5 updater
+    * I think it should be sufficient to manually edit the URL in
+      the release.spec for the small, backported update
 
 Things to think about:
    need to make sure we delete bad files in scripts (.ss, .zo, and .dep)
@@ -292,6 +299,8 @@ def moveFilesFromPoolToNewTree(filesNeededForNewTree):
   operations as a delete
 * If we encounter any other sort of file, flag update as impossible and end
   loop
+  * We can actually do slightly better here.  We only need to bail if we
+    see any other sort of file in a directory that should be empty.
 
 === Notes on case change fixes ===
 

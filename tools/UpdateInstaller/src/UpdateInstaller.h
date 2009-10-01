@@ -144,6 +144,9 @@ private:
     void BuildTreeToPoolFileOperations();
     void BuildPoolToTreeFileOperations();
     void BuildUpdaterSpecialFileOperations();
+    void BuildDirectoryCleanupFileOperations();
+    void BuildCleanupRecursive(const FileSet::FilenameSet &known_files, 
+                               path dir);
 
     void LockDestinationDirectory();
     void UnlockDestinationDirectory();
