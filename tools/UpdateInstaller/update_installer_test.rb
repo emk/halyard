@@ -380,13 +380,35 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
     assert !File.exists?("installed-program/collects/somedir/extra.zo")
     assert !File.exists?("installed-program/engine/win32/collects/extra.dep")
     assert !File.exists?("installed-program/engine/win32/plt/another-extra.ss")
+    assert !File.exists?("installed-program/collects/somedir")
+
+    # Make sure we didn't delete any files that should still exist
+    assert(File.exists?("installed-program/scripts/constant") ||
+           File.exists?("installed-program/Scripts/constant"))
+    assert(File.exists?("installed-program/scripts/changed") ||
+           File.exists?("installed-program/Scripts/changed"))
   end
 
-  def test_no_cleanup_or_update_on_unexpectd_files
+  def test_cleanup_works_if_unexpected_files_in_non_empty_directory
+    # The scripts directory should continue to have files in it after
+    # the update, so we don't care if it contains any innocuous extra
+    # files.
     File.open("installed-program/Scripts/important-document.doc", 'w') {|f| }
-    assert !run_exe("download-dir", "installed-program")
+    assert run_exe("download-dir", "installed-program")
 
     assert File.exists?("installed-program/Scripts/important-document.doc")
+    assert !File.exists?("installed-program/deleted")
+    assert File.exists?("installed-program/new")    
+  end
+
+  def test_cleanup_fails_if_unexpected_files_in_directory_which_should_be_empty
+    # The somedir directory should be deleted upon cleanup, as it
+    # does not exist within the updated tree.  But if we put an unexpected
+    # file in here, the updater should not delete it.
+    File.open("installed-program/collects/somedir/important.doc", 'w') {|f| }
+    assert !run_exe("download-dir", "installed-program")
+
+    assert File.exists?("installed-program/collects/somedir/important.doc")
     assert File.exists?("installed-program/deleted")
     assert !File.exists?("installed-program/new")
   end

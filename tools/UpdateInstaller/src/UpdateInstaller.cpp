@@ -194,39 +194,50 @@ void UpdateInstaller::BuildDirectoryCleanupFileOperations() {
     known_files.insert(mUpdateFiles.Filenames().begin(), 
                        mUpdateFiles.Filenames().end());
 
+    // The set of directories that we should have after we finish updating.
+    // We should delete any extra directories that aren't in this set that
+    // are in our script dirs, after having deleted any extra files within
+    // them.  Note that unlike above, we are only interested in the
+    // directories that appear in the update manifest, as those that were
+    // in the base manifest will not be affected by any other portion
+    // of the update.
+    FileSet::FilenameSet directories_to_keep;
+    BOOST_FOREACH(std::string filename, mUpdateFiles.Filenames()) {
+        path p(filename);
+        directories_to_keep.insert(p.parent_path().string());
+    }
+
+    // The directories that we would like to clean up.
     std::vector<path> dirs;
     dirs.push_back(mDestRoot / "scripts");
-    // dirs.push_back(mDestRoot / "Scripts");
     dirs.push_back(mDestRoot / "collects");
     dirs.push_back(mDestRoot / "engine/win32/collects");
     dirs.push_back(mDestRoot / "engine/win32/plt");
 
     BOOST_FOREACH(path dir, dirs) {
-        BuildCleanupRecursive(known_files, dir);
+        BuildCleanupRecursive(known_files, dir, directories_to_keep);
         if (!mUpdateIsPossible) return;
     }
 }
 
-void UpdateInstaller::BuildCleanupRecursive
-    (const FileSet::FilenameSet &known_files, path dir) 
+bool UpdateInstaller::BuildCleanupRecursive
+    (const FileSet::FilenameSet &known_files,
+     path dir, 
+     const FileSet::FilenameSet &directories_to_keep)
 {
-    if (!exists(dir)) return;
+    if (!exists(dir)) return false;
+
+    bool contains_undeletable_files = false;
 
     directory_iterator dir_iter(dir);
     for (; dir_iter != directory_iterator(); ++dir_iter) {
         path full_path(dir_iter->path());
-
-        path::iterator root_iter(mDestRoot.begin());
-        path::iterator relative_iter(full_path.begin());
-
-        while (++root_iter != mDestRoot.end())
-            ++relative_iter;
-        path relative_path;
-        while (++relative_iter != full_path.end())
-            relative_path /= *relative_iter;
+        path relative_path(PathRelativeToTree(full_path));
 
         if (is_directory(dir_iter->status())) {
-            BuildCleanupRecursive(known_files, full_path);
+            if (BuildCleanupRecursive(known_files, full_path, 
+                                      directories_to_keep))
+                contains_undeletable_files = true;
         } else if (known_files.count(relative_path.string()) == 0) {
             // This is not in our set of known files, so delete it if
             // it has one of our own file types (as it's assumed to be
@@ -239,11 +250,26 @@ void UpdateInstaller::BuildCleanupRecursive
                 FileOperation::Ptr operation(new FileDelete(full_path));
                 mOperations.push_back(operation);
             } else {
-                mUpdateIsPossible = false;
-                return;
+                contains_undeletable_files = true;
             }
         }
     }
+
+    path relative_dir(PathRelativeToTree(dir));
+    if (directories_to_keep.count(relative_dir.string()) == 0) {
+        // This directory should be deleted.  But we can only delete
+        // this directory if it contains no undeletable files.
+        if (!contains_undeletable_files) {
+            FileOperation::Ptr operation(new FileDelete(dir));
+            mOperations.push_back(operation);
+        } else {
+            // If we have undeletable files, and we're in a directory
+            // that needs cleanup, then we won't be able to update.
+            mUpdateIsPossible = false;
+        }
+    }
+
+    return contains_undeletable_files;
 }
 
 bool UpdateInstaller::FileShouldBeInPool(const FileSet::Entry &e) {
@@ -364,6 +390,20 @@ path UpdateInstaller::PathInPool(const std::string &s) {
     return mSrcRoot / "Updates/pool" / s;
 }
 
+/// Convert an abosolute path into a path relative to the program install
+/// directory.
+path UpdateInstaller::PathRelativeToTree(const path &p) {
+    path::iterator root_iter(mDestRoot.begin());
+    path::iterator relative_iter(p.begin());
+
+    while (++root_iter != mDestRoot.end())
+        ++relative_iter;
+    path relative_path;
+    while (++relative_iter != p.end())
+        relative_path /= *relative_iter;
+    
+    return relative_path;
+}
 
 //=========================================================================
 //  FileOperation subclasses
@@ -402,7 +442,7 @@ void FileTransfer::Perform() const {
 //=========================================================================
 
 bool IsWriteable(const path &name) {
-    if (exists(name)) {
+    if (exists(name) && !is_directory(name)) {
         // If we can't open the file, keep trying every 1/5th of a second
         // for 10 seconds.
         for (int i = 0; i < 50; i++) {

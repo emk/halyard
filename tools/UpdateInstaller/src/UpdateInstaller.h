@@ -145,8 +145,9 @@ private:
     void BuildPoolToTreeFileOperations();
     void BuildUpdaterSpecialFileOperations();
     void BuildDirectoryCleanupFileOperations();
-    void BuildCleanupRecursive(const FileSet::FilenameSet &known_files, 
-                               path dir);
+    bool BuildCleanupRecursive(const FileSet::FilenameSet &known_files, 
+                               path dir, 
+                               const FileSet::FilenameSet &directories_to_keep);
 
     void LockDestinationDirectory();
     void UnlockDestinationDirectory();
@@ -155,6 +156,7 @@ private:
     path PathInTree(const FileSet::Entry &e);
     path PathInPool(const FileSet::Entry &e);
     path PathInPool(const std::string &s);
+    path PathRelativeToTree(const path &p);
 };
 
 #endif // UpdateInstaler_H
