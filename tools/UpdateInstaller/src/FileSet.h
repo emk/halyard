@@ -60,7 +60,7 @@ public:
     typedef boost::unordered_set<Entry> EntrySet;
     typedef boost::unordered_set<std::string> DigestSet;
     typedef boost::unordered_multimap<std::string, Entry> DigestMap;
-    typedef boost::unordered_set<std::string> FilenameSet;
+    typedef boost::unordered_set<std::string> LowercaseFilenameSet;
     
     FileSet() {}
     
@@ -76,12 +76,14 @@ public:
 
     const DigestMap &DigestEntryMap() const { return mDigestMap; }
     const DigestSet &Digests() const { return mDigests; }
-    const FilenameSet &Filenames() const { return mFilenames; }
+    const LowercaseFilenameSet &LowercaseFilenames() const { 
+        return mLowercaseFilenames; 
+    }
 
 private: 
     EntrySet mEntries;
     DigestSet mDigests;
-    FilenameSet mFilenames;
+    LowercaseFilenameSet mLowercaseFilenames;
 
     DigestMap mDigestMap;
 

@@ -190,9 +190,10 @@ void UpdateInstaller::BuildDirectoryCleanupFileOperations() {
     // Don't touch any files that we know about, in the existing files or
     // update files lists.  Those files will be dealt with by other portions
     // of the updater.
-    FileSet::FilenameSet known_files(mExistingFiles.Filenames());
-    known_files.insert(mUpdateFiles.Filenames().begin(), 
-                       mUpdateFiles.Filenames().end());
+    FileSet::LowercaseFilenameSet 
+        known_files(mExistingFiles.LowercaseFilenames());
+    known_files.insert(mUpdateFiles.LowercaseFilenames().begin(), 
+                       mUpdateFiles.LowercaseFilenames().end());
 
     // The set of directories that we should have after we finish updating.
     // We should delete any extra directories that aren't in this set that
@@ -201,8 +202,12 @@ void UpdateInstaller::BuildDirectoryCleanupFileOperations() {
     // directories that appear in the update manifest, as those that were
     // in the base manifest will not be affected by any other portion
     // of the update.
-    FileSet::FilenameSet directories_to_keep;
-    BOOST_FOREACH(std::string filename, mUpdateFiles.Filenames()) {
+    // NOTE - it is important for these to be lowercase, and for us to
+    // downcase the paths on disk that we pass in to compare, because
+    // this set contains names only from the update manifest, which may
+    // differ in case from the files on disk.
+    FileSet::LowercaseFilenameSet directories_to_keep;
+    BOOST_FOREACH(std::string filename, mUpdateFiles.LowercaseFilenames()) {
         path p(filename);
         directories_to_keep.insert(p.parent_path().string());
     }
@@ -221,9 +226,9 @@ void UpdateInstaller::BuildDirectoryCleanupFileOperations() {
 }
 
 bool UpdateInstaller::BuildCleanupRecursive
-    (const FileSet::FilenameSet &known_files,
+    (const FileSet::LowercaseFilenameSet &known_files,
      path dir, 
-     const FileSet::FilenameSet &directories_to_keep)
+     const FileSet::LowercaseFilenameSet &directories_to_keep)
 {
     if (!exists(dir)) return false;
 
@@ -233,12 +238,15 @@ bool UpdateInstaller::BuildCleanupRecursive
     for (; dir_iter != directory_iterator(); ++dir_iter) {
         path full_path(dir_iter->path());
         path relative_path(PathRelativeToTree(full_path));
+        std::string relative_path_string(relative_path.string());
+        std::transform(relative_path_string.begin(), relative_path_string.end(),
+                       relative_path_string.begin(), ::tolower);
 
         if (is_directory(dir_iter->status())) {
             if (BuildCleanupRecursive(known_files, full_path, 
                                       directories_to_keep))
                 contains_undeletable_files = true;
-        } else if (known_files.count(relative_path.string()) == 0) {
+        } else if (known_files.count(relative_path_string) == 0) {
             // This is not in our set of known files, so delete it if
             // it has one of our own file types (as it's assumed to be
             // junk left over from a previous update), or error
@@ -256,7 +264,10 @@ bool UpdateInstaller::BuildCleanupRecursive
     }
 
     path relative_dir(PathRelativeToTree(dir));
-    if (directories_to_keep.count(relative_dir.string()) == 0) {
+    std::string relative_dir_string(relative_dir.string());
+    std::transform(relative_dir_string.begin(), relative_dir_string.end(),
+                   relative_dir_string.begin(), ::tolower);
+    if (directories_to_keep.count(relative_dir_string) == 0) {
         // This directory should be deleted.  But we can only delete
         // this directory if it contains no undeletable files.
         if (!contains_undeletable_files) {

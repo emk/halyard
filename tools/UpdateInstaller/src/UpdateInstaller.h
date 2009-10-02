@@ -145,9 +145,10 @@ private:
     void BuildPoolToTreeFileOperations();
     void BuildUpdaterSpecialFileOperations();
     void BuildDirectoryCleanupFileOperations();
-    bool BuildCleanupRecursive(const FileSet::FilenameSet &known_files, 
+    bool BuildCleanupRecursive(const FileSet::LowercaseFilenameSet &known_files, 
                                path dir, 
-                               const FileSet::FilenameSet &directories_to_keep);
+                               const FileSet::LowercaseFilenameSet 
+                                 &directories_to_keep);
 
     void LockDestinationDirectory();
     void UnlockDestinationDirectory();

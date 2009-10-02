@@ -121,8 +121,19 @@ bool FileSet::HasMatchingEntry(const FileSet::Entry &entry) const {
 void FileSet::AddEntry(const FileSet::Entry &entry) {
     mEntries.insert(entry);
     mDigests.insert(entry.digest());
-    mFilenames.insert(entry.path());
     mDigestMap.insert(DigestMap::value_type(entry.digest(), entry));
+
+    // Add these paths normalized to lowercase, as we are going to need to
+    // compare them case insensitively against paths on the disk.
+    // XXX - this is inappropriate for anything outside of US-ASCII;
+    // tolower is only guaranteed to work within that range, and
+    // general purpose Unicode case folding is well out of scope
+    // of this program.  Don't put any characters outside of the US-ASCII
+    // range into your tree.
+    std::string lowercase_path(entry.path());
+    std::transform(lowercase_path.begin(), lowercase_path.end(), 
+                   lowercase_path.begin(), ::tolower);
+    mLowercaseFilenames.insert(lowercase_path);
 }
 
 std::string read_file(const boost::filesystem::path &path) {

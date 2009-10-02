@@ -331,6 +331,7 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
     UpdaterFixtureBuilder.new.dir "fixture-temp" do |fb|
       fb.create_build("installed-program", "build-A",
                       :component => %w[Scripts/constant Scripts/changed
+                                       Scripts/Capitalized/file
                                        top-level deleted]) do |fb|
         fb.file "top-level", "some text"
         fb.file "deleted", "this should be deleted"
@@ -338,6 +339,7 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
         fb.dir "Scripts" do |fb|
           fb.file "constant", "constant"
           fb.file "changed", "old text"  
+          fb.file "Capitalized/file", "a file in an uppercase dir"
         end
         
         # These are some extra files which need to be cleaned up
@@ -348,6 +350,7 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
       end
       fb.create_build("new-version", "build-B",
                       :component => %w[scripts/constant scripts/changed
+                                       scripts/capitalized/file
                                        top-level new]) do |fb|
         fb.file "top-level", "some text"
         fb.file "new", "this is new"
@@ -356,6 +359,7 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
         fb.dir "scripts" do |fb|
           fb.file "constant", "constant"
           fb.file "changed", "new text"
+          fb.file "capitalized/file", "a file in an uppercase dir"
         end
       end
       fb.create_download "download-dir", "build-B" do |fb|
@@ -387,6 +391,7 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
            File.exists?("installed-program/Scripts/constant"))
     assert(File.exists?("installed-program/scripts/changed") ||
            File.exists?("installed-program/Scripts/changed"))
+    assert File.exists?("installed-program/scripts/capitalized/file")
   end
 
   def test_cleanup_works_if_unexpected_files_in_non_empty_directory
