@@ -60,6 +60,11 @@ class UpdateInstallerTest < Test::Unit::TestCase
     pn = Pathname.new(file)
     assert_equal contents, pn.read
   end
+
+  def assert_file_contains contents, file
+    pn = Pathname.new(file)
+    assert_match /#{Regexp.escape(contents)}/, pn.read
+  end
   
   def assert_files_equal file1, file2
     pn = Pathname.new(file1)
@@ -114,10 +119,8 @@ EOF
     assert_file_equals "", "foo.txt"
     assert_file_equals "", "sub/foo.txt"
     assert !File.exists?("sub/quux.txt")
-    assert_file_equals <<EOF, "Updates/temp/log"
-Checking if install is possible.\r
-Update is impossible; relaunching.\r
-EOF
+    assert_file_contains("Update is impossible; relaunching.", 
+                         "Updates/temp/log")
   end
 
   def test_failed_install

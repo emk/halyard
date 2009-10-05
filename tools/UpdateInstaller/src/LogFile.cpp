@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <exception>
+#include <cassert>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/convenience.hpp>
 
@@ -56,4 +57,15 @@ void LogFile::Log(const char *message, Severity severity) {
   fflush(mLogFile);
   if (severity == FATAL)
       ReportError(message);
+}
+
+LogFile *LogFile::sLogFile = 0;
+
+void LogFile::InitLogFile(const path &file) {
+    sLogFile = new LogFile(file);
+}
+
+LogFile *LogFile::GetLogFile() {
+    assert(sLogFile);
+    return sLogFile;
 }

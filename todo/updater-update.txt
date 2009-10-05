@@ -10,8 +10,8 @@ x Make updater smarter about moved files
 * Case change
   x Downloader should ignore case when doing manifest diff
     x No need, since the smarter downloader above should handle this
-  * Update installer should delete extra files that may break things
-    * .ss, .zo, .dep, and empty dirs in scripts/, collects/, and 
+  x Update installer should delete extra files that may break things
+    x .ss, .zo, .dep, and empty dirs in scripts/, collects/, and 
       engine/win32/{collects,plt}
   * Update installer should fix case of files or directories with wrong case
     x What do we do if the manifest has mixed case for the same dir?
@@ -34,6 +34,41 @@ x Make updater smarter about moved files
   * Get updater to redirect to new SAE 1.5 updater
     * I think it should be sufficient to manually edit the URL in
       the release.spec for the small, backported update
+* General updater improvements (would be nice, but not necessary for this
+  release):
+  * Improve our error reporting, in the case that we safely determine 
+    that updating is impossible before starting an update
+    * Right now, we have two types of errors:
+      * We safely detect that updating is impossible, and simply relaunch
+        the program (or in the case of Vista, tell them the update was
+        successful, which isn't true, and ask them to relaunch it).
+      * An unexpected error occurs in the middle of the update; we pop
+        up a dialog box telling the user that their program is screwed
+        up and they will need to uninstall and reinstall.  It seems that
+        this exits the program in a way that Windows interprets as a crash;
+        is this what we want?
+    * What we should do:
+      * The unexpected error case is OK, though we should revisit exactly
+        how it exits.
+      * In the case of safely detecting that an update is impossible,
+        we should pop up a dialog box saying that something went wrong
+        but we haven't changed anything and thay can still run the program.
+        They should then be able to relaunch the program.
+        * This would leave them in a state where they would be prompted
+          to do an update every time they launch the program, which would
+          probabl fail each time.
+        * So, maybe we leave a marker indicating that an update to that
+          particular build has failed.  If we check for updates, and see
+          only the update that failed to work, we could just skip that
+          update.  We may want to give the user a way to manually try
+          updating again in this case.  If there is a new update available,
+          later than the failed one, we can try updating again, in case
+          the new update installer is smarter and can get them unwedged.
+  * Add release notes when you are prompted about whether you want to
+    update.  This would improve the user experience dramatically.
+    * Could probably just be an extra field in release.spec, which
+      had a URL for the release notes; we could display that in a
+      browser widget.
 
 Things to think about:
    need to make sure we delete bad files in scripts (.ss, .zo, and .dep)
@@ -60,10 +95,10 @@ For the update installer:
     x Move files that we don't need in the tree any more
   x Delete files no longer needed, that we didn't move
   x Copy all items from pool into tree
-  * Delete extra files (.zo, .ss, .dep, and empty dirs) from:
-    * scripts/
-    * collects/
-    * engine/win32/{collects,plt}
+  x Delete extra files (.zo, .ss, .dep, and empty dirs) from:
+    x scripts/
+    x collects/
+    x engine/win32/{collects,plt}
   * Ensure case of everything is correct
 
 === Formal Model ===
@@ -286,20 +321,20 @@ def moveFilesFromPoolToNewTree(filesNeededForNewTree):
 
 === Notes on script dirs cleanup ===
 
-* Walk through directories, finding all files
-* Ignore files that are in update manifest (since we want those there, perhaps
+x Walk through directories, finding all files
+x Ignore files that are in update manifest (since we want those there, perhaps
   with different contents)
-* Ignore files that are in base manifest (since if we don't want those ones,
+x Ignore files that are in base manifest (since if we don't want those ones,
   they'll be deleted by the normal updater steps; doesn't apply when being
   called from installer, as we don't have a manifest, and we expect the
   installer to actually leave these files around, so we really do need to
   clean them up)
-* for all remaining files, if they end in .ss, .zo, .dep, or are a directory
+x for all remaining files, if they end in .ss, .zo, .dep, or are a directory
   that does not contain files in our manifests, add them to our list of
   operations as a delete
-* If we encounter any other sort of file, flag update as impossible and end
+x If we encounter any other sort of file, flag update as impossible and end
   loop
-  * We can actually do slightly better here.  We only need to bail if we
+  x We can actually do slightly better here.  We only need to bail if we
     see any other sort of file in a directory that should be empty.
 
 === Notes on case change fixes ===

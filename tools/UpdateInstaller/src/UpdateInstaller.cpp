@@ -30,11 +30,13 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/exception.hpp>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 
 #include "UpdateInstaller.h"
 #include "FileSet.h"
 #include "SpecFile.h"
 #include "Interface.h"
+#include "LogFile.h"
 
 using namespace boost::filesystem;
 
@@ -82,7 +84,8 @@ void UpdateInstaller::CalculateFileSetsForUpdates() {
             // Uh, oh! This doesn't appear to be in our tree or our pool.
             // Looks like something went wrong, and we can't update; flag
             // the update as impossible and return
-            mUpdateIsPossible = false;
+            MarkUpdateImpossible("Couldn't find file with digest " + 
+                                 *digest_iter + " in pool or tree");
             return;
         }
 
@@ -258,6 +261,8 @@ bool UpdateInstaller::BuildCleanupRecursive
                 FileOperation::Ptr operation(new FileDelete(full_path));
                 mOperations.push_back(operation);
             } else {
+                LogFile::GetLogFile()->Log("Unexpected file: " +
+                                           full_path.string());
                 contains_undeletable_files = true;
             }
         }
@@ -276,7 +281,8 @@ bool UpdateInstaller::BuildCleanupRecursive
         } else {
             // If we have undeletable files, and we're in a directory
             // that needs cleanup, then we won't be able to update.
-            mUpdateIsPossible = false;
+            MarkUpdateImpossible("Cannot delete " + dir.string() +
+                                 "; contains unexpected files");
         }
     }
 
@@ -298,12 +304,19 @@ bool UpdateInstaller::FileShouldBeInPool(const FileSet::Entry &e) {
 //  UpdateInstaller sanity check
 //=========================================================================
 
+void UpdateInstaller::MarkUpdateImpossible(const std::string &reason) {
+    LogFile::GetLogFile()->Log("Update is impossible: " + reason + ".");
+    mUpdateIsPossible = false;
+}
+
 bool UpdateInstaller::IsUpdatePossible() {
     // Basic sanity check: Don't install to a target directory that lacks
     // a release.spec.  This reduces the chance the updater could
     // accidentally be used to mess up a user's system.
-    if (!exists(mDestRoot / "release.spec"))
+    if (!exists(mDestRoot / "release.spec")) {
+        MarkUpdateImpossible("Cannot find release.spec");
         return false;
+    }
     
     // If we ran across something weird earlier, bail.
     if (!mUpdateIsPossible) {

@@ -150,6 +150,8 @@ private:
                                const FileSet::LowercaseFilenameSet 
                                  &directories_to_keep);
 
+    void MarkUpdateImpossible(const std::string &reason);
+
     void LockDestinationDirectory();
     void UnlockDestinationDirectory();
 

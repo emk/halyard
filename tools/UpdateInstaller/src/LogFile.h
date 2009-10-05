@@ -42,8 +42,13 @@ public:
     void Log(const boost::format &message, Severity severity = MESSAGE);
     void Log(const std::string &message, Severity severity = MESSAGE);
     void Log(const char *message, Severity severity = MESSAGE);
+
+    static void InitLogFile(const path &file);
+    static LogFile *GetLogFile();
 private:
     FILE *mLogFile;
+
+    static LogFile *sLogFile;
 };
 
 #endif // Log_H

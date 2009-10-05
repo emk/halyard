@@ -42,6 +42,10 @@ void UpdateProgress(size_t steps_completed) {
     // Do nothing.
 }
 
+void ReportError(const char *message) {
+    // Do nothing.
+}
+
 #define CHECK_ENTRY(DIGEST,SIZE,PATH,ENTRIES) \
     do { \
         FileSet::EntrySet _e(ENTRIES); \

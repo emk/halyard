@@ -76,10 +76,11 @@ void UpdaterMain(size_t argc, const char **argv) {
         }
     } 
     
-    LogFile logger(path(argv[1], native) / "Updates" / "temp" / "log");
+    LogFile::InitLogFile(path(argv[1], native) / "Updates" / "temp" / "log");
+    LogFile *logger = LogFile::GetLogFile();
         
     try {
-        logger.Log("Checking if install is possible.");
+        logger->Log("Checking if install is possible.");
         UpdateInstaller installer = UpdateInstaller(path(argv[1], native),
                                                     path(argv[2], native));
 
@@ -89,20 +90,20 @@ void UpdaterMain(size_t argc, const char **argv) {
             // just relaunch the program.
             // TODO - On Vista, this will show a dialog claiming the update
             // was successful.
-            logger.Log("Update is impossible; relaunching.");
+            logger->Log("Update is impossible; relaunching.");
             LaunchProgram(false, argc, argv);
             exit(1);
         }
 
-        logger.Log("Install is possible; beginning install.");
+        logger->Log("Install is possible; beginning install.");
         installer.InstallUpdate();
     } catch (std::exception &e) {
-        logger.Log(format("Error: %s") % e.what(), LogFile::FATAL);
+        logger->Log(format("Error: %s") % e.what(), LogFile::FATAL);
     } catch (...) {
-        logger.Log("Unknown error.", LogFile::FATAL);
+        logger->Log("Unknown error.", LogFile::FATAL);
     }
 
-    logger.Log("Update installed successfully. Relaunching.");
+    logger->Log("Update installed successfully. Relaunching.");
     LaunchProgram(true, argc, argv);
 }
 
