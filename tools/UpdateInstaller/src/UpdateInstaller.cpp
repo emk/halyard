@@ -212,7 +212,10 @@ void UpdateInstaller::BuildDirectoryCleanupFileOperations() {
     FileSet::LowercaseFilenameSet directories_to_keep;
     BOOST_FOREACH(std::string filename, mUpdateFiles.LowercaseFilenames()) {
         path p(filename);
-        directories_to_keep.insert(p.parent_path().string());
+        while (p.has_parent_path()) {
+            p = p.parent_path();
+            directories_to_keep.insert(p.string());
+        }
     }
 
     // The directories that we would like to clean up.

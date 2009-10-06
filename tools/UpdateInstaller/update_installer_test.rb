@@ -335,7 +335,8 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
       fb.create_build("installed-program", "build-A",
                       :component => %w[Scripts/constant Scripts/changed
                                        Scripts/Capitalized/file
-                                       top-level deleted]) do |fb|
+                                       top-level deleted 
+                                       engine/win32/plt/foo/constant]) do |fb|
         fb.file "top-level", "some text"
         fb.file "deleted", "this should be deleted"
 
@@ -344,17 +345,21 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
           fb.file "changed", "old text"  
           fb.file "Capitalized/file", "a file in an uppercase dir"
         end
+
+        fb.file "engine/win32/plt/foo/constant", "this file should remain"
         
         # These are some extra files which need to be cleaned up
         fb.file "scripts/extra.ss", '(display "Hello, world!")'
         fb.file "collects/somedir/extra.zo", "stuff"
         fb.file "engine/win32/collects/extra.dep", "dep"
         fb.file "engine/win32/plt/another-extra.ss", "(* 3 4)"
+        fb.dir "collects/another-dir/deeply-nested/but-empty"
       end
       fb.create_build("new-version", "build-B",
                       :component => %w[scripts/constant scripts/changed
                                        scripts/capitalized/file
-                                       top-level new]) do |fb|
+                                       top-level new
+                                       engine/win32/plt/foo/constant]) do |fb|
         fb.file "top-level", "some text"
         fb.file "new", "this is new"
 
@@ -364,6 +369,8 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
           fb.file "changed", "new text"
           fb.file "capitalized/file", "a file in an uppercase dir"
         end
+
+        fb.file "engine/win32/plt/foo/constant", "this file should remain"
       end
       fb.create_download "download-dir", "build-B" do |fb|
         fb.pool_file "new text"
@@ -388,6 +395,7 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
     assert !File.exists?("installed-program/engine/win32/collects/extra.dep")
     assert !File.exists?("installed-program/engine/win32/plt/another-extra.ss")
     assert !File.exists?("installed-program/collects/somedir")
+    assert !File.exists?("installed-program/collects/another-dir")
 
     # Make sure we didn't delete any files that should still exist
     assert(File.exists?("installed-program/scripts/constant") ||
@@ -395,6 +403,7 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
     assert(File.exists?("installed-program/scripts/changed") ||
            File.exists?("installed-program/Scripts/changed"))
     assert File.exists?("installed-program/scripts/capitalized/file")
+    assert File.exists?("installed-program/engine/win32/plt/foo/constant")
   end
 
   def test_cleanup_works_if_unexpected_files_in_non_empty_directory
