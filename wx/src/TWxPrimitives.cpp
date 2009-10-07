@@ -53,6 +53,7 @@
 #include "BrowserElement.h"
 #include "EditBox.h"
 #include "ListBox.h"
+#include "PopUpMenu.h"
 #include "TStateDB.h"
 #include "dlg/MultiButtonDlg.h"
 #include "UrlRequest.h"
@@ -931,6 +932,31 @@ DEFINE_PRIMITIVE(MoveElementTo) {
     elem->MoveTo(TToWxPoint(p));
 }
 
+DEFINE_PRIMITIVE(PopUpMenu) {
+    std::string name;
+    TCallbackPtr dispatcher;
+    TRect bounds;
+    TValueList items;
+
+    inArgs >> SymbolName(name) >> dispatcher >> bounds >> items;
+
+    shared_ptr<PopUpMenu> menu =
+        R(new PopUpMenu(ToWxString(name), dispatcher, TToWxRect(bounds)));
+
+    for (size_t i = 0; i < items.size(); ++i) {
+        std::string item(tvalue_cast<std::string>(items[i]));
+        menu->AddItem(ToWxString(item));
+    }
+}
+
+DEFINE_PRIMITIVE(PopUpMenuGetSelection) {
+    std::string name;
+
+    inArgs >> SymbolName(name);
+    FIND_NODE(PopUpMenu, menu, ToWxString(name));
+    ::SetPrimitiveResult(menu->GetSelection());
+}
+
 DEFINE_PRIMITIVE(RaiseToTop) {
     std::string name;
     inArgs >> SymbolName(name);
@@ -1245,6 +1271,8 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(Overlay);
     REGISTER_PRIMITIVE(OverlaySetShape);
     REGISTER_PRIMITIVE(OverlayAnimated);
+    REGISTER_PRIMITIVE(PopUpMenu);
+    REGISTER_PRIMITIVE(PopUpMenuGetSelection);
     REGISTER_PRIMITIVE(RaiseToTop);
     REGISTER_PRIMITIVE(Refresh);
     REGISTER_PRIMITIVE(RefreshSplashScreen);

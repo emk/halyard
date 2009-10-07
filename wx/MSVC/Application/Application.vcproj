@@ -507,6 +507,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\PopUpMenu.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\dlg\ProgramPropDlg.cpp"
 				>
 			</File>
@@ -837,6 +841,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\Overlay.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\PopUpMenu.h"
 				>
 			</File>
 			<File

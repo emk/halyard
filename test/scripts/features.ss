@@ -1,5 +1,6 @@
 ;; PORTED
 (module features (lib "halyard.ss" "halyard")
+  (require (lib "pop-up-menu.ss" "halyard"))
   (require (lib "drag.ss" "halyard"))
   (require (lib "q-and-a.ss" "halyard"))
   (require (lib "animate.ss" "halyard"))
@@ -41,6 +42,17 @@
       )
 
     (text list-box-output ((below (.list) 10) $text16 ""))
+
+    (pop-up-menu choices ((rect 300 50 450 70)
+                          '("Foo" "Bar" "Baz" "Moby" "Quux"))
+      (def (display label value)
+        (set! (.parent.choices-output.text) (cat label ": " value)))
+
+      (def (item-selection event)
+        (.display "Chosen" (nth (.items) (.selection))))
+      )
+
+    (text choices-output ((below (.choices) 10) $text16 ""))
     )
 
   (card /features/text-formatting
