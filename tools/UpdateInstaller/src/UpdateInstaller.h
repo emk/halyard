@@ -74,6 +74,21 @@ protected:
     bool mShouldExist;
 };
 
+// Represents a rename "in-place"; that is, a renaming of a file
+// name to the same name in different case.  This differs from
+// FileTransfer above, which deletes any file at the destination
+// before running, which we can't do for what should be obvious
+// reasons.
+class CaseRename : public FileOperation {
+public: 
+    CaseRename(const path &inSource, const path &inDest) 
+        : mSource(inSource), mDest(inDest) { }
+    virtual bool IsPossible() const;
+    virtual void Perform() const;
+protected:
+    path mSource, mDest;
+};
+
 class UpdateInstaller {
 public:
     UpdateInstaller(const path &src_root, const path &dst_root);
@@ -139,16 +154,19 @@ private:
     // screw up even further.
     bool mUpdateIsPossible;
 
+    typedef boost::unordered_set<std::string> DirectorySet;
+    typedef FileSet::LowercaseFilenameMap::value_type FilenameEntryPair;
+
     void CalculateFileSetsForUpdates();
     void BuildFileOperationVector();
     void BuildTreeToPoolFileOperations();
     void BuildPoolToTreeFileOperations();
     void BuildUpdaterSpecialFileOperations();
     void BuildDirectoryCleanupFileOperations();
-    bool BuildCleanupRecursive(const FileSet::LowercaseFilenameSet &known_files, 
+    bool BuildCleanupRecursive(const FileSet::LowercaseFilenameMap &known_files,
                                path dir, 
-                               const FileSet::LowercaseFilenameSet 
-                                 &directories_to_keep);
+                               const DirectorySet &directories_to_keep);
+    void BuildCaseRenameFileOperations();
 
     void MarkUpdateImpossible(const std::string &reason);
 

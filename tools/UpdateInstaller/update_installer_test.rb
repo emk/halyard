@@ -335,11 +335,14 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
       fb.create_build("installed-program", "build-A",
                       :component => %w[Scripts/constant Scripts/changed
                                        Scripts/Capitalized/file
-                                       top-level deleted 
-                                       engine/win32/plt/foo/constant]) do |fb|
+                                       top-level deleted
+                                       engine/win32/plt/foo/constant
+                                       lower/UPPER dir/UPPER/lower]) do |fb|
         fb.file "top-level", "some text"
         fb.file "deleted", "this should be deleted"
-
+        fb.file "lower/UPPER", "should be downcased"
+        fb.file "dir/UPPER/lower", "the dir should be downcased"
+        
         fb.dir "Scripts" do |fb|
           fb.file "constant", "constant"
           fb.file "changed", "old text"  
@@ -359,9 +362,12 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
                       :component => %w[scripts/constant scripts/changed
                                        scripts/capitalized/file
                                        top-level new
-                                       engine/win32/plt/foo/constant]) do |fb|
+                                       engine/win32/plt/foo/constant
+                                       lower/upper dir/upper/lower]) do |fb|
         fb.file "top-level", "some text"
         fb.file "new", "this is new"
+        fb.file "lower/upper", "should be downcased"
+        fb.file "dir/upper/lower", "the dir should be downcased"
 
         # Note that the case has changed on the scripts directory
         fb.dir "scripts" do |fb|
@@ -428,5 +434,24 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
     assert File.exists?("installed-program/collects/somedir/important.doc")
     assert File.exists?("installed-program/deleted")
     assert !File.exists?("installed-program/new")
+  end
+
+  def test_case_rename_of_leaf_nodes
+    # This should work without doing any special work, as our updater code
+    # should see this simply as a file move from lower/UPPER to lower/upper,
+    # and move the file to the pool before moving it back into the tree.
+    assert_equal(["installed-program/lower/UPPER"], 
+                 Dir["installed-program/lower/*"])
+    assert run_exe("download-dir", "installed-program")
+    assert_equal(["installed-program/lower/upper"], 
+                 Dir["installed-program/lower/*"])
+  end
+
+  def test_case_rename_of_directories
+    assert_equal(["installed-program/dir/UPPER"], 
+                 Dir["installed-program/dir/*"])
+    assert run_exe("download-dir", "installed-program")
+    assert_equal(["installed-program/dir/upper"], 
+                 Dir["installed-program/dir/*"])    
   end
 end

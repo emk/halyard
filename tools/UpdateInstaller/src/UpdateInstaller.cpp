@@ -117,6 +117,7 @@ void UpdateInstaller::BuildFileOperationVector() {
     BuildPoolToTreeFileOperations();
     BuildUpdaterSpecialFileOperations();
     BuildDirectoryCleanupFileOperations();
+    BuildCaseRenameFileOperations();
 }
 
 void UpdateInstaller::BuildTreeToPoolFileOperations() {
@@ -193,10 +194,10 @@ void UpdateInstaller::BuildDirectoryCleanupFileOperations() {
     // Don't touch any files that we know about, in the existing files or
     // update files lists.  Those files will be dealt with by other portions
     // of the updater.
-    FileSet::LowercaseFilenameSet 
-        known_files(mExistingFiles.LowercaseFilenames());
-    known_files.insert(mUpdateFiles.LowercaseFilenames().begin(), 
-                       mUpdateFiles.LowercaseFilenames().end());
+    FileSet::LowercaseFilenameMap 
+        known_files(mExistingFiles.LowercaseFilenameEntryMap());
+    known_files.insert(mUpdateFiles.LowercaseFilenameEntryMap().begin(), 
+                       mUpdateFiles.LowercaseFilenameEntryMap().end());
 
     // The set of directories that we should have after we finish updating.
     // We should delete any extra directories that aren't in this set that
@@ -209,8 +210,10 @@ void UpdateInstaller::BuildDirectoryCleanupFileOperations() {
     // downcase the paths on disk that we pass in to compare, because
     // this set contains names only from the update manifest, which may
     // differ in case from the files on disk.
-    FileSet::LowercaseFilenameSet directories_to_keep;
-    BOOST_FOREACH(std::string filename, mUpdateFiles.LowercaseFilenames()) {
+    DirectorySet directories_to_keep;
+    BOOST_FOREACH(FilenameEntryPair file, 
+                  mUpdateFiles.LowercaseFilenameEntryMap()) {
+        std::string filename(file.first);
         path p(filename);
         while (p.has_parent_path()) {
             p = p.parent_path();
@@ -232,9 +235,9 @@ void UpdateInstaller::BuildDirectoryCleanupFileOperations() {
 }
 
 bool UpdateInstaller::BuildCleanupRecursive
-    (const FileSet::LowercaseFilenameSet &known_files,
+    (const FileSet::LowercaseFilenameMap &known_files,
      path dir, 
-     const FileSet::LowercaseFilenameSet &directories_to_keep)
+     const DirectorySet &directories_to_keep)
 {
     if (!exists(dir)) return false;
 
@@ -290,6 +293,40 @@ bool UpdateInstaller::BuildCleanupRecursive
     }
 
     return contains_undeletable_files;
+}
+
+void UpdateInstaller::BuildCaseRenameFileOperations() {
+    DirectorySet directories_seen;
+
+    // For every file we expect to have after the update
+    BOOST_FOREACH(FilenameEntryPair update_file,
+                  mUpdateFiles.LowercaseFilenameEntryMap()) {
+        // If it exists (case-insensitively) on disk already
+        FileSet::LowercaseFilenameMap::const_iterator existing;
+        existing = 
+            mExistingFiles.LowercaseFilenameEntryMap().find(update_file.first);
+        if (existing != mExistingFiles.LowercaseFilenameEntryMap().end()) {
+            // Walk up to each of its parent directories
+            path existing_path(existing->second.path());
+            path update_path(update_file.second.path());
+            while (existing_path.has_parent_path() && 
+                   update_path.has_parent_path()) {
+                existing_path = existing_path.parent_path();
+                update_path = update_path.parent_path();
+                // If we haven't seen these yet
+                if (directories_seen.count(existing_path.string()) == 0) {
+                    directories_seen.insert(existing_path.string());
+                    
+                    // Then add a move operation from the old filename to
+                    // the new.
+                    FileOperation::Ptr 
+                        operation(new CaseRename(mDestRoot / existing_path,
+                                                 mDestRoot / update_path));
+                    mOperations.push_back(operation);
+                }
+            }
+        }
+    }
 }
 
 bool UpdateInstaller::FileShouldBeInPool(const FileSet::Entry &e) {
@@ -460,6 +497,15 @@ void FileTransfer::Perform() const {
     if (exists(mDest))
         remove(mDest);
     CopyFileWithRetries(mSource, mDest, mMove);
+    TouchFile(mDest);
+}
+
+bool CaseRename::IsPossible() const {
+    return (exists(mSource) && exists(mDest));
+}
+
+void CaseRename::Perform() const {
+    CopyFileWithRetries(mSource, mDest, true);
     TouchFile(mDest);
 }
 

@@ -133,7 +133,8 @@ void FileSet::AddEntry(const FileSet::Entry &entry) {
     std::string lowercase_path(entry.path());
     std::transform(lowercase_path.begin(), lowercase_path.end(), 
                    lowercase_path.begin(), ::tolower);
-    mLowercaseFilenames.insert(lowercase_path);
+    mLowercaseFilenameMap.insert(
+        LowercaseFilenameMap::value_type(lowercase_path, entry));
 }
 
 std::string read_file(const boost::filesystem::path &path) {
