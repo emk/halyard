@@ -27,6 +27,22 @@
     (browser browser ((rect 10 230 790 590) "sample.html"))
     )
 
+  (card /features/more-controls (%standard-test-card% :title "More Controls")
+    (list-box list ((rect 50 50 200 300)
+                    '("Foo" "Bar" "Baz" "Moby" "Quux"))
+      (def (display label value)
+        (set! (.parent.list-box-output.text) (cat label ": " value)))
+
+      (def (item-double-click event)
+        (.display "Double-clicked" (nth (.items) (car (.selection)))))
+
+      (def (item-selection event)
+        (.display "Selected" (nth (.items) (car (.selection)))))
+      )
+
+    (text list-box-output ((below (.list) 10) $text16 ""))
+    )
+
   (card /features/text-formatting
       (%standard-test-card% :title "Text Formatting")
     (text format-demo

@@ -229,6 +229,14 @@ bool EventDispatcher::DoEventTextEnter(wxCommandEvent &inEvent) {
     return DoSimpleEvent("text-enter");
 }
 
+bool EventDispatcher::DoEventItemSelected(wxCommandEvent &inEvent) {
+    return DoSimpleEvent("item-selection");
+}
+
+bool EventDispatcher::DoEventItemDoubleClick(wxCommandEvent &inEvent) {
+    return DoSimpleEvent("item-double-click");
+}
+
 bool EventDispatcher::DoEventBrowserNavigate(const wxString &inUrl,
                                              bool &outWasVetoed)
 {

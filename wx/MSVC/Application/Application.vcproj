@@ -459,6 +459,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\ListBox.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\Listener.cpp"
 				>
 			</File>
@@ -785,6 +789,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\LightweightElement.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\ListBox.h"
 				>
 			</File>
 			<File

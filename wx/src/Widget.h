@@ -63,7 +63,7 @@ public:
     Widget(const wxString &inName, wxWindow *inWindow);
 
     /// Destroy the widget.
-    ~Widget();
+    virtual ~Widget();
 
     /// Get the bounding rectangle for the widget.
     virtual wxRect GetRect();

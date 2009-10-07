@@ -1188,6 +1188,32 @@
 
   
   ;;;======================================================================
+  ;;;  List box
+  ;;;======================================================================
+
+  (provide %list-box% list-box)
+
+  ;;; A native GUI list box.
+  (define-class %list-box% (%widget%)
+    (attr items :type <list> #| of strings |#)
+
+    (def (create-engine-node)
+      (call-prim 'ListBox (.full-name)
+                 (make-node-event-dispatcher self)
+                 (parent->card self (.rect))
+                 (.items)))
+
+    ;;; Get the 0-based indices of the currently selected items in this
+    ;;; list box.
+    (def (selection)
+      (call-prim 'ListBoxGetSelection (.full-name)))
+    )
+    
+  ;;; Declare a %edit-box% object.
+  (define-node-helper list-box (rect items) %list-box%)
+
+
+  ;;;======================================================================
   ;;;  Generic Media Support
   ;;;======================================================================
 

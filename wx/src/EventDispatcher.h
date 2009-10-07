@@ -92,6 +92,12 @@ public:
     /// Dispatch a TextEnter event.
     bool DoEventTextEnter(wxCommandEvent &inEvent);
 
+    /// Dispatch an item selected event.
+    bool DoEventItemSelected(wxCommandEvent &inEvent);
+
+    /// Dispatch an item selected event.
+    bool DoEventItemDoubleClick(wxCommandEvent &inEvent);
+
     /// Dispatch a BrowserNavigate event.  This occurs before loading a new
     /// page, and it may be vetoed.
     bool DoEventBrowserNavigate(const wxString &inUrl, bool &outWasVetoed);

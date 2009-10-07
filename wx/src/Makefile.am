@@ -97,6 +97,7 @@ halyard_SOURCES = \
 	InvisibleElement.h \
 	LightweightAccessible.cpp LightweightAccessible.h \
 	LightweightElement.cpp LightweightElement.h \
+	ListBox.cpp ListBox.h \
 	Listener.cpp Listener.h \
 	LocationBox.cpp LocationBox.h \
 	MediaElement.cpp MediaElement.h \

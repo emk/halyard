@@ -165,7 +165,7 @@ Halyard is a language for card-based interactive multimedia programming."
                  (t 'font-lock-variable-name-face))))
       
       ;; Cards.
-      (list "(\\(\\(test-\\)?\\(group\\|sequence\\|box\\|clickable-zone\\|text-box\\|text\\|graphic\\|rectangle\\|rectangle-outline\\|sprite\\|browser\\|edit-box\\|geiger-audio\\|sine-wave\\|vorbis-audio\\|movie\\|card\\|elem\\)\\)\\> *\\(\\sw+\\)\\>"
+      (list "(\\(\\(test-\\)?\\(group\\|sequence\\|box\\|clickable-zone\\|text-box\\|text\\|graphic\\|rectangle\\|rectangle-outline\\|sprite\\|browser\\|edit-box\\|geiger-audio\\|sine-wave\\|vorbis-audio\\|movie\\|list-box\\|card\\|elem\\)\\)\\> *\\(\\sw+\\)\\>"
             '(1 font-lock-keyword-face)
             '(4 font-lock-function-name-face))
       
