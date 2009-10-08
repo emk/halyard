@@ -325,6 +325,7 @@ void UpdateInstaller::BuildCaseRenameFileOperations() {
 UpdateInstaller::DirectoryNameMap 
 UpdateInstaller::DirectoriesForFiles(const FilenameSet &files) 
 {
+    // See comment in FileSet.h on named return value optimization.
     DirectoryNameMap directories;
     BOOST_FOREACH(std::string filename, files) {
         path p(filename);

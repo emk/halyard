@@ -48,22 +48,16 @@ void LaunchProgram(bool update_succeeded, size_t argc, const char **argv) {
         path executable(argv[3], native);
         path base(argv[1], native);
         if (!exists(executable)) {
-            char *paths[] = {"", "engine/win32"};
-            char *exe_names[] = {"Halyard", "Tamale"};
-            char *suffixes[] = {".exe", "_d.exe"};
+            char *paths[] = {"Tamale.exe", "engine/win32/Halyard.exe"};
             for (int i = 0; i < 2; ++i) {
-                for (int j = 0; j < 2; ++j) {
-                    for (int k = 0; k < 2; ++k) {
-                        std::string filename(std::string(exe_names[j]) + 
-                                             suffixes[k]);
-                        path exe(base / paths[i] / filename);
-                        if (exists(exe))
-                            executable = exe;
-                    }
+                path exe(base / paths[i]);
+                if (exists(exe)) {
+                    executable = exe;
+                    break;
                 }
             }
         }
-        //__debugbreak();
+
         CommandLine cl(argc-4, const_cast<char**>(argv+4));
         if (!CommandLine::ExecAsync(executable.file_string().c_str(), cl)) {
             printf("Error: Couldn't launch external process: %s\n",

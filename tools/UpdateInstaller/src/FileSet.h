@@ -64,6 +64,17 @@ public:
     
     FileSet() {}
     
+    // Note: These return relatively sizeable collections, which would
+    // normally be expensive as they would need to be copied onto the
+    // stack to return.  However, C++ allows return values to be optimized
+    // and not actually invoke the copy constructor, which Visual Studio
+    // 2005 appears to implement, even for the slightly more complicated
+    // case of named return value optimization, so we'll let the compiler
+    // deal with this.
+    // See for more information:
+    // * http://msdn.microsoft.com/en-us/library/ms364057(VS.80).aspx
+    // * http://www.parashift.com/c++-faq-lite/ctors.html#faq-10.9
+    // * http://en.wikipedia.org/wiki/Return_value_optimization
     static FileSet FromManifestFile(const boost::filesystem::path &path);
     static FileSet FromContents(const std::string &contents);
     static FileSet FromManifestsInDir(const boost::filesystem::path &path);
