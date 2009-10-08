@@ -459,6 +459,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\ListBox.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\Listener.cpp"
 				>
 			</File>
@@ -500,6 +504,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\Overlay.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\PopUpMenu.cpp"
 				>
 			</File>
 			<File
@@ -788,6 +796,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\ListBox.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\Listener.h"
 				>
 			</File>
@@ -829,6 +841,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\Overlay.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\PopUpMenu.h"
 				>
 			</File>
 			<File

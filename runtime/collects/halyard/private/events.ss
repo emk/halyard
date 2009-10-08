@@ -304,6 +304,8 @@
            (%transfer-finished-event% .new
              :succeeded? (car args)
              :message (cadr args))]
+          [[item-selection item-double-click]
+           (%event% .new)]
           [else
            (logger 'error 'halyard.event "Unsupported event type: " name)]))
       (send self name event)

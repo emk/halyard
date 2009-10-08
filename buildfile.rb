@@ -152,7 +152,18 @@ heading 'Building and testing engine.', :name => :build do
     run 'rake', 'test/binaries/gpgv.exe'
     run 'rake', 'libs'
     run 'rake', 'test'
-    # TODO - optionally sign the binaries
+
+    # Sign the binaries.  The update installer is the most important file
+    # here.
+    Dir['runtime/*.{exe,dll}'].each do |file|
+      if file =~ /UpdateInstaller/
+        sign_file(file, 'Software update installer',
+                  'http://iml.dartmouth.edu/halyard/')
+      else
+        sign_file(file, 'Halyard multimedia engine',
+                  'http://iml.dartmouth.edu/halyard/')
+      end
+    end
 
     # Freeze our runtime into test/engine/win32, which we can then use
     # as a basis for releasing to Git and halyard-test.

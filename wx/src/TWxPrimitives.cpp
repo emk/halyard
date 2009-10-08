@@ -52,6 +52,8 @@
 #include "CommonWxConv.h"
 #include "BrowserElement.h"
 #include "EditBox.h"
+#include "ListBox.h"
+#include "PopUpMenu.h"
 #include "TStateDB.h"
 #include "dlg/MultiButtonDlg.h"
 #include "UrlRequest.h"
@@ -112,9 +114,10 @@ static void register_node(shared_ptr<N> node_ptr) {
 
 // A wrapper around register_node which creates the necessary shared_ptr.
 template <typename N>
-static N *R(N *node) {
-    register_node(NodePtr(node));
-    return node;
+static shared_ptr<N> R(N *node) {
+    shared_ptr<N> node_ptr(node);
+    register_node(node_ptr);
+    return node_ptr;
 }
 
 #define CHECK_SUSPEND_OK(PRIMNAME) \
@@ -219,7 +222,7 @@ DEFINE_PRIMITIVE(GeigerSynth) {
     inArgs >> SymbolName(name) >> SymbolName(state_path) >> chirp_location
            >> volume >> buffer_size;
 
-    GeigerSynthElement *element =
+    shared_ptr<GeigerSynthElement> element =
         R(new GeigerSynthElement(ToWxString(name),
                                  state_path, ToWxString(chirp_location.c_str()),
                                  1000, volume));
@@ -683,6 +686,40 @@ DEFINE_PRIMITIVE(LaunchUpdateInstallerBeforeExiting) {
     wxGetApp().LaunchUpdateInstallerBeforeExiting();
 }
 
+DEFINE_PRIMITIVE(ListBox) {
+    std::string name;
+    TCallbackPtr dispatcher;
+    TRect bounds;
+    TValueList items;
+
+    inArgs >> SymbolName(name) >> dispatcher >> bounds >> items;
+
+    shared_ptr<ListBox> box =
+        R(new ListBox(ToWxString(name), dispatcher, TToWxRect(bounds)));
+
+    for (size_t i = 0; i < items.size(); ++i) {
+        std::string item(tvalue_cast<std::string>(items[i]));
+        box->AddItem(ToWxString(item));
+    }
+}
+
+DEFINE_PRIMITIVE(ListBoxGetSelection) {
+    std::string name;
+
+    inArgs >> SymbolName(name);
+    FIND_NODE(ListBox, list, ToWxString(name));
+    wxArrayInt selection;
+    list->GetSelection(selection);
+
+    // Convert selection to a TValueList.
+    TValueList result;
+    wxArrayInt::iterator i(selection.begin());
+    for (; i != selection.end(); ++i)
+        result.push_back(*i);
+    ::SetPrimitiveResult(result);
+}
+
+
 /*---------------------------------------------------------------------
     (LOADPIC PICTURE X Y <FLAGS...>)
 
@@ -893,6 +930,31 @@ DEFINE_PRIMITIVE(MoveElementTo) {
     inArgs >> SymbolName(name) >> p;
     FIND_NODE(Element, elem, ToWxString(name));
     elem->MoveTo(TToWxPoint(p));
+}
+
+DEFINE_PRIMITIVE(PopUpMenu) {
+    std::string name;
+    TCallbackPtr dispatcher;
+    TRect bounds;
+    TValueList items;
+
+    inArgs >> SymbolName(name) >> dispatcher >> bounds >> items;
+
+    shared_ptr<PopUpMenu> menu =
+        R(new PopUpMenu(ToWxString(name), dispatcher, TToWxRect(bounds)));
+
+    for (size_t i = 0; i < items.size(); ++i) {
+        std::string item(tvalue_cast<std::string>(items[i]));
+        menu->AddItem(ToWxString(item));
+    }
+}
+
+DEFINE_PRIMITIVE(PopUpMenuGetSelection) {
+    std::string name;
+
+    inArgs >> SymbolName(name);
+    FIND_NODE(PopUpMenu, menu, ToWxString(name));
+    ::SetPrimitiveResult(menu->GetSelection());
 }
 
 DEFINE_PRIMITIVE(RaiseToTop) {
@@ -1181,6 +1243,8 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(UrlRequestStart);
     REGISTER_PRIMITIVE(IsVistaOrNewer);
     REGISTER_PRIMITIVE(LaunchUpdateInstallerBeforeExiting);
+    REGISTER_PRIMITIVE(ListBox);
+    REGISTER_PRIMITIVE(ListBoxGetSelection);
     REGISTER_PRIMITIVE(LoadGraphic);
     REGISTER_PRIMITIVE(MarkUnprocessedEventsAsStale);
     REGISTER_PRIMITIVE(Mask);
@@ -1207,6 +1271,8 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(Overlay);
     REGISTER_PRIMITIVE(OverlaySetShape);
     REGISTER_PRIMITIVE(OverlayAnimated);
+    REGISTER_PRIMITIVE(PopUpMenu);
+    REGISTER_PRIMITIVE(PopUpMenuGetSelection);
     REGISTER_PRIMITIVE(RaiseToTop);
     REGISTER_PRIMITIVE(Refresh);
     REGISTER_PRIMITIVE(RefreshSplashScreen);

@@ -97,6 +97,7 @@ halyard_SOURCES = \
 	InvisibleElement.h \
 	LightweightAccessible.cpp LightweightAccessible.h \
 	LightweightElement.cpp LightweightElement.h \
+	ListBox.cpp ListBox.h \
 	Listener.cpp Listener.h \
 	LocationBox.cpp LocationBox.h \
 	MediaElement.cpp MediaElement.h \
@@ -106,6 +107,7 @@ halyard_SOURCES = \
 	MovieWindowQT.cpp MovieWindowQT.h \
 	Node.cpp Node.h \
 	Overlay.cpp Overlay.h \
+	PopUpMenu.cpp PopUpMenu.h \
 	ProgramTree.cpp ProgramTree.h \
 	resources.cpp \
 	ScriptEditor.cpp ScriptEditor.h \

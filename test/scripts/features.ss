@@ -1,5 +1,6 @@
 ;; PORTED
 (module features (lib "halyard.ss" "halyard")
+  (require (lib "pop-up-menu.ss" "halyard"))
   (require (lib "drag.ss" "halyard"))
   (require (lib "q-and-a.ss" "halyard"))
   (require (lib "animate.ss" "halyard"))
@@ -25,6 +26,33 @@
     (edit-box single-line
         ((rect 330 120 790 220) "Hello!  Single-line."))
     (browser browser ((rect 10 230 790 590) "sample.html"))
+    )
+
+  (card /features/more-controls (%standard-test-card% :title "More Controls")
+    (list-box list ((rect 50 50 200 300)
+                    '("Foo" "Bar" "Baz" "Moby" "Quux"))
+      (def (display label value)
+        (set! (.parent.list-box-output.text) (cat label ": " value)))
+
+      (def (item-double-click event)
+        (.display "Double-clicked" (nth (.items) (car (.selection-list)))))
+
+      (def (item-selection event)
+        (.display "Selected" (nth (.items) (car (.selection-list)))))
+      )
+
+    (text list-box-output ((below (.list) 10) $text16 ""))
+
+    (pop-up-menu choices ((rect 300 50 450 70)
+                          '("Foo" "Bar" "Baz" "Moby" "Quux"))
+      (def (display label value)
+        (set! (.parent.choices-output.text) (cat label ": " value)))
+
+      (def (item-selection event)
+        (.display "Chosen" (nth (.items) (.selection))))
+      )
+
+    (text choices-output ((below (.choices) 10) $text16 ""))
     )
 
   (card /features/text-formatting

@@ -45,7 +45,8 @@
 
   ;; Load the engine-dependent, subject-to-change API.
   (require (lib "elements.ss" "halyard/private"))
-  (provide (all-from (lib "elements.ss" "halyard/private")))
+  (provide (all-from-except (lib "elements.ss" "halyard/private")
+                            %widget%))
 
   ;; Make sure that this code has been loaded before we start defining any
   ;; user code that might need to set SKIP-WHEN-JUMPING-TO-EACH-CARD?.  We
