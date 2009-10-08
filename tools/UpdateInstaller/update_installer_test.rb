@@ -149,6 +149,26 @@ EOF
     assert !File.exists?("Updates/temp/log")
   end
 
+  def find_cmd_exe
+    `which cmd.exe`.chomp    
+  end
+
+  def test_launch_program
+    FileUtils.cp(find_cmd_exe, "Test.exe")
+    assert_run_exe(".", ".", "Test",  "/C echo hello > command-output")
+    sleep 2 # give the executable a chance to run
+    assert_file_contains "hello", "command-output"    
+  end
+
+  def test_find_new_program
+    FixtureBuilder.new.dir("engine/win32") do |fb|
+      FileUtils.cp(find_cmd_exe, "Halyard.exe")
+    end
+    assert_run_exe(".", ".", "Tamale",  "/C echo hello > command-output")
+    sleep 2
+    assert_file_contains "hello", "command-output"
+  end
+
   # This test case passes, but only with manual interaction.  For
   # simplicity, I've disabled it for now.  Feel free to re-enable.
   #def test_should_not_install_to_directory_without_release_spec
