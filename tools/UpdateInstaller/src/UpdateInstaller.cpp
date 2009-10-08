@@ -210,16 +210,13 @@ void UpdateInstaller::BuildDirectoryCleanupFileOperations() {
     // downcase the paths on disk that we pass in to compare, because
     // this set contains names only from the update manifest, which may
     // differ in case from the files on disk.
-    DirectorySet directories_to_keep;
+    FilenameSet files;
     BOOST_FOREACH(FilenameEntryPair file, 
                   mUpdateFiles.LowercaseFilenameEntryMap()) {
-        std::string filename(file.first);
-        path p(filename);
-        while (p.has_parent_path()) {
-            p = p.parent_path();
-            directories_to_keep.insert(p.string());
-        }
+        files.insert(file.first);
     }
+
+    DirectoryNameMap directories_to_keep(DirectoriesForFiles(files));
 
     // The directories that we would like to clean up.
     std::vector<path> dirs;
@@ -237,7 +234,7 @@ void UpdateInstaller::BuildDirectoryCleanupFileOperations() {
 bool UpdateInstaller::BuildCleanupRecursive
     (const FileSet::LowercaseFilenameMap &known_files,
      path dir, 
-     const DirectorySet &directories_to_keep)
+     const DirectoryNameMap &directories_to_keep)
 {
     if (!exists(dir)) return false;
 
@@ -296,37 +293,52 @@ bool UpdateInstaller::BuildCleanupRecursive
 }
 
 void UpdateInstaller::BuildCaseRenameFileOperations() {
-    DirectorySet directories_seen;
+    FilenameSet existing_files, update_files;
+    BOOST_FOREACH(FileSet::Entry file, mExistingFiles.Entries()) {
+        existing_files.insert(file.path());
+    }
+    BOOST_FOREACH(FileSet::Entry file, mUpdateFiles.Entries()) {
+        update_files.insert(file.path());
+    }
+    // Calculate maps from lowercase filenames to filenames with case,
+    // for both the update and existing directories.
+    DirectoryNameMap existing_dirs(DirectoriesForFiles(existing_files));
+    DirectoryNameMap update_dirs(DirectoriesForFiles(update_files));
 
-    // For every file we expect to have after the update
-    BOOST_FOREACH(FilenameEntryPair update_file,
-                  mUpdateFiles.LowercaseFilenameEntryMap()) {
-        // If it exists (case-insensitively) on disk already
-        FileSet::LowercaseFilenameMap::const_iterator existing;
-        existing = 
-            mExistingFiles.LowercaseFilenameEntryMap().find(update_file.first);
-        if (existing != mExistingFiles.LowercaseFilenameEntryMap().end()) {
-            // Walk up to each of its parent directories
-            path existing_path(existing->second.path());
-            path update_path(update_file.second.path());
-            while (existing_path.has_parent_path() && 
-                   update_path.has_parent_path()) {
-                existing_path = existing_path.parent_path();
-                update_path = update_path.parent_path();
-                // If we haven't seen these yet
-                if (directories_seen.count(existing_path.string()) == 0) {
-                    directories_seen.insert(existing_path.string());
-                    
-                    // Then add a move operation from the old filename to
-                    // the new.
-                    FileOperation::Ptr 
-                        operation(new CaseRename(mDestRoot / existing_path,
-                                                 mDestRoot / update_path));
-                    mOperations.push_back(operation);
-                }
-            }
+    // For every directory we expect to have after the update
+    BOOST_FOREACH(DirectoryNameMap::value_type update_dir, update_dirs) {
+        DirectoryNameMap::const_iterator existing_dir_iter;
+        existing_dir_iter = existing_dirs.find(update_dir.first);
+        // If we don't have a directory on disk that matches case insensitively,
+        // we're all set.
+        if (existing_dir_iter == existing_dirs.end()) continue;
+        // If we do, but it mateches case sensitively as well, we're all set.
+        if (existing_dir_iter->second == update_dir.second) continue;
+        // Otherwise, add a case rename operation from the old name to the new.
+        FileOperation::Ptr 
+            operation(new CaseRename(mDestRoot / existing_dir_iter->second,
+                                     mDestRoot / update_dir.second));
+        mOperations.push_back(operation);
+    }
+}
+
+UpdateInstaller::DirectoryNameMap 
+UpdateInstaller::DirectoriesForFiles(const FilenameSet &files) 
+{
+    DirectoryNameMap directories;
+    BOOST_FOREACH(std::string filename, files) {
+        path p(filename);
+        while (p.has_parent_path()) {
+            p = p.parent_path();
+            std::string str(p.string());
+            std::string lower(str);
+            std::transform(lower.begin(), lower.end(), lower.begin(), 
+                           ::tolower);
+            directories.insert(DirectoryNameMap::value_type(lower, str));
         }
     }
+    
+    return directories;
 }
 
 bool UpdateInstaller::FileShouldBeInPool(const FileSet::Entry &e) {

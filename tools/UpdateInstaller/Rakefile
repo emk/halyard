@@ -8,7 +8,7 @@ task :test => :build do
 end
 
 task :build do
-  VisualStudioDotNet.build "UpdateInstaller.vcproj", "Release"
+  VisualStudioDotNet.build "UpdateInstaller.vcproj", "Debug"
   FileUtils.cd "test" do
     VisualStudioDotNet.build "UpdateInstallerTest.vcproj", "Debug"
   end

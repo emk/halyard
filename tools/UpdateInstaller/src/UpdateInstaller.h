@@ -154,7 +154,8 @@ private:
     // screw up even further.
     bool mUpdateIsPossible;
 
-    typedef boost::unordered_set<std::string> DirectorySet;
+    typedef boost::unordered_set<std::string> FilenameSet;
+    typedef boost::unordered_map<std::string,std::string> DirectoryNameMap;
     typedef FileSet::LowercaseFilenameMap::value_type FilenameEntryPair;
 
     void CalculateFileSetsForUpdates();
@@ -165,8 +166,9 @@ private:
     void BuildDirectoryCleanupFileOperations();
     bool BuildCleanupRecursive(const FileSet::LowercaseFilenameMap &known_files,
                                path dir, 
-                               const DirectorySet &directories_to_keep);
+                               const DirectoryNameMap &directories_to_keep);
     void BuildCaseRenameFileOperations();
+    DirectoryNameMap DirectoriesForFiles(const FilenameSet &files);
 
     void MarkUpdateImpossible(const std::string &reason);
 

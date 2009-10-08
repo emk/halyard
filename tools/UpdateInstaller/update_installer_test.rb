@@ -71,8 +71,17 @@ class UpdateInstallerTest < Test::Unit::TestCase
     assert_file_equals pn.read, file2
   end
 
+  def assert_run_exe *args
+    status = run_exe *args
+    unless status
+      logfile = Pathname.new(args[0]) + "Updates/temp/log"
+      puts(logfile.read)
+      flunk "Updating failed!"
+    end
+  end
+
   def exe_path
-    "../../../runtime/UpdateInstaller.exe"
+    "../../../runtime/UpdateInstaller_d.exe"
   end
 
   def run_exe *args
@@ -337,7 +346,8 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
                                        Scripts/Capitalized/file
                                        top-level deleted
                                        engine/win32/plt/foo/constant
-                                       lower/UPPER dir/UPPER/lower]) do |fb|
+                                       lower/UPPER dir/UPPER/lower
+                                       dir/UPPER-2/deleted]) do |fb|
         fb.file "top-level", "some text"
         fb.file "deleted", "this should be deleted"
         fb.file "lower/UPPER", "should be downcased"
@@ -350,6 +360,7 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
         end
 
         fb.file "engine/win32/plt/foo/constant", "this file should remain"
+        fb.file "dir/UPPER-2/deleted", "should be deleted, the dir downcased"
         
         # These are some extra files which need to be cleaned up
         fb.file "scripts/extra.ss", '(display "Hello, world!")'
@@ -363,11 +374,13 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
                                        scripts/capitalized/file
                                        top-level new
                                        engine/win32/plt/foo/constant
-                                       lower/upper dir/upper/lower]) do |fb|
+                                       lower/upper dir/upper/lower
+                                       dir/upper-2/new]) do |fb|
         fb.file "top-level", "some text"
         fb.file "new", "this is new"
         fb.file "lower/upper", "should be downcased"
         fb.file "dir/upper/lower", "the dir should be downcased"
+        fb.file "dir/upper-2/new", "this file should be new, the dir downcased"
 
         # Note that the case has changed on the scripts directory
         fb.dir "scripts" do |fb|
@@ -381,6 +394,7 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
       fb.create_download "download-dir", "build-B" do |fb|
         fb.pool_file "new text"
         fb.pool_file "this is new"
+        fb.pool_file "this file should be new, the dir downcased"
       end
     end
 
@@ -390,7 +404,7 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
   def test_cleanup_extra_files
     assert File.exists?("installed-program/Scripts/extra.ss")
     assert File.exists?("installed-program/collects/somedir/extra.zo")
-    assert run_exe("download-dir", "installed-program")
+    assert_run_exe("download-dir", "installed-program")
 
     # Check with both capitalizations so we work regardless of whether
     # or not the case change has happened and whether or not we're on
@@ -417,7 +431,7 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
     # the update, so we don't care if it contains any innocuous extra
     # files.
     File.open("installed-program/Scripts/important-document.doc", 'w') {|f| }
-    assert run_exe("download-dir", "installed-program")
+    assert_run_exe("download-dir", "installed-program")
 
     assert File.exists?("installed-program/Scripts/important-document.doc")
     assert !File.exists?("installed-program/deleted")
@@ -448,10 +462,13 @@ class UpdateInstallerCleanupTest < UpdateInstallerTest
   end
 
   def test_case_rename_of_directories
-    assert_equal(["installed-program/dir/UPPER"], 
+    assert_equal(["installed-program/dir/UPPER", 
+                  "installed-program/dir/UPPER-2"], 
                  Dir["installed-program/dir/*"])
-    assert run_exe("download-dir", "installed-program")
-    assert_equal(["installed-program/dir/upper"], 
-                 Dir["installed-program/dir/*"])    
+    assert_run_exe("download-dir", "installed-program")
+    assert_equal(["installed-program/dir/upper", 
+                  "installed-program/dir/upper-2"], 
+                 Dir["installed-program/dir/*"])
+    
   end
 end
