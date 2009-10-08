@@ -66,6 +66,10 @@
            delete-elements element-exists?  delete-element-if-exists 
            find-node-at)
 
+  ;; Not for use outside of collects/halyard; should be excluded from
+  ;; the API provided by halyard.ss.
+  (provide %widget%)
+
   (define $black (color 0 0 0))
   (define $transparent (color 0 0 0 0))
   

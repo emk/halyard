@@ -20,8 +20,10 @@
 ;;
 ;; @END_LICENSE
 
-(module elements (lib "halyard.ss" "halyard")
+(module pop-up-menu (lib "halyard.ss" "halyard")
   (require (lib "kernel.ss" "halyard/private"))
+  (require (lib "elements.ss" "halyard/private"))
+  (require (lib "events.ss" "halyard/private"))
 
 
   ;;;======================================================================
