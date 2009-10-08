@@ -1203,9 +1203,9 @@
                  (parent->card self (.rect))
                  (.items)))
 
-    ;;; Get the 0-based indices of the currently selected items in this
-    ;;; list box.
-    (def (selection)
+    ;;; Get the list of 0-based indices for the currently selected items in
+    ;;; this list box.
+    (def (selection-list)
       (call-prim 'ListBoxGetSelection (.full-name)))
     )
     

@@ -34,10 +34,10 @@
         (set! (.parent.list-box-output.text) (cat label ": " value)))
 
       (def (item-double-click event)
-        (.display "Double-clicked" (nth (.items) (car (.selection)))))
+        (.display "Double-clicked" (nth (.items) (car (.selection-list)))))
 
       (def (item-selection event)
-        (.display "Selected" (nth (.items) (car (.selection)))))
+        (.display "Selected" (nth (.items) (car (.selection-list)))))
       )
 
     (text list-box-output ((below (.list) 10) $text16 ""))
