@@ -1,3 +1,48 @@
+0.5.39 - 8 Oct 2009
+
+This release focuses on two areas, the update installer and providing better
+native widget support.
+
+The update installer has been taught how to clean up programs which were
+installed with the old, pre 0.5 program layout.  This involves deleting
+any extra files and directories in the PLT search path, as well as
+ensuring that the case of files and directories is corrected, as
+the filesystem is case insensitive while PLT is not.  There have
+been a few bug fixes and performance fixes as well.
+
+There are two new native widgets added, %list-box% and an experimental
+%pop-up-menu%.  Look in elements.ss for documentation on %list-box%.
+As %pop-up-menu% is experimental and the interface subject to change,
+it is in it's own file "halyard/pop-up-menu.ss" and must be required
+manually.
+
+We have also added code signing for our executables, and more importantly
+our update installer, so users updating on Vista or newer will get nicer
+dialog boxes about updating.
+
+Brian Campbell (15):
+      Updater: Fix path to re-launch executable
+      Updater: Fix performance regression in download-update
+      Updater: Extract superclass of UpdateInstallerTest
+      Updater: Add test coverage for smarter update installer
+      Updater: Delete vestigial files in script and collect directories
+      Updater: Delete vestigial directories in script and collect dirs
+      Updater: Downcase file and directory names when doing cleanup.
+      Updater: Add logging when marking updates as impossible
+      Updater: Fix bug in which we would try to delete non-empty directories
+      Updater: Rename directories that differ only in case
+      Updater: Case rename directories even when all files within them change
+      Updater: Look for executable in various places if we don't find it
+      Updater: Code review cleanup
+      Widgets: Build fixes for pop-up-menu.ss
+      Merge branch 'widgets'
+
+Eric Kidd (4):
+      buildfile.rb: Sign our binaries when requested
+      Widgets: Add new %list-box% element
+      Widgets: Rename selection -> selection-list in %list-box%
+      Widgets: Add pop-up menu widget
+
 0.5.38.1 - 4 Sep 2009
 
 This is a bugfix release, to fix a problem in which QuickTime media failed to
