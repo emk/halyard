@@ -58,9 +58,26 @@
 
   (define *tables* (make-hash-table 'equal))
   
+  ;; If we are migrating from an old program, we may have user pref files
+  ;; stored in ...\Tamale\Program Name\, rather than ...\Halyard\Program Name\.
+  ;; In order to indicate that we would like to use the user's old pref files,
+  ;; a program can add a file named config/USE-TAMALE-DIRECTORY-FOR-USER-PREFS.
+  ;; We will then check for any Tamale\Program Name\ user data directory, and
+  ;; if that exists, use it instead of the default (script-user-data-directory)
+  (define *user-data-directory*
+    (if (file-exists? "config/USE-TAMALE-DIRECTORY-FOR-USER-PREFS")
+      (let-values [[[halyard-dir program-name must-be-dir?] 
+                    (split-path (build-path (script-user-data-directory)))]]
+        (define tamale-user-data-directory
+          (build-path halyard-dir 'up "Tamale" program-name))
+        (if (directory-exists? tamale-user-data-directory)
+          (simplify-path tamale-user-data-directory)
+          (script-user-data-directory)))
+      (script-user-data-directory)))
+  
   ;; given a user-id, returns the full file path of the corresponding data file
   (define (datafile-path id)
-    (build-path (script-user-data-directory) (cat id ".dat")))
+    (build-path *user-data-directory* (cat id ".dat")))
   
   ;; Determine if a "user-id.dat" file exists for a given user-id.
   (define (user-has-saved-data? user-id)
