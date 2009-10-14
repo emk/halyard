@@ -1644,13 +1644,34 @@
   (define (open-in-browser url)
     (call-prim 'OpenInBrowser url))
 
+  ;; If we are migrating from an old program, we may have user pref files
+  ;; stored in ...\Tamale\Program Name\, rather than ...\Halyard\Program Name\.
+  ;; In order to indicate that we would like to use the user's old pref files,
+  ;; a program can add a file named config/USE-TAMALE-DIRECTORY-FOR-USER-PREFS.
+  ;; We will then check for any Tamale\Program Name\ user data directory, and
+  ;; if that exists, use it instead of the default engine user data directory.
+  (define *user-data-directory*
+    (if (file-exists? "config/USE-TAMALE-DIRECTORY-FOR-USER-PREFS")
+      (let-values [[[halyard-dir program-name must-be-dir?] 
+                    (split-path (build-path (call-prim 'DataPath)))]]
+        (define tamale-user-data-directory
+          (build-path halyard-dir 'up "Tamale" program-name))
+        (if (directory-exists? tamale-user-data-directory)
+          (simplify-path tamale-user-data-directory)
+          (call-prim 'DataPath)))
+      (call-prim 'DataPath)))
+
   ;;; Returns a path to the directory which should be used to store any
   ;;; user-specific script data files.  Under Windows, this directory may
   ;;; actually get copied between login sessions on different machines, so
   ;;; it would be rude to store huge files here.  See
   ;;; SCRIPT-USER-LOCAL-DATA-DIRECTORY instead for big files.
+  ;;; If config/USE-TAMALE-DIRECTORY-FOR-USER-PREFS is present,
+  ;;; then we will look first for a user data directory under "...\Tamale\
+  ;;; Program Name"; if that file isn't present, or "...\Tamale\Program Name"
+  ;;; isn't present, then we will look in "...\Halyard\Program Name"
   (define (script-user-data-directory)
-    (call-prim 'DataPath))
+    *user-data-directory*)
 
   ;;; Returns a path to the directory which should be used to store any
   ;;; user-and-machine-specific script data files.  
