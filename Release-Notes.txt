@@ -1,3 +1,23 @@
+0.5.40 - 13 Oct 2009
+
+This release includes a few more tools for migrating an installed
+program from Tamale to Halyard.  We add a stub executable that can
+replace Tamale.exe as the target of old shortcuts, which then simply
+invokes engine/win32/Halyard.exe with the same arguments.  This stub
+executable is not part of the normal build and deploy process; it must
+be built and deployed manually to projects that need it.
+
+We also add a mode in which we use the Tamale user data directory
+instead of the Halyard user data directory, if a Tamale user data
+directory is present and the program has requested this, to seamlessly
+provide access to all old saved data.  You can enable this feature
+by create a file named config/USE-TAMALE-DIRECTORY-FOR-USER-PREFS
+
+Brian Campbell (3):
+      Updater: Add LnkTrampoline project to redirect user with old shortcuts
+      Updater: LnkTrampoline: Use backslashes when launching engine
+      data-file.ss: Use Tamale user data directory if specified and exists
+
 0.5.39 - 8 Oct 2009
 
 This release focuses on two areas, the update installer and providing better
