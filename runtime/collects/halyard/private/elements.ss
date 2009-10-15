@@ -1651,15 +1651,17 @@
   ;; We will then check for any Tamale\Program Name\ user data directory, and
   ;; if that exists, use it instead of the default engine user data directory.
   (define *user-data-directory*
-    (if (file-exists? "config/USE-TAMALE-DIRECTORY-FOR-USER-PREFS")
-      (let-values [[[halyard-dir program-name must-be-dir?] 
-                    (split-path (build-path (call-prim 'DataPath)))]]
-        (define tamale-user-data-directory
-          (build-path halyard-dir 'up "Tamale" program-name))
-        (if (directory-exists? tamale-user-data-directory)
-          (simplify-path tamale-user-data-directory)
-          (call-prim 'DataPath)))
-      (call-prim 'DataPath)))
+    (if (have-prim? 'DataPath)
+      (if (file-exists? "config/USE-TAMALE-DIRECTORY-FOR-USER-PREFS")
+        (let-values [[[halyard-dir program-name must-be-dir?] 
+                      (split-path (build-path (call-prim 'DataPath)))]]
+          (define tamale-user-data-directory
+            (build-path halyard-dir 'up "Tamale" program-name))
+          (if (directory-exists? tamale-user-data-directory)
+            (simplify-path tamale-user-data-directory)
+            (call-prim 'DataPath)))
+        (call-prim 'DataPath))
+      #f))
 
   ;;; Returns a path to the directory which should be used to store any
   ;;; user-specific script data files.  Under Windows, this directory may
