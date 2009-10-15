@@ -842,8 +842,35 @@ bool StageFrame::MSWTranslateMessage(WXMSG* pMsg) {
     // It might be more efficient for us to do this at idle time, actually,
     // but I'm not sure if the UI data might get slightly stale and cause
     // assertion failures.
-    if (TInterpreterManager::IsInRuntimeMode())
+    if (TInterpreterManager::IsInRuntimeMode()) {
+        // We used to rely on this function to decide what menu
+        // accelerators should be available, but it no longer does that
+        // reliably.  See bug #17748.
+        //
+        // The problem: UpdateWindowUI calls wxFrameBase::DoMenuUpdates,
+        // which in turn calls wxMenuBarBase::UpdateMenus.  But that
+        // function doesn't call StageFrame::GetEventHandler() to figure
+        // out who should update the menus.  Instead, it calls
+        // wxMenu::GetEventHandler(), which doesn't handle any
+        // wxUpdateUIEvents itself, and which doesn't propagate any events
+        // to the containing frame.  I think this is just a bug.
+        //
+        // Nonetheless, we're going to keep on calling UpdateWindowUI,
+        // because there's a tiny chance it might be doing something _else_
+        // useful (besides trying unsuccessfully to fix our menus), and
+        // we're about to declare this engine stable.  So it's safer to
+        // leave it in, and add more code below to work around the fact
+        // that it doesn't handle our menus properly.
         UpdateWindowUI();
+
+        // Manually update the UI for each of our menus.  This attempts to
+        // simulate a call to wxFrameBase::DoMenuUpdates with an explicit
+        // wxMenu argument, which is what happens when we're in
+        // AUTHORING_MODE and we select an accelerator.
+        wxEvtHandler *handler = GetEventHandler();
+        for (int i = 0; i < mMenuBar->GetMenuCount(); ++i)
+            mMenuBar->GetMenu(i)->UpdateUI(handler);
+    }
     return AuiFrame::MSWTranslateMessage(pMsg);
 }
 
