@@ -1,3 +1,14 @@
+0.5.41 - 15 Oct 2009
+
+This release includes just a single fix, to make the use of Tamale as
+the user data directory consistent between all Scheme code, by pushing
+the code to switch to the Tamale user data directory up into 
+(script-user-data-directory).
+
+Brian Campbell (2):
+      Use Tamale user data directory for all script user data access
+      Fix build failure in Common tests due to calling 'DataPath prim
+
 0.5.40 - 13 Oct 2009
 
 This release includes a few more tools for migrating an installed
