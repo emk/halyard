@@ -93,6 +93,8 @@
     (menu-item movies   (180 "More Movies" @media/qt/movies))
     (text release-id
         ((point 10 580) $title-style (or (program-release-id) "")))
+    (run
+      (.focus!))
     )
   
   

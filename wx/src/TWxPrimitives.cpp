@@ -597,6 +597,11 @@ DEFINE_PRIMITIVE(Focus) {
     element->SetFocus();
 }
 
+DEFINE_PRIMITIVE(FocusStage) {
+    std::string name;
+    wxGetApp().GetStage()->FocusStageOrGameEngine();
+}
+
 DEFINE_PRIMITIVE(HideCursorUntilMouseMoved) {
     wxGetApp().GetStage()->HideCursorUntilMouseMoved();
 }
@@ -1230,6 +1235,7 @@ void Halyard::RegisterWxPrimitives() {
     REGISTER_PRIMITIVE(EnableExpensiveEvents);
     REGISTER_PRIMITIVE(ErrortraceCompileEnabled);
     REGISTER_PRIMITIVE(Focus);
+    REGISTER_PRIMITIVE(FocusStage);
     REGISTER_PRIMITIVE(FindNodeAt);
     REGISTER_PRIMITIVE(HideCursorUntilMouseMoved);
     REGISTER_PRIMITIVE(Heartbeat);

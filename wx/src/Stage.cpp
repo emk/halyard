@@ -852,17 +852,21 @@ void Stage::OnChar(wxKeyEvent &inEvent) {
 }
 
 void Stage::OnLeftDown(wxMouseEvent &inEvent) {
-    // Restore focus to the stage (or our game engine, if it's on top).
-    if (GameEngineIsDisplayed())
-        GameEngineSetFocus();
-    else
-        SetFocus();
+    FocusStageOrGameEngine();
 
     // Dispatch the event.
     if (ShouldSendEvents()) {
         EventDispatcher *disp = FindEventDispatcher(inEvent.GetPosition());
         disp->DoEventLeftDown(inEvent, false);
     }
+}
+
+void Stage::FocusStageOrGameEngine() {
+    // Restore focus to the stage (or our game engine, if it's on top).
+    if (GameEngineIsDisplayed())
+        GameEngineSetFocus();
+    else
+        SetFocus();
 }
 
 #if CONFIG_HAVE_QUAKE2

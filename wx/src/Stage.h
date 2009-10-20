@@ -399,6 +399,9 @@ public:
     /// Handle a mouse-down event.
     void OnLeftDown(wxMouseEvent &inEvent);
 
+    /// Focus either the stage, or the game if it's visible.
+    void FocusStageOrGameEngine();
+
     /// Handle a mouse double-click event.
     void OnLeftDClick(wxMouseEvent &inEvent);
 

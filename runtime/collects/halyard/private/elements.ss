@@ -57,6 +57,17 @@
 
 
   ;;;======================================================================
+  ;;;  Card extensions
+  ;;;======================================================================
+
+  (with-instance %card%
+    ;;; Focus keyboard input to the current card.  This is useful if you
+    ;;; have custom key handlers and the stage is not already focused.
+    (def (focus!)
+      (call-prim 'FocusStage)))
+
+
+  ;;;======================================================================
   ;;;  Core Element Support
   ;;;======================================================================
 
