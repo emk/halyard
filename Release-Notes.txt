@@ -1,3 +1,14 @@
+0.5.42 - 20 Oct 2009
+
+This release includes a few more bug fixes which we want to make before
+declaring this engine stable.  Of particular interest is the new %card%
+.focus! method, which can be used to focus the stage on startup.
+
+Eric Kidd (3):
+      Correctly enable/disable accelerators in full-screen mode
+      LICENSE.txt: Convert line endings to CRLF for use on Windows
+      Add %card% .focus! method
+
 0.5.41 - 15 Oct 2009
 
 This release includes just a single fix, to make the use of Tamale as
