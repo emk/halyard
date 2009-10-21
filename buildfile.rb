@@ -61,7 +61,7 @@ halyard_url = "#{git_url}/halyard"
 
 # This is the Git repo where we push our binaries for inclusion in our 
 # programs.
-git_bin_url = "#{git_url}/halyard-bin-0.5"
+git_bin_url = "#{git_url}/halyard-bin-0.5-2"
 
 # These correspond to the tarballs we would like to release.
 src_dir = "halyard-#{version}"
