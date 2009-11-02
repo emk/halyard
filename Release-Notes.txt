@@ -1,3 +1,13 @@
+0.5.43 - 2 Nov 2009
+
+This is a bug fix build.  It _should_ fix a variety of Quake bugs that
+appeared above 100 frames/second (though we will need extensive testing)
+and it moves our binary releases of Halyard to a new binary git repository.
+
+Eric Kidd (2):
+      buildfile.rb: Upload binaries to a different repo
+      Limit Quake 2 to no more than 100 frames/second
+
 0.5.42 - 20 Oct 2009
 
 This release includes a few more bug fixes which we want to make before
