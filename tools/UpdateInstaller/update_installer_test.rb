@@ -23,6 +23,7 @@
 require 'test/unit'
 require 'fileutils'
 require 'pathname'
+require 'digest/sha1'
 
 $foo_digest = "855426068ee8939df6bce2c2c4b1e7346532a133"
 $null_digest = "da39a3ee5e6b4b0d3255bfef95601890afd80709"
