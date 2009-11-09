@@ -165,46 +165,61 @@
   ;;  High-level HACP API
   ;;=======================================================================
 
-  (provide hacp-initialize hacp-write hacp-done
+  (provide hacp-client-initialized? hacp-initialize hacp-write hacp-done
            ;; These are slightly lower-level functions which you can
            ;; generally ignore.  They probably don't work the way you
            ;; expect them to, and they're really only needed for test
            ;; suites.
            hacp-client-state hacp-client-encountered-error? hacp-client-wait)
 
+  (define *hacp-client* #f)
+
+  ;;; Returns true iff we have an HACP client at the moment.
+  (define (hacp-client-initialized?)
+    ;; Coerce to boolean.
+    (and *hacp-client* #t))
+
   ;;; Initialize an HACP session.
   (define (hacp-initialize hacp-url student-name)
-    (%hacp-client% .new
-      :parent (running-root-node) :name 'hacp-client
-      :url hacp-url :student-name student-name))
+    (set! *hacp-client*
+          (%hacp-client% .new
+            :parent (running-root-node) :name 'hacp-client
+            :url hacp-url :student-name student-name)))
 
   ;;; Return the current state of our HACP client.  This function is
   ;;; mostly used for unit tests.
   (define (hacp-client-state)
-    (@/hacp-client .state))
+    (*hacp-client* .state))
 
   ;;; Report whether the most recent HACP command ecountered an error.
   (define (hacp-client-encountered-error?)
-    (@/hacp-client .error?))
+    (*hacp-client* .error?))
 
   ;;; Block until either all outstanding requests have been processed, or
   ;;; we have encountered an error.
   (define (hacp-client-wait)
-    (@/hacp-client .wait))
+    (*hacp-client* .wait))
 
   ;;; Attempt to write our data to the server.  If sync? if #f, then
   ;;; perform the write in the background.  If sync? is #t, wait for the
   ;;; write to succeed or fail.
+  ;;;
+  ;;; If hacp-initialize was never called, this function does nothing.
   (define (hacp-write &key sync?)
-    (@/hacp-client .write)
-    (when sync?
-      (hacp-client-wait)))
+    (when (hacp-client-initialized?)
+      (*hacp-client* .write)
+      (when sync?
+        (hacp-client-wait))))
 
   ;;; Terminate our HACP session, if one is running, and attempt to flush
   ;;; our data to the server synchronously.
+  ;;;
+  ;;; If hacp-initialize was never called, this function does nothing.
   (define (hacp-done)
-    (hacp-write :sync? #t)
-    (delete-element @/hacp-client))
+    (when (hacp-client-initialized?)
+      (hacp-write :sync? #t)
+      (delete-element *hacp-client*)
+      (set! *hacp-client* #f)))
 
   ;;; Used internally to implement the high-level HACP client.
   (define-class %hacp-client% (%invisible-element%)
