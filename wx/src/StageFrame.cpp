@@ -777,7 +777,11 @@ void StageFrame::ObjectChanged() {
     // Load our icons, if we have any.
     wxIconBundle icons;
     bool have_icon = false;
+    LoadIcon("icon256.png", icons, have_icon);
+    LoadIcon("icon64.png", icons, have_icon);
+    LoadIcon("icon48.png", icons, have_icon);
     LoadIcon("icon32.png", icons, have_icon);
+    LoadIcon("icon24.png", icons, have_icon);
     LoadIcon("icon16.png", icons, have_icon);
     if (have_icon)
         SetIcons(icons);
