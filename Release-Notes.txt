@@ -1,3 +1,19 @@
+0.6.0 - 9 Nov 2009
+
+These release notes only cover the difference between 0.5.43 and 0.6.0, and
+not the cumulative differences between 0.4.* and 0.6.0.  This release
+includes a build fix for the UpdateInstaller test suites, several tweaks to
+the HACP API to make it more convenient, and support for loading more icon
+sizes.
+
+Brian Campbell (1):
+      UpdateInstaller: Require 'digest/sha1' in tests
+
+Eric Kidd (3):
+      HACP: Allow hacp-write to be called from a group, and tweak API
+      hacp: Call current-group-member, not current-card in hacp-write
+      Add support for more Windows icon sizes
+
 0.5.43 - 2 Nov 2009
 
 This is a bug fix build.  It _should_ fix a variety of Quake bugs that
