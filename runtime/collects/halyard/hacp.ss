@@ -337,7 +337,7 @@
       ;; can exclude "are you sure you want to exit the program?"
       ;; cards.
       (set! (hacp-field "Lesson_Location")
-            (symbol->string ((current-card) .full-name)))
+            (symbol->string ((current-group-member) .full-name)))
 
       ;; Clear any error state.
       (when (.error?)
