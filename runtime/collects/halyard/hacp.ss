@@ -81,6 +81,8 @@
     (define aicc-data
       (string-append "[Core]\n" core "\n"
                      "[Core_Lesson]\n" (percent-encode data) "\n"))
+    (trace 'halyard.hacp.putparam "Sending HACP PutParam to " hacp-url
+           " with the data:\n" aicc-data)
     (apply send %easy-url-request% 'new
       :url hacp-url
       :method 'post
