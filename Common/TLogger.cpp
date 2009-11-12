@@ -131,8 +131,20 @@ void TLogger::InitializeLogFiles() {
     // allows the user to perform simple variable substitutions from within
     // the *.properties file by shadowing the environment variable
     // namespace with property definitions.
-    FileSystem::Path config(FileSystem::GetRuntimeDirectory() / "config" /
-                            "log4cplus.properties");
+    //
+    // Note that GetBaseDirectory() only does something useful if the code
+    // in HalyardApp::OnInit was able to guess where our program was
+    // located before it was officially opened.  But this will be the case
+    // when we're launched in runtime mode, because our working directory
+    // will be the root directory of our script.
+    FileSystem::Path config(FileSystem::GetBaseDirectory() /
+                            "config" / "log4cplus.properties");
+    if (!config.DoesExist()) {
+        // We don't have a config/log4cplus.properties file in our script,
+        // so look for the one associated with our engine.
+        config = (FileSystem::GetRuntimeDirectory() /
+                  "config" / "log4cplus.properties");
+    }
     unsigned flags(log::PropertyConfigurator::fShadowEnvironment);
     log::PropertyConfigurator::doConfigure(config.ToNativePathString(),
                                            log::Logger::getDefaultHierarchy(),
