@@ -6,7 +6,7 @@ application the late 1980s, and eventually wound up supporting rich
 scripting in Scheme, a custom IDE built around Scintilla, and a 3D engine
 based on Quake 2.
 
-![](editor-small.png) ![](overlays-small.png) ![](quake2-small.png)
+![](doc/github/editor-small.png) ![](doc/github/overlays-small.png) ![](doc/github/quake2-small.png)
 
 Unfortunately, we only have one [small, low-framerate YouTube
 video][youtube] of the 3D engine in action, though as of Spring 2014, we're
